@@ -2,6 +2,8 @@
 comet_change: commit-invalid-host-rejections-atomically
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-06-commit-invalid-host-rejections-atomically
+status: final
 ---
 
 # Design

@@ -2,6 +2,7 @@
 change: commit-invalid-host-rejections-atomically
 design-doc: openspec/changes/commit-invalid-host-rejections-atomically/design.md
 base-ref: dd87c6afea786244b60915dd7f037b0109f5ec62
+archived-with: 2026-11-06-commit-invalid-host-rejections-atomically
 ---
 
 # 非法 Host 提交原子拒绝实施计划

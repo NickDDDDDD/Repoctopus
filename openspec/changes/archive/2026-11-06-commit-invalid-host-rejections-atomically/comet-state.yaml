@@ -1,0 +1,2588 @@
+# comet-execution: managed-run
+change_id: dcbf1481-64e1-48e8-8828-171cf2051d7c
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: dd87c6afea786244b60915dd7f037b0109f5ec62
+design_doc: openspec/changes/archive/2026-11-06-commit-invalid-host-rejections-atomically/design.md
+plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/commit-invalid-host-rejections-atomically.md
+branch_status: pending
+created_at: 2026-11-05
+verified_at: 2026-11-05
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/commit-invalid-host-rejections-atomically
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-06-commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+handoff_hash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 6b380cba1b7584d3c3b94bae6bda8a80b0233156ff0f93236ab1855cb47a915a
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: commit-invalid-host-rejections-atomically
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: c1d75be33d6e8c5a0c2ec565c2719bbbf1a79ddbec75de4e66d7d891fd68a984
+    input:
+      change: commit-invalid-host-rejections-atomically
+      changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+      workspaceBaseline:
+        ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: dd87c6afea786244b60915dd7f037b0109f5ec62
+      boundBranch: comet/commit-invalid-host-rejections-atomically
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 6
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-05
+      designDoc: openspec/changes/archive/2026-11-06-commit-invalid-host-rejections-atomically/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-06-commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+      handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/commit-invalid-host-rejections-atomically.md
+      verifiedAt: 2026-11-05
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 24
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-aa66e9bc5f058914d0bc26f5c8723ae4d9333a6352c1badfe1eb01566931f6d8
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:1
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: 9e27884a3a50eacca0ec1dd01b11eec6725e30d6f78ed79914dc997507e6caf2
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:1
+          attempt: 1
+          claimToken: portable-aa66e9bc5f058914d0bc26f5c8723ae4d9333a6352c1badfe1eb01566931f6d8
+          inputHash: 9e27884a3a50eacca0ec1dd01b11eec6725e30d6f78ed79914dc997507e6caf2
+          outcomeId: a734ee07-cc7e-4aeb-bc0b-12ee222efff3
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bffb08ef51167d63b23c3ee8e1045632d38cdb6f8b3265a3d714c69ca78d0f01
+            outcomeId: a734ee07-cc7e-4aeb-bc0b-12ee222efff3
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-a460ef9c7cb222e2af6a8d4012a113ca53fca6af2b855c3c0d619bb7b43cefc2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:4
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: 2c1e71c8cf195b46fae2b8b0279a1f217b9299f494ea21e0c45a578966bd9bab
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:4
+          attempt: 1
+          claimToken: portable-a460ef9c7cb222e2af6a8d4012a113ca53fca6af2b855c3c0d619bb7b43cefc2
+          inputHash: 2c1e71c8cf195b46fae2b8b0279a1f217b9299f494ea21e0c45a578966bd9bab
+          outcomeId: commit-invalid-host-rejections-atomically:4:1:executor-result
+          output:
+            contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5c302c62cf02e5e4b1deec76d28387e7882ce047f1fae73e450e9e05d5435a58
+            outcomeId: commit-invalid-host-rejections-atomically:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-a7fcfd936456da78036203332f9f470b503d797bc1d7c87371f95f0363055099
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:5
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: cfad541af6fa1f4ebb07a3c5bb45e668629a97bad0c38451c7d97ff7f5f7ea6e
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:5
+          attempt: 1
+          claimToken: portable-a7fcfd936456da78036203332f9f470b503d797bc1d7c87371f95f0363055099
+          inputHash: cfad541af6fa1f4ebb07a3c5bb45e668629a97bad0c38451c7d97ff7f5f7ea6e
+          outcomeId: 536eedba-7787-4828-b673-fafd814ff03f
+          output:
+            handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+            handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+            proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+              Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+              claim、packet 和 invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+              managed-work-execution 规格，无 Spec Patch。
+            requirementsEvidence:
+              contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+              ref: openspec/changes/commit-invalid-host-rejections-atomically
+            sourceEvidence:
+              contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+              ref: openspec/changes/commit-invalid-host-rejections-atomically
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 427d97b8e95dc0e7a1d1e8ddd7fdb7ce7bfb8508a7559df20da7be65fefb5ac5
+            outcomeId: 536eedba-7787-4828-b673-fafd814ff03f
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e8672093bb4db78d8926367efc85e41607819af6118827545f255fe981916948
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:7
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: ab3addc6f7b6084aff5cfec885b88e643137050e217c86f09a25a123bfe12ed6
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:7
+          attempt: 1
+          claimToken: portable-e8672093bb4db78d8926367efc85e41607819af6118827545f255fe981916948
+          inputHash: ab3addc6f7b6084aff5cfec885b88e643137050e217c86f09a25a123bfe12ed6
+          outcomeId: 5e91e48e-f872-423b-bcbf-e641b8e376f1
+          output:
+            designDoc: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 73aacc121f32d73364a0f2b9cf76be9643a59e0116422f81d0fd7b973c840128
+            outcomeId: 5e91e48e-f872-423b-bcbf-e641b8e376f1
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-9ce4f114524644e487ffd1914a3306da924babfadf7b0fce1a0843e8aab1b3a6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:9
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: 1bd41e242a3067818769bec80357387a9f01e857c5fd3816d621f783ae33aeec
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:9
+          attempt: 1
+          claimToken: portable-9ce4f114524644e487ffd1914a3306da924babfadf7b0fce1a0843e8aab1b3a6
+          inputHash: 1bd41e242a3067818769bec80357387a9f01e857c5fd3816d621f783ae33aeec
+          outcomeId: 416f0f3f-932d-49d1-b548-b000d1b5edf8
+          output:
+            boundBranch: comet/commit-invalid-host-rejections-atomically
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 4c9410fbd4c583da3c593331a786523f9a63af45faa7619d6de078a5b09832a5
+            outcomeId: 416f0f3f-932d-49d1-b548-b000d1b5edf8
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-5216b51ca6e562b15ade2bebb8a551f34ef107502d636690366e9c96accc5e64
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:11
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: d38294b3cf9511e84194d3a4c9c1da2fbe11293270252a1b738f7fc21a0ee8fe
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:11
+          attempt: 1
+          claimToken: portable-5216b51ca6e562b15ade2bebb8a551f34ef107502d636690366e9c96accc5e64
+          inputHash: d38294b3cf9511e84194d3a4c9c1da2fbe11293270252a1b738f7fc21a0ee8fe
+          outcomeId: d3cbb561-88cc-405d-9eb2-7938f14a0cbb
+          output:
+            designEvidence:
+              contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+              ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+            plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+            planEvidence:
+              contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+              ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+            taskRevision: dc397d398bb79d859f25364478e79b52cc87b1c2c3e2b9148e808cec7920735e
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 94536c57dc4593f4203320295b876073b257fdb3bd99dd5fd240629786664e24
+            outcomeId: d3cbb561-88cc-405d-9eb2-7938f14a0cbb
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-atomic-host-rejection
+          token: portable-62aaa85301d5ea0a12f798010c7bf358df14441156bf6136e98f7b314e72ee97
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:13
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: 9acf80327824f0dac688dfe89375ba42b8ba67a962cd84ee276a95341e8cb458
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:13
+          attempt: 1
+          claimToken: portable-62aaa85301d5ea0a12f798010c7bf358df14441156bf6136e98f7b314e72ee97
+          inputHash: 9acf80327824f0dac688dfe89375ba42b8ba67a962cd84ee276a95341e8cb458
+          outcomeId: 4f930faa-3aed-499e-8743-e44fb3731da2
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6ef94f57aa08da8018ce92db26b69855dd3a3b6867b59ee71e0a9fb6477052e4
+            outcomeId: 4f930faa-3aed-499e-8743-e44fb3731da2
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-6e8e8bffcb2b4155b8dce38154dfb8483e8899d7d72469599af01df93ccaa853
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:14
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: 501774b9ed5d28699f52f99e8e4f64341059084413ee0d51501cc47c45b33cd5
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:14
+          attempt: 1
+          claimToken: portable-6e8e8bffcb2b4155b8dce38154dfb8483e8899d7d72469599af01df93ccaa853
+          inputHash: 501774b9ed5d28699f52f99e8e4f64341059084413ee0d51501cc47c45b33cd5
+          outcomeId: 301e8c4c-4a07-4cf9-b661-c3c8c914baec
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 56bb0ebf4e5bad1a263d0af06da469b32b1739c8a7991fae976ab66339556579
+            cwd: .
+            environment: c0bc730011d2bd347939233ca875f69c1fc3ddb546bece0645aea432e12729b6
+            exitCode: 0
+            inputAfter: 6fb5bb67850fc5b878e27cc9fe8056f9750144f4942f2b775210f0fb12c5d107
+            inputBefore: 6fb5bb67850fc5b878e27cc9fe8056f9750144f4942f2b775210f0fb12c5d107
+            manifestHash: 356916a53b6fa60736f6d9d441c0649a06debc175967b916e6c1036aa0349df9
+            manifestRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/1f64e3d2-5c06-4463-b053-72c9fef94f03.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/fc6ff95e-181a-4278-8069-7b6cf2e947c1.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: abe86daef58dcc2e940316066574cd42f0d06f74028c80425f25722dce296473
+            outcomeId: 301e8c4c-4a07-4cf9-b661-c3c8c914baec
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-19f4dd7899ac2133c8b2878db59bf70fe462b20cfe664f53a8585347c7c5e667
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:16
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: 6da21359c8eff4b88b6b5fcf898ce2f83c4c34013c7443ff2a12a18d7dd49729
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:16
+          attempt: 1
+          claimToken: portable-19f4dd7899ac2133c8b2878db59bf70fe462b20cfe664f53a8585347c7c5e667
+          inputHash: 6da21359c8eff4b88b6b5fcf898ce2f83c4c34013c7443ff2a12a18d7dd49729
+          outcomeId: 03ac1785-0c5a-4df1-947f-39e3adb4b8c7
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/commit-invalid-host-rejections-atomically.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 525219fb219747a7ac0e0545ac0897240071f209a47e989b858e548e1f94e6ab
+            outcomeId: 03ac1785-0c5a-4df1-947f-39e3adb4b8c7
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-a6653cebc66abf9bcc8db57e758f973d151785ac705c5e8c19a310d21b984ac4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:18
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: d538d6b1518e1b00ab2076a9db95d1eb0710a2d6d84c32e2dae3d71dba7ef4c7
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:18
+          attempt: 1
+          claimToken: portable-a6653cebc66abf9bcc8db57e758f973d151785ac705c5e8c19a310d21b984ac4
+          inputHash: d538d6b1518e1b00ab2076a9db95d1eb0710a2d6d84c32e2dae3d71dba7ef4c7
+          outcomeId: 6134dd14-7d7b-4e53-9863-dc5410a71032
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: b20cbf75f021c57d30be21a0a13d3e9b62dc1533983b48b833fc6f6763275655
+            cwd: .
+            deliveryInputs: {}
+            environment: dd9f93bdd091377d80d3c8d5e14a1fb326bbe1137dd851da6b54dd7f99fabcb7
+            exitCode: 0
+            inputAfter: d2be8aefa7cbf2bdbe434fc9be01659ac3cc8a6be308f66ca36f751f4ed4624c
+            inputBefore: d2be8aefa7cbf2bdbe434fc9be01659ac3cc8a6be308f66ca36f751f4ed4624c
+            manifestHash: e407fd1a06247eb76e77e186283e8bdd9b78ecbb61b38938397c5700a23d81fc
+            manifestRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/e5e0f6b9-1993-408f-8126-9c5c6193e891.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/33718d78-6f77-4066-bb3f-be6b48ecfdf3.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 11bcba837da6b8714634b1c972dc46e0ea53856662fc14b9a83eb726766aeb2c
+            outcomeId: 6134dd14-7d7b-4e53-9863-dc5410a71032
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-5b26d7428b4c99005eb9f9ef9ca0423284f1ba4469aa95ce9e96d65253b3a686
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:20
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: 6bb6359f0f64966d29b9116136f291a89626895ae1d225b6f531feea50f856a2
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:20
+          attempt: 1
+          claimToken: portable-5b26d7428b4c99005eb9f9ef9ca0423284f1ba4469aa95ce9e96d65253b3a686
+          inputHash: 6bb6359f0f64966d29b9116136f291a89626895ae1d225b6f531feea50f856a2
+          outcomeId: e0d191ac-f932-443b-9052-801ba2c6e597
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档非法 Host 提交原子拒绝与中断补交修复，推送归档提交并创建指向 main 的 PR
+            targetBranch: comet/commit-invalid-host-rejections-atomically
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 944e0e7f659a8d5c1488499f1b0aaee540211d569018e4ab8a7583fa722636a0
+            outcomeId: e0d191ac-f932-443b-9052-801ba2c6e597
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-bf39522cf8f5458823b78f9c62de840fad4b3314bf1a824bf19079be1e537e08
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:22
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: 0333955f2448dc111fb1b8e8aa4d8b4c332ee45f42a066d3b6652b95aeef45fd
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:22
+          attempt: 1
+          claimToken: portable-bf39522cf8f5458823b78f9c62de840fad4b3314bf1a824bf19079be1e537e08
+          inputHash: 0333955f2448dc111fb1b8e8aa4d8b4c332ee45f42a066d3b6652b95aeef45fd
+          outcomeId: 7f3bd026-da9b-4744-bd70-ce6b786c9d1d
+          output:
+            baseCommit: 83f3cc8b1193f7d4720e9586c9b01ffe300b2971
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/commit-invalid-host-rejections-atomically
+            verifiedBranch: comet/commit-invalid-host-rejections-atomically
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ac3fe5efbf26734fcaa2e2442f5e145179388cbdfa5dc4726b8966d6c1fc0833
+            outcomeId: 7f3bd026-da9b-4744-bd70-ce6b786c9d1d
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-5833182893e80769515c9e2a19922d442736643dcec4bb2339841de2ef9b98ef
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:23
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: f0d37ba2fac8b1f9d32bfb7ec2a8e3c9bce2dc8d81357ba353b05e8474455aea
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:23
+          artifacts:
+            - sha256: c7b8e536c2961003e1d265676d38d4a63bbf75835856151b2993d3ecb800bc5d
+              uri: openspec/changes/archive/2026-11-06-commit-invalid-host-rejections-atomically/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-5833182893e80769515c9e2a19922d442736643dcec4bb2339841de2ef9b98ef
+          inputHash: f0d37ba2fac8b1f9d32bfb7ec2a8e3c9bce2dc8d81357ba353b05e8474455aea
+          outcomeId: b69b35e0-1d24-42a3-b8e1-a9aa4ca90656
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-06-commit-invalid-host-rejections-atomically
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ec7864803ab5055f5e3dfc6f4b7db068c2881a638766161646e41aa1732fdfed
+            outcomeId: b69b35e0-1d24-42a3-b8e1-a9aa4ca90656
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: commit-invalid-host-rejections-atomically:24
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs: {}
+        inputHash: 243e77bdb5045cb2a72ca9ed4edcabea15618058ccff731a8cffaeca97eeed64
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      commit-invalid-host-rejections-atomically:1:
+        results: {}
+        sequence: 1
+      commit-invalid-host-rejections-atomically:11:
+        results: {}
+        sequence: 11
+      commit-invalid-host-rejections-atomically:13:
+        results: {}
+        sequence: 13
+      commit-invalid-host-rejections-atomically:14:
+        results: {}
+        sequence: 14
+      commit-invalid-host-rejections-atomically:16:
+        results: {}
+        sequence: 16
+      commit-invalid-host-rejections-atomically:18:
+        results: {}
+        sequence: 18
+      commit-invalid-host-rejections-atomically:20:
+        results: {}
+        sequence: 20
+      commit-invalid-host-rejections-atomically:22:
+        results: {}
+        sequence: 22
+      commit-invalid-host-rejections-atomically:23:
+        results: {}
+        sequence: 23
+      commit-invalid-host-rejections-atomically:24:
+        results: {}
+        sequence: 24
+      commit-invalid-host-rejections-atomically:4:
+        results: {}
+        sequence: 4
+      commit-invalid-host-rejections-atomically:5:
+        results: {}
+        sequence: 5
+      commit-invalid-host-rejections-atomically:7:
+        results: {}
+        sequence: 7
+      commit-invalid-host-rejections-atomically:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: commit-invalid-host-rejections-atomically:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+              ref: openspec/changes/commit-invalid-host-rejections-atomically
+        proposalHash: 1aca02955b894bf8e9c368c1d3bc5cb34d6fa20407f76153366b97bee2ab14be
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+          choice: approved
+          proposalHash: 1aca02955b894bf8e9c368c1d3bc5cb34d6fa20407f76153366b97bee2ab14be
+      - id: commit-invalid-host-rejections-atomically:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+              handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+              proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                claim、packet 和
+                invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                managed-work-execution 规格，无 Spec Patch。
+              requirementsEvidence:
+                contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+              sourceEvidence:
+                contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+        proposalHash: 90fdb34dd91b2e51339de5181821deb0289551d01e385dccde836003ffb35a60
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-90fdb34dd91b2e51339de5181821deb0289551d01e385dccde836003ffb35a60-approved
+          choice: approved
+          proposalHash: 90fdb34dd91b2e51339de5181821deb0289551d01e385dccde836003ffb35a60
+      - id: commit-invalid-host-rejections-atomically:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs:
+            full.build.configure:
+              boundBranch: comet/commit-invalid-host-rejections-atomically
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 520ea5fa1e3de338932aebda3189038559335412c4d77f5023e78e4773834a0a
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-build-520ea5fa1e3de338932aebda3189038559335412c4d77f5023e78e4773834a0a-approved
+          choice: approved
+          proposalHash: 520ea5fa1e3de338932aebda3189038559335412c4d77f5023e78e4773834a0a
+      - id: commit-invalid-host-rejections-atomically:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档非法 Host 提交原子拒绝与中断补交修复，推送归档提交并创建指向 main 的 PR
+              targetBranch: comet/commit-invalid-host-rejections-atomically
+        proposalHash: 24e40f7aad5e8c9d24cd1c0f2d2e50532898876684b8bc98709e47c01efbee5c
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-24e40f7aad5e8c9d24cd1c0f2d2e50532898876684b8bc98709e47c01efbee5c-pr
+          choice: pr
+          proposalHash: 24e40f7aad5e8c9d24cd1c0f2d2e50532898876684b8bc98709e47c01efbee5c
+    evidenceWaits:
+      - id: commit-invalid-host-rejections-atomically:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/commit-invalid-host-rejections-atomically
+          contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+          submissionId: a3e86ae8-4a31-4691-aee3-49a1b51abb17
+      - id: commit-invalid-host-rejections-atomically:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+          contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+          submissionId: 58a5b50c-4563-4a82-84f6-14abc6133dc4
+      - id: commit-invalid-host-rejections-atomically:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+          contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+          submissionId: 780e436d-6bdb-45c1-8099-82ceeaba6f98
+      - id: commit-invalid-host-rejections-atomically:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/fc6ff95e-181a-4278-8069-7b6cf2e947c1.log
+          contentHash: 56bb0ebf4e5bad1a263d0af06da469b32b1739c8a7991fae976ab66339556579
+          submissionId: 4ec5b648-f887-4666-81b5-383b3a434563
+      - id: commit-invalid-host-rejections-atomically:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/commit-invalid-host-rejections-atomically.md
+          contentHash: 527052ad2b4576c573a0f888f37f517c34727a93cd471b6670b2f54cafd6deac
+          submissionId: eadc2128-e007-4de5-8aac-b25f79fa7fce
+      - id: commit-invalid-host-rejections-atomically:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/33718d78-6f77-4066-bb3f-be6b48ecfdf3.log
+          contentHash: b20cbf75f021c57d30be21a0a13d3e9b62dc1533983b48b833fc6f6763275655
+          submissionId: 60310176-7811-414f-a9f3-3f6a0d37ace1
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 37
+  sourceHash: f236b16339c68fcc5fa565c7e111b7047048023229d1914ade6c338496dd8a75
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+              ref: openspec/changes/commit-invalid-host-rejections-atomically
+      - contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+        ref: openspec/changes/commit-invalid-host-rejections-atomically
+      - contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+      - choice: approved
+        proposal:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+              handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+              proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                claim、packet 和
+                invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                managed-work-execution 规格，无 Spec Patch。
+              requirementsEvidence:
+                contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+              sourceEvidence:
+                contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+      - handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+        handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+        proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+          Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原 claim、packet 和
+          invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+          managed-work-execution 规格，无 Spec Patch。
+        requirementsEvidence:
+          contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+          ref: openspec/changes/commit-invalid-host-rejections-atomically
+        sourceEvidence:
+          contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+          ref: openspec/changes/commit-invalid-host-rejections-atomically
+      - designDoc: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+      - contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+        ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+      - boundBranch: comet/commit-invalid-host-rejections-atomically
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs:
+            full.build.configure:
+              boundBranch: comet/commit-invalid-host-rejections-atomically
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+          ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+        plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+        planEvidence:
+          contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+          ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+        taskRevision: dc397d398bb79d859f25364478e79b52cc87b1c2c3e2b9148e808cec7920735e
+      - contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+        ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 56bb0ebf4e5bad1a263d0af06da469b32b1739c8a7991fae976ab66339556579
+        cwd: .
+        environment: c0bc730011d2bd347939233ca875f69c1fc3ddb546bece0645aea432e12729b6
+        exitCode: 0
+        inputAfter: 6fb5bb67850fc5b878e27cc9fe8056f9750144f4942f2b775210f0fb12c5d107
+        inputBefore: 6fb5bb67850fc5b878e27cc9fe8056f9750144f4942f2b775210f0fb12c5d107
+        manifestHash: 356916a53b6fa60736f6d9d441c0649a06debc175967b916e6c1036aa0349df9
+        manifestRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/1f64e3d2-5c06-4463-b053-72c9fef94f03.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/fc6ff95e-181a-4278-8069-7b6cf2e947c1.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 56bb0ebf4e5bad1a263d0af06da469b32b1739c8a7991fae976ab66339556579
+        ref: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/fc6ff95e-181a-4278-8069-7b6cf2e947c1.log
+      - contentHash: 527052ad2b4576c573a0f888f37f517c34727a93cd471b6670b2f54cafd6deac
+        ref: docs/superpowers/reports/commit-invalid-host-rejections-atomically.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/commit-invalid-host-rejections-atomically.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: b20cbf75f021c57d30be21a0a13d3e9b62dc1533983b48b833fc6f6763275655
+        cwd: .
+        deliveryInputs: {}
+        environment: dd9f93bdd091377d80d3c8d5e14a1fb326bbe1137dd851da6b54dd7f99fabcb7
+        exitCode: 0
+        inputAfter: d2be8aefa7cbf2bdbe434fc9be01659ac3cc8a6be308f66ca36f751f4ed4624c
+        inputBefore: d2be8aefa7cbf2bdbe434fc9be01659ac3cc8a6be308f66ca36f751f4ed4624c
+        manifestHash: e407fd1a06247eb76e77e186283e8bdd9b78ecbb61b38938397c5700a23d81fc
+        manifestRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/e5e0f6b9-1993-408f-8126-9c5c6193e891.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/33718d78-6f77-4066-bb3f-be6b48ecfdf3.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: b20cbf75f021c57d30be21a0a13d3e9b62dc1533983b48b833fc6f6763275655
+        ref: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/33718d78-6f77-4066-bb3f-be6b48ecfdf3.log
+      - choice: pr
+        proposal:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档非法 Host 提交原子拒绝与中断补交修复，推送归档提交并创建指向 main 的 PR
+              targetBranch: comet/commit-invalid-host-rejections-atomically
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档非法 Host 提交原子拒绝与中断补交修复，推送归档提交并创建指向 main 的 PR
+        targetBranch: comet/commit-invalid-host-rejections-atomically
+      - baseCommit: 83f3cc8b1193f7d4720e9586c9b01ffe300b2971
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: comet/commit-invalid-host-rejections-atomically
+        verifiedBranch: comet/commit-invalid-host-rejections-atomically
+      - archiveDirectory: openspec/changes/archive/2026-11-06-commit-invalid-host-rejections-atomically
+      - sequence: 9
+        value:
+          boundBranch: comet/commit-invalid-host-rejections-atomically
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: commit-invalid-host-rejections-atomically
+              changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+              workspaceBaseline:
+                ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+            outputs:
+              full.build.configure:
+                boundBranch: comet/commit-invalid-host-rejections-atomically
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: commit-invalid-host-rejections-atomically
+              changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+              workspaceBaseline:
+                ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+                handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+                proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                  Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                  claim、packet 和
+                  invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                  managed-work-execution 规格，无 Spec Patch。
+                requirementsEvidence:
+                  contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                  ref: openspec/changes/commit-invalid-host-rejections-atomically
+                sourceEvidence:
+                  contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                  ref: openspec/changes/commit-invalid-host-rejections-atomically
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+      - sequence: 8
+        value:
+          contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+          ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+          handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+          proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+            Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原 claim、packet
+            和 invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+            managed-work-execution 规格，无 Spec Patch。
+          requirementsEvidence:
+            contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+            ref: openspec/changes/commit-invalid-host-rejections-atomically
+          sourceEvidence:
+            contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+            ref: openspec/changes/commit-invalid-host-rejections-atomically
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: commit-invalid-host-rejections-atomically
+              changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+              workspaceBaseline:
+                ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+      - sequence: 2
+        value:
+          contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+          ref: openspec/changes/commit-invalid-host-rejections-atomically
+      - sequence: 4
+        value:
+          contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+            ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+          plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+          planEvidence:
+            contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+            ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+          taskRevision: dc397d398bb79d859f25364478e79b52cc87b1c2c3e2b9148e808cec7920735e
+      - sequence: 12
+        value:
+          contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+          ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 56bb0ebf4e5bad1a263d0af06da469b32b1739c8a7991fae976ab66339556579
+          cwd: .
+          environment: c0bc730011d2bd347939233ca875f69c1fc3ddb546bece0645aea432e12729b6
+          exitCode: 0
+          inputAfter: 6fb5bb67850fc5b878e27cc9fe8056f9750144f4942f2b775210f0fb12c5d107
+          inputBefore: 6fb5bb67850fc5b878e27cc9fe8056f9750144f4942f2b775210f0fb12c5d107
+          manifestHash: 356916a53b6fa60736f6d9d441c0649a06debc175967b916e6c1036aa0349df9
+          manifestRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/1f64e3d2-5c06-4463-b053-72c9fef94f03.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/fc6ff95e-181a-4278-8069-7b6cf2e947c1.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 15
+        value:
+          contentHash: 56bb0ebf4e5bad1a263d0af06da469b32b1739c8a7991fae976ab66339556579
+          ref: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/fc6ff95e-181a-4278-8069-7b6cf2e947c1.log
+      - sequence: 17
+        value:
+          contentHash: 527052ad2b4576c573a0f888f37f517c34727a93cd471b6670b2f54cafd6deac
+          ref: docs/superpowers/reports/commit-invalid-host-rejections-atomically.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/commit-invalid-host-rejections-atomically.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: b20cbf75f021c57d30be21a0a13d3e9b62dc1533983b48b833fc6f6763275655
+          cwd: .
+          deliveryInputs: {}
+          environment: dd9f93bdd091377d80d3c8d5e14a1fb326bbe1137dd851da6b54dd7f99fabcb7
+          exitCode: 0
+          inputAfter: d2be8aefa7cbf2bdbe434fc9be01659ac3cc8a6be308f66ca36f751f4ed4624c
+          inputBefore: d2be8aefa7cbf2bdbe434fc9be01659ac3cc8a6be308f66ca36f751f4ed4624c
+          manifestHash: e407fd1a06247eb76e77e186283e8bdd9b78ecbb61b38938397c5700a23d81fc
+          manifestRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/e5e0f6b9-1993-408f-8126-9c5c6193e891.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/33718d78-6f77-4066-bb3f-be6b48ecfdf3.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 19
+        value:
+          contentHash: b20cbf75f021c57d30be21a0a13d3e9b62dc1533983b48b833fc6f6763275655
+          ref: .comet/runtime/classic-sdk-checks/d447f74c42277cbaf74bf77c6435c06adf01c1c2ca85e9dd3acb7be090a67d56/33718d78-6f77-4066-bb3f-be6b48ecfdf3.log
+      - sequence: 21
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: commit-invalid-host-rejections-atomically
+              changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+              workspaceBaseline:
+                ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档非法 Host 提交原子拒绝与中断补交修复，推送归档提交并创建指向 main 的 PR
+                targetBranch: comet/commit-invalid-host-rejections-atomically
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档非法 Host 提交原子拒绝与中断补交修复，推送归档提交并创建指向 main 的 PR
+          targetBranch: comet/commit-invalid-host-rejections-atomically
+      - sequence: 22
+        value:
+          baseCommit: 83f3cc8b1193f7d4720e9586c9b01ffe300b2971
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/commit-invalid-host-rejections-atomically
+          verifiedBranch: comet/commit-invalid-host-rejections-atomically
+      - sequence: 23
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-06-commit-invalid-host-rejections-atomically
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 52
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 54
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 48
+        height: 5
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: 57
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 58
+        right: 51
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 53
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 59
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 22
+        left: 63
+        right: 64
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 65
+        right: 51
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 66
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 67
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 70
+        height: 2
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 72
+        right: 73
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 75
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 76
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 71
+        right: 77
+        height: 4
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: 79
+        right: 80
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 81
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 82
+        right: 77
+        height: 4
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 84
+        height: 2
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: 80
+        height: 2
+      - key: full.build.plan
+        value: 33
+        left: 85
+        right: 86
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 87
+        right: 77
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 89
+        right: 90
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 91
+        right: 84
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 92
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 77
+        height: 5
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: 96
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: 97
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 99
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 102
+        right: 96
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 101
+        right: 103
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 104
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 43
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 90
+        right: 84
+        height: 2
+      - key: full.build.check.evidence
+        value: 37
+        left: 109
+        right: 110
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 111
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 112
+        right: 105
+        height: 5
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: 114
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 115
+        right: 108
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 110
+        right: 86
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 116
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 118
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 45
+        left: 120
+        right: 121
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 122
+        right: 108
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 123
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 124
+        right: 105
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 127
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 129
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 132
+        right: 133
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 134
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 136
+        right: 137
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: 138
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 139
+        right: 130
+        height: 4
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: 141
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 145
+        height: 2
+      - key: full.open
+        value: 29
+        left: 143
+        right: 146
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 149
+        right: 150
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 148
+        right: 151
+        height: 3
+      - key: full.open
+        value: 29
+        left: 152
+        right: 146
+        height: 4
+      - key: full.archive.prepare
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: 154
+        right: 155
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: 158
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: 157
+        right: 159
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: 156
+        right: 160
+        height: 4
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 162
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 164
+        right: 165
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 163
+        right: 166
+        height: 3
+      - key: full.open
+        value: 29
+        left: 151
+        right: 167
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 161
+        right: 168
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 171
+        right: 172
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 175
+        height: 2
+      - key: full.open
+        value: 29
+        left: 173
+        right: 176
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 178
+        right: 179
+        height: 2
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 181
+        right: 182
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 180
+        right: 183
+        height: 3
+      - key: full.open
+        value: 29
+        left: 184
+        right: 176
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: 186
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: 188
+        right: 189
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 187
+        right: 190
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 176
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: 191
+        right: 192
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 194
+        right: 195
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 196
+        right: 190
+        height: 3
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: 198
+        height: 2
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 199
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 200
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 201
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 203
+        height: 2
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: 205
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 204
+        right: 206
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 207
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 208
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 56
+      - 62
+      - 68
+      - 78
+      - 83
+      - 88
+      - 94
+      - 100
+      - 106
+      - 113
+      - 119
+      - 125
+      - 128
+      - 131
+      - 135
+      - 140
+      - 142
+      - 147
+      - 153
+      - 169
+      - 170
+      - 177
+      - 185
+      - 193
+      - 202
+      - 209
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:11
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:13
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:14
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:16
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:18
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:20
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:22
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:23
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:4
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:5
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:7
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - commit-invalid-host-rejections-atomically:9
+          - results
+        map: 26
+      - path:
+          - outputs
+        map: 22
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 27
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 28
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 29
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 31
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 36
+  storageHash: e915f0fc8045bff4a19dce8d7327eb37e7daa9834e019d9ce712d11d3eb6e6ee
+check_epoch: 6
