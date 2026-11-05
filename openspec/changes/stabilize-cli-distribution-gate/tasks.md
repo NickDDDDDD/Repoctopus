@@ -10,7 +10,7 @@
 
 - [x] 2.1 扩展 `test/self-hosting-docs.test.ts`，先证明文档必须把隔离安装的 package-first 路径作为多仓验收默认值，并要求源码例外在每次更新后从当前 checkout 构建、通过 freshness preflight 再启动 CLI，且不得把历史 `dist` 当作验证证据；以 `npx vitest run test/self-hosting-docs.test.ts` 验证新增断言在文档修改前按预期失败 <!-- comet-task:c219a0b9-93e8-45d3-b29d-dd26588c4e28 -->
 - [x] 2.2 更新 `docs/self-hosting.md` 的源码准备与验收顺序，明确 package-first 默认值、直接源码例外、`npm ci` 的适用时机、每次 checkout 更新后的 `npm run build` 与 `node scripts/build.mjs --check`、旧/缺失 `dist` 的含义以及 CI 检查与 GitHub required check 的管理边界，并以 `npx vitest run test/self-hosting-docs.test.ts test/repository-ci.test.ts` 验证文档和 workflow 契约一致 <!-- comet-task:bf72fbec-0e6f-45f8-9408-daf5305215ef -->
-- [ ] 2.3 复验安装包独立消费边界，确认测试从当前源码生成 tarball 并通过隔离安装后的公共 `bin` 验证必要资源；如发现缺口就在 `test/e2e/package.e2e.test.ts` 补齐，并以 `npm run test:package-e2e` 验证 package-first 默认路径，不用长期源码 checkout 的本地 `dist` 代替包验收 <!-- comet-task:0a8cc5f2-46ca-40a7-a41a-6246cee81bd1 -->
+- [x] 2.3 复验安装包独立消费边界，确认测试从当前源码生成 tarball 并通过隔离安装后的公共 `bin` 验证必要资源；如发现缺口就在 `test/e2e/package.e2e.test.ts` 补齐，并以 `npm run test:package-e2e` 验证 package-first 默认路径，不用长期源码 checkout 的本地 `dist` 代替包验收 <!-- comet-task:0a8cc5f2-46ca-40a7-a41a-6246cee81bd1 -->
 
 ## 3. 集成验证与交付证据
 
