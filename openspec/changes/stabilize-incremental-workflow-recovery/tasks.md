@@ -74,17 +74,17 @@
 
 ## 5. Build Plan 前置可行性
 
-- [ ] 5.1 扩展Plan Validator验证每个Package的Outcome与Validator闭包，并用失败测试覆盖遗漏Evidence与跨包伪完成 <!-- comet-task:fa22cb21-6026-47cf-b9a7-43e7a8068bef -->
+- [x] 5.1 扩展Plan Validator验证每个Package的Outcome与Validator闭包，并用失败测试覆盖遗漏Evidence与跨包伪完成 <!-- comet-task:fa22cb21-6026-47cf-b9a7-43e7a8068bef -->
   **Blocked by:** 2.2
   **Acceptance:** 无法在自身边界完成的Package在Execute前被拒绝为Plan finding；合法跨仓Package仍可通过
   **Requirements:** Plan Evidence 必须证明每个 Package 可独立完成
 
-- [ ] 5.2 为tdd模式验证同一行为切片的RED、实现、GREEN和回归闭包，并用测试证明RED与GREEN拆包会触发revise-plan <!-- comet-task:6fedaa33-c7c1-4e36-8476-cd1b1244f771 -->
+- [x] 5.2 为tdd模式验证同一行为切片的RED、实现、GREEN和回归闭包，并用测试证明RED与GREEN拆包会触发revise-plan <!-- comet-task:6fedaa33-c7c1-4e36-8476-cd1b1244f771 -->
   **Blocked by:** 5.1
   **Acceptance:** tdd拆包候选在Plan Evidence失败；完整切片通过；direct模式不要求RED但仍要求实现与回归
   **Requirements:** Plan Evidence 必须证明每个 Package 可独立完成
 
-- [ ] 5.3 实现Plan授权包络比较，并用测试验证顺序、包边界和等价命令变化自动接受而仓库、write scope或风险扩大要求决定 <!-- comet-task:9b6f3284-ddc7-4e9d-8fdd-6300ec67c717 -->
+- [x] 5.3 实现Plan授权包络比较，并用测试验证顺序、包边界和等价命令变化自动接受而仓库、write scope或风险扩大要求决定 <!-- comet-task:9b6f3284-ddc7-4e9d-8fdd-6300ec67c717 -->
   **Blocked by:** 5.1
   **Acceptance:** 同包络revision不创建Human Decision；越权revision fail closed并绑定增量授权请求
   **Requirements:** Plan revision 只在授权范围扩大时请求决定

@@ -46,7 +46,7 @@ function changeInputs(packet: WorkExecutionPacket) {
       acceptanceCriteria: Array<{ acceptanceId: string }>;
     }>;
     build: {
-      strategy: { semanticDigest: `sha256:${string}` };
+      strategy: { semanticDigest: `sha256:${string}`; tddMode: 'tdd' | 'direct' };
       plan: {
         packages: Array<{
           packageId: string;
@@ -339,8 +339,17 @@ describe('external Build Host Work-scoped capabilities', () => {
               writeScopes: [{ repositoryId, paths: ['src/**'] }],
               acceptanceRefs: task.acceptanceCriteria.map((entry) => entry.acceptanceId),
               expectedOutcomes: [`Complete ${task.taskId}`],
-              validatorProfile: 'build-package-v1',
+              validatorProfile: 'build.package-valid',
               dependsOn: index === 0 ? [] : [planInputs.tasks[index - 1]!.taskId],
+              sideEffectClass: 'repository-write' as const,
+              completionContract: {
+                schemaVersion: 1 as const,
+                behaviorSlice: task.taskId,
+                requiredEvidence:
+                  planInputs.build.strategy.tddMode === 'tdd'
+                    ? (['acceptance', 'implementation', 'red', 'green', 'regression'] as const)
+                    : (['acceptance', 'implementation', 'test', 'regression'] as const),
+              },
             };
           }),
         } satisfies WorkExecutionResult;

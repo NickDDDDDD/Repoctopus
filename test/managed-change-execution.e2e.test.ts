@@ -351,7 +351,10 @@ describe('managed Change execution production composition', () => {
                   acceptanceCriteria: Array<{ acceptanceId: string }>;
                 }>;
                 build: {
-                  strategy: { semanticDigest: `sha256:${string}` };
+                  strategy: {
+                    semanticDigest: `sha256:${string}`;
+                    tddMode: 'tdd' | 'direct';
+                  };
                   binding: { stateDigest: `sha256:${string}` } | null;
                   plan: {
                     packages: Array<{
@@ -393,8 +396,17 @@ describe('managed Change execution production composition', () => {
                       writeScopes: [{ repositoryId, paths: ['src/**'] }],
                       acceptanceRefs: task.acceptanceCriteria.map((entry) => entry.acceptanceId),
                       expectedOutcomes: [`Complete ${task.taskId}`],
-                      validatorProfile: 'build-package-v1',
+                      validatorProfile: 'build.package-valid',
                       dependsOn: index === 0 ? [] : [inputs.tasks[index - 1]!.taskId],
+                      sideEffectClass: 'repository-write' as const,
+                      completionContract: {
+                        schemaVersion: 1 as const,
+                        behaviorSlice: task.taskId,
+                        requiredEvidence:
+                          inputs.build!.strategy.tddMode === 'tdd'
+                            ? (['acceptance', 'implementation', 'red', 'green', 'regression'] as const)
+                            : (['acceptance', 'implementation', 'test', 'regression'] as const),
+                      },
                     };
                   }),
                 } satisfies WorkExecutionResult;

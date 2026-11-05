@@ -24,7 +24,11 @@ import type {
   PlanEvidence,
   PackageCompletionEvidence,
 } from './build-protocol.js';
-import { advanceBuildProtocol, suspendBuildProtocolForDesign } from './build-protocol.js';
+import {
+  advanceBuildProtocol,
+  compareBuildPlanAuthorizationEnvelope,
+  suspendBuildProtocolForDesign,
+} from './build-protocol.js';
 import { runtimeInvalidationScope } from '../runtime/invalidation.js';
 import type { RecoveryAction, RecoveryAuthority } from '../runtime/recovery.js';
 
@@ -1489,13 +1493,22 @@ export function evolveChangeLifecycle(options: {
     });
   }
   if (observation.kind === 'build-plan-approval-required') {
+    const authorizationExpansion = current.buildProtocol?.authorizationEnvelope
+      ? compareBuildPlanAuthorizationEnvelope(
+          current.buildProtocol.authorizationEnvelope,
+          current.buildProtocol.plan!,
+        )
+      : null;
     if (
       current.phase !== 'build' ||
       current.status !== 'running' ||
       current.currentWork !== null ||
       !current.buildProtocol ||
       current.buildProtocol.currentAction !== 'plan-evidence' ||
-      observation.evidence.risk.level !== 'high' ||
+      !(
+        observation.evidence.risk.level === 'high' ||
+        authorizationExpansion?.requiresDecision === true
+      ) ||
       observation.evidence.planDigest !== current.buildProtocol.plan?.digest
     ) {
       throw new Error('Plan approval wait does not match the active Plan Evidence');
@@ -1540,7 +1553,8 @@ export function evolveChangeLifecycle(options: {
         ? {
             kind: 'plan-evidence-accepted',
             evidence: observation.evidence,
-            approvedRiskDigest: observation.evidence.riskDecisionDigest,
+            approvedAuthorizationEnvelopeDigest:
+              observation.evidence.authorizationEnvelope.digest,
           }
         : { kind: 'plan-rejected' },
     );

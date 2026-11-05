@@ -42,11 +42,11 @@ describe('lifecycle Cordis Contributors', () => {
     expect(context.lifecycleExtensions.list()).toMatchObject([
       { identity: { id: 'repoctopus.core-checkpoints', kind: 'extension' } },
     ]);
-    expect(context.lifecycleDefinitions.current().identity.compatibleWith).toEqual(['4.8.0']);
+    expect(context.lifecycleDefinitions.current().identity.compatibleWith).toEqual(['4.9.0']);
     expect(
       context.lifecycleValidators.resolve('verify.evidence-gate').identity.compatibleWith,
-    ).toEqual(['4.8.0']);
-    expect(context.lifecycleExtensions.list()[0]?.identity.compatibleWith).toEqual(['4.8.0']);
+    ).toEqual(['4.9.0']);
+    expect(context.lifecycleExtensions.list()[0]?.identity.compatibleWith).toEqual(['4.9.0']);
     for (const snapshot of [
       context.lifecycleDefinitions.snapshot(),
       context.lifecycleValidators.snapshot(),

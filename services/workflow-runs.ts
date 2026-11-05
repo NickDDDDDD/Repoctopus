@@ -81,6 +81,7 @@ import {
   advanceBuildWorkspaceCheckpoint,
   BuildWorkspaceProgressError,
   canRetainSuspendedExecutionBinding,
+  compareBuildPlanAuthorizationEnvelope,
   revalidateSuspendedBuildProtocol,
   validateBuildPlan,
   type BuildStrategy,
@@ -3064,16 +3065,19 @@ export class WorkflowRuns extends Service {
                 compositionCheckpointDigest: current.composition.compositionDigest,
                 reportOwnerId: lifecycle.identity.workspaceId,
               });
-              if (
-                evidence.risk.level === 'high' &&
-                !protocol.approvedRiskDigests.includes(evidence.riskDecisionDigest)
-              ) {
-                const requestId = `plan:${evidence.riskDecisionDigest.slice(-24)}`;
+              const authorizationExpansion = protocol.authorizationEnvelope
+                ? compareBuildPlanAuthorizationEnvelope(protocol.authorizationEnvelope, plan)
+                : { requiresDecision: evidence.risk.level === 'high', expansions: [] as string[] };
+              if (authorizationExpansion.requiresDecision) {
+                const requestId = `plan:${evidence.authorizationEnvelope.digest.slice(-24)}`;
+                const reason = protocol.authorizationEnvelope
+                  ? `Approve expanded Build Plan authorization: ${authorizationExpansion.expansions.join(', ')}`
+                  : `Approve high-risk Build Plan: ${evidence.risk.reasons.join(', ')}`;
                 const awaiting = await this.coordinator.acceptChangeObservation(runId, {
                   kind: 'build-plan-approval-required',
                   evidence,
                   requestId,
-                  reason: `Approve high-risk Build Plan: ${evidence.risk.reasons.join(', ')}`,
+                  reason,
                 });
                 return { ...awaiting, value: await this.coordinator.status(runId) };
               }
