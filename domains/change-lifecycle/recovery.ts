@@ -67,7 +67,7 @@ function reviseDesign(input: {
   if (decision.authority !== 'planning') {
     throw new Error('revise-design requires a planning recovery decision');
   }
-  if (!materialization.inputDigest || materialization.work.inputDigest !== materialization.inputDigest) {
+  if (!materialization.inputDigest || !/^sha256:[a-f0-9]{64}$/u.test(materialization.inputDigest)) {
     throw new Error('revise-design requires the observed planning input digest');
   }
   const invalidationKind = decision.changedIdentities.includes('approval-authority')
@@ -102,8 +102,8 @@ function revisePlan(input: {
     throw new Error('revise-plan requires a Plan recovery decision');
   }
   if (
-    current.phase !== 'build' ||
-    current.status !== 'running' ||
+    !['build', 'verify'].includes(current.phase) ||
+    !['running', 'blocked'].includes(current.status) ||
     !current.buildProtocol ||
     !materialization.invalidation ||
     materialization.work.phase !== 'build' ||
@@ -120,7 +120,7 @@ function revisePlan(input: {
     applyChangeLifecycleTransition({
       definition: input.definition,
       current,
-      transitionId: 'build.check-rejected',
+      transitionId: current.phase === 'verify' ? 'verify.failed' : 'build.check-rejected',
       next: {
         currentWork: materialization.work,
         waitCondition: null,
@@ -235,5 +235,6 @@ export function applyLifecycleRecoveryDecision(input: {
   if (input.decision.action === 'revise-plan') return revisePlan(input);
   if (input.decision.action === 'continue-build') return continueBuild(input);
   if (input.decision.action === 'invalidate-evidence') return invalidateEvidence(input);
+  if (input.decision.action === 'retry-infrastructure') return invalidateEvidence(input);
   throw new Error(`Lifecycle recovery action is not materialized: ${input.decision.action}`);
 }

@@ -38,6 +38,11 @@ import {
   type ChangeLifecycleState,
 } from '../change-lifecycle/transition.js';
 import {
+  applyLifecycleRecoveryDecision,
+  type LifecycleRecoveryMaterialization,
+} from '../change-lifecycle/recovery.js';
+import type { RecoveryDecision } from './recovery.js';
+import {
   projectCommittedContinuation,
   projectLifecycleNextActions,
 } from '../change-lifecycle/continuation.js';
@@ -163,7 +168,7 @@ interface WorkExecutionRetirementFact {
 function retireMismatchedExecution(
   state: RunState,
   snapshot: ChangeLifecycleSnapshot,
-  observation: ChangeLifecycleObservation,
+  observationKind: string,
 ): { state: RunState; fact: WorkExecutionRetirementFact | null } {
   const execution = state.workExecution;
   if (
@@ -184,7 +189,7 @@ function retireMismatchedExecution(
     state: stateWithoutExecution,
     fact: {
       reason: ['workspace-intent-revision-required', 'workspace-intent-revised'].includes(
-        observation.kind,
+        observationKind,
       )
         ? 'workspace-intent-revision'
         : 'lifecycle-work-changed',
@@ -512,7 +517,7 @@ export class WorkflowRunCoordinator {
       if (!reduced.fact) return { value: undefined };
       const timestamp = this.clock().toISOString();
       const { status, ...changeLifecycle } = reduced.snapshot;
-      const retirement = retireMismatchedExecution(state, reduced.snapshot, observation);
+      const retirement = retireMismatchedExecution(state, reduced.snapshot, observation.kind);
       const nextState: RunState = {
         ...retirement.state,
         status,
@@ -565,6 +570,69 @@ export class WorkflowRunCoordinator {
                   ),
                 }
               : {}),
+          },
+        }),
+        value: undefined,
+      };
+    });
+    const diagnostics = await this.flushTelemetry(runId);
+    return { value: await this.status(runId), diagnostics };
+  }
+
+  async acceptRecoveryDecision(
+    runId: string,
+    decision: RecoveryDecision,
+    materialization: LifecycleRecoveryMaterialization,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    await this.recoverChangeLifecycleDefinition(runId);
+    await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
+      if (decision.runId !== runId) throw new Error('Recovery decision Run identity is invalid');
+      const replayed = trajectory.some(
+        (entry) =>
+          entry.type === 'change.lifecycle.transitioned' &&
+          (entry.data.recoveryDecision as { decisionId?: unknown } | undefined)?.decisionId ===
+            decision.decisionId,
+      );
+      if (replayed) return { value: undefined };
+      const current: ChangeLifecycleSnapshot = {
+        ...structuredClone(state.changeLifecycle),
+        status: state.status,
+      };
+      const reduced = applyLifecycleRecoveryDecision({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        current,
+        decision,
+        materialization,
+      });
+      if (!reduced.fact) throw new Error('Recovery decision did not materialize a transition');
+      const timestamp = this.clock().toISOString();
+      const { status, ...changeLifecycle } = reduced.snapshot;
+      const retirement = retireMismatchedExecution(
+        state,
+        reduced.snapshot,
+        'runtime-recovery-decision',
+      );
+      const nextState: RunState = {
+        ...retirement.state,
+        status,
+        changeLifecycle,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId: stableEventId(runId, decision.decisionId),
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'change.lifecycle.transitioned',
+          state: nextState,
+          data: {
+            observationKind: 'runtime-recovery-decision',
+            recoveryDecision: structuredClone(decision),
+            changeLifecycleTransition: reduced.fact,
+            ...(retirement.fact ? { executionRetirement: structuredClone(retirement.fact) } : {}),
           },
         }),
         value: undefined,

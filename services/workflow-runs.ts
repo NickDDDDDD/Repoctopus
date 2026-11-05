@@ -11,6 +11,11 @@ import {
   WorkflowRunCoordinator,
   WorkspaceBindingConflictError,
 } from '../domains/runtime/workflow-runs.js';
+import {
+  classifyRecoveryObservation,
+  type RecoveryObservation,
+} from '../domains/runtime/recovery.js';
+import type { LifecycleRecoveryMaterialization } from '../domains/change-lifecycle/recovery.js';
 import type {
   ResumeView,
   RunStatusView,
@@ -1232,15 +1237,36 @@ export class WorkflowRuns extends Service {
     for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
       await this.coordinator.bindSkill(state.runId, skill);
     }
-    const revised = await this.coordinator.acceptChangeObservation(state.runId, {
-      kind: 'planning-authority-invalidated',
-      expectedRevision: lifecycle.revision,
-      fromPhase: lifecycle.phase as 'build' | 'verify' | 'archive',
-      invalidationKind: observation.invalidationKind,
-      reason: observation.reason,
-      evidenceIds: observation.evidenceDigests,
-      inputDigest: observation.planningDigest,
-      work,
+    const reasonCode =
+      observation.invalidationKind === 'approval-authority'
+        ? 'approval-authority-changed'
+        : observation.observationKind === 'unknown'
+          ? 'validation-observation-changed'
+          : 'design-changed';
+    const revised = await this.classifyAndApplyRecovery({
+      state,
+      lifecycle,
+      observationId: this.recoveryObservationId('planning', {
+        planningDigest: observation.planningDigest,
+        reasonCode: observation.reasonCode,
+        evidenceDigests: observation.evidenceDigests,
+      }),
+      layers: {
+        planning: {
+          status: 'drift',
+          reasonCode,
+          changedIdentities: [
+            observation.invalidationKind === 'approval-authority'
+              ? 'approval-authority'
+              : 'planning-semantic',
+          ],
+        },
+      },
+      materialization: {
+        work,
+        inputDigest: observation.planningDigest,
+        evidenceIds: observation.evidenceDigests,
+      },
     });
     await this.ctx.workExecutionAuthority.recordWorkCreated(state.runId, work);
     return {
@@ -1255,6 +1281,41 @@ export class WorkflowRuns extends Service {
         },
       ],
     };
+  }
+
+  private recoveryObservationId(kind: string, facts: unknown): string {
+    return `recovery-observation:${kind}:${createHash('sha256')
+      .update(canonicalJson(facts))
+      .digest('hex')}`;
+  }
+
+  private async classifyAndApplyRecovery(input: {
+    state: RunState;
+    lifecycle: ChangeLifecycleState;
+    observationId: string;
+    layers: Partial<
+      Pick<RecoveryObservation, 'planning' | 'plan' | 'work' | 'evidence'>
+    >;
+    materialization: LifecycleRecoveryMaterialization;
+  }): Promise<RuntimeResult<RunStatusView>> {
+    const observation: RecoveryObservation = {
+      schemaVersion: 1,
+      runId: input.state.runId,
+      expectedRevision: input.lifecycle.revision,
+      checkEpoch: input.lifecycle.checkEpoch,
+      observationId: input.observationId,
+      planning: input.layers.planning ?? { status: 'current', changedIdentities: [] },
+      plan: input.layers.plan ?? { status: 'current', changedIdentities: [] },
+      work: input.layers.work ?? { status: 'current', changedIdentities: [] },
+      evidence: input.layers.evidence ?? { status: 'current', changedIdentities: [] },
+    };
+    const decision = classifyRecoveryObservation(observation);
+    if (!decision) throw new Error('Recovery observation did not select an invalid authority');
+    return this.coordinator.acceptRecoveryDecision(
+      input.state.runId,
+      decision,
+      input.materialization,
+    );
   }
 
   private async resolveLifecycleWorkSkills(
@@ -2174,6 +2235,37 @@ export class WorkflowRuns extends Service {
             ].includes(classifiedContinuation.reason);
           if (dispatchable) {
             const lifecycle = state.changeLifecycle;
+            if (
+              lifecycle.phase === 'build' &&
+              (classifiedContinuation.reason === 'host-not-executed' ||
+                classifiedContinuation.reason === 'work-failed')
+            ) {
+              const recovered = await this.classifyAndApplyRecovery({
+                state,
+                lifecycle,
+                observationId: this.recoveryObservationId('build-work', {
+                  workId: work.workId,
+                  checkEpoch: work.checkEpoch,
+                  attempt: execution?.attempt ?? 0,
+                  reason: classifiedContinuation.reason,
+                }),
+                layers: {
+                  work: {
+                    status: 'retryable',
+                    reasonCode:
+                      classifiedContinuation.reason === 'work-failed'
+                        ? 'implementation-failed'
+                        : 'execution-interrupted',
+                    changedIdentities: ['execution-checkpoint'],
+                  },
+                },
+                materialization: {
+                  work,
+                  evidenceIds: [`work-attempt:${execution?.attempt ?? 0}`],
+                },
+              });
+              return { ...recovered, value: await this.coordinator.status(runId) };
+            }
             const protocol = lifecycle.buildProtocol;
             if (
               lifecycle.phase === 'build' &&
@@ -3673,11 +3765,30 @@ export class WorkflowRuns extends Service {
                   'repair-work',
                   `build-check:${checkEvidence.evidenceId}`,
                 );
-                const revised = await this.coordinator.acceptChangeObservation(runId, {
-                  kind: 'build-check-rejected',
-                  evidence: checkEvidence,
-                  invalidation,
-                  work: planWork,
+                const revised = await this.classifyAndApplyRecovery({
+                  state: current,
+                  lifecycle,
+                  observationId: this.recoveryObservationId('build-check', {
+                    evidenceId: checkEvidence.evidenceId,
+                    findingIds: checkEvidence.findings.map((finding) => finding.findingId).sort(),
+                    planDigest: plan.digest,
+                  }),
+                  layers: {
+                    plan: {
+                      status: 'drift',
+                      reasonCode: checkEvidence.findings.some(
+                        (finding) => finding.classification === 'planning',
+                      )
+                        ? 'package-not-completable'
+                        : 'plan-constraint-changed',
+                      changedIdentities: ['build-plan'],
+                    },
+                  },
+                  materialization: {
+                    work: planWork,
+                    invalidation,
+                    evidenceIds: [checkEvidence.evidenceId],
+                  },
                 });
                 await this.ctx.workExecutionAuthority.recordWorkCreated(runId, planWork);
                 return { ...revised, value: await this.coordinator.status(runId) };
@@ -4137,6 +4248,68 @@ export class WorkflowRuns extends Service {
     };
   }
 
+  private async applyVerifyRecovery(
+    state: RunState,
+    lifecycle: ChangeLifecycleState,
+    result: 'implementation-failure' | 'evidence-unavailable',
+    attemptId: string,
+    bundleId: string | null,
+    reason: string,
+    continuation: Awaited<ReturnType<WorkflowRuns['createVerifyFailureContinuation']>>,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    const evidenceIds = [attemptId, ...(bundleId ? [bundleId] : [])];
+    if (result === 'implementation-failure') {
+      if (!continuation.invalidation) {
+        throw new Error('Verify implementation failure requires a Plan invalidation');
+      }
+      return this.classifyAndApplyRecovery({
+        state,
+        lifecycle,
+        observationId: this.recoveryObservationId('verify-plan', {
+          attemptId,
+          bundleId,
+          invalidationDigest: continuation.invalidation.digest,
+        }),
+        layers: {
+          plan: {
+            status: 'drift',
+            reasonCode: 'plan-constraint-changed',
+            changedIdentities: ['build-plan'],
+          },
+        },
+        materialization: {
+          work: continuation.work,
+          invalidation: continuation.invalidation,
+          evidenceIds,
+        },
+      });
+    }
+    if (!continuation.verificationInput) {
+      throw new Error('Verify infrastructure retry requires a rebased verification input');
+    }
+    return this.classifyAndApplyRecovery({
+      state,
+      lifecycle,
+      observationId: this.recoveryObservationId('verify-infrastructure', {
+        attemptId,
+        bundleId,
+        verificationInputDigest: continuation.verificationInput.digest,
+      }),
+      layers: {
+        evidence: {
+          status: 'unavailable',
+          reasonCode: 'evidence-provider-unavailable',
+          changedIdentities: [],
+        },
+      },
+      materialization: {
+        work: continuation.work,
+        verificationInput: continuation.verificationInput,
+        evidenceIds,
+      },
+    });
+  }
+
   verifyChange(
     input: VerifyChangeRunInput,
     signal?: AbortSignal,
@@ -4216,18 +4389,15 @@ export class WorkflowRuns extends Service {
           classification,
           signal,
         );
-        const fallback = await this.coordinator.acceptChangeObservation(input.runId, {
-          kind: 'verify-gate-rejected',
-          workId: current.currentWork.workId,
-          inputDigest: current.verificationInput.digest,
-          evidenceInputFingerprint: current.verificationInput.evidenceProfile.fingerprintDigest,
+        const fallback = await this.applyVerifyRecovery(
+          state,
+          lifecycle,
+          classification,
           attemptId,
-          bundleId: null,
+          null,
           reason,
-          result: classification,
-          checkEpoch,
-          ...continuation,
-        });
+          continuation,
+        );
         await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, continuation.work);
         return {
           value: { attemptId, bundleId: null, gate: 'blocked', run: fallback.value },
@@ -4259,11 +4429,15 @@ export class WorkflowRuns extends Service {
           rejected.result,
           signal,
         );
-        const fallback = await this.coordinator.acceptChangeObservation(input.runId, {
-          kind: 'verify-gate-rejected',
-          ...rejected,
-          ...continuation,
-        });
+        const fallback = await this.applyVerifyRecovery(
+          state,
+          lifecycle,
+          rejected.result,
+          attemptId,
+          rejected.bundleId,
+          rejected.reason,
+          continuation,
+        );
         await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, continuation.work);
         return {
           value: {
@@ -4788,18 +4962,26 @@ export class WorkflowRuns extends Service {
           for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
             await this.coordinator.bindSkill(input.runId, skill);
           }
-          const revised = await this.coordinator.acceptChangeObservation(input.runId, {
-            kind: 'planning-authority-invalidated',
-            expectedRevision: lifecycle.revision,
-            fromPhase: 'archive',
-            invalidationKind: 'semantic',
-            work: designWork,
-            inputDigest: planningApproval.snapshot.digest,
-            reason:
-              correctedError instanceof Error
-                ? correctedError.message
-                : 'Approved Change branch no longer matches the live remote branch',
-            evidenceIds: [archive.digest, closure.closureId, planningApproval.snapshot.digest],
+          const revised = await this.classifyAndApplyRecovery({
+            state,
+            lifecycle,
+            observationId: this.recoveryObservationId('archive-planning', {
+              archiveDigest: archive.digest,
+              closureId: closure.closureId,
+              planningDigest: planningApproval.snapshot.digest,
+            }),
+            layers: {
+              planning: {
+                status: 'drift',
+                reasonCode: 'design-changed',
+                changedIdentities: ['planning-semantic'],
+              },
+            },
+            materialization: {
+              work: designWork,
+              inputDigest: planningApproval.snapshot.digest,
+              evidenceIds: [archive.digest, closure.closureId, planningApproval.snapshot.digest],
+            },
           });
           await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, designWork);
           return {

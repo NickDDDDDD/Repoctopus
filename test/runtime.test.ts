@@ -14,6 +14,7 @@ import {
 import { createBuildActionWork } from '../domains/change-lifecycle/build-work.js';
 import { createLifecyclePhaseWork } from '../domains/change-lifecycle/phase-work.js';
 import { BUILTIN_CHANGE_LIFECYCLE_DEFINITION } from '../domains/change-lifecycle/definition.js';
+import { classifyRecoveryObservation } from '../domains/runtime/recovery.js';
 import type { WorkExecutionCheckpoint } from '../domains/work-execution/types.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
 import {
@@ -347,20 +348,31 @@ describe('Repoctopus runtime', () => {
       },
       value: undefined,
     }));
-    const observation = {
-      kind: 'planning-authority-invalidated' as const,
+    const decision = classifyRecoveryObservation({
+      schemaVersion: 1,
+      runId,
       expectedRevision: 4,
-      fromPhase: 'build' as const,
-      invalidationKind: 'semantic' as const,
-      reason: 'Design semantic changed',
+      checkEpoch: 4,
+      observationId: 'planning-observation-runtime-1',
+      planning: {
+        status: 'drift',
+        reasonCode: 'design-changed',
+        changedIdentities: ['planning-semantic'],
+      },
+      plan: { status: 'current', changedIdentities: [] },
+      work: { status: 'current', changedIdentities: [] },
+      evidence: { status: 'current', changedIdentities: [] },
+    });
+    if (!decision) throw new Error('expected recovery decision');
+    const materialization = {
       evidenceIds: [`sha256:${'b'.repeat(64)}`],
       inputDigest: `sha256:${'c'.repeat(64)}` as const,
       work: designWork,
     };
 
     await Promise.all([
-      runtime.acceptChangeObservation(runId, observation),
-      runtime.acceptChangeObservation(runId, observation),
+      runtime.acceptRecoveryDecision(runId, decision, materialization),
+      runtime.acceptRecoveryDecision(runId, decision, materialization),
     ]);
     const trajectory = await store.loadTrajectory(runId);
     const state = await store.loadRun(runId);
@@ -373,9 +385,15 @@ describe('Repoctopus runtime', () => {
       buildProtocol: { status: 'suspended-for-design', currentAction: null },
     });
     expect(trajectory.at(-1)?.data).toMatchObject({
-      observationKind: 'planning-authority-invalidated',
+      observationKind: 'runtime-recovery-decision',
+      recoveryDecision: {
+        decisionId: decision.decisionId,
+        action: 'revise-design',
+        authority: 'planning',
+      },
       changeLifecycleTransition: {
         invalidation: { classification: 'semantic', scope: 'exact' },
+        recovery: { decisionId: decision.decisionId, action: 'revise-design' },
       },
       executionRetirement: {
         retiredWorkId: configureWork.workId,

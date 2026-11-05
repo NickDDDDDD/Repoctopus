@@ -67,7 +67,7 @@
   **Acceptance:** continue-build保留Work与Plan；invalidate-evidence只退役依赖变化输入的检查事实并返回最近合法节点
   **Requirements:** Continue Build 保留当前执行身份, Evidence 失效必须按声明输入面传播
 
-- [ ] 4.4 将WorkflowRuns中的分散条件分支替换为统一事实收集、有序Inspector和CAS应用管线，并用Service测试验证Host不能绕过Runtime决策 <!-- comet-task:e594e6ac-37d7-4f37-9fed-92b1e9e3440f -->
+- [x] 4.4 将WorkflowRuns中的分散条件分支替换为统一事实收集、有序Inspector和CAS应用管线，并用Service测试验证Host不能绕过Runtime决策 <!-- comet-task:e594e6ac-37d7-4f37-9fed-92b1e9e3440f -->
   **Blocked by:** 4.2, 4.3
   **Acceptance:** Build Plan、Execute、Check、Verify和关闭前置观察使用同一Recovery Coordinator；Service不再直接按finding名称选择phase
   **Requirements:** Finding 必须先验证再形成恢复处置, 恢复重放必须收敛到同一 checkpoint
