@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { RunState } from '../domains/engine/types.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import type { WorkExecutionPacket } from '../domains/work-execution/types.js';
 import { WorkExecutionAuthority } from '../services/work-execution-authority.js';
+import { WorkflowRuns } from '../services/workflow-runs.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
@@ -70,6 +71,37 @@ function harness() {
 }
 
 describe('team Skill composition observability', () => {
+  it.each(['build.configure', 'build.plan', 'build.execute', 'build.check'])(
+    'keeps %s Skill resolution failure observational before acceptance',
+    async (workKind) => {
+      const service = Object.create(WorkflowRuns.prototype) as WorkflowRuns;
+      const recordSkillCompositionRejected = vi.fn();
+      Object.defineProperty(service, 'ctx', {
+        value: {
+          teamSkillComposition: {
+            resolveWork: vi.fn().mockRejectedValue(new Error('Skill provider unavailable')),
+          },
+          workExecutionAuthority: { recordSkillCompositionRejected },
+        },
+      });
+      const resolve = (
+        service as unknown as {
+          resolveLifecycleWorkSkills: (
+            kind: string,
+            signal?: AbortSignal,
+            configuredAugmentationNames?: readonly string[],
+            runId?: string,
+          ) => Promise<unknown>;
+        }
+      ).resolveLifecycleWorkSkills.bind(service);
+
+      await expect(resolve(workKind, undefined, [], 'run-1')).rejects.toThrow(
+        /provider unavailable/u,
+      );
+      expect(recordSkillCompositionRejected).not.toHaveBeenCalled();
+    },
+  );
+
   it('persists bounded reject and drift facts against the frozen composition', async () => {
     const { authority, trajectory } = harness();
 

@@ -93,6 +93,8 @@ Action Outcome identity 由不随 CAS 重试变化的 Work + submission + candid
 
 Processor registry 对所有 Build phase 成功结果 fail closed：`ManagedWorkExecutor` 不再维护“哪些 kind 延迟接受”的第二份白名单；未知 Build Work 必须进入 processing-error，等待 Runtime 安装明确处理器，不能退回通用 terminal acceptance。
 
+为下一 Work 解析 Skill 属于候选准备期的只读观察。解析失败可以返回诊断并阻止接受，但不得提前写入 Skill rejection、递增 Run `stateVersion` 或刷新持久遥测；只有 terminal acceptance 与 transition preflight 已完成后，下一 Work 的 Skill binding/消费事实才进入 Run。这样 Skill Provider 故障不会反过来制造 validation base drift。
+
 **备选方案：**让 `ManagedWorkExecutor` 持有四种领域处理逻辑。它虽然靠近 submission，却会把 Host transport、Build domain 和 lifecycle orchestration 混为一层，故拒绝。
 
 ### 4. 拒绝、处理失败与未知执行使用不同状态语义

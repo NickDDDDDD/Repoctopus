@@ -1349,13 +1349,14 @@ export class WorkflowRuns extends Service {
     kind: string,
     signal?: AbortSignal,
     configuredAugmentationNames: readonly string[] = [],
-    runId?: string,
+    _runId?: string,
   ): Promise<{
     actionSkill: SkillUsageSnapshot;
     augmentationSkills: SkillUsageSnapshot[];
     skillComposition: EffectiveWorkSkillComposition;
     effectiveComposition: EffectiveSkillComposition;
   }> {
+    void _runId;
     let resolved;
     try {
       resolved = await this.ctx.teamSkillComposition.resolveWork(
@@ -1366,15 +1367,6 @@ export class WorkflowRuns extends Service {
       );
     } catch (error) {
       signal?.throwIfAborted();
-      if (runId) {
-        const message = error instanceof Error ? error.message : String(error);
-        const reasonCode = /unavailable|resolves .*more than once|provider/iu.test(message)
-          ? 'provider-unavailable'
-          : /contract|capabilit|model-invocable|artifact protocol/iu.test(message)
-            ? 'contract-invalid'
-            : 'composition-invalid';
-        await this.ctx.workExecutionAuthority.recordSkillCompositionRejected(runId, reasonCode);
-      }
       throw error;
     }
     return {

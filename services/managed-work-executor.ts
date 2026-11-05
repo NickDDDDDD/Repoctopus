@@ -81,7 +81,8 @@ function parseHostOutcomeEnvelope(
   const diagnostic =
     raw.schemaVersion !== 1
       ? 'Work Execution Host Outcome schemaVersion must be 1'
-      : !['succeeded', 'failed', 'unknown'].includes(String(raw.status))
+      : typeof raw.status !== 'string' ||
+          !['succeeded', 'failed', 'unknown'].includes(raw.status)
         ? 'Work Execution Host Outcome status is invalid'
         : typeof raw.summary !== 'string' || !raw.summary.trim() || raw.summary.length > 2_048
           ? 'Work Execution Host Outcome summary must contain 1-2048 characters'

@@ -362,22 +362,31 @@ describe('Managed Work Executor Build contract', () => {
     expect(acceptOutcome).not.toHaveBeenCalled();
   });
 
-  it('audits an invalid external Host envelope before rejecting it', async () => {
-    const { input, markHostCompleted, rejectHostSubmission, service } =
-      externalReplayHarness(false);
-    const malformed = { ...input, consumedLayerDigests: null } as unknown as ExternalWorkExecutionOutcome;
+  it.each([
+    ['null consumed layers', { consumedLayerDigests: null }, /bounded digest array/u],
+    ['coercible non-string status', { status: ['succeeded'] }, /status is invalid/u],
+  ] as const)(
+    'audits an external Host envelope with %s before rejecting it',
+    async (_label, mutation, diagnostic) => {
+      const { input, markHostCompleted, rejectHostSubmission, service } =
+        externalReplayHarness(false);
+      const malformed = { ...input, ...mutation } as unknown as ExternalWorkExecutionOutcome;
 
-    await expect(service.acceptExternalOutcome(malformed)).resolves.toMatchObject({
-      hostOutcome: { status: 'failed' },
-      acceptance: null,
-    });
-    expect(markHostCompleted).toHaveBeenCalledOnce();
-    const completion = markHostCompleted.mock.calls[0] as unknown as readonly unknown[];
-    expect(completion[3]).toEqual(malformed);
-    expect(rejectHostSubmission).toHaveBeenCalledWith(
-      expect.objectContaining({ reasonCode: 'output-invalid' }),
-    );
-  });
+      await expect(service.acceptExternalOutcome(malformed)).resolves.toMatchObject({
+        hostOutcome: { status: 'failed' },
+        acceptance: null,
+      });
+      expect(markHostCompleted).toHaveBeenCalledOnce();
+      const completion = markHostCompleted.mock.calls[0] as unknown as readonly unknown[];
+      expect(completion[3]).toEqual(malformed);
+      const rejection = rejectHostSubmission.mock.calls[0]?.[0] as unknown as {
+        reasonCode: string;
+        diagnostic: string;
+      };
+      expect(rejection.reasonCode).toBe('output-invalid');
+      expect(rejection.diagnostic).toMatch(diagnostic);
+    },
+  );
 
   it('persists exactly the external Runner capabilities declared independently of one Work', async () => {
     const packet = frozenPacket();
@@ -794,6 +803,11 @@ describe('Managed Work Executor Build contract', () => {
     [
       'status',
       (outcome: WorkExecutionHostOutcome) => ({ ...outcome, status: 'pending' }),
+      /status is invalid/u,
+    ],
+    [
+      'coercible non-string status',
+      (outcome: WorkExecutionHostOutcome) => ({ ...outcome, status: ['succeeded'] }),
       /status is invalid/u,
     ],
     [
