@@ -3,11 +3,11 @@
 ## Reproducible subject
 
 - Change: `repair-atomic-work-outcome-acceptance`
-- Tested implementation commit: `b7b339d2d41427509cf3da249ba27859153eb167`
+- Tested implementation commit: `8a121d968af43146f9513e7ec0947e5fd6bcab61`
 - Package: `repoctopus@0.1.0`
-- Package content SHA-256: `0810e55152f62c47c99c16e01010342894e5731732515a723e4c058b29b26d4b`
-- Package files: `451`
-- Package content bytes: `4808111`
+- Package content SHA-256: `c4c74826fef0e928e4e3125e74c00b4f39f3a3c4f491a36a6eafe89b3bf4aba8`
+- Package files: `458`
+- Package content bytes: `5584114`
 - Controller: `@rpamis/comet@0.5.1`
 - Platform: Windows x64
 - Node.js: `24.21.0`
@@ -72,10 +72,18 @@ npm run lint
 npm run check:architecture
 npm run check:provenance
   all passed
+
+npm run verify (package-boundary run)
+  complete Vitest matrix passed: 193 test files; 1 skipped
+  971 tests passed; 3 explicitly skipped (974 total)
+  generated, brand, architecture, provenance and Dashboard salvage passed
+  strict OpenSpec passed: 19 items, 0 failed
+  final report gate correctly required rebinding after the composition identity fixture changed
 ```
 
-The complete repository verification is executed after this report establishes the reproducible
-package boundary. Its final result is appended before Verify and Archive complete.
+The composition fixture is part of the npm package, so its corrected digest changed the semantic
+package identity. This report binds the resulting package boundary; a final complete repository
+verification is executed against this binding before Verify and Archive complete.
 
 ## Protocol documentation
 
