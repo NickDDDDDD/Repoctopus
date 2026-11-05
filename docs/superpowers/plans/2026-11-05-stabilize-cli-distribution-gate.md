@@ -2,6 +2,7 @@
 change: stabilize-cli-distribution-gate
 design-doc: openspec/changes/stabilize-cli-distribution-gate/design.md
 base-ref: 04f71da2d204c7dd24106a5b9e0ae027b30ee652
+archived-with: 2026-11-05-stabilize-cli-distribution-gate
 ---
 
 # CLI 分发门禁实施计划

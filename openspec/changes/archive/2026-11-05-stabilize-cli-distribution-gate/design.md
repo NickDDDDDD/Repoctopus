@@ -2,6 +2,8 @@
 comet_change: stabilize-cli-distribution-gate
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-05-stabilize-cli-distribution-gate
+status: final
 ---
 
 # Design
