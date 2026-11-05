@@ -12,8 +12,8 @@
 
 ## 3. POSIX recovered termination 确认
 
-- [ ] 3.1 为 POSIX 终止增加有界确认测试，覆盖确认退出与截止时间内仍存活两种结果，并用相关 Vitest 用例保存 RED 证据 <!-- comet-task:66d6b6dc-2cc1-4008-a1c1-c22dd67bf0ef -->
-- [ ] 3.2 在 `platform/process` 实现条件轮询，使 `terminated` 只在确认退出后返回，超时保持保守结果；用进程树与 managed service recovery 测试验证 GREEN 且不改变 Windows `taskkill` 路径 <!-- comet-task:8ed392c6-4553-4232-8041-a50ba47d8892 -->
+- [x] 3.1 为 POSIX 终止增加有界确认测试，覆盖确认退出与截止时间内仍存活两种结果，并用相关 Vitest 用例保存 RED 证据 <!-- comet-task:66d6b6dc-2cc1-4008-a1c1-c22dd67bf0ef -->
+- [x] 3.2 在 `platform/process` 实现条件轮询，使 `terminated` 只在确认退出后返回，超时保持保守结果；用进程树与 managed service recovery 测试验证 GREEN 且不改变 Windows `taskkill` 路径 <!-- comet-task:8ed392c6-4553-4232-8041-a50ba47d8892 -->
 
 ## 4. 集成验证与 PR 门禁
 

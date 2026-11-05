@@ -6,6 +6,7 @@ import { inspectProcessOwnership } from './process-identity.js';
 const WINDOWS_TASKKILL_ATTEMPT_MS = 1_000;
 const WINDOWS_TASKKILL_ATTEMPTS = 2;
 const POSIX_GROUP_EXIT_WAIT_MS = 1_000;
+const POSIX_EXIT_POLL_MS = 20;
 
 async function waitForPosixGroupExit(pid: number): Promise<boolean> {
   const deadline = Date.now() + POSIX_GROUP_EXIT_WAIT_MS;
@@ -18,7 +19,7 @@ async function waitForPosixGroupExit(pid: number): Promise<boolean> {
       if (code !== 'EPERM') return false;
     }
     if (Date.now() >= deadline) return false;
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await new Promise((resolve) => setTimeout(resolve, POSIX_EXIT_POLL_MS));
   }
 }
 
@@ -98,6 +99,20 @@ export async function terminateProcessTreeConfirmed(child: ChildProcess): Promis
 
 export type RecoveredTermination = 'terminated' | 'not_running' | 'identity_mismatch' | 'unknown';
 
+async function confirmRecoveredPosixTermination(
+  pid: number,
+  expectedIdentity: string,
+): Promise<RecoveredTermination> {
+  const deadline = Date.now() + POSIX_GROUP_EXIT_WAIT_MS;
+  for (;;) {
+    const ownership = await inspectProcessOwnership(pid, expectedIdentity);
+    if (ownership === 'not_running') return 'terminated';
+    if (ownership !== 'matched') return ownership;
+    if (Date.now() >= deadline) return 'unknown';
+    await new Promise((resolve) => setTimeout(resolve, POSIX_EXIT_POLL_MS));
+  }
+}
+
 async function taskkillProcessTree(pid: number): Promise<boolean> {
   const configuredSystemRoot = process.env.SystemRoot ?? process.env.WINDIR;
   const systemRoot =
@@ -153,5 +168,5 @@ export async function terminateRecoveredProcessTree(
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ESRCH') return 'unknown';
   }
-  return 'terminated';
+  return confirmRecoveredPosixTermination(pid, expectedIdentity);
 }
