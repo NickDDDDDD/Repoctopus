@@ -4,17 +4,17 @@ workflow: full
 language: zh-CN
 phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: dd87c6afea786244b60915dd7f037b0109f5ec62
 design_doc: openspec/changes/commit-invalid-host-rejections-atomically/design.md
-plan: null
+plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: comet/commit-invalid-host-rejections-atomically
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
 handoff_hash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 69fddb3e24fe4890aa969c4e62769eb25e6bf4f8e7a934e7ff70e9bd15187f1a
+  hash: c532ce6944f3ffecb9a106dc4abc3d37631491d146d966e544907424a49cbd92
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,7 +56,7 @@ run_checkpoint:
       baseRef: dd87c6afea786244b60915dd7f037b0109f5ec62
       boundBranch: comet/commit-invalid-host-rejections-atomically
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
       checkEpoch: 2
       classicMigration: null
@@ -64,24 +64,24 @@ run_checkpoint:
       contextCompression: off
       createdAt: 2026-11-05
       designDoc: openspec/changes/commit-invalid-host-rejections-atomically/design.md
-      directOverride: null
+      directOverride: false
       handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
       handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
       isolation: worktree
       language: zh-CN
       phase: build
-      plan: null
+      plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 10
+    status: running
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -456,10 +456,502 @@ run_checkpoint:
         status: succeeded
         stepId: full.build.configure
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-5216b51ca6e562b15ade2bebb8a551f34ef107502d636690366e9c96accc5e64
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: commit-invalid-host-rejections-atomically:11
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs:
+            full.build.configure:
+              boundBranch: comet/commit-invalid-host-rejections-atomically
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/commit-invalid-host-rejections-atomically
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+                    handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+                    proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                      Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                      claim、packet 和
+                      invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                      managed-work-execution 规格，无 Spec Patch。
+                    requirementsEvidence:
+                      contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                      ref: openspec/changes/commit-invalid-host-rejections-atomically
+                    sourceEvidence:
+                      contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                      ref: openspec/changes/commit-invalid-host-rejections-atomically
+            full.design.document:
+              designDoc: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+            full.design.evidence:
+              contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+              ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+              handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+              proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                claim、packet 和
+                invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                managed-work-execution 规格，无 Spec Patch。
+              requirementsEvidence:
+                contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+              sourceEvidence:
+                contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+                    ref: openspec/changes/commit-invalid-host-rejections-atomically
+            full.open.evidence:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+              ref: openspec/changes/commit-invalid-host-rejections-atomically
+            full.open.revalidate:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+        inputHash: d38294b3cf9511e84194d3a4c9c1da2fbe11293270252a1b738f7fc21a0ee8fe
+        outcome:
+          actionId: commit-invalid-host-rejections-atomically:11
+          attempt: 1
+          claimToken: portable-5216b51ca6e562b15ade2bebb8a551f34ef107502d636690366e9c96accc5e64
+          inputHash: d38294b3cf9511e84194d3a4c9c1da2fbe11293270252a1b738f7fc21a0ee8fe
+          outcomeId: d3cbb561-88cc-405d-9eb2-7938f14a0cbb
+          output:
+            designEvidence:
+              contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+              ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+            plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+            planEvidence:
+              contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+              ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+            taskRevision: dc397d398bb79d859f25364478e79b52cc87b1c2c3e2b9148e808cec7920735e
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 94536c57dc4593f4203320295b876073b257fdb3bd99dd5fd240629786664e24
+            outcomeId: d3cbb561-88cc-405d-9eb2-7938f14a0cbb
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: commit-invalid-host-rejections-atomically:13
+        input:
+          input:
+            change: commit-invalid-host-rejections-atomically
+            changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+            workspaceBaseline:
+              ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+          outputs:
+            full.build.configure:
+              boundBranch: comet/commit-invalid-host-rejections-atomically
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/commit-invalid-host-rejections-atomically
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+                ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+              plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+              planEvidence:
+                contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+                ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+              taskRevision: dc397d398bb79d859f25364478e79b52cc87b1c2c3e2b9148e808cec7920735e
+            full.build.plan.evidence:
+              contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+              ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+                    handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+                    proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                      Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                      claim、packet 和
+                      invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                      managed-work-execution 规格，无 Spec Patch。
+                    requirementsEvidence:
+                      contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                      ref: openspec/changes/commit-invalid-host-rejections-atomically
+                    sourceEvidence:
+                      contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                      ref: openspec/changes/commit-invalid-host-rejections-atomically
+            full.design.document:
+              designDoc: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+            full.design.evidence:
+              contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+              ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+              handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+              proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                claim、packet 和
+                invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                managed-work-execution 规格，无 Spec Patch。
+              requirementsEvidence:
+                contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+              sourceEvidence:
+                contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+                    ref: openspec/changes/commit-invalid-host-rejections-atomically
+            full.open.evidence:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+              ref: openspec/changes/commit-invalid-host-rejections-atomically
+            full.open.revalidate:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+        inputHash: 9acf80327824f0dac688dfe89375ba42b8ba67a962cd84ee276a95341e8cb458
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: commit-invalid-host-rejections-atomically
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
     actionContexts:
       commit-invalid-host-rejections-atomically:1:
         results: {}
         sequence: 1
+      commit-invalid-host-rejections-atomically:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/commit-invalid-host-rejections-atomically
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/commit-invalid-host-rejections-atomically
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+                    handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+                    proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                      Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                      claim、packet 和
+                      invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                      managed-work-execution 规格，无 Spec Patch。
+                    requirementsEvidence:
+                      contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                      ref: openspec/changes/commit-invalid-host-rejections-atomically
+                    sourceEvidence:
+                      contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                      ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+              ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+              handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+              proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                claim、packet 和
+                invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                managed-work-execution 规格，无 Spec Patch。
+              requirementsEvidence:
+                contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+              sourceEvidence:
+                contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+                    ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+              ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+        sequence: 11
+      commit-invalid-host-rejections-atomically:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/commit-invalid-host-rejections-atomically
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/commit-invalid-host-rejections-atomically
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+                ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+              plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+              planEvidence:
+                contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+                ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+              taskRevision: dc397d398bb79d859f25364478e79b52cc87b1c2c3e2b9148e808cec7920735e
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+              ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+                    handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+                    proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                      Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                      claim、packet 和
+                      invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                      managed-work-execution 规格，无 Spec Patch。
+                    requirementsEvidence:
+                      contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                      ref: openspec/changes/commit-invalid-host-rejections-atomically
+                    sourceEvidence:
+                      contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                      ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+              ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+              handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+              proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                claim、packet 和
+                invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                managed-work-execution 规格，无 Spec Patch。
+              requirementsEvidence:
+                contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+              sourceEvidence:
+                contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+                    ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+              ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+        sequence: 13
       commit-invalid-host-rejections-atomically:4:
         results:
           full.open:
@@ -792,7 +1284,7 @@ run_checkpoint:
       - id: commit-invalid-host-rejections-atomically:10
         stepId: full.build.confirm
         sequence: 10
-        status: pending
+        status: resolved
         proposal:
           input:
             change: commit-invalid-host-rejections-atomically
@@ -902,6 +1394,10 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+        decision:
+          id: classic-build-520ea5fa1e3de338932aebda3189038559335412c4d77f5023e78e4773834a0a-approved
+          choice: approved
+          proposalHash: 520ea5fa1e3de338932aebda3189038559335412c4d77f5023e78e4773834a0a
     evidenceWaits:
       - id: commit-invalid-host-rejections-atomically:2
         stepId: full.open.evidence
@@ -1001,6 +1497,135 @@ run_checkpoint:
           ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
           contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
           submissionId: 58a5b50c-4563-4a82-84f6-14abc6133dc4
+      - id: commit-invalid-host-rejections-atomically:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/commit-invalid-host-rejections-atomically
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/commit-invalid-host-rejections-atomically
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+                ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+              plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+              planEvidence:
+                contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+                ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+              taskRevision: dc397d398bb79d859f25364478e79b52cc87b1c2c3e2b9148e808cec7920735e
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+                    handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+                    proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                      Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                      claim、packet 和
+                      invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                      managed-work-execution 规格，无 Spec Patch。
+                    requirementsEvidence:
+                      contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                      ref: openspec/changes/commit-invalid-host-rejections-atomically
+                    sourceEvidence:
+                      contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                      ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+              ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/commit-invalid-host-rejections-atomically/.comet/handoff/design-context.json
+              handoffHash: 55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583
+              proposal: 一次 guarded Run commit 同时保存可归属的非法 Host 提交、拒绝事实与 awaiting-correction。沿用
+                Comet 0.5.1 同一次 Run mutation 保存拒绝且保留原 Action 的边界。继续使用原
+                claim、packet 和
+                invocation；确保正常失败语义及提交去重不受影响。通过中断恢复验证合法补交只接受一次。使用既有
+                managed-work-execution 规格，无 Spec Patch。
+              requirementsEvidence:
+                contentHash: a8dc10f813c4c85a016263d52d79331f02986db8f04a1bfd7c6e016dc88ce1b1
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+              sourceEvidence:
+                contentHash: 5bd17bf8e2d998abf8280b56719dfcccd8e3c464e12ba3dbcedd0bfcd15c4664
+                ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: commit-invalid-host-rejections-atomically
+                  changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+                  workspaceBaseline:
+                    ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+                    ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+              ref: openspec/changes/commit-invalid-host-rejections-atomically
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
+        receipt:
+          ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+          contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+          submissionId: 780e436d-6bdb-45c1-8099-82ceeaba6f98
     ready: []
     joins: {}
     outputs:
@@ -1014,6 +1639,41 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: commit-invalid-host-rejections-atomically
+              changeDir: openspec/changes/commit-invalid-host-rejections-atomically
+              workspaceBaseline:
+                ref: 4c7833e3-55d7-412d-9309-b7f6c16cfdf9
+            outputs:
+              full.build.configure:
+                boundBranch: comet/commit-invalid-host-rejections-atomically
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: 6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9
+            ref: openspec/changes/commit-invalid-host-rejections-atomically/design.md
+          plan: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+          planEvidence:
+            contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+            ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
+          taskRevision: dc397d398bb79d859f25364478e79b52cc87b1c2c3e2b9148e808cec7920735e
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: dd0b075a2ac68b6cc18bd9543b408bd0b3164636f206a28eccdf0e19ea54e730
+          ref: docs/superpowers/plans/2026-11-06-commit-invalid-host-rejections-atomically.md
       full.design.confirm:
         sequence: 6
         value:
@@ -1094,6 +1754,6 @@ run_checkpoint:
           contentHash: d733419838eac1656a750f459e9d9d198a6f81931452c5b53ca4f494b46f02ee
     children: []
     lineage: []
-  sourceRevision: 15
-  sourceHash: 2e88d58045473394a3a99d96e30242e0caa8af4ba72580b61a1bd11c031cf853
+  sourceRevision: 19
+  sourceHash: bcf7433df34d12d69324e7614b92dbc728e1fe9b088cb168db9165564fcdb497
 check_epoch: 2

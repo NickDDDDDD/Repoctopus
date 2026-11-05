@@ -518,6 +518,33 @@ describe('Work execution Host submission identity', () => {
     expect(submitted.actionOutcome).toBeUndefined();
     expect(submitted.receiptId).toBeUndefined();
 
+    const submittedState = state;
+    const unknown = await authority.markHostUnknown(intent as never, 'Host connection lost');
+    expect(unknown.pendingSubmission).toEqual(submitted.pendingSubmission);
+    await expect(
+      authority.markHostCompleted(intent as never, outcome(), 'malformed-while-unknown', {
+        diagnostic: 'invalid Host result',
+      }),
+    ).rejects.toThrow(/cannot replace an existing Host submission or side effect/u);
+    expect(state.workExecution).toEqual(unknown);
+
+    state = {
+      ...state,
+      workExecution: {
+        ...unknown,
+        pendingSubmission: null,
+        unknownKind: 'external-side-effect',
+      },
+    };
+    const sideEffectState = state;
+    await expect(
+      authority.markHostCompleted(intent as never, outcome(), 'malformed-during-side-effect', {
+        diagnostic: 'invalid Host result',
+      }),
+    ).rejects.toThrow(/cannot replace an existing Host submission or side effect/u);
+    expect(state).toBe(sideEffectState);
+    state = submittedState;
+
     const rejected = await authority.rejectHostSubmission({
       intent: intent as never,
       reasonCode: 'outcome-rejected',

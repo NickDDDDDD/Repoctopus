@@ -1117,7 +1117,7 @@ describe('managed Change execution production composition', () => {
               packetDigest: configurationInvocation.session.packetDigest,
             },
           });
-          await application.context.managedWorkExecutor.acceptExternalOutcome({
+          const correction = {
             schemaVersion: 3,
             runId,
             submissionId: 'corrected-execution-binding-1',
@@ -1130,9 +1130,92 @@ describe('managed Change execution production composition', () => {
               .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
               .map((layer) => layer.digest),
             result: correctedConfigurationResult,
+          } as const;
+          const malformed = {
+            ...correction,
+            submissionId: 'invalid-execution-binding-envelope',
+            status: ['succeeded'] as unknown as 'succeeded',
+          };
+          const runStore = application.context.runStore;
+          const commitGuarded = runStore.commitGuarded.bind(runStore);
+          const interruption = vi
+            .spyOn(runStore, 'commitGuarded')
+            .mockImplementation(async (id, operation) => {
+              let wroteSubmission = false;
+              const value = await commitGuarded(id, async (current) => {
+                const committed = await operation(current);
+                wroteSubmission = committed.event?.data.submissionId === malformed.submissionId;
+                return committed;
+              });
+              if (wroteSubmission) throw new Error('simulated exit after malformed Host commit');
+              return value;
+            });
+          try {
+            await expect(
+              application.context.managedWorkExecutor.acceptExternalOutcome(malformed),
+            ).rejects.toThrow('simulated exit after malformed Host commit');
+          } finally {
+            interruption.mockRestore();
+          }
+          await application.close();
+          application = await bootProjectComposition(productRoot, workspace);
+          await next();
+          const recovered = (await status()).state.workExecution;
+          expect(recovered).toMatchObject({
+            workId: rejectedConfiguration?.workId,
+            intentId: rejectedConfiguration?.intentId,
+            claimToken: rejectedConfiguration?.claimToken,
+            attempt: rejectedConfiguration?.attempt,
+            checkEpoch: rejectedConfiguration?.checkEpoch,
+            hostInvocation: rejectedConfiguration?.hostInvocation,
+            status: 'invoking',
+            continuation: 'awaiting-correction',
+            pendingSubmission: null,
           });
+          expect(recovered?.rejectedSubmissions?.at(-1)).toMatchObject({
+            submissionId: malformed.submissionId,
+            rawPayload: malformed,
+            rejection: { reasonCode: 'output-invalid' },
+          });
+          expect(recovered?.actionOutcome).toBeUndefined();
+          expect(recovered?.receiptId).toBeUndefined();
+          const executor = application.context.managedWorkExecutor;
+          const replayed = await executor.acceptExternalOutcome(malformed);
+          expect(replayed.hostOutcome).toEqual(recovered?.rejectedSubmissions?.at(-1)?.outcome);
+          await expect(
+            executor.acceptExternalOutcome({ ...malformed, summary: 'Changed rejected payload' }),
+          ).rejects.toThrow(/submission identity conflict/u);
+          expect((await status()).state.workExecution?.rejectedSubmissions).toEqual(
+            recovered?.rejectedSubmissions,
+          );
+          await executor.acceptExternalOutcome(correction);
+          await executor.acceptExternalOutcome(correction);
+          const pending = (await status()).state.workExecution?.pendingSubmission;
+          expect(pending?.submissionId).toBe(correction.submissionId);
+          await expect(
+            executor.acceptExternalOutcome({
+              ...malformed,
+              submissionId: 'other-malformed-envelope',
+            }),
+          ).rejects.toThrow(/cannot be recorded from submitted/u);
+          expect((await status()).state.workExecution?.pendingSubmission).toEqual(pending);
         }
         const planned = await next();
+        if (!multiRepository && executionMode === 'autonomous') {
+          const events = await application.context.runStore.loadTrajectory(runId);
+          expect(
+            events
+              .filter((event) => event.data.submissionId === 'invalid-execution-binding-envelope')
+              .map((event) => event.type),
+          ).toEqual(['work.outcome-rejected']);
+          expect(
+            events.filter(
+              (event) =>
+                event.type === 'work.outcome-accepted' &&
+                event.data.submissionId === 'corrected-execution-binding-1',
+            ),
+          ).toHaveLength(1);
+        }
         capture = installHost();
         expect(planned.value.changeLifecycle).toMatchObject({
           phase: 'build',

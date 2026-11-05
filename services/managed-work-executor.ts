@@ -3,12 +3,14 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Service, type Context } from '@deepseek-ai/cordis';
 
 import type {
+  ActionIntent,
   WorkClaimRequest,
   WorkExecutorIdentity,
   WorkOutcomeAcceptance,
 } from '../domains/action/types.js';
 import type {
   ExternalWorkExecutionOutcome,
+  WorkExecutionCheckpoint,
   WorkExecutionHostInvocation,
   WorkExecutionHostIdentity,
   WorkExecutionHostOutcome,
@@ -81,16 +83,14 @@ function parseHostOutcomeEnvelope(
   const diagnostic =
     raw.schemaVersion !== 1
       ? 'Work Execution Host Outcome schemaVersion must be 1'
-      : typeof raw.status !== 'string' ||
-          !['succeeded', 'failed', 'unknown'].includes(raw.status)
+      : typeof raw.status !== 'string' || !['succeeded', 'failed', 'unknown'].includes(raw.status)
         ? 'Work Execution Host Outcome status is invalid'
         : typeof raw.summary !== 'string' || !raw.summary.trim() || raw.summary.length > 2_048
           ? 'Work Execution Host Outcome summary must contain 1-2048 characters'
           : !Array.isArray(consumedLayerDigests) ||
               consumedLayerDigests.length > 256 ||
               consumedLayerDigests.some(
-                (value) =>
-                  typeof value !== 'string' || !/^sha256:[a-f0-9]{64}$/u.test(value),
+                (value) => typeof value !== 'string' || !/^sha256:[a-f0-9]{64}$/u.test(value),
               )
             ? 'Work Execution Host Outcome consumedLayerDigests must be a bounded digest array'
             : new Set(consumedLayerDigests).size !== consumedLayerDigests.length
@@ -144,9 +144,7 @@ function parseExternalHostOutcomeEnvelope(
     consumedLayerDigests: raw.consumedLayerDigests,
     ...(raw.findings === undefined ? {} : { findings: raw.findings }),
     ...(raw.result === undefined ? {} : { result: raw.result }),
-    ...(raw.delegationReceipts === undefined
-      ? {}
-      : { delegationReceipts: raw.delegationReceipts }),
+    ...(raw.delegationReceipts === undefined ? {} : { delegationReceipts: raw.delegationReceipts }),
     completedAt: new Date().toISOString(),
   };
   const parsed = parseHostOutcomeEnvelope(candidate, expected);
@@ -404,19 +402,101 @@ export class ManagedWorkExecutor extends Service {
     super(context, 'managedWorkExecutor');
   }
 
-  private async assertConsumedExecutionSkills(
-    packet: WorkExecutionPacket,
-    outcome: Pick<WorkExecutionHostOutcome, 'status' | 'consumedLayerDigests' | 'invocationId'>,
-  ): Promise<void> {
-    const failure = validateConsumedExecutionSkills(packet, outcome);
-    if (!failure) return;
-    await this.ctx.workExecutionAuthority.recordSkillConsumptionRejected(packet, {
-      ...failure,
-      invocationId: outcome.invocationId,
-    });
-    throw new Error(
-      'Successful Work Execution Host Outcome must prove consumption of every delivered action and augmentation Skill layer',
+  private async completeHostOutcome(input: {
+    intent: ActionIntent;
+    packet: WorkExecutionPacket;
+    invocation: WorkExecutionHostInvocation;
+    parsed: ParsedHostOutcome;
+    submissionId: string;
+    existing?: WorkExecutionCheckpoint;
+  }): Promise<ManagedWorkExecutionResult> {
+    const { intent, packet, invocation, parsed, submissionId, existing } = input;
+    const hostOutcome = parsed.outcome;
+    const incomplete = {
+      executionAcquired: true,
+      invocation,
+      hostOutcome,
+      acceptance: null,
+    } as const;
+    let rejection: { diagnostic: string; rawPayload?: unknown } | undefined;
+    let skillFailure: ReturnType<typeof validateConsumedExecutionSkills> = null;
+    let processingError: UnregisteredBuildWorkOutcomeProcessorError | undefined;
+    if (!parsed.valid) {
+      rejection = { diagnostic: parsed.diagnostic, rawPayload: parsed.rawPayload };
+    } else {
+      try {
+        if (packet.work.phase === 'build' && hostOutcome.status === 'succeeded') {
+          resolveBuildWorkOutcomeProcessor(packet.work.kind);
+        }
+        assertBoundedWorkExecutionFindings(hostOutcome);
+        assertBoundedExecutionResult(hostOutcome);
+        assertManagedDelegation(packet, invocation.host, hostOutcome);
+        skillFailure = validateConsumedExecutionSkills(packet, hostOutcome);
+        if (skillFailure) {
+          rejection = {
+            diagnostic:
+              'Successful Work Execution Host Outcome must prove consumption of every delivered action and augmentation Skill layer',
+          };
+        }
+      } catch (error) {
+        if (error instanceof UnregisteredBuildWorkOutcomeProcessorError) {
+          processingError = error;
+        } else {
+          rejection = { diagnostic: error instanceof Error ? error.message : String(error) };
+        }
+      }
+    }
+
+    const submission =
+      (!rejection && existing) ||
+      (await this.ctx.workExecutionAuthority.markHostCompleted(
+        intent,
+        hostOutcome,
+        submissionId,
+        rejection,
+      ));
+    if (skillFailure) {
+      await this.ctx.workExecutionAuthority.recordSkillConsumptionRejected(packet, {
+        ...skillFailure,
+        invocationId: hostOutcome.invocationId,
+      });
+    }
+    const rejected = submission.rejectedSubmissions?.find(
+      (entry) => entry.submissionId === submissionId,
     );
+    if (rejected || rejection) {
+      return { ...incomplete, hostOutcome: rejected?.outcome ?? hostOutcome };
+    }
+    if (processingError) {
+      await this.ctx.workExecutionAuthority.rejectHostSubmission({
+        intent,
+        reasonCode: 'outcome-processing-error',
+        diagnostic: processingError.message,
+      });
+      return incomplete;
+    }
+    await this.ctx.workExecutionAuthority.recordDelegationFacts(packet, hostOutcome);
+    await this.ctx.workExecutionAuthority.recordSkillFacts(
+      packet,
+      'consumed',
+      hostOutcome.consumedLayerDigests,
+      hostOutcome.invocationId,
+    );
+    if (hostOutcome.status === 'unknown') {
+      await this.ctx.workExecutionAuthority.markHostUnknown(intent, hostOutcome.summary);
+      return incomplete;
+    }
+    if (
+      (packet.work.phase === 'build' && hostOutcome.status === 'succeeded') ||
+      submission.status === 'outcome' ||
+      submission.status === 'validated'
+    ) {
+      return incomplete;
+    }
+    const acceptance = await this.ctx.workDispatcher.acceptOutcome(
+      this.ctx.workDispatcher.outcome(intent, hostOutcome.status, hostOutcome.summary),
+    );
+    return { ...incomplete, acceptance };
   }
 
   async execute(request: WorkClaimRequest): Promise<ManagedWorkExecutionResult> {
@@ -483,65 +563,13 @@ export class ManagedWorkExecutor extends Service {
       );
       throw error;
     }
-    const hostOutcome = parsedHostOutcome.outcome;
-    const submission = await this.ctx.workExecutionAuthority.markHostCompleted(
-      claim.intent,
-      hostOutcome,
-      randomUUID(),
-      parsedHostOutcome.valid ? undefined : parsedHostOutcome.rawPayload,
-    );
-    if (!parsedHostOutcome.valid) {
-      await this.ctx.workExecutionAuthority.rejectHostSubmission({
-        intent: claim.intent,
-        reasonCode: 'output-invalid',
-        diagnostic: parsedHostOutcome.diagnostic,
-      });
-      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
-    }
-    try {
-      if (claim.packet.work.phase === 'build' && hostOutcome.status === 'succeeded') {
-        resolveBuildWorkOutcomeProcessor(claim.packet.work.kind);
-      }
-      assertBoundedWorkExecutionFindings(hostOutcome);
-      assertBoundedExecutionResult(hostOutcome);
-      assertManagedDelegation(claim.packet, host.identity, hostOutcome);
-      await this.assertConsumedExecutionSkills(claim.packet, hostOutcome);
-    } catch (error) {
-      await this.ctx.workExecutionAuthority.rejectHostSubmission({
-        intent: claim.intent,
-        reasonCode:
-          error instanceof UnregisteredBuildWorkOutcomeProcessorError
-            ? 'outcome-processing-error'
-            : 'output-invalid',
-        diagnostic: error instanceof Error ? error.message : String(error),
-      });
-      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
-    }
-    await this.ctx.workExecutionAuthority.recordDelegationFacts(claim.packet, hostOutcome);
-    await this.ctx.workExecutionAuthority.recordSkillFacts(
-      claim.packet,
-      'consumed',
-      hostOutcome.consumedLayerDigests,
-      hostOutcome.invocationId,
-    );
-    if (hostOutcome.status === 'unknown') {
-      await this.ctx.workExecutionAuthority.markHostUnknown(claim.intent, hostOutcome.summary);
-      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
-    }
-    if (
-      (claim.packet.work.phase === 'build' && hostOutcome.status === 'succeeded') ||
-      submission.status === 'outcome'
-    ) {
-      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
-    }
-    const acceptance = await this.ctx.workDispatcher.acceptOutcome(
-      this.ctx.workDispatcher.outcome(
-        claim.intent,
-        hostOutcome.status === 'succeeded' ? 'succeeded' : 'failed',
-        hostOutcome.summary,
-      ),
-    );
-    return { executionAcquired: true, invocation, hostOutcome, acceptance };
+    return this.completeHostOutcome({
+      intent: claim.intent,
+      packet: claim.packet,
+      invocation,
+      parsed: parsedHostOutcome,
+      submissionId: randomUUID(),
+    });
   }
 
   async claimExternal(request: WorkClaimRequest): Promise<ExternalWorkClaimResult> {
@@ -606,76 +634,30 @@ export class ManagedWorkExecutor extends Service {
       packetDigest: invocation.packet.packetDigest,
     });
     const proposedOutcome = parsedHostOutcome.outcome;
-    const persistedOutcome = state.workExecution?.hostOutcome;
+    const submissionId =
+      typeof input.submissionId === 'string' && input.submissionId.trim()
+        ? input.submissionId.trim()
+        : `invalid:${createHash('sha256').update(canonicalJson(rawInput)).digest('hex').slice(0, 32)}`;
+    const checkpoint = state.workExecution;
+    const replayingRejected = checkpoint?.rejectedSubmissions?.some(
+      (entry) => entry.submissionId === submissionId,
+    );
+    const persistedOutcome = replayingRejected ? undefined : checkpoint?.hostOutcome;
     if (persistedOutcome && !sameHostOutcome(persistedOutcome, proposedOutcome)) {
       throw new Error('External Host Outcome conflicts with the persisted invocation result');
     }
-    const hostOutcome = persistedOutcome ?? proposedOutcome;
-    const packet = await this.ctx.workDispatcher.resumeClaim(input.runId);
-    const submissionId =
-      typeof input.submissionId === 'string' && input.submissionId.trim()
-        ? input.submissionId
-        : `invalid:${createHash('sha256').update(canonicalJson(rawInput)).digest('hex').slice(0, 32)}`;
-    const submission = persistedOutcome
-      ? state.workExecution
-      : await this.ctx.workExecutionAuthority.markHostCompleted(
-          intent,
-          hostOutcome,
-          submissionId,
-          parsedHostOutcome.valid ? undefined : parsedHostOutcome.rawPayload,
-        );
-    if (!parsedHostOutcome.valid) {
-      await this.ctx.workExecutionAuthority.rejectHostSubmission({
-        intent,
-        reasonCode: 'output-invalid',
-        diagnostic: parsedHostOutcome.diagnostic,
-      });
-      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
-    }
-    try {
-      if (packet.packet.work.phase === 'build' && hostOutcome.status === 'succeeded') {
-        resolveBuildWorkOutcomeProcessor(packet.packet.work.kind);
-      }
-      assertBoundedWorkExecutionFindings(hostOutcome);
-      assertBoundedExecutionResult(hostOutcome);
-      assertManagedDelegation(packet.packet, invocation.host, hostOutcome);
-      await this.assertConsumedExecutionSkills(packet.packet, hostOutcome);
-    } catch (error) {
-      await this.ctx.workExecutionAuthority.rejectHostSubmission({
-        intent,
-        reasonCode:
-          error instanceof UnregisteredBuildWorkOutcomeProcessorError
-            ? 'outcome-processing-error'
-            : 'output-invalid',
-        diagnostic: error instanceof Error ? error.message : String(error),
-      });
-      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
-    }
-    await this.ctx.workExecutionAuthority.recordDelegationFacts(packet.packet, hostOutcome);
-    await this.ctx.workExecutionAuthority.recordSkillFacts(
-      packet.packet,
-      'consumed',
-      hostOutcome.consumedLayerDigests,
-      hostOutcome.invocationId,
-    );
-    if (hostOutcome.status === 'unknown') {
-      await this.ctx.workExecutionAuthority.markHostUnknown(intent, input.summary);
-      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
-    }
-    if (
-      (packet.packet.work.phase === 'build' && hostOutcome.status === 'succeeded') ||
-      submission.status === 'outcome'
-    ) {
-      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
-    }
-    const acceptance = await this.ctx.workDispatcher.acceptOutcome(
-      this.ctx.workDispatcher.outcome(
-        intent,
-        hostOutcome.status === 'succeeded' ? 'succeeded' : 'failed',
-        input.summary,
-      ),
-    );
-    return { executionAcquired: true, invocation, hostOutcome, acceptance };
+    const { packet } = await this.ctx.workDispatcher.resumeClaim(input.runId);
+    return this.completeHostOutcome({
+      intent,
+      packet,
+      invocation,
+      parsed:
+        persistedOutcome && parsedHostOutcome.valid
+          ? { valid: true, outcome: persistedOutcome }
+          : parsedHostOutcome,
+      submissionId,
+      ...(persistedOutcome && checkpoint ? { existing: checkpoint } : {}),
+    });
   }
 
   async reconcile(runId: string): Promise<ManagedWorkExecutionResult | null> {
@@ -712,62 +694,14 @@ export class ManagedWorkExecutor extends Service {
       );
       throw error;
     }
-    const outcome = parsedHostOutcome.outcome;
-    const packet = await this.ctx.workDispatcher.resumeClaim(runId);
-    const submission = await this.ctx.workExecutionAuthority.markHostCompleted(
+    const { packet } = await this.ctx.workDispatcher.resumeClaim(runId);
+    return this.completeHostOutcome({
       intent,
-      outcome,
-      `reconcile:${invocation.invocationId}`,
-      parsedHostOutcome.valid ? undefined : parsedHostOutcome.rawPayload,
-    );
-    if (!parsedHostOutcome.valid) {
-      await this.ctx.workExecutionAuthority.rejectHostSubmission({
-        intent,
-        reasonCode: 'output-invalid',
-        diagnostic: parsedHostOutcome.diagnostic,
-      });
-      return { executionAcquired: true, invocation, hostOutcome: outcome, acceptance: null };
-    }
-    try {
-      if (packet.packet.work.phase === 'build' && outcome.status === 'succeeded') {
-        resolveBuildWorkOutcomeProcessor(packet.packet.work.kind);
-      }
-      assertBoundedWorkExecutionFindings(outcome);
-      assertBoundedExecutionResult(outcome);
-      assertManagedDelegation(packet.packet, invocation.host, outcome);
-      await this.assertConsumedExecutionSkills(packet.packet, outcome);
-    } catch (error) {
-      await this.ctx.workExecutionAuthority.rejectHostSubmission({
-        intent,
-        reasonCode:
-          error instanceof UnregisteredBuildWorkOutcomeProcessorError
-            ? 'outcome-processing-error'
-            : 'output-invalid',
-        diagnostic: error instanceof Error ? error.message : String(error),
-      });
-      return { executionAcquired: true, invocation, hostOutcome: outcome, acceptance: null };
-    }
-    await this.ctx.workExecutionAuthority.recordDelegationFacts(packet.packet, outcome);
-    await this.ctx.workExecutionAuthority.recordSkillFacts(
-      packet.packet,
-      'consumed',
-      outcome.consumedLayerDigests,
-      outcome.invocationId,
-    );
-    if (
-      (packet.packet.work.phase === 'build' && outcome.status === 'succeeded') ||
-      submission.status === 'outcome'
-    ) {
-      return { executionAcquired: true, invocation, hostOutcome: outcome, acceptance: null };
-    }
-    const acceptance = await this.ctx.workDispatcher.acceptOutcome(
-      this.ctx.workDispatcher.outcome(
-        intent,
-        outcome.status === 'succeeded' ? 'succeeded' : 'failed',
-        outcome.summary,
-      ),
-    );
-    return { executionAcquired: true, invocation, hostOutcome: outcome, acceptance };
+      packet,
+      invocation,
+      parsed: parsedHostOutcome,
+      submissionId: `reconcile:${invocation.invocationId}`,
+    });
   }
 
   private externalHostIdentity(

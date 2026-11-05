@@ -1105,9 +1105,9 @@ export class WorkExecutionAuthority extends Service {
     intent: ActionIntent,
     outcome: WorkExecutionHostOutcome,
     submissionId: string,
-    rawPayload?: unknown,
+    rejection?: { diagnostic: string; rawPayload?: unknown },
   ): Promise<WorkExecutionCheckpoint> {
-    const candidate = createWorkExecutionSubmission(submissionId, outcome, rawPayload);
+    const candidate = createWorkExecutionSubmission(submissionId, outcome, rejection?.rawPayload);
     const result = await this.ctx.runStore.commitGuarded(intent.runId, ({ state, trajectory }) => {
       const current = state.workExecution;
       if (!current || current.intentId !== intent.intentId) {
@@ -1125,6 +1125,66 @@ export class WorkExecutionAuthority extends Service {
         throw new Error(`Work submission cannot be recorded from ${current.status}`);
       }
       const timestamp = new Date().toISOString();
+      if (rejection) {
+        if (
+          current.pendingSubmission ||
+          current.acceptedSubmission ||
+          current.hostOutcome ||
+          current.unknownKind === 'external-side-effect'
+        ) {
+          throw new Error(
+            'Work rejection cannot replace an existing Host submission or side effect',
+          );
+        }
+        if (
+          current.hostInvocation?.invocationId !== outcome.invocationId ||
+          current.hostInvocation.host.id !== outcome.hostId ||
+          current.packet.packetDigest !== outcome.packetDigest
+        ) {
+          throw new Error('Work rejection does not match the authoritative Host invocation');
+        }
+        const rejectedSubmissions = appendRejectedWorkExecutionSubmission(
+          current.rejectedSubmissions ?? [],
+          candidate,
+          { reasonCode: 'output-invalid', diagnostic: rejection.diagnostic, rejectedAt: timestamp },
+        );
+        const checkpoint: WorkExecutionCheckpoint = {
+          ...current,
+          status: 'invoking',
+          continuation: 'awaiting-correction',
+          pendingSubmission: null,
+          rejectedSubmissions,
+          updatedAt: timestamp,
+        };
+        const nextState: RunState = {
+          ...state,
+          workExecution: checkpoint,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: executionEvent({
+            state: nextState,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: 'work.outcome-rejected',
+            identity: [current.workId, String(current.attempt), candidate.submissionId],
+            data: {
+              workId: current.workId,
+              workKind: state.changeLifecycle?.currentWork?.kind ?? 'unknown',
+              attempt: current.attempt,
+              checkEpoch: current.checkEpoch,
+              submissionId: candidate.submissionId,
+              submissionDigest: candidate.payloadDigest,
+              reasonCode: 'output-invalid',
+              diagnostic: rejection.diagnostic,
+              continuation: 'awaiting-correction',
+            },
+          }),
+          value: structuredClone(checkpoint),
+        };
+      }
       const checkpoint: WorkExecutionCheckpoint = {
         ...current,
         status: 'submitted',
@@ -1163,6 +1223,10 @@ export class WorkExecutionAuthority extends Service {
         value: structuredClone(checkpoint),
       };
     });
+    if (rejection) {
+      await this.flushTelemetry(intent.runId);
+      return result;
+    }
     await this.recordEvent(
       intent.runId,
       intent.intentId,
@@ -1236,16 +1300,11 @@ export class WorkExecutionAuthority extends Service {
         const eventType = processingError
           ? 'work.outcome-processing-error'
           : 'work.outcome-rejected';
-        const eventIdentity = [
-          current.workId,
-          String(current.attempt),
-          submission.submissionId,
-        ];
+        const eventIdentity = [current.workId, String(current.attempt), submission.submissionId];
         if (
           processingError &&
           trajectory.some(
-            (event) =>
-              event.eventId === digest(state.runId, eventType, ...eventIdentity),
+            (event) => event.eventId === digest(state.runId, eventType, ...eventIdentity),
           )
         ) {
           return { value: structuredClone(current) };
