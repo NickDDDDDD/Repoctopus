@@ -381,7 +381,7 @@ describe('managed Change execution production composition', () => {
                   invalidConfigurationSubmitted = true;
                   return {
                     ...candidate,
-                    strategyDigest: `sha256:${'0'.repeat(64)}` as `sha256:${string}`,
+                    strategyDigest: `sha256:${'0'.repeat(64)}`,
                   };
                 }
                 return candidate;
@@ -1182,18 +1182,24 @@ describe('managed Change execution production composition', () => {
         }
         await restartApplication();
         let planInvocation: (typeof capture.invocations)[number] | undefined;
+        let planDispatchResult: RuntimeResult<RunStatusView> | undefined;
         for (let step = 0; step < 6 && !planInvocation; step += 1) {
           const advanced = await next();
-          expect(advanced.value.changeLifecycle?.waitCondition).toBeNull();
           planInvocation = capture.invocations.findLast(
             (entry) => entry.packet.work.kind === 'build.plan',
           );
+          if (planInvocation) {
+            planDispatchResult = advanced;
+          } else {
+            expect(advanced.value.changeLifecycle?.waitCondition).toBeNull();
+          }
         }
+        if (!planDispatchResult) throw new Error('Build Plan was not dispatched');
         invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
         capture.dispose();
         await application.close();
         application = await bootProjectComposition(productRoot, workspace);
-        let afterPlanValidation = await next();
+        let afterPlanValidation = planDispatchResult;
         if (protectedWriteRepositories) {
           const rejected = await status();
           expect(rejected.state.workExecution).toMatchObject({
@@ -1563,12 +1569,10 @@ describe('managed Change execution production composition', () => {
           await next();
           afterAllPackages = await next();
         } else {
-          await next();
           const firstPackageResult = await next();
           afterFirstPackage = firstPackageResult.value;
           afterFirstPackageDiagnostics = firstPackageResult.diagnostics;
           await restartApplication();
-          await next();
           afterAllPackages = await next();
         }
         for (
@@ -1596,14 +1600,17 @@ describe('managed Change execution production composition', () => {
         });
         await restartApplication();
         let checkInvocation: (typeof capture.invocations)[number] | undefined;
+        let checkDispatchResult: RuntimeResult<RunStatusView> | undefined;
         for (let step = 0; step < 8 && !checkInvocation; step += 1) {
           const advanced = await next();
           expect(advanced.value.changeLifecycle?.waitCondition).toBeNull();
           checkInvocation = capture.invocations.findLast(
             (entry) => entry.packet.work.kind === 'build.check',
           );
+          if (checkInvocation) checkDispatchResult = advanced;
         }
-        let afterCheck = await next();
+        if (!checkDispatchResult) throw new Error('Build Check was not dispatched');
+        let afterCheck = checkDispatchResult;
         if (!multiRepository && executionMode === 'autonomous') {
           if (!checkInvocation || !correctedCheckResult) {
             throw new Error('missing captured Build Check correction context');

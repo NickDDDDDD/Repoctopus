@@ -98,6 +98,7 @@ describe('Work execution Host submission identity', () => {
     } as unknown as RunState;
     let trajectory: TrajectoryEvent[] = [];
     const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    const recordEvent = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(authority, 'ctx', {
       value: {
         runStore: {
@@ -118,7 +119,7 @@ describe('Work execution Host submission identity', () => {
       },
     });
     Object.defineProperties(authority, {
-      recordEvent: { value: vi.fn().mockResolvedValue(undefined) },
+      recordEvent: { value: recordEvent },
       loadAuthoritativePacket: {
         value: vi.fn().mockResolvedValue({ packet: { context: { layers: [] } } }),
       },
@@ -167,6 +168,7 @@ describe('Work execution Host submission identity', () => {
       authority,
       getState: () => state,
       intent,
+      recordEvent,
       receipt,
       validation: disposition.validation,
     };
@@ -192,6 +194,35 @@ describe('Work execution Host submission identity', () => {
       validatorId: fixture.validation.validatorId,
       validationRecord: { validationDigest: fixture.validation.validationDigest },
     });
+    expect(fixture.recordEvent).toHaveBeenCalledWith(
+      fixture.intent.runId,
+      fixture.intent.intentId,
+      'work.outcome-accepted',
+      expect.objectContaining({
+        workKind: 'build.configure',
+        validatorId: 'build.binding-valid',
+        result: 'succeeded',
+      }),
+      expect.any(Array),
+    );
+    expect(fixture.recordEvent).toHaveBeenCalledWith(
+      fixture.intent.runId,
+      fixture.intent.intentId,
+      'validator.completed',
+      expect.objectContaining({
+        workKind: 'build.configure',
+        validatorId: 'build.binding-valid',
+        result: 'accepted',
+        continuation: 'execute',
+      }),
+      expect.any(Array),
+    );
+    expect(
+      fixture.recordEvent.mock.calls.filter((call) => call[2] === 'work.outcome-accepted'),
+    ).toHaveLength(1);
+    expect(
+      fixture.recordEvent.mock.calls.filter((call) => call[2] === 'validator.completed'),
+    ).toHaveLength(1);
   });
 
   it('fails closed when stable Work input drifts before validated terminal commit', async () => {
@@ -246,6 +277,27 @@ describe('Work execution Host submission identity', () => {
       pendingSubmission: { submissionId: fixture.validation.submissionId },
     });
     expect(fixture.getState().workExecution?.acceptedSubmission).toBeUndefined();
+  });
+
+  it('fails closed when the validation record digest is tampered before commit', async () => {
+    const fixture = validatedAcceptanceHarness();
+
+    await expect(
+      fixture.authority.bindValidatedOutcome({
+        intent: fixture.intent,
+        outcome: fixture.actionOutcome,
+        receipt: fixture.receipt,
+        validation: {
+          ...fixture.validation,
+          validationDigest: digest('0'),
+        },
+      }),
+    ).rejects.toThrow(/validation record.*corrupt/iu);
+    expect(fixture.getState().workExecution).toMatchObject({
+      status: 'submitted',
+      pendingSubmission: { submissionId: fixture.validation.submissionId },
+    });
+    expect(fixture.getState().workExecution?.validationRecord).toBeUndefined();
   });
 
   it('uses a Runtime submission identity and a payload digest independent of receipt time', () => {

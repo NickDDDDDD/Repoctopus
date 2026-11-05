@@ -39,7 +39,10 @@ import {
   workExecutionChainIdentity,
   workExecutionRetryPolicy,
 } from '../domains/work-execution/retry-policy.js';
-import { buildWorkCandidateDigest } from '../domains/work-execution/acceptance.js';
+import {
+  buildWorkCandidateDigest,
+  buildWorkValidationDigest,
+} from '../domains/work-execution/acceptance.js';
 
 export type SkillHumanCorrectionKind =
   | 'changes-requested'
@@ -1406,6 +1409,10 @@ export class WorkExecutionAuthority extends Service {
       ({ state, trajectory }) => {
         const current = state.workExecution;
         const work = state.changeLifecycle?.currentWork;
+        const { validationDigest, ...validationIdentity } = input.validation;
+        if (buildWorkValidationDigest(validationIdentity) !== validationDigest) {
+          throw new Error('Validated Work acceptance validation record is corrupt');
+        }
         if (!current || current.intentId !== input.intent.intentId) {
           throw new Error('Validated Work acceptance does not match the authoritative Run claim');
         }

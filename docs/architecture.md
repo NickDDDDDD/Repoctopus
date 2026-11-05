@@ -92,7 +92,7 @@ Execution Binding 只回答“哪个 Host 可以在哪些 checkout/branch 上执
 1. ActionStore 先保存不可变 Intent，按 Run 隔离的 packet store 再原子保存完整且深冻结的 packet；Run CAS 最后把唯一 attempt 和 packet identity 绑定为权威 claim。CAS 前的孤立内容没有执行权。
 2. WorkContextAssembler 只在首次 claim 装配 packet；恢复按 checkpoint identity 读取同一 packet，绝不从已变化的 Skill、Provider 或规划文件重组。Run 同步记录 `context-delivered`，正文不进入 Run、日志或遥测。
 3. 唯一 `WorkExecutionHost` preflight 后取得短生命周期 session，通过 Guard 受保护的 repository/process/specification/Git/platform 操作执行当前 Action。
-4. Outcome 必须匹配 invocation、Host、packet 和原 claim；Action Receipt 保存后仍须由当前 Work 的 Validator 接受，Agent 不能直接改 phase。
+4. Outcome 必须匹配 invocation、Host、packet 和原 claim；成功的 Build Host 回报先成为 pending submission。Runtime 按注册的 Configure、Plan、Execute、Check 处理器完成 result schema、领域语义与当前 Validator 后，使用一个 guarded commit 重新核对 Work、claim、attempt、checkEpoch、invocation、submission、candidate 和 stable input digest，并一次绑定 accepted submission、Host/Action Outcome、Receipt 与 validation record。Action Store 中提前幂等保存但未被该 commit 绑定的 Receipt 没有执行权，Agent 不能直接改 phase。
 5. Runtime 在同一响应选择下一 continuation。`auto_transition` 只决定客户端是否继续拉取下一项，不改变 transition 合法性。
 
 Build phase 在该执行链内固定使用 `Configure → Plan → Plan Evidence → Execute → Check`。Configure 冻结 Runner 提供的多仓 checkout binding、Host 能力、`autonomous|subagent-driven-development`、`tdd|direct` 和 standard review；Runtime 不创建 checkout。Plan 把 OpenSpec Tasks 投影为有界 Work Packages，但不建立第二套规格或 ticket 权威。Plan Evidence 可以按 definition 风险策略自动接受或建立 Human Decision。Execute 只处理当前 package；Check 汇总全部 completion、Task acceptance、测试、独立 review 和仓库事实后，Runtime 才能进入 Verify。

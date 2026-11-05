@@ -51,6 +51,12 @@ function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
 }
 
+export function buildWorkValidationDigest(
+  record: Omit<WorkOutcomeValidationRecord, 'validationDigest'>,
+): `sha256:${string}` {
+  return sha256(record);
+}
+
 export function isBuildWorkKind(kind: string): kind is BuildWorkKind {
   return BUILD_WORK_KINDS.includes(kind as BuildWorkKind);
 }
@@ -121,7 +127,7 @@ export function createAcceptedBuildWorkOutcome(input: {
     kind: 'accepted',
     validation: {
       ...recordWithoutDigest,
-      validationDigest: sha256(recordWithoutDigest),
+      validationDigest: buildWorkValidationDigest(recordWithoutDigest),
     },
   };
 }

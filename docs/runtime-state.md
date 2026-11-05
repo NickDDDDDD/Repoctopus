@@ -60,6 +60,8 @@ Design 返工会把现有 Build Protocol 标记为 `suspended-for-design`。该�
 
 claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle transition 都写入同一个 Run aggregate 和追加式 trajectory。ActionStore 和 packet store 是先写的不可变内容库，不拥有 attempt 或下一步；CAS 前的孤立内容没有执行权。恢复始终按 checkpoint identity 读取原 packet，不重新读取当前 Skill、Provider 指令或 OpenSpec 文件。恢复分类遵循以下边界：未调用可重交同一 attempt；重复 pull 返回同一 claim、packet 和 invocation，只补做尚未完成的 context-delivery checkpoint；活跃 Host 返回 `wait`；未知副作用返回 `reconcile`；可证明未执行才创建下一 attempt；已有 Outcome 从 Validator 继续；Human Decision 保留原 proposal hash。旧 checkpoint 或缺失/损坏 packet 明确进入 `migration-required` 或 `content-missing-or-corrupt`，不得用当前内容重组兼容。
 
+成功的 Build submission 不等于 accepted Outcome。内嵌 Host、外部 `work-outcome` 和 reconcile 得到的已知 candidate 都先写 `submitted`，再由同一 acceptance coordinator 按 Work 注册表处理。结构或领域错误清除 pending、追加有界 rejected history 并保持原 Work、claim、attempt、checkEpoch、invocation 和 packet 为 `awaiting-correction`；修正版使用新的 submission ID。Provider、Store 或 Validator 暂时失败保留原 pending submission，不追加 rejected history。只有 guarded validated commit 能建立 `validated` checkpoint；进程若在该 commit 后、lifecycle observation 前退出，下一次 pull 直接消费 validation record，不重调 Host。
+
 进程外 Host 的 Outcome 必须同时匹配原 invocation ID、Host ID 和 packet digest。受保护操作还必须携带活动 session identity；跨 Run/Work、过期 session、越仓或越 scope 操作全部 fail closed。Repoctopus 不是 OS 沙箱，旁路文件变化只能成为 drift，不能形成受管 Receipt。
 
 ## Build 内部协议

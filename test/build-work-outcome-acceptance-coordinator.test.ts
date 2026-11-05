@@ -48,11 +48,11 @@ function harness(resultKind: 'execution-binding-candidate' | 'build-plan-candida
   const outcomeFactory = vi.fn().mockReturnValue({ outcomeId: 'outcome-1' });
   const acceptValidatedOutcome = vi.fn().mockResolvedValue({ validation: 'accepted' });
   const coordinator = new BuildWorkOutcomeAcceptanceCoordinator({
-    workExecutionAuthority: { loadIntent, rejectHostSubmission } as never,
+    workExecutionAuthority: { loadIntent, rejectHostSubmission },
     workDispatcher: {
       outcome: outcomeFactory,
       acceptValidatedOutcome,
-    } as never,
+    },
   });
   return {
     acceptValidatedOutcome,
@@ -98,13 +98,22 @@ describe('Build Work Outcome acceptance coordinator', () => {
       validatorId: 'build.binding-valid',
     });
 
-    expect(fixture.acceptValidatedOutcome).toHaveBeenCalledWith({
+    expect(fixture.acceptValidatedOutcome).toHaveBeenCalledOnce();
+    const accepted = fixture.acceptValidatedOutcome.mock.calls[0]?.[0] as {
+      outcome: { outcomeId: string };
+      validation: {
+        stableInputDigest: string;
+        submissionId: string;
+        workKind: string;
+      };
+    };
+    expect(accepted).toMatchObject({
       outcome: { outcomeId: 'outcome-1' },
-      validation: expect.objectContaining({
+      validation: {
         workKind: 'build.configure',
         submissionId: 'submission-1',
         stableInputDigest: fixture.work.inputDigest,
-      }),
+      },
     });
     expect(fixture.rejectHostSubmission).not.toHaveBeenCalled();
   });
