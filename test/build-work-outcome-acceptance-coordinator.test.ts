@@ -10,10 +10,49 @@ import { BuildWorkOutcomeAcceptanceCoordinator } from '../services/build-work-ou
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
-function harness(resultKind: 'execution-binding-candidate' | 'build-plan-candidate') {
+const candidates = {
+  'build.configure': {
+    schemaVersion: 1 as const,
+    kind: 'execution-binding-candidate' as const,
+    strategyDigest: digest('4'),
+  },
+  'build.plan': {
+    schemaVersion: 1 as const,
+    kind: 'build-plan-candidate' as const,
+    packages: [],
+  },
+  'build.execute': {
+    schemaVersion: 1 as const,
+    kind: 'build-package-completion' as const,
+    packageId: 'package-1',
+    acceptanceEvidenceIds: ['acceptance-1'],
+    testEvidenceIds: ['test-1'],
+    implementationDigest: digest('5'),
+  },
+  'build.check': {
+    schemaVersion: 1 as const,
+    kind: 'build-check-candidate' as const,
+    completedPackageIds: ['package-1'],
+    acceptedTaskIds: ['task-1'],
+    testEvidenceIds: ['test-1'],
+    implementationDigest: digest('5'),
+    reviewerExecutionId: 'reviewer-1',
+  },
+};
+
+type BuildWorkKind = keyof typeof candidates;
+
+const invalidCandidates = {
+  'build.configure': candidates['build.plan'],
+  'build.plan': candidates['build.execute'],
+  'build.execute': candidates['build.check'],
+  'build.check': candidates['build.configure'],
+};
+
+function harness(workKind: BuildWorkKind, validShape = true) {
   const work = {
-    kind: 'build.configure',
-    workId: 'build.configure:1',
+    kind: workKind,
+    workId: `${workKind}:1`,
     checkEpoch: 4,
     inputDigest: digest('1'),
     validatorProfile: { id: 'build.binding-valid' },
@@ -26,14 +65,7 @@ function harness(resultKind: 'execution-binding-candidate' | 'build-plan-candida
     status: 'succeeded',
     summary: 'candidate',
     consumedLayerDigests: [],
-    result:
-      resultKind === 'execution-binding-candidate'
-        ? {
-            schemaVersion: 1 as const,
-            kind: resultKind,
-            strategyDigest: digest('4'),
-          }
-        : { schemaVersion: 1 as const, kind: resultKind, packages: [] },
+    result: validShape ? candidates[workKind] : invalidCandidates[workKind],
     completedAt: '2026-11-05T00:00:00.000Z',
   } satisfies WorkExecutionHostOutcome;
   const submission = createWorkExecutionSubmission('submission-1', outcome);
@@ -66,26 +98,44 @@ function harness(resultKind: 'execution-binding-candidate' | 'build-plan-candida
 }
 
 describe('Build Work Outcome acceptance coordinator', () => {
-  it('keeps shape rejection before terminal binding', async () => {
-    const fixture = harness('build-plan-candidate');
-    const inspected = fixture.coordinator.inspect({
-      work: fixture.work,
-      execution: fixture.execution,
-    });
-    expect(inspected).toMatchObject({
+  it.each(Object.keys(candidates) as BuildWorkKind[])(
+    'keeps %s shape rejection before terminal binding',
+    async (workKind) => {
+      const fixture = harness(workKind, false);
+      const inspected = fixture.coordinator.inspect({
+        work: fixture.work,
+        execution: fixture.execution,
+      });
+      expect(inspected).toMatchObject({
+        kind: 'correctable-rejection',
+        reasonCode: 'output-invalid',
+      });
+      if (!inspected || inspected.kind === 'candidate' || inspected.kind === 'accepted') {
+        throw new Error('Expected a correctable rejection');
+      }
+      await fixture.coordinator.reject('run-1', inspected);
+      expect(fixture.rejectHostSubmission).toHaveBeenCalledOnce();
+      expect(fixture.acceptValidatedOutcome).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(
+    (Object.keys(candidates) as BuildWorkKind[]).flatMap((workKind) =>
+      ['domain', 'validator'].map((stage) => ({ stage, workKind })),
+    ),
+  )('keeps $workKind $stage rejection before terminal binding', async ({ stage, workKind }) => {
+    const fixture = harness(workKind);
+    await fixture.coordinator.reject('run-1', {
       kind: 'correctable-rejection',
-      reasonCode: 'output-invalid',
+      reasonCode: 'outcome-rejected',
+      diagnostic: `${stage} rejected`,
     });
-    if (!inspected || inspected.kind === 'candidate' || inspected.kind === 'accepted') {
-      throw new Error('Expected a correctable rejection');
-    }
-    await fixture.coordinator.reject('run-1', inspected);
     expect(fixture.rejectHostSubmission).toHaveBeenCalledOnce();
     expect(fixture.acceptValidatedOutcome).not.toHaveBeenCalled();
   });
 
   it('binds one validated candidate through the guarded acceptance entry', async () => {
-    const fixture = harness('execution-binding-candidate');
+    const fixture = harness('build.configure');
     const inspected = fixture.coordinator.inspect({
       work: fixture.work,
       execution: fixture.execution,
@@ -96,6 +146,7 @@ describe('Build Work Outcome acceptance coordinator', () => {
       runId: 'run-1',
       candidate: inspected,
       validatorId: 'build.binding-valid',
+      assertTransitionFeasible: vi.fn(),
     });
 
     expect(fixture.acceptValidatedOutcome).toHaveBeenCalledOnce();
@@ -117,4 +168,28 @@ describe('Build Work Outcome acceptance coordinator', () => {
     });
     expect(fixture.rejectHostSubmission).not.toHaveBeenCalled();
   });
+
+  it.each(Object.keys(candidates) as BuildWorkKind[])(
+    'does not terminalize %s when transition preflight is infeasible',
+    async (workKind) => {
+      const fixture = harness(workKind);
+      const inspected = fixture.coordinator.inspect({
+        work: fixture.work,
+        execution: fixture.execution,
+      });
+      if (!inspected || inspected.kind !== 'candidate') throw new Error('Expected candidate');
+
+      await expect(
+        fixture.coordinator.accept({
+          runId: 'run-1',
+          candidate: inspected,
+          validatorId: fixture.work.validatorProfile.id,
+          assertTransitionFeasible: () => {
+            throw new Error('transition infeasible');
+          },
+        }),
+      ).rejects.toThrow(/transition infeasible/u);
+      expect(fixture.acceptValidatedOutcome).not.toHaveBeenCalled();
+    },
+  );
 });

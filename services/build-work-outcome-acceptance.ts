@@ -79,10 +79,12 @@ export class BuildWorkOutcomeAcceptanceCoordinator {
     candidate: PendingBuildWorkCandidate;
     validatorId: string;
     stableInputDigest?: `sha256:${string}`;
+    assertTransitionFeasible: () => void;
   }): Promise<WorkOutcomeAcceptance> {
     if (input.candidate.terminalized) {
       throw new Error('Build Work Outcome candidate is already terminalized');
     }
+    input.assertTransitionFeasible();
     const disposition = createAcceptedBuildWorkOutcome({
       work: input.candidate.work,
       submission: input.candidate.submission,

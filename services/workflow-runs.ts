@@ -14,6 +14,7 @@ import {
 import {
   classifyRecoveryObservation,
   type RecoveryObservation,
+  type RecoveryDecision,
 } from '../domains/runtime/recovery.js';
 import type { LifecycleRecoveryMaterialization } from '../domains/change-lifecycle/transition.js';
 import type {
@@ -1302,6 +1303,10 @@ export class WorkflowRuns extends Service {
     observationId: string;
     layers: Partial<Pick<RecoveryObservation, 'planning' | 'plan' | 'work' | 'evidence'>>;
     materialization: LifecycleRecoveryMaterialization;
+    beforeApply?: (
+      decision: RecoveryDecision,
+      materialization: LifecycleRecoveryMaterialization,
+    ) => Promise<void> | void;
   }): Promise<RuntimeResult<RunStatusView>> {
     const observation: RecoveryObservation = {
       schemaVersion: 1,
@@ -1316,6 +1321,7 @@ export class WorkflowRuns extends Service {
     };
     const decision = classifyRecoveryObservation(observation);
     if (!decision) throw new Error('Recovery observation did not select an invalid authority');
+    await input.beforeApply?.(decision, input.materialization);
     return this.coordinator.acceptRecoveryDecision(
       input.state.runId,
       decision,
@@ -2880,13 +2886,6 @@ export class WorkflowRuns extends Service {
                   ],
                 };
               }
-              if (!configureCandidate.terminalized) {
-                await this.buildOutcomeAcceptance.accept({
-                  runId,
-                  candidate: configureCandidate,
-                  validatorId: configureCandidate.work.validatorProfile.id,
-                });
-              }
               const planSkills = await this.resolveLifecycleWorkSkills(
                 'build.plan',
                 signal,
@@ -2916,14 +2915,32 @@ export class WorkflowRuns extends Service {
                   planningDigest: lifecycle.planningDigest,
                 },
               });
+              const bindingObservation = {
+                kind: 'build-binding-accepted' as const,
+                binding: executionBinding,
+                work: planWork,
+              };
               for (const skill of [planSkills.actionSkill, ...planSkills.augmentationSkills]) {
                 await this.coordinator.bindSkill(runId, skill);
               }
-              const accepted = await this.coordinator.acceptChangeObservation(runId, {
-                kind: 'build-binding-accepted',
-                binding: executionBinding,
-                work: planWork,
-              });
+              if (!configureCandidate.terminalized) {
+                await this.buildOutcomeAcceptance.accept({
+                  runId,
+                  candidate: configureCandidate,
+                  validatorId: configureCandidate.work.validatorProfile.id,
+                  assertTransitionFeasible: () =>
+                    this.coordinator.assertChangeObservationFeasible(
+                      current,
+                      bindingObservation,
+                    ),
+                });
+              } else {
+                this.coordinator.assertChangeObservationFeasible(current, bindingObservation);
+              }
+              const accepted = await this.coordinator.acceptChangeObservation(
+                runId,
+                bindingObservation,
+              );
               await this.ctx.workExecutionAuthority.recordWorkCreated(runId, planWork);
               return { ...accepted, value: await this.coordinator.status(runId) };
             }
@@ -3085,16 +3102,6 @@ export class WorkflowRuns extends Service {
                   `Build Plan Validator rejected: ${validation.diagnostic}`,
                 );
               }
-              if (planExecution?.status === 'submitted') {
-                if (planCandidate?.kind !== 'candidate') {
-                  throw new Error('Build Plan submission has no acceptance candidate');
-                }
-                await this.buildOutcomeAcceptance.accept({
-                  runId,
-                  candidate: planCandidate,
-                  validatorId: lifecycle.currentWork.validatorProfile.id,
-                });
-              }
               if (!protocol.workspaceCheckpoint) {
                 throw new Error('Build Plan requires a Runtime-owned workspace checkpoint');
               }
@@ -3105,11 +3112,29 @@ export class WorkflowRuns extends Service {
                 protocol.workspaceCheckpoint,
                 [workspaceRepositoryId],
               );
-              const planned = await this.coordinator.acceptChangeObservation(runId, {
+              const planObservation = {
                 kind: 'build-plan-accepted',
                 plan,
                 workspaceCheckpoint: planWorkspaceCheckpoint,
-              });
+              } as const;
+              if (planExecution?.status === 'submitted') {
+                if (planCandidate?.kind !== 'candidate') {
+                  throw new Error('Build Plan submission has no acceptance candidate');
+                }
+                await this.buildOutcomeAcceptance.accept({
+                  runId,
+                  candidate: planCandidate,
+                  validatorId: lifecycle.currentWork.validatorProfile.id,
+                  assertTransitionFeasible: () =>
+                    this.coordinator.assertChangeObservationFeasible(current, planObservation),
+                });
+              } else {
+                this.coordinator.assertChangeObservationFeasible(current, planObservation);
+              }
+              const planned = await this.coordinator.acceptChangeObservation(
+                runId,
+                planObservation,
+              );
               const evidence = createPlanEvidence({
                 plan,
                 strategy,
@@ -3429,16 +3454,6 @@ export class WorkflowRuns extends Service {
                   ],
                 };
               }
-              if (executeExecution?.status === 'submitted') {
-                if (executeCandidate?.kind !== 'candidate') {
-                  throw new Error('Build Execute submission has no acceptance candidate');
-                }
-                await this.buildOutcomeAcceptance.accept({
-                  runId,
-                  candidate: executeCandidate,
-                  validatorId: lifecycle.currentWork.validatorProfile.id,
-                });
-              }
               const completedIds = new Set([
                 ...protocol.packageCompletions.map((entry) => entry.packageId),
                 completion.packageId,
@@ -3529,13 +3544,31 @@ export class WorkflowRuns extends Service {
               for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
                 await this.coordinator.bindSkill(runId, skill);
               }
-              const completed = await this.coordinator.acceptChangeObservation(runId, {
+              const packageObservation = {
                 kind: 'build-package-completed',
                 completion,
                 workspaceCheckpoint,
                 work: nextWork,
                 tasks: projectedTasks.tasks,
-              });
+              } as const;
+              if (executeExecution?.status === 'submitted') {
+                if (executeCandidate?.kind !== 'candidate') {
+                  throw new Error('Build Execute submission has no acceptance candidate');
+                }
+                await this.buildOutcomeAcceptance.accept({
+                  runId,
+                  candidate: executeCandidate,
+                  validatorId: lifecycle.currentWork.validatorProfile.id,
+                  assertTransitionFeasible: () =>
+                    this.coordinator.assertChangeObservationFeasible(current, packageObservation),
+                });
+              } else {
+                this.coordinator.assertChangeObservationFeasible(current, packageObservation);
+              }
+              const completed = await this.coordinator.acceptChangeObservation(
+                runId,
+                packageObservation,
+              );
               await this.ctx.workExecutionAuthority.recordWorkCreated(runId, nextWork);
               return { ...completed, value: await this.coordinator.status(runId) };
             }
@@ -3843,16 +3876,6 @@ export class WorkflowRuns extends Service {
                   `Build Check Validator rejected: ${validation.diagnostic}`,
                 );
               }
-              if (checkExecution?.status === 'submitted') {
-                if (checkCandidate?.kind !== 'candidate') {
-                  throw new Error('Build Check submission has no acceptance candidate');
-                }
-                await this.buildOutcomeAcceptance.accept({
-                  runId,
-                  candidate: checkCandidate,
-                  validatorId: lifecycle.currentWork.validatorProfile.id,
-                });
-              }
               if (!checkEvidence.accepted) {
                 const affectedPackageIds = [
                   ...new Set(checkEvidence.findings.flatMap((finding) => finding.packageIds)),
@@ -3932,6 +3955,30 @@ export class WorkflowRuns extends Service {
                     invalidation,
                     evidenceIds: [checkEvidence.evidenceId],
                   },
+                  beforeApply: async (decision, materialization) => {
+                    if (checkExecution?.status === 'submitted') {
+                      if (checkCandidate?.kind !== 'candidate') {
+                        throw new Error('Build Check submission has no acceptance candidate');
+                      }
+                      await this.buildOutcomeAcceptance.accept({
+                        runId,
+                        candidate: checkCandidate,
+                        validatorId: lifecycle.currentWork!.validatorProfile.id,
+                        assertTransitionFeasible: () =>
+                          this.coordinator.assertRecoveryDecisionFeasible(
+                            current,
+                            decision,
+                            materialization,
+                          ),
+                      });
+                    } else {
+                      this.coordinator.assertRecoveryDecisionFeasible(
+                        current,
+                        decision,
+                        materialization,
+                      );
+                    }
+                  },
                 });
                 await this.ctx.workExecutionAuthority.recordWorkCreated(runId, planWork);
                 return { ...revised, value: await this.coordinator.status(runId) };
@@ -3983,12 +4030,30 @@ export class WorkflowRuns extends Service {
               for (const skill of [verifySkills.actionSkill, ...verifySkills.augmentationSkills]) {
                 await this.coordinator.bindSkill(runId, skill);
               }
-              const checked = await this.coordinator.acceptChangeObservation(runId, {
+              const checkObservation = {
                 kind: 'build-check-accepted',
                 evidence: checkEvidence,
                 verificationInput,
                 work: verifyWork,
-              });
+              } as const;
+              if (checkExecution?.status === 'submitted') {
+                if (checkCandidate?.kind !== 'candidate') {
+                  throw new Error('Build Check submission has no acceptance candidate');
+                }
+                await this.buildOutcomeAcceptance.accept({
+                  runId,
+                  candidate: checkCandidate,
+                  validatorId: lifecycle.currentWork.validatorProfile.id,
+                  assertTransitionFeasible: () =>
+                    this.coordinator.assertChangeObservationFeasible(current, checkObservation),
+                });
+              } else {
+                this.coordinator.assertChangeObservationFeasible(current, checkObservation);
+              }
+              const checked = await this.coordinator.acceptChangeObservation(
+                runId,
+                checkObservation,
+              );
               await this.ctx.workExecutionAuthority.recordWorkCreated(runId, verifyWork);
               return { ...checked, value: await this.coordinator.status(runId) };
             }

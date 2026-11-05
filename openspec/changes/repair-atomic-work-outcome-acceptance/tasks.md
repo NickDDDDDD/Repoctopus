@@ -17,26 +17,26 @@
 
 ## 3. 交付 Configure 垂直切片
 
-- [ ] 3.1 实现 Configure 处理器，对 `execution-binding-candidate` 的 schema、Strategy identity/digest、仓库集合和 Binding 构造约束做完整校验；运行 Configure 领域测试覆盖结构错误与语义错误。 <!-- comet-task:0a5a1863-1c9d-4bc3-afd4-e03157f1c3a1 -->
-- [ ] 3.2 将内嵌与外部 Configure submission 接到统一 coordinator，删除 `rejectInvalidConfigureResult()` 和 Configure 的早期 `acceptOutcome()`；运行 `rg -n "rejectInvalidConfigureResult" services` 无结果且 executor 单元测试通过。 <!-- comet-task:2d837b06-5f0c-4c0e-93a8-c546e8e11b52 -->
-- [ ] 3.3 让 Round 8 错 digest 候选返回结构化 `awaiting-correction`，保持同一 Work/claim/attempt/checkEpoch/invocation/packet；运行新增 E2E 验证全部 identity 未变化。 <!-- comet-task:a4824a9d-3ab9-48a3-ac74-9091f20643d1 -->
-- [ ] 3.4 使用新 submission ID 提交修正版 Configure candidate，并验证它被接受后只创建一个 Binding、一个 Plan Work；运行 `npx vitest run test/managed-change-execution.e2e.test.ts` 通过。 <!-- comet-task:85d81440-31df-4e60-aa6e-b1c27edb4b14 -->
-- [ ] 3.5 覆盖 terminal commit 前中断和接受后、lifecycle observation 前中断的冷启动恢复；运行 `npx vitest run test/work-execution-recovery.test.ts test/managed-change-execution.e2e.test.ts` 验证不重调 Host、不新增 Work/attempt。 <!-- comet-task:3ca04124-3601-493f-8978-8dd5f3cdbc52 -->
+- [x] 3.1 实现 Configure 处理器，对 `execution-binding-candidate` 的 schema、Strategy identity/digest、仓库集合和 Binding 构造约束做完整校验；运行 Configure 领域测试覆盖结构错误与语义错误。 <!-- comet-task:0a5a1863-1c9d-4bc3-afd4-e03157f1c3a1 -->
+- [x] 3.2 将内嵌与外部 Configure submission 接到统一 coordinator，删除 `rejectInvalidConfigureResult()` 和 Configure 的早期 `acceptOutcome()`；运行 `rg -n "rejectInvalidConfigureResult" services` 无结果且 executor 单元测试通过。 <!-- comet-task:2d837b06-5f0c-4c0e-93a8-c546e8e11b52 -->
+- [x] 3.3 让 Round 8 错 digest 候选返回结构化 `awaiting-correction`，保持同一 Work/claim/attempt/checkEpoch/invocation/packet；运行新增 E2E 验证全部 identity 未变化。 <!-- comet-task:a4824a9d-3ab9-48a3-ac74-9091f20643d1 -->
+- [x] 3.4 使用新 submission ID 提交修正版 Configure candidate，并验证它被接受后只创建一个 Binding、一个 Plan Work；运行 `npx vitest run test/managed-change-execution.e2e.test.ts` 通过。 <!-- comet-task:85d81440-31df-4e60-aa6e-b1c27edb4b14 -->
+- [x] 3.5 覆盖 terminal commit 前中断和接受后、lifecycle observation 前中断的冷启动恢复；运行 `npx vitest run test/work-execution-recovery.test.ts test/managed-change-execution.e2e.test.ts` 验证不重调 Host、不新增 Work/attempt。 <!-- comet-task:3ca04124-3601-493f-8978-8dd5f3cdbc52 -->
 
 ## 4. 统一其余 Build Work
 
-- [ ] 4.1 将 Plan 的 candidate 构造、Plan Evidence、领域校验与 lifecycle validator 接到统一处理器，并删除 executor 的 Plan 延迟名单分支；运行 Plan rejection/correction 与受保护分支 E2E 通过。 <!-- comet-task:36fc536f-cbb7-4fe2-afa6-784a48a4649a -->
-- [ ] 4.2 将 Execute package completion 接到统一处理器，同时保留 workspace checkpoint 和外部副作用 journal 的两阶段消费；运行 Execute 中断点与恢复测试验证不会重复提交或重复 Host 副作用。 <!-- comet-task:604296b0-f4c2-45bb-8897-19cbaf5d4f6e -->
-- [ ] 4.3 将 Check candidate/evidence 接到统一处理器，并删除 executor 的 Check 延迟名单分支；运行 Check rejection/correction 与 Verify 输入测试通过。 <!-- comet-task:10d9ff1b-2853-4ce9-ba69-43fe8b5f1693 -->
-- [ ] 4.4 对 Configure、Plan、Execute、Check 增加 schema、语义、validator、transition infeasible 矩阵测试；运行相关 Build protocol 与 managed execution 测试，验证所有拒绝均发生在 terminal acceptance 前。 <!-- comet-task:0f8560bc-e38f-47e5-b680-920305c3f88a -->
-- [ ] 4.5 删除所有按 Work kind 决定“立即/延迟 accept”的生产条件，改为注册表穷尽检查；运行 `rg -n "build\.plan.*build\.check|build\.check.*build\.plan" services/managed-work-executor.ts` 无旧名单结果并通过 `npm run typecheck`。 <!-- comet-task:346693b7-c742-455b-acd0-32fcd0a3b38a -->
+- [x] 4.1 将 Plan 的 candidate 构造、Plan Evidence、领域校验与 lifecycle validator 接到统一处理器，并删除 executor 的 Plan 延迟名单分支；运行 Plan rejection/correction 与受保护分支 E2E 通过。 <!-- comet-task:36fc536f-cbb7-4fe2-afa6-784a48a4649a -->
+- [x] 4.2 将 Execute package completion 接到统一处理器，同时保留 workspace checkpoint 和外部副作用 journal 的两阶段消费；运行 Execute 中断点与恢复测试验证不会重复提交或重复 Host 副作用。 <!-- comet-task:604296b0-f4c2-45bb-8897-19cbaf5d4f6e -->
+- [x] 4.3 将 Check candidate/evidence 接到统一处理器，并删除 executor 的 Check 延迟名单分支；运行 Check rejection/correction 与 Verify 输入测试通过。 <!-- comet-task:10d9ff1b-2853-4ce9-ba69-43fe8b5f1693 -->
+- [x] 4.4 对 Configure、Plan、Execute、Check 增加 schema、语义、validator、transition infeasible 矩阵测试；运行相关 Build protocol 与 managed execution 测试，验证所有拒绝均发生在 terminal acceptance 前。 <!-- comet-task:0f8560bc-e38f-47e5-b680-920305c3f88a -->
+- [x] 4.5 删除所有按 Work kind 决定“立即/延迟 accept”的生产条件，改为注册表穷尽检查；运行 `rg -n "build\.plan.*build\.check|build\.check.*build\.plan" services/managed-work-executor.ts` 无旧名单结果并通过 `npm run typecheck`。 <!-- comet-task:346693b7-c742-455b-acd0-32fcd0a3b38a -->
 
 ## 5. 入口、恢复与遥测一致性
 
-- [ ] 5.1 让内嵌 Host、外部 `work-outcome` 和已知 candidate 的恢复入口共享同一 coordinator；运行外部 CLI 与 managed execution E2E 验证 disposition、diagnostic 和 identity 一致。 <!-- comet-task:d4cd08b5-1622-4d46-af30-d119df92d3d0 -->
-- [ ] 5.2 验证 pending/rejected candidate 不会进入 `not-executed` reconciliation，只有未知执行结果使用 reconciliation；运行 `npx vitest run test/work-execution-recovery.test.ts` 通过。 <!-- comet-task:8e1feeef-c6fb-434c-8351-4145260e64cb -->
-- [ ] 5.3 为 accepted、rejected、processing error、validator 和 continuation 补齐一次性 OpenTelemetry 断言，禁止 payload/自由文本成为 label；运行 `npx vitest run test/telemetry-mapping.test.ts` 通过。 <!-- comet-task:e49aeb06-6b69-41a7-ab16-e9a2d0d0e9ce -->
-- [ ] 5.4 验证多仓 Project Snapshot、Strategy、Binding、Plan 和 workspace checkpoint digest 在恢复前后保持绑定；运行多仓 managed execution E2E 通过。 <!-- comet-task:b6480ce8-12b7-49fb-a14a-bae722d75d9b -->
+- [x] 5.1 让内嵌 Host、外部 `work-outcome` 和已知 candidate 的恢复入口共享同一 coordinator；运行外部 CLI 与 managed execution E2E 验证 disposition、diagnostic 和 identity 一致。 <!-- comet-task:d4cd08b5-1622-4d46-af30-d119df92d3d0 -->
+- [x] 5.2 验证 pending/rejected candidate 不会进入 `not-executed` reconciliation，只有未知执行结果使用 reconciliation；运行 `npx vitest run test/work-execution-recovery.test.ts` 通过。 <!-- comet-task:8e1feeef-c6fb-434c-8351-4145260e64cb -->
+- [x] 5.3 为 accepted、rejected、processing error、validator 和 continuation 补齐一次性 OpenTelemetry 断言，禁止 payload/自由文本成为 label；运行 `npx vitest run test/telemetry-mapping.test.ts` 通过。 <!-- comet-task:e49aeb06-6b69-41a7-ab16-e9a2d0d0e9ce -->
+- [x] 5.4 验证多仓 Project Snapshot、Strategy、Binding、Plan 和 workspace checkpoint digest 在恢复前后保持绑定；运行多仓 managed execution E2E 通过。 <!-- comet-task:b6480ce8-12b7-49fb-a14a-bae722d75d9b -->
 - [ ] 5.5 更新正式 Runtime/Host 协议文档，说明统一接受顺序、纠正 identity 与 processing/reconciliation 区别；运行 `npm run check:managed-execution-report` 和文档内命令验证通过。 <!-- comet-task:83f2fd84-791f-404a-ae5d-48e55d753c5a -->
 
 ## 6. 综合验收

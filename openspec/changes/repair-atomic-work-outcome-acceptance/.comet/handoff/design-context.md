@@ -3,7 +3,7 @@
 - Change: repair-atomic-work-outcome-acceptance
 - Phase: design
 - Mode: compact
-- Context hash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+- Context hash: 98a1406197d52ee716464b17a4d8eb2cf546ac67f80391bc1332d7c3ddf7df18
 
 Generated-by: comet-handoff.sh
 Task hash policy: task-content-v1. Read tasks.md for live completion; excerpts are design-time context.
@@ -55,17 +55,24 @@ OpenSpec remains the canonical capability spec. This handoff is a deterministic,
 - 不放宽 result schema、领域 Validator、Skill consumption、能力、Workspace 或生命周期 Guard。
 - 不自动修改 Host candidate，不重放可能有副作用的 Host 调用，不为 candidate correction 创建新 Work 或新 attempt。
 - 不兼容修复前已经错误终态化的预发布 Run，不新增 generation、daemon 或第二套 Outcome 权威。
+
 ```
 
 ## openspec/changes/repair-atomic-work-outcome-acceptance/design.md
 
 - Source: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
-- Lines: 1-146
-- SHA256: d30b70eb4744c3e80655b9a2912e28764e4127c4979ee90426ebf4ef7c4a2a45
+- Lines: 1-164
+- SHA256: 16e2f7d1bf5b96ef9282e0ba3bb6e9fde32356cf5dc191d27eaa1489d5047615
 
 [TRUNCATED]
 
-````md
+```md
+---
+comet_change: repair-atomic-work-outcome-acceptance
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
@@ -118,7 +125,6 @@ Host submission
        correctable        -> reject submission / awaiting-correction
        processing-error   -> retain pending submission / retry processing
 ```
-````
 
 `ManagedWorkExecutor` 只负责执行或接收 Host payload、验证传输层约束、记录 submission 与执行事实，然后调用同一个候选处理入口。它不再用 `['build.plan', 'build.check']` 或 Configure 特判决定哪些 Work 可以晚接受。
 
@@ -141,14 +147,8 @@ Comet 可以在单个 Runtime mutation 中完成 validator 与 transition；Repo
 
 ### 3. Work-specific 处理器拥有完整接受条件
 
-统一管线只规定顺序和 disposition，各 Build Work 的领域处理器保持明确职责：
 
-- `build.configure`：要求 `execution-binding-candidate`，核对 schema、Strategy identity/digest、仓库集合、checkout/worktree 与 Binding 构造约束；只有能形成当前 Strategy 的合法 `ExecutionBinding` 才可接受。
-- `build.plan`：要求 `build-plan-candidate`，构造 Plan/Evidence，校验 Task、write scope、受保护分支、composition、Binding、报告 owner 与风险决策约束。
-- `build.execute`：要求 package completion，先校验 package identity、Task revision、接受证据、workspace checkpoint 和当前 Plan invalidation，再执行既有两阶段消费；不得因统一入口而合并或跳过副作用检查点。
-- `build.check`：要求 Check candidate/evidence，校验 package completion、测试与 review evidence、当前 head/checkpoint、Plan 和 Strategy 绑定，再形成 Verify 输入。
-
-````
+```
 
 Full source: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
 
@@ -163,18 +163,18 @@ Full source: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
 
 ## 1. 锁定缺陷与接受边界
 
-- [ ] 1.1 在 `managed-change-execution.e2e` 增加 Round 8 回归：`build.configure` 返回正确 result kind 但错误 `strategyDigest`，并验证当前实现会错误终态化；运行 `npx vitest run test/managed-change-execution.e2e.test.ts` 可观察到新增断言先失败。 <!-- comet-task:f1487e82-4388-447a-8b35-6a00092072f8 -->
-- [ ] 1.2 在 authority/executor 单元测试中固化 terminal acceptance 前不得出现 accepted submission、Host Outcome、Action Outcome 或 Receipt 的不变量；运行 `npx vitest run test/work-execution-submission.test.ts test/managed-work-executor.test.ts` 验证 RED 覆盖完整。 <!-- comet-task:52f937f1-5299-4c08-95a2-42177bb5f078 -->
-- [ ] 1.3 记录 Configure、Plan、Execute、Check 现有接受入口和旧特判清单到 `design.md`，并运行 `rg -n "acceptOutcome|rejectInvalidConfigureResult|build\.plan.*build\.check" services` 确认没有遗漏的生产入口。 <!-- comet-task:267276ab-5fb7-4dca-9a0e-cbea05bf669c -->
+- [x] 1.1 在 `managed-change-execution.e2e` 增加 Round 8 回归：`build.configure` 返回正确 result kind 但错误 `strategyDigest`，并验证当前实现会错误终态化；运行 `npx vitest run test/managed-change-execution.e2e.test.ts` 可观察到新增断言先失败。 <!-- comet-task:f1487e82-4388-447a-8b35-6a00092072f8 -->
+- [x] 1.2 在 authority/executor 单元测试中固化 terminal acceptance 前不得出现 accepted submission、Host Outcome、Action Outcome 或 Receipt 的不变量；运行 `npx vitest run test/work-execution-submission.test.ts test/managed-work-executor.test.ts` 验证 RED 覆盖完整。 <!-- comet-task:52f937f1-5299-4c08-95a2-42177bb5f078 -->
+- [x] 1.3 记录 Configure、Plan、Execute、Check 现有接受入口和旧特判清单到 `design.md`，并运行 `rg -n "acceptOutcome|rejectInvalidConfigureResult|build\.plan.*build\.check" services` 确认没有遗漏的生产入口。 <!-- comet-task:267276ab-5fb7-4dca-9a0e-cbea05bf669c -->
 
 ## 2. 建立统一候选处理协议
 
-- [ ] 2.1 在领域层定义封闭的 accepted、correctable rejection、processing error disposition 及稳定 validation record；运行 `npm run typecheck` 验证所有分支穷尽处理。 <!-- comet-task:ab441f6d-96e8-4eb6-94d8-0bf4a3a8474c -->
-- [ ] 2.2 为 Build Work 建立按权威 `WorkDescriptor.kind` 解析的处理器注册表，未注册 Build Work fail closed；运行对应领域单元测试验证四种 Work 均已注册且未知 kind 被拒绝。 <!-- comet-task:d7cda0b9-7959-4739-a422-e8d432c3bd3f -->
-- [ ] 2.3 实现统一 acceptance coordinator，按身份/协议、schema、领域、lifecycle validator、transition feasibility 的顺序处理 pending submission；运行 coordinator 单元测试验证任一前置失败都不会调用 terminal bind。 <!-- comet-task:02ecb5ed-c02b-40fe-9e64-747ee14673df -->
-- [ ] 2.4 扩展 `WorkExecutionAuthority` 的 guarded terminal commit，使其重新核对 Work、claim、attempt、checkEpoch、invocation、submission、candidate 与稳定输入 digest；运行 `npx vitest run test/work-execution-submission.test.ts` 验证漂移 fail closed、合法记录一次性绑定。 <!-- comet-task:23e3a1ff-fffb-49bd-a80e-19bd7ddf1dd9 -->
-- [ ] 2.5 将 processing error 与 correctable rejection 分离：前者保留 pending，后者进入 `awaiting-correction` 并追加有界历史；运行 submission/recovery 单元测试验证两者状态、history 与 continuation 不混用。 <!-- comet-task:10b26d88-387a-4408-85ce-258ef456698a -->
-- [ ] 2.6 验证相同 submission ID + 相同 digest 幂等、同 ID + 不同 digest 冲突、新 ID 可纠正；运行 `npx vitest run test/work-execution-submission.test.ts test/work-execution-recovery.test.ts` 通过。 <!-- comet-task:b903de32-95dd-499e-962a-d4cff603d0f9 -->
+- [x] 2.1 在领域层定义封闭的 accepted、correctable rejection、processing error disposition 及稳定 validation record；运行 `npm run typecheck` 验证所有分支穷尽处理。 <!-- comet-task:ab441f6d-96e8-4eb6-94d8-0bf4a3a8474c -->
+- [x] 2.2 为 Build Work 建立按权威 `WorkDescriptor.kind` 解析的处理器注册表，未注册 Build Work fail closed；运行对应领域单元测试验证四种 Work 均已注册且未知 kind 被拒绝。 <!-- comet-task:d7cda0b9-7959-4739-a422-e8d432c3bd3f -->
+- [x] 2.3 实现统一 acceptance coordinator，按身份/协议、schema、领域、lifecycle validator、transition feasibility 的顺序处理 pending submission；运行 coordinator 单元测试验证任一前置失败都不会调用 terminal bind。 <!-- comet-task:02ecb5ed-c02b-40fe-9e64-747ee14673df -->
+- [x] 2.4 扩展 `WorkExecutionAuthority` 的 guarded terminal commit，使其重新核对 Work、claim、attempt、checkEpoch、invocation、submission、candidate 与稳定输入 digest；运行 `npx vitest run test/work-execution-submission.test.ts` 验证漂移 fail closed、合法记录一次性绑定。 <!-- comet-task:23e3a1ff-fffb-49bd-a80e-19bd7ddf1dd9 -->
+- [x] 2.5 将 processing error 与 correctable rejection 分离：前者保留 pending，后者进入 `awaiting-correction` 并追加有界历史；运行 submission/recovery 单元测试验证两者状态、history 与 continuation 不混用。 <!-- comet-task:10b26d88-387a-4408-85ce-258ef456698a -->
+- [x] 2.6 验证相同 submission ID + 相同 digest 幂等、同 ID + 不同 digest 冲突、新 ID 可纠正；运行 `npx vitest run test/work-execution-submission.test.ts test/work-execution-recovery.test.ts` 通过。 <!-- comet-task:b903de32-95dd-499e-962a-d4cff603d0f9 -->
 
 ## 3. 交付 Configure 垂直切片
 
@@ -214,7 +214,7 @@ Full source: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
 - 在正式验证和人工批准完成后归档该 change。
 - 合入并发布分支后，从干净 checkout 验证归档结果和新的多仓 acceptance Run。
 
-````
+```
 
 ## openspec/changes/repair-atomic-work-outcome-acceptance/.openspec.yaml
 
@@ -226,4 +226,5 @@ Full source: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
 schema: spec-driven
 created: 2026-11-05
 skip_specs: true
+
 ```

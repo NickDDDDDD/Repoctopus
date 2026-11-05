@@ -613,6 +613,46 @@ export class WorkflowRunCoordinator {
     return { value: await this.status(runId), diagnostics };
   }
 
+  assertChangeObservationFeasible(
+    state: RunState,
+    observation: ChangeLifecycleObservation,
+  ): void {
+    if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${state.runId}`);
+    const current: ChangeLifecycleSnapshot = {
+      ...structuredClone(state.changeLifecycle),
+      status: state.status,
+    };
+    const reduced = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current,
+      observation,
+    });
+    if (!reduced.fact) {
+      throw new Error(`Change lifecycle transition is infeasible for ${observation.kind}`);
+    }
+  }
+
+  assertRecoveryDecisionFeasible(
+    state: RunState,
+    decision: RecoveryDecision,
+    materialization: LifecycleRecoveryMaterialization,
+  ): void {
+    if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${state.runId}`);
+    const current: ChangeLifecycleSnapshot = {
+      ...structuredClone(state.changeLifecycle),
+      status: state.status,
+    };
+    const reduced = applyLifecycleRecoveryDecision({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current,
+      decision,
+      materialization,
+    });
+    if (!reduced.fact) {
+      throw new Error('Change lifecycle recovery transition is infeasible');
+    }
+  }
+
   async acceptRecoveryDecision(
     runId: string,
     decision: RecoveryDecision,
