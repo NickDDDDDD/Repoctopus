@@ -4,17 +4,17 @@ workflow: full
 language: zh-CN
 phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: 04f71da2d204c7dd24106a5b9e0ae027b30ee652
 design_doc: openspec/changes/stabilize-cli-distribution-gate/design.md
-plan: null
+plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: comet/stabilize-cli-distribution-gate
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
 handoff_hash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: f54eccd7061f1d2b6b20a78b0ac8b0a6e64d2eaa5b1c4f251882e6c3657418ce
+  hash: cd4a09fdc793f851e511868c10af7440b1bcb23d0f738663b1a595c12f72089b
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,7 +56,7 @@ run_checkpoint:
       baseRef: 04f71da2d204c7dd24106a5b9e0ae027b30ee652
       boundBranch: comet/stabilize-cli-distribution-gate
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
       checkEpoch: 2
       classicMigration: null
@@ -64,16 +64,16 @@ run_checkpoint:
       contextCompression: off
       createdAt: 2026-11-05
       designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
-      directOverride: null
+      directOverride: false
       handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
       handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
       isolation: worktree
       language: zh-CN
       phase: build
-      plan: null
+      plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 9
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -366,6 +366,14 @@ run_checkpoint:
         stepId: full.design.document
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e0ce41e101de875028532697906d91217da43234a01fd20a12dad607b88c1f22
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: stabilize-cli-distribution-gate:9
         input:
           input:
@@ -449,6 +457,299 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
         inputHash: dccb9ee2b1af6f47a7328e6c9a3a3f79da7f607bcf54082f9900afd844390649
+        outcome:
+          actionId: stabilize-cli-distribution-gate:9
+          attempt: 1
+          claimToken: portable-e0ce41e101de875028532697906d91217da43234a01fd20a12dad607b88c1f22
+          inputHash: dccb9ee2b1af6f47a7328e6c9a3a3f79da7f607bcf54082f9900afd844390649
+          outcomeId: d8941725-0a5c-415d-bcef-ba937ce442d3
+          output:
+            boundBranch: comet/stabilize-cli-distribution-gate
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5237438f892b9e75eb9a1b839496eb3c684ce3ed2a54e0cb68abd2b233711e51
+            outcomeId: d8941725-0a5c-415d-bcef-ba937ce442d3
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-da91a7917e794d27be2bd875003ae391f7cf13b7a072e09e35c6284001c29008
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:11
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.build.configure:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/stabilize-cli-distribution-gate
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+                    handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+                    proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                      build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                      scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的
+                      PR/main/manual GitHub workflow，固定 Continuous integration /
+                      verify，运行 npm ci 与唯一权威 npm run verify；用结构化 YAML
+                      契约测试和自举文档测试保护触发器、权限、Node 24、锁定安装、单一验证命令、package-first
+                      与源码例外顺序。拒绝提交 dist（双重权威）和 launcher 自动构建/本次 fail-closed
+                      改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                      check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把
+                      package-first 设为默认控制。已批准的 product-distribution Spec Patch
+                      已包含 package-first 与源码 freshness 场景，本候选不新增行为范围。
+                    requirementsEvidence:
+                      contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+                    sourceEvidence:
+                      contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+            full.design.document:
+              designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
+            full.design.evidence:
+              contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+              ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+              handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+              proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual
+                GitHub workflow，固定 Continuous integration / verify，运行 npm ci
+                与唯一权威 npm run verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node
+                24、锁定安装、单一验证命令、package-first 与源码例外顺序。拒绝提交 dist（双重权威）和 launcher
+                自动构建/本次 fail-closed 改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把 package-first
+                设为默认控制。已批准的 product-distribution Spec Patch 已包含 package-first
+                与源码 freshness 场景，本候选不新增行为范围。
+              requirementsEvidence:
+                contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                ref: openspec/changes/stabilize-cli-distribution-gate
+              sourceEvidence:
+                contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                ref: openspec/changes/stabilize-cli-distribution-gate
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+                    ref: openspec/changes/stabilize-cli-distribution-gate
+            full.open.evidence:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+              ref: openspec/changes/stabilize-cli-distribution-gate
+            full.open.revalidate:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+        inputHash: f6d1e2a106519d24d4f5650c8f2a9004e232666ffb94f0fc8c0732c6bab4db31
+        outcome:
+          actionId: stabilize-cli-distribution-gate:11
+          attempt: 1
+          claimToken: portable-da91a7917e794d27be2bd875003ae391f7cf13b7a072e09e35c6284001c29008
+          inputHash: f6d1e2a106519d24d4f5650c8f2a9004e232666ffb94f0fc8c0732c6bab4db31
+          outcomeId: ed777786-a0f1-4877-ae50-9a2021f20783
+          output:
+            designEvidence:
+              contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+              ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+            plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+            planEvidence:
+              contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+              ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+            taskRevision: cf805e66aca54d81b96dc9617ba6929c419c104b10bbf3a1724aea1e7edb426d
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3ed3bc91a439002ca2f1963ea8408adaefecae100b826909fbf0cba8cf8dc9b6
+            outcomeId: ed777786-a0f1-4877-ae50-9a2021f20783
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: stabilize-cli-distribution-gate:13
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.build.configure:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/stabilize-cli-distribution-gate
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+                ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+              plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+              planEvidence:
+                contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+                ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+              taskRevision: cf805e66aca54d81b96dc9617ba6929c419c104b10bbf3a1724aea1e7edb426d
+            full.build.plan.evidence:
+              contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+              ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+                    handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+                    proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                      build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                      scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的
+                      PR/main/manual GitHub workflow，固定 Continuous integration /
+                      verify，运行 npm ci 与唯一权威 npm run verify；用结构化 YAML
+                      契约测试和自举文档测试保护触发器、权限、Node 24、锁定安装、单一验证命令、package-first
+                      与源码例外顺序。拒绝提交 dist（双重权威）和 launcher 自动构建/本次 fail-closed
+                      改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                      check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把
+                      package-first 设为默认控制。已批准的 product-distribution Spec Patch
+                      已包含 package-first 与源码 freshness 场景，本候选不新增行为范围。
+                    requirementsEvidence:
+                      contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+                    sourceEvidence:
+                      contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+            full.design.document:
+              designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
+            full.design.evidence:
+              contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+              ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+              handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+              proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual
+                GitHub workflow，固定 Continuous integration / verify，运行 npm ci
+                与唯一权威 npm run verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node
+                24、锁定安装、单一验证命令、package-first 与源码例外顺序。拒绝提交 dist（双重权威）和 launcher
+                自动构建/本次 fail-closed 改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把 package-first
+                设为默认控制。已批准的 product-distribution Spec Patch 已包含 package-first
+                与源码 freshness 场景，本候选不新增行为范围。
+              requirementsEvidence:
+                contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                ref: openspec/changes/stabilize-cli-distribution-gate
+              sourceEvidence:
+                contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                ref: openspec/changes/stabilize-cli-distribution-gate
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+                    ref: openspec/changes/stabilize-cli-distribution-gate
+            full.open.evidence:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+              ref: openspec/changes/stabilize-cli-distribution-gate
+            full.open.revalidate:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+        inputHash: f6564ba52500d80a0544dd6a9980e9cb5a34cb512483e47f2179e21737b00e36
         protocolVersion: 1
         receipts: []
         reconciliations: []
@@ -457,12 +758,272 @@ run_checkpoint:
         retry: manual
         runId: stabilize-cli-distribution-gate
         status: pending
-        stepId: full.build.configure
+        stepId: full.build.execute
         type: invoke_skill
     actionContexts:
       stabilize-cli-distribution-gate:1:
         results: {}
         sequence: 1
+      stabilize-cli-distribution-gate:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/stabilize-cli-distribution-gate
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+                    handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+                    proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                      build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                      scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的
+                      PR/main/manual GitHub workflow，固定 Continuous integration /
+                      verify，运行 npm ci 与唯一权威 npm run verify；用结构化 YAML
+                      契约测试和自举文档测试保护触发器、权限、Node 24、锁定安装、单一验证命令、package-first
+                      与源码例外顺序。拒绝提交 dist（双重权威）和 launcher 自动构建/本次 fail-closed
+                      改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                      check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把
+                      package-first 设为默认控制。已批准的 product-distribution Spec Patch
+                      已包含 package-first 与源码 freshness 场景，本候选不新增行为范围。
+                    requirementsEvidence:
+                      contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+                    sourceEvidence:
+                      contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+              ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+              handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+              proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual
+                GitHub workflow，固定 Continuous integration / verify，运行 npm ci
+                与唯一权威 npm run verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node
+                24、锁定安装、单一验证命令、package-first 与源码例外顺序。拒绝提交 dist（双重权威）和 launcher
+                自动构建/本次 fail-closed 改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把 package-first
+                设为默认控制。已批准的 product-distribution Spec Patch 已包含 package-first
+                与源码 freshness 场景，本候选不新增行为范围。
+              requirementsEvidence:
+                contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                ref: openspec/changes/stabilize-cli-distribution-gate
+              sourceEvidence:
+                contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+                    ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+              ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+        sequence: 11
+      stabilize-cli-distribution-gate:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/stabilize-cli-distribution-gate
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+                ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+              plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+              planEvidence:
+                contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+                ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+              taskRevision: cf805e66aca54d81b96dc9617ba6929c419c104b10bbf3a1724aea1e7edb426d
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+              ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+                    handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+                    proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                      build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                      scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的
+                      PR/main/manual GitHub workflow，固定 Continuous integration /
+                      verify，运行 npm ci 与唯一权威 npm run verify；用结构化 YAML
+                      契约测试和自举文档测试保护触发器、权限、Node 24、锁定安装、单一验证命令、package-first
+                      与源码例外顺序。拒绝提交 dist（双重权威）和 launcher 自动构建/本次 fail-closed
+                      改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                      check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把
+                      package-first 设为默认控制。已批准的 product-distribution Spec Patch
+                      已包含 package-first 与源码 freshness 场景，本候选不新增行为范围。
+                    requirementsEvidence:
+                      contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+                    sourceEvidence:
+                      contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+              ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+              handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+              proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual
+                GitHub workflow，固定 Continuous integration / verify，运行 npm ci
+                与唯一权威 npm run verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node
+                24、锁定安装、单一验证命令、package-first 与源码例外顺序。拒绝提交 dist（双重权威）和 launcher
+                自动构建/本次 fail-closed 改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把 package-first
+                设为默认控制。已批准的 product-distribution Spec Patch 已包含 package-first
+                与源码 freshness 场景，本候选不新增行为范围。
+              requirementsEvidence:
+                contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                ref: openspec/changes/stabilize-cli-distribution-gate
+              sourceEvidence:
+                contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+                    ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+              ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+        sequence: 13
       stabilize-cli-distribution-gate:4:
         results:
           full.open:
@@ -824,6 +1385,134 @@ run_checkpoint:
           id: classic-design-e0a699f473ed6da443c3155cab970dc77dec126425175a9b7835d3b2be55f17a-approved
           choice: approved
           proposalHash: e0a699f473ed6da443c3155cab970dc77dec126425175a9b7835d3b2be55f17a
+      - id: stabilize-cli-distribution-gate:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.build.configure:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 6bcaa95e8b309a6253df20607eeeb0cd7b16fd4d6eeac841732b44576a8e4ab1
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+                    handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+                    proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                      build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                      scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的
+                      PR/main/manual GitHub workflow，固定 Continuous integration /
+                      verify，运行 npm ci 与唯一权威 npm run verify；用结构化 YAML
+                      契约测试和自举文档测试保护触发器、权限、Node 24、锁定安装、单一验证命令、package-first
+                      与源码例外顺序。拒绝提交 dist（双重权威）和 launcher 自动构建/本次 fail-closed
+                      改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                      check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把
+                      package-first 设为默认控制。已批准的 product-distribution Spec Patch
+                      已包含 package-first 与源码 freshness 场景，本候选不新增行为范围。
+                    requirementsEvidence:
+                      contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+                    sourceEvidence:
+                      contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+              ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+              handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+              proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual
+                GitHub workflow，固定 Continuous integration / verify，运行 npm ci
+                与唯一权威 npm run verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node
+                24、锁定安装、单一验证命令、package-first 与源码例外顺序。拒绝提交 dist（双重权威）和 launcher
+                自动构建/本次 fail-closed 改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把 package-first
+                设为默认控制。已批准的 product-distribution Spec Patch 已包含 package-first
+                与源码 freshness 场景，本候选不新增行为范围。
+              requirementsEvidence:
+                contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                ref: openspec/changes/stabilize-cli-distribution-gate
+              sourceEvidence:
+                contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+                    ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+              ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+        decision:
+          id: 007fb5df-4af9-439e-91c2-dd15644648bf
+          choice: approved
+          proposalHash: 6bcaa95e8b309a6253df20607eeeb0cd7b16fd4d6eeac841732b44576a8e4ab1
     evidenceWaits:
       - id: stabilize-cli-distribution-gate:2
         stepId: full.open.evidence
@@ -934,9 +1623,194 @@ run_checkpoint:
           ref: openspec/changes/stabilize-cli-distribution-gate/design.md
           contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
           submissionId: b5fae5cc-556c-4813-b32c-3dd6987391a9
+      - id: stabilize-cli-distribution-gate:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/stabilize-cli-distribution-gate
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+                ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+              plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+              planEvidence:
+                contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+                ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+              taskRevision: cf805e66aca54d81b96dc9617ba6929c419c104b10bbf3a1724aea1e7edb426d
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+                    handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+                    proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                      build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                      scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的
+                      PR/main/manual GitHub workflow，固定 Continuous integration /
+                      verify，运行 npm ci 与唯一权威 npm run verify；用结构化 YAML
+                      契约测试和自举文档测试保护触发器、权限、Node 24、锁定安装、单一验证命令、package-first
+                      与源码例外顺序。拒绝提交 dist（双重权威）和 launcher 自动构建/本次 fail-closed
+                      改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                      check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把
+                      package-first 设为默认控制。已批准的 product-distribution Spec Patch
+                      已包含 package-first 与源码 freshness 场景，本候选不新增行为范围。
+                    requirementsEvidence:
+                      contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+                    sourceEvidence:
+                      contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                      ref: openspec/changes/stabilize-cli-distribution-gate
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+              ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+              handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+              proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual
+                GitHub workflow，固定 Continuous integration / verify，运行 npm ci
+                与唯一权威 npm run verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node
+                24、锁定安装、单一验证命令、package-first 与源码例外顺序。拒绝提交 dist（双重权威）和 launcher
+                自动构建/本次 fail-closed 改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把 package-first
+                设为默认控制。已批准的 product-distribution Spec Patch 已包含 package-first
+                与源码 freshness 场景，本候选不新增行为范围。
+              requirementsEvidence:
+                contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                ref: openspec/changes/stabilize-cli-distribution-gate
+              sourceEvidence:
+                contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cli-distribution-gate
+                  changeDir: openspec/changes/stabilize-cli-distribution-gate
+                  workspaceBaseline:
+                    ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+                    ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+              ref: openspec/changes/stabilize-cli-distribution-gate
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+          contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+          submissionId: 3b698ffa-5d4c-4be5-b6f4-d53715af60e4
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: comet/stabilize-cli-distribution-gate
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cli-distribution-gate
+              changeDir: openspec/changes/stabilize-cli-distribution-gate
+              workspaceBaseline:
+                ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+            outputs:
+              full.build.configure:
+                boundBranch: comet/stabilize-cli-distribution-gate
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+            ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+          plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+          planEvidence:
+            contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+            ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+          taskRevision: cf805e66aca54d81b96dc9617ba6929c419c104b10bbf3a1724aea1e7edb426d
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
       full.design.confirm:
         sequence: 6
         value:
@@ -1028,6 +1902,6 @@ run_checkpoint:
           contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
     children: []
     lineage: []
-  sourceRevision: 13
-  sourceHash: b06b0b5cd15cea4ad5adbd41b0b0561ec92680e7fe0a4f864e09acce7989faee
+  sourceRevision: 19
+  sourceHash: 53d8d17bbad7e75542d68858acec1c84a5ded5f51532dbfc46468b897ec6fe48
 check_epoch: 2
