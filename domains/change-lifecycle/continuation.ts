@@ -1,5 +1,6 @@
 import type { Checkpoint, TrajectoryEvent } from '../trajectory/types.js';
 import type { WorkExecutionCheckpoint, WorkExecutionRecovery } from '../work-execution/types.js';
+import { workExecutionRetryPolicy } from '../work-execution/retry-policy.js';
 import type {
   ChangeLifecycleSnapshot,
   ChangeLifecycleState,
@@ -21,6 +22,8 @@ const RECOVERY_REASONS = new Set<WorkExecutionRecovery['reason']>([
   'outcome-processing-error',
   'validator-pending',
   'checkpoint-superseded',
+  'checkpoint-superseded-unresolved',
+  'retry-policy-blocked',
   'transition-pending',
   'open-gate-pending',
   'content-missing-or-corrupt',
@@ -88,12 +91,13 @@ export function classifyWorkContinuation(
   const result = (
     continuation: WorkExecutionRecovery['continuation'],
     reason: WorkExecutionRecovery['reason'],
+    execution: WorkExecutionCheckpoint | undefined = current,
   ): WorkExecutionRecovery => ({
     schemaVersion: 2,
     continuation,
-    workId: current?.workId ?? input.lifecycle.currentWork?.workId ?? null,
-    attempt: current?.attempt ?? null,
-    checkEpoch: current?.checkEpoch ?? input.lifecycle.checkEpoch,
+    workId: execution?.workId ?? input.lifecycle.currentWork?.workId ?? null,
+    attempt: execution?.attempt ?? null,
+    checkEpoch: execution?.checkEpoch ?? input.lifecycle.checkEpoch,
     reason,
   });
 
@@ -102,6 +106,9 @@ export function classifyWorkContinuation(
     return result('ask', 'human-decision');
   }
   if (input.execution && !executionMatches) {
+    if (['invoking', 'submitted', 'unknown'].includes(input.execution.status)) {
+      return result('reconcile', 'checkpoint-superseded-unresolved', input.execution);
+    }
     return input.lifecycle.currentWork
       ? result('execute', 'checkpoint-superseded')
       : result('wait', 'checkpoint-superseded');
@@ -111,7 +118,13 @@ export function classifyWorkContinuation(
       ? result('execute', 'work-unclaimed')
       : result('wait', 'transition-pending');
   }
-  if (current.schemaVersion !== 3) return result('reconcile', 'migration-required');
+  if (
+    current.schemaVersion !== 3 ||
+    !/^execution-chain:sha256:[a-f0-9]{64}$/u.test(current.executionChainId ?? '') ||
+    (current.retryPolicy !== 'idempotent' && current.retryPolicy !== 'reconcile')
+  ) {
+    return result('reconcile', 'migration-required');
+  }
   if (current.status === 'claimed' || current.status === 'context-delivered') {
     return result('execute', 'claim-redelivery');
   }
@@ -136,11 +149,23 @@ export function classifyWorkContinuation(
         : 'host-result-unknown',
     );
   }
-  if (current.status === 'not-executed') return result('execute', 'host-not-executed');
+  if (current.status === 'not-executed') {
+    return current.attempt >= 3 || (current.rejectedSubmissions?.length ?? 0) > 0
+      ? result('wait', 'retry-policy-blocked')
+      : result('execute', 'host-not-executed');
+  }
   if (current.status === 'outcome') {
-    return current.actionOutcome?.status === 'failed'
-      ? result('execute', 'work-failed')
-      : result('execute', 'validator-pending');
+    if (current.actionOutcome?.status !== 'failed') {
+      return result('execute', 'validator-pending');
+    }
+    if (
+      (current.rejectedSubmissions?.length ?? 0) > 0 ||
+      workExecutionRetryPolicy(input.lifecycle.currentWork!) === 'reconcile' ||
+      current.attempt >= 3
+    ) {
+      return result('wait', 'retry-policy-blocked');
+    }
+    return result('execute', 'work-failed');
   }
   if (current.status === 'validated' && input.lifecycle.phase === 'open') {
     return { ...result('reobserve', 'open-gate-pending'), observationStage: 'planning-gate' };

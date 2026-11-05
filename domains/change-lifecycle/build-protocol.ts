@@ -435,6 +435,26 @@ export interface WorkPackageWriteScope {
   paths: readonly string[];
 }
 
+export type WorkPackageSideEffectClass =
+  | 'process'
+  | 'repository-write'
+  | 'git-publish'
+  | 'platform-mutation';
+
+export type WorkPackageEvidenceRequirement =
+  | 'acceptance'
+  | 'implementation'
+  | 'red'
+  | 'green'
+  | 'test'
+  | 'regression';
+
+export interface WorkPackageCompletionContract {
+  schemaVersion: 1;
+  behaviorSlice: string;
+  requiredEvidence: readonly WorkPackageEvidenceRequirement[];
+}
+
 export interface WorkPackageCandidate {
   packageKey: string;
   taskIds: readonly string[];
@@ -444,6 +464,8 @@ export interface WorkPackageCandidate {
   expectedOutcomes: readonly string[];
   validatorProfile: string;
   dependsOn: readonly string[];
+  sideEffectClass: WorkPackageSideEffectClass;
+  completionContract: WorkPackageCompletionContract;
 }
 
 export interface WorkPackage {
@@ -457,8 +479,25 @@ export interface WorkPackage {
   expectedOutcomes: readonly string[];
   validatorProfile: string;
   dependsOn: readonly string[];
+  sideEffectClass: WorkPackageSideEffectClass;
+  completionContract: WorkPackageCompletionContract;
   digest: Digest;
 }
+
+const PACKAGE_SIDE_EFFECT_CLASSES = new Set<WorkPackageSideEffectClass>([
+  'process',
+  'repository-write',
+  'git-publish',
+  'platform-mutation',
+]);
+const PACKAGE_EVIDENCE_REQUIREMENTS = new Set<WorkPackageEvidenceRequirement>([
+  'acceptance',
+  'implementation',
+  'red',
+  'green',
+  'test',
+  'regression',
+]);
 
 export interface BuildPlan {
   schemaVersion: 1;
@@ -525,6 +564,19 @@ export function createBuildPlan(input: {
     input.tasks.tasks.map((task) => [task.taskId, task.taskRevision] as const),
   );
   const prepared = input.candidate.packages.map((candidate) => {
+    if (!PACKAGE_SIDE_EFFECT_CLASSES.has(candidate.sideEffectClass)) {
+      throw new Error('Build Plan package side-effect class is invalid');
+    }
+    if (candidate.completionContract?.schemaVersion !== 1) {
+      throw new Error('Build Plan package completion contract is missing or unsupported');
+    }
+    const requiredEvidence = unique(
+      candidate.completionContract.requiredEvidence,
+      'Package required Evidence',
+    ) as WorkPackageEvidenceRequirement[];
+    if (requiredEvidence.some((entry) => !PACKAGE_EVIDENCE_REQUIREMENTS.has(entry))) {
+      throw new Error('Build Plan package completion contract has unknown Evidence');
+    }
     const stable = {
       schemaVersion: 1 as const,
       packageKey: text(candidate.packageKey, 'Package key'),
@@ -539,6 +591,12 @@ export function createBuildPlan(input: {
       acceptanceRefs: unique(candidate.acceptanceRefs, 'Package acceptance references'),
       expectedOutcomes: unique(candidate.expectedOutcomes, 'Package expected outcomes'),
       validatorProfile: text(candidate.validatorProfile, 'Package validator profile'),
+      sideEffectClass: candidate.sideEffectClass,
+      completionContract: {
+        schemaVersion: 1 as const,
+        behaviorSlice: text(candidate.completionContract.behaviorSlice, 'Package behavior slice'),
+        requiredEvidence,
+      },
     };
     if (stable.taskIds.some((taskId) => !taskIds.has(taskId))) {
       throw new Error('Build Plan package references an unknown Task');
@@ -650,12 +708,28 @@ export function createBuildPlan(input: {
 export interface BuildPlanValidation {
   accepted: boolean;
   diagnostics: readonly string[];
+  findings: readonly BuildPlanFinding[];
   protectedBranchFindings: readonly {
     repositoryId: string;
     branch: string;
   }[];
   protectedBranchPolicyDigest: Digest;
   inputDigest: Digest;
+}
+
+export type BuildPlanFindingCode =
+  | 'package-outcome-missing'
+  | 'package-validator-unsupported'
+  | 'package-acceptance-incomplete'
+  | 'package-evidence-incomplete'
+  | 'tdd-slice-split';
+
+export interface BuildPlanFinding {
+  code: BuildPlanFindingCode;
+  authority: 'plan';
+  packageIds: readonly string[];
+  behaviorSlice: string | null;
+  message: string;
 }
 
 export function validateBuildPlan(input: {
@@ -666,6 +740,7 @@ export function validateBuildPlan(input: {
   protectedBranches: readonly string[];
 }): BuildPlanValidation {
   const diagnostics: string[] = [];
+  const findings: BuildPlanFinding[] = [];
   const protectedBranches = normalizeProtectedBranchPatterns(input.protectedBranches);
   const protectedBranchPolicyDigest = digest(protectedBranches);
   if (input.plan.strategyId !== input.strategy.strategyId) {
@@ -685,6 +760,81 @@ export function validateBuildPlan(input: {
   const covered = new Set(input.plan.packages.flatMap((entry) => entry.taskIds));
   if ([...taskIds].some((taskId) => !covered.has(taskId)))
     diagnostics.push('Task coverage incomplete');
+  const requiredEvidence = new Set<WorkPackageEvidenceRequirement>(
+    input.strategy.tddMode === 'tdd'
+      ? ['acceptance', 'implementation', 'red', 'green', 'regression']
+      : ['acceptance', 'implementation', 'test', 'regression'],
+  );
+  const taskAcceptance = new Map(
+    input.tasks.tasks.map(
+      (task) =>
+        [task.taskId, task.acceptanceCriteria.map((criterion) => criterion.acceptanceId)] as const,
+    ),
+  );
+  for (const workPackage of input.plan.packages) {
+    const addFinding = (code: BuildPlanFindingCode, message: string) => {
+      findings.push({
+        code,
+        authority: 'plan',
+        packageIds: [workPackage.packageId],
+        behaviorSlice: workPackage.completionContract.behaviorSlice,
+        message,
+      });
+    };
+    if (workPackage.expectedOutcomes.length === 0) {
+      addFinding('package-outcome-missing', 'Package has no expected Outcome');
+    }
+    if (workPackage.validatorProfile !== 'build.package-valid') {
+      addFinding(
+        'package-validator-unsupported',
+        `Package Validator is not supported: ${workPackage.validatorProfile}`,
+      );
+    }
+    const packageAcceptance = new Set(workPackage.acceptanceRefs);
+    const missingAcceptance = workPackage.taskIds
+      .flatMap((taskId) => taskAcceptance.get(taskId) ?? [])
+      .filter((acceptanceId) => !packageAcceptance.has(acceptanceId));
+    if (missingAcceptance.length > 0) {
+      addFinding(
+        'package-acceptance-incomplete',
+        'Package cannot independently satisfy every referenced Task acceptance criterion',
+      );
+    }
+    const actualEvidence = new Set(workPackage.completionContract.requiredEvidence);
+    const missingEvidence = [...requiredEvidence].filter((kind) => !actualEvidence.has(kind));
+    if (missingEvidence.length > 0) {
+      addFinding(
+        'package-evidence-incomplete',
+        `Package completion contract is missing Evidence: ${missingEvidence.join(', ')}`,
+      );
+    }
+  }
+  if (input.strategy.tddMode === 'tdd') {
+    const bySlice = new Map<string, WorkPackage[]>();
+    for (const workPackage of input.plan.packages) {
+      const group = bySlice.get(workPackage.completionContract.behaviorSlice) ?? [];
+      group.push(workPackage);
+      bySlice.set(workPackage.completionContract.behaviorSlice, group);
+    }
+    for (const [behaviorSlice, packages] of bySlice) {
+      if (
+        packages.length > 1 &&
+        packages.some((workPackage) =>
+          [...requiredEvidence].some(
+            (kind) => !workPackage.completionContract.requiredEvidence.includes(kind),
+          ),
+        )
+      ) {
+        findings.push({
+          code: 'tdd-slice-split',
+          authority: 'plan',
+          packageIds: packages.map((workPackage) => workPackage.packageId).sort(),
+          behaviorSlice,
+          message: 'TDD behavior slice is split across independently completable Packages',
+        });
+      }
+    }
+  }
   try {
     assertAcyclic(input.plan.packages);
   } catch (error) {
@@ -710,6 +860,8 @@ export function validateBuildPlan(input: {
           acceptanceRefs: workPackage.acceptanceRefs,
           expectedOutcomes: workPackage.expectedOutcomes,
           validatorProfile: workPackage.validatorProfile,
+          sideEffectClass: workPackage.sideEffectClass,
+          completionContract: workPackage.completionContract,
           dependsOn: workPackage.dependsOn.map((packageId) => {
             const packageKey = packageKeys.get(packageId);
             if (!packageKey) throw new Error('Build Plan references an unknown package dependency');
@@ -749,8 +901,9 @@ export function validateBuildPlan(input: {
     }
   }
   return deepFreeze({
-    accepted: diagnostics.length === 0,
+    accepted: diagnostics.length === 0 && findings.length === 0,
     diagnostics,
+    findings,
     protectedBranchFindings,
     protectedBranchPolicyDigest,
     inputDigest: digest({
@@ -761,6 +914,76 @@ export function validateBuildPlan(input: {
       protectedBranchPolicy: protectedBranchPolicyDigest,
     }),
   });
+}
+
+export interface BuildPlanAuthorizationEnvelope {
+  schemaVersion: 1;
+  taskIds: readonly string[];
+  repositoryIds: readonly string[];
+  writeScopes: readonly string[];
+  riskLevel: BuildPlanRisk['level'];
+  sideEffectClasses: readonly WorkPackageSideEffectClass[];
+  digest: Digest;
+}
+
+export type BuildPlanAuthorizationExpansion = 'repository' | 'write-scope' | 'risk' | 'side-effect';
+
+export function createBuildPlanAuthorizationEnvelope(
+  plan: BuildPlan,
+): BuildPlanAuthorizationEnvelope {
+  const stable = {
+    schemaVersion: 1 as const,
+    taskIds: [...new Set(plan.packages.flatMap((workPackage) => workPackage.taskIds))].sort(),
+    repositoryIds: [
+      ...new Set(plan.packages.flatMap((workPackage) => workPackage.repositoryIds)),
+    ].sort(),
+    writeScopes: [
+      ...new Set(
+        plan.packages.flatMap((workPackage) =>
+          workPackage.writeScopes.flatMap((scope) =>
+            scope.paths.map((path) => `${scope.repositoryId}:${path}`),
+          ),
+        ),
+      ),
+    ].sort(),
+    riskLevel: assessBuildPlanRisk(plan).level,
+    sideEffectClasses: [
+      ...new Set(plan.packages.map((workPackage) => workPackage.sideEffectClass)),
+    ].sort(),
+  };
+  return deepFreeze({ ...stable, digest: digest(stable) });
+}
+
+const SIDE_EFFECT_RANK: Record<WorkPackageSideEffectClass, number> = {
+  process: 0,
+  'repository-write': 1,
+  'git-publish': 2,
+  'platform-mutation': 3,
+};
+
+export function compareBuildPlanAuthorizationEnvelope(
+  approved: BuildPlanAuthorizationEnvelope,
+  candidate: BuildPlan,
+): { requiresDecision: boolean; expansions: readonly BuildPlanAuthorizationExpansion[] } {
+  const next = createBuildPlanAuthorizationEnvelope(candidate);
+  const approvedRepositories = new Set(approved.repositoryIds);
+  const approvedScopes = new Set(approved.writeScopes);
+  const maxApprovedSideEffect = Math.max(
+    ...approved.sideEffectClasses.map((entry) => SIDE_EFFECT_RANK[entry]),
+  );
+  const expansions = new Set<BuildPlanAuthorizationExpansion>();
+  if (next.repositoryIds.some((repositoryId) => !approvedRepositories.has(repositoryId))) {
+    expansions.add('repository');
+  }
+  if (next.writeScopes.some((scope) => !approvedScopes.has(scope))) {
+    expansions.add('write-scope');
+  }
+  if (approved.riskLevel === 'low' && next.riskLevel === 'high') expansions.add('risk');
+  if (next.sideEffectClasses.some((entry) => SIDE_EFFECT_RANK[entry] > maxApprovedSideEffect)) {
+    expansions.add('side-effect');
+  }
+  const ordered = [...expansions].sort();
+  return deepFreeze({ requiresDecision: ordered.length > 0, expansions: ordered });
 }
 
 export interface BuildProtocolState {
@@ -780,7 +1003,7 @@ export interface BuildProtocolState {
   packageCompletions: readonly PackageCompletionEvidence[];
   checkEvidence: BuildCheckEvidence | null;
   invalidations: readonly BuildInvalidation[];
-  approvedRiskDigests: readonly Digest[];
+  authorizationEnvelope: BuildPlanAuthorizationEnvelope | null;
   suspension: BuildProtocolSuspension | null;
   revision: number;
 }
@@ -804,7 +1027,7 @@ export type BuildProtocolObservation =
   | {
       kind: 'plan-evidence-accepted';
       evidence: PlanEvidence;
-      approvedRiskDigest?: Digest;
+      approvedAuthorizationEnvelopeDigest?: Digest;
     }
   | { kind: 'plan-rejected' }
   | {
@@ -839,7 +1062,7 @@ export function createBuildProtocolState(input: {
     packageCompletions: [],
     checkEvidence: null,
     invalidations: [],
-    approvedRiskDigests: [],
+    authorizationEnvelope: null,
     suspension: null,
     revision: 0,
   });
@@ -1054,17 +1277,27 @@ export function advanceBuildProtocol(
     });
   }
   if (observation.kind === 'plan-evidence-accepted') {
-    if (
-      observation.approvedRiskDigest !== undefined &&
-      observation.approvedRiskDigest !== observation.evidence.riskDecisionDigest
-    ) {
-      throw new Error('Plan risk approval does not bind the current semantic risk decision');
-    }
     if (state.currentAction !== 'plan-evidence') {
       throw new Error('Plan Evidence does not match the current Runtime-selected Action');
     }
     if (observation.evidence.planDigest !== state.plan?.digest) {
       throw new Error('Plan Evidence is stale');
+    }
+    const authorizationExpansion = state.authorizationEnvelope
+      ? compareBuildPlanAuthorizationEnvelope(state.authorizationEnvelope, state.plan)
+      : { requiresDecision: observation.evidence.risk.level === 'high', expansions: [] };
+    const requiresApproval = authorizationExpansion.requiresDecision;
+    if (
+      observation.approvedAuthorizationEnvelopeDigest !== undefined &&
+      observation.approvedAuthorizationEnvelopeDigest !==
+        observation.evidence.authorizationEnvelope.digest
+    ) {
+      throw new Error(
+        'Plan authorization approval does not bind the current authorization envelope',
+      );
+    }
+    if (requiresApproval && observation.approvedAuthorizationEnvelopeDigest === undefined) {
+      throw new Error('Build Plan expands authorization without a Human Decision');
     }
     const allCompleted =
       state.plan?.packages.every((workPackage) =>
@@ -1079,9 +1312,11 @@ export function advanceBuildProtocol(
       currentAction: allCompleted ? 'check' : 'execute',
       actionAttempt: 1,
       planEvidence: observation.evidence,
-      approvedRiskDigests: observation.approvedRiskDigest
-        ? [...new Set([...state.approvedRiskDigests, observation.approvedRiskDigest])].sort()
-        : state.approvedRiskDigests,
+      authorizationEnvelope:
+        observation.approvedAuthorizationEnvelopeDigest !== undefined ||
+        state.authorizationEnvelope === null
+          ? observation.evidence.authorizationEnvelope
+          : state.authorizationEnvelope,
       revision: state.revision + 1,
     });
   }
@@ -1211,6 +1446,7 @@ export interface PlanEvidence {
   validationDigest: Digest;
   risk: BuildPlanRisk;
   riskDecisionDigest: Digest;
+  authorizationEnvelope: BuildPlanAuthorizationEnvelope;
   accepted: true;
 }
 
@@ -1385,6 +1621,7 @@ export function createPlanEvidence(input: {
     reviewMode: input.strategy.reviewMode,
     validationDigest: input.validation.inputDigest,
     risk: assessBuildPlanRisk(input.plan),
+    authorizationEnvelope: createBuildPlanAuthorizationEnvelope(input.plan),
     riskDecisionDigest: digest({
       strategyDigest: input.strategy.semanticDigest,
       taskSetDigest: input.plan.taskSetDigest,

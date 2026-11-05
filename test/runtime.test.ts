@@ -14,6 +14,7 @@ import {
 import { createBuildActionWork } from '../domains/change-lifecycle/build-work.js';
 import { createLifecyclePhaseWork } from '../domains/change-lifecycle/phase-work.js';
 import { BUILTIN_CHANGE_LIFECYCLE_DEFINITION } from '../domains/change-lifecycle/definition.js';
+import { classifyRecoveryObservation } from '../domains/runtime/recovery.js';
 import type { WorkExecutionCheckpoint } from '../domains/work-execution/types.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
 import {
@@ -63,7 +64,7 @@ describe('Repoctopus runtime', () => {
     return createWorkflowPackage(definition);
   }
 
-  it('atomically retires the rejected Open execution when repair Work becomes authoritative', async () => {
+  it('blocks unresolved execution replacement and retires it only after a known outcome', async () => {
     const workspace = await temporaryDirectory('repoctopus-open-repair-runtime-');
     cleanup.push(workspace);
     const store = new FileRuntimeStore(workspace);
@@ -127,8 +128,8 @@ describe('Repoctopus runtime', () => {
         packetDigest: `sha256:${'6'.repeat(64)}`,
         contextDigest: `sha256:${'7'.repeat(64)}`,
       },
-      status: 'outcome',
-      continuation: 'execute',
+      status: 'invoking',
+      continuation: 'wait',
       updatedAt: '2026-11-01T00:00:00.000Z',
     };
     await store.commitGuarded(runId, ({ state, trajectory }) => ({
@@ -152,7 +153,7 @@ describe('Repoctopus runtime', () => {
       value: undefined,
     }));
 
-    const accepted = await runtime.acceptChangeObservation(runId, {
+    const repairObservation = {
       kind: 'open-repair-required',
       expectedRevision: 0,
       source: 'strict-validation',
@@ -160,7 +161,40 @@ describe('Repoctopus runtime', () => {
       evidenceIds: [`sha256:${'8'.repeat(64)}`],
       inputDigest: repairWork.inputDigest,
       work: repairWork,
+    } as const;
+
+    await expect(runtime.acceptChangeObservation(runId, repairObservation)).rejects.toThrow(
+      /cannot replace an unresolved Work execution/u,
+    );
+    expect(await store.loadRun(runId)).toMatchObject({
+      workExecution: { status: 'invoking', workId: originalWork.workId },
+      changeLifecycle: { checkEpoch: 0, currentWork: { workId: originalWork.workId } },
     });
+    await store.commitGuarded(runId, ({ state, trajectory }) => {
+      const nextState = {
+        ...state,
+        workExecution: { ...state.workExecution!, status: 'outcome' as const },
+        stateVersion: state.stateVersion + 1,
+        updatedAt: '2026-11-01T00:01:00.000Z',
+      };
+      return {
+        state: nextState,
+        event: {
+          schemaVersion: 1,
+          sequence: trajectory.length + 1,
+          eventId: 'seed-open-known-outcome',
+          timestamp: nextState.updatedAt,
+          type: 'work.completed',
+          runId,
+          stateVersion: nextState.stateVersion,
+          compositionDigest: nextState.composition.compositionDigest,
+          data: { workId: originalWork.workId, result: 'known' },
+        },
+        value: undefined,
+      };
+    });
+
+    const accepted = await runtime.acceptChangeObservation(runId, repairObservation);
 
     expect(accepted.value.state).not.toHaveProperty('workExecution');
     expect(accepted.value.state.changeLifecycle?.openApprovalInvalidated).toBe(true);
@@ -314,20 +348,31 @@ describe('Repoctopus runtime', () => {
       },
       value: undefined,
     }));
-    const observation = {
-      kind: 'planning-authority-invalidated' as const,
+    const decision = classifyRecoveryObservation({
+      schemaVersion: 1,
+      runId,
       expectedRevision: 4,
-      fromPhase: 'build' as const,
-      invalidationKind: 'semantic' as const,
-      reason: 'Design semantic changed',
+      checkEpoch: 4,
+      observationId: 'planning-observation-runtime-1',
+      planning: {
+        status: 'drift',
+        reasonCode: 'design-changed',
+        changedIdentities: ['planning-semantic'],
+      },
+      plan: { status: 'current', changedIdentities: [] },
+      work: { status: 'current', changedIdentities: [] },
+      evidence: { status: 'current', changedIdentities: [] },
+    });
+    if (!decision) throw new Error('expected recovery decision');
+    const materialization = {
       evidenceIds: [`sha256:${'b'.repeat(64)}`],
       inputDigest: `sha256:${'c'.repeat(64)}` as const,
       work: designWork,
     };
 
     await Promise.all([
-      runtime.acceptChangeObservation(runId, observation),
-      runtime.acceptChangeObservation(runId, observation),
+      runtime.acceptRecoveryDecision(runId, decision, materialization),
+      runtime.acceptRecoveryDecision(runId, decision, materialization),
     ]);
     const trajectory = await store.loadTrajectory(runId);
     const state = await store.loadRun(runId);
@@ -339,16 +384,34 @@ describe('Repoctopus runtime', () => {
       tasks: [{ taskId: tasks.tasks[0]!.taskId }],
       buildProtocol: { status: 'suspended-for-design', currentAction: null },
     });
-    expect(trajectory.at(-1)?.data).toMatchObject({
-      observationKind: 'planning-authority-invalidated',
+    expect(
+      trajectory.find(
+        (entry) =>
+          entry.type === 'change.lifecycle.transitioned' &&
+          entry.data.observationKind === 'runtime-recovery-decision',
+      )?.data,
+    ).toMatchObject({
+      observationKind: 'runtime-recovery-decision',
+      recoveryDecision: {
+        decisionId: decision.decisionId,
+        action: 'revise-design',
+        authority: 'planning',
+      },
       changeLifecycleTransition: {
         invalidation: { classification: 'semantic', scope: 'exact' },
+        recovery: { decisionId: decision.decisionId, action: 'revise-design' },
       },
       executionRetirement: {
         retiredWorkId: configureWork.workId,
         nextWorkId: designWork.workId,
       },
     });
+    expect(
+      trajectory.filter((entry) => entry.type.startsWith('recovery.')).map((entry) => entry.type),
+    ).toEqual(['recovery.observed', 'recovery.classified', 'recovery.applied']);
+    expect(new Set(trajectory.slice(-3).map((entry) => entry.data.decisionId))).toEqual(
+      new Set([decision.decisionId]),
+    );
     expect(await store.loadTrajectory(runId)).toHaveLength(trajectory.length);
   });
 

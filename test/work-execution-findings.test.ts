@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { assertBoundedWorkExecutionFindings } from '../domains/work-execution/findings.js';
+import {
+  assertBoundedWorkExecutionFindings,
+  assertWorkExecutionFindingReferences,
+  normalizeWorkExecutionFindings,
+} from '../domains/work-execution/findings.js';
 import type { WorkExecutionHostOutcome } from '../domains/work-execution/types.js';
 
 const digest = `sha256:${'a'.repeat(64)}` as const;
@@ -20,12 +24,13 @@ function outcome(findings: unknown): WorkExecutionHostOutcome {
 }
 
 describe('Work Execution Host findings', () => {
-  it('accepts only bounded findings and never a Host-selected phase', () => {
+  it('accepts only bounded fact findings and never a Host-selected phase', () => {
     expect(() =>
       assertBoundedWorkExecutionFindings(
         outcome([
           {
-            kind: 'design_assumption_invalid',
+            kind: 'authority_conflict',
+            code: 'approved-requirement-conflict',
             summary: 'The repository disproves an approved design assumption.',
             requirementIds: ['change-lifecycle#host-findings'],
             taskIds: ['4.1'],
@@ -60,5 +65,81 @@ describe('Work Execution Host findings', () => {
         ),
       ),
     ).toThrow(/exceed the bound/u);
+  });
+
+  it.each(['design_assumption_invalid', 'planning_semantics_changed'])(
+    'rejects the obsolete action-shaped finding %s',
+    (kind) => {
+      expect(() =>
+        assertBoundedWorkExecutionFindings(
+          outcome([{ kind, code: 'legacy-action', summary: 'obsolete control signal' }]),
+        ),
+      ).toThrow(/invalid bounded finding/u);
+    },
+  );
+
+  it('normalizes bounded references and excludes summary text from stable identity', () => {
+    const first = normalizeWorkExecutionFindings(
+      outcome([
+        {
+          kind: 'plan_constraint',
+          code: 'package-not-completable',
+          summary: 'RED and GREEN were split.',
+          requirementIds: ['req-b', 'req-a', 'req-a'],
+          taskIds: ['task-2', 'task-1'],
+          packageIds: ['package-1'],
+          evidenceIds: ['evidence-2', 'evidence-1'],
+        },
+      ]),
+    )[0]!;
+    const second = normalizeWorkExecutionFindings(
+      outcome([
+        {
+          kind: 'plan_constraint',
+          code: 'package-not-completable',
+          summary: 'Different diagnostic prose.',
+          requirementIds: ['req-a', 'req-b'],
+          taskIds: ['task-1', 'task-2'],
+          packageIds: ['package-1'],
+          evidenceIds: ['evidence-1', 'evidence-2'],
+        },
+      ]),
+    )[0]!;
+
+    expect(first).toMatchObject({
+      kind: 'plan_constraint',
+      code: 'package-not-completable',
+      requirementIds: ['req-a', 'req-b'],
+      taskIds: ['task-1', 'task-2'],
+      packageIds: ['package-1'],
+      evidenceIds: ['evidence-1', 'evidence-2'],
+    });
+    expect(first.identity).toMatch(/^finding:sha256:[a-f0-9]{64}$/u);
+    expect(second.identity).toBe(first.identity);
+  });
+
+  it('rejects references outside the current Requirement, Task, Package, and Evidence authority', () => {
+    const [finding] = normalizeWorkExecutionFindings(
+      outcome([
+        {
+          kind: 'evidence_mismatch',
+          code: 'check-input-mismatch',
+          summary: 'The submitted check cites an unrelated Evidence identity.',
+          requirementIds: ['req-1'],
+          taskIds: ['task-1'],
+          packageIds: ['package-1'],
+          evidenceIds: ['evidence-other'],
+        },
+      ]),
+    );
+
+    expect(() =>
+      assertWorkExecutionFindingReferences([finding!], {
+        requirementIds: ['req-1'],
+        taskIds: ['task-1'],
+        packageIds: ['package-1'],
+        evidenceIds: ['evidence-1'],
+      }),
+    ).toThrow(/unknown Evidence/u);
   });
 });

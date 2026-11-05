@@ -12,8 +12,31 @@ interface ProvenanceEntry {
 
 interface ProvenanceManifest {
   schemaVersion: number;
-  upstream?: { repository?: string; commit?: string; license?: string };
+  upstream?: { repository?: string; commit?: string; version?: string; license?: string };
+  references?: Array<{
+    role?: string;
+    source?: string;
+    sourceSha256?: string;
+    adoption?: string;
+  }>;
   files?: ProvenanceEntry[];
+}
+
+const REQUIRED_COMET_REFERENCES = new Map([
+  ['revision-readiness', 'domains/comet-classic/classic-sdk-revision-readiness.ts'],
+  ['revision-command', 'domains/comet-classic/classic-sdk-revision.ts'],
+  ['revision-application', 'domains/comet-classic/classic-sdk-revision-application.ts'],
+  ['evidence-invalidation', 'domains/engine/runtime-service.ts'],
+  ['action-retry-policy', 'domains/engine/runtime-action.ts'],
+]);
+
+function isCometPackageReference(value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  return (
+    /(^|[/@-])comet($|[/@-])/iu.test(value) ||
+    /npm:(?:@[^/]+\/)?comet@/iu.test(value) ||
+    /github\.com[/ :]rpamis[/ ]comet(?:\.git)?/iu.test(value)
+  );
 }
 
 interface MattMethodAdoptionManifest {
@@ -106,11 +129,37 @@ export async function checkProvenance(
   const manifestPath = path.join(productRoot, 'third_party', 'comet', 'source-manifest.json');
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as ProvenanceManifest;
   if (
-    manifest.schemaVersion !== 1 ||
-    !manifest.upstream?.commit ||
+    manifest.schemaVersion !== 2 ||
+    manifest.upstream?.repository !== 'https://github.com/rpamis/comet.git' ||
+    !/^[a-f0-9]{40}$/u.test(manifest.upstream?.commit ?? '') ||
+    manifest.upstream?.version !== '0.5.1' ||
+    manifest.upstream?.license !== 'MIT' ||
+    !Array.isArray(manifest.references) ||
     !Array.isArray(manifest.files)
   ) {
     return { valid: false, fileCount: 0, findings: ['Invalid provenance manifest header'] };
+  }
+
+  const seenCometReferences = new Set<string>();
+  for (const reference of manifest.references) {
+    if (
+      typeof reference.role !== 'string' ||
+      !REQUIRED_COMET_REFERENCES.has(reference.role) ||
+      seenCometReferences.has(reference.role) ||
+      reference.source !== REQUIRED_COMET_REFERENCES.get(reference.role) ||
+      !/^[a-f0-9]{64}$/u.test(reference.sourceSha256 ?? '') ||
+      reference.adoption !== 'behavioral-reference'
+    ) {
+      findings.push(
+        `Invalid Comet behavioral reference source or digest: ${reference.role ?? '(missing role)'}`,
+      );
+      continue;
+    }
+    seenCometReferences.add(reference.role);
+  }
+  for (const role of REQUIRED_COMET_REFERENCES.keys()) {
+    if (!seenCometReferences.has(role))
+      findings.push(`Missing Comet behavioral reference: ${role}`);
   }
 
   for (const entry of manifest.files) {
@@ -406,6 +455,8 @@ export async function checkProvenance(
     await readFile(path.join(productRoot, 'package.json'), 'utf8'),
   ) as {
     dependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
     overrides?: Record<string, string>;
     scripts?: Record<string, string>;
@@ -414,8 +465,28 @@ export async function checkProvenance(
   const packageLock = JSON.parse(
     await readFile(path.join(productRoot, 'package-lock.json'), 'utf8'),
   ) as {
-    packages?: Record<string, { version?: string; integrity?: string }>;
+    packages?: Record<
+      string,
+      { name?: string; version?: string; integrity?: string; resolved?: string }
+    >;
   };
+  for (const field of ['dependencies', 'optionalDependencies', 'peerDependencies'] as const) {
+    for (const [name, spec] of Object.entries(packageJson[field] ?? {})) {
+      if (isCometPackageReference(name) || isCometPackageReference(spec)) {
+        findings.push(`Comet Runtime dependency is forbidden in ${field}: ${name}`);
+      }
+    }
+  }
+  for (const [location, locked] of Object.entries(packageLock.packages ?? {})) {
+    if (
+      location &&
+      (isCometPackageReference(location) ||
+        isCometPackageReference(locked.name) ||
+        isCometPackageReference(locked.resolved))
+    ) {
+      findings.push(`Comet Runtime dependency is forbidden in package lock: ${location}`);
+    }
+  }
   for (const packageEntry of dsh.npmPackages ?? []) {
     if (packageJson.dependencies?.[packageEntry.name] !== packageEntry.version) {
       findings.push(

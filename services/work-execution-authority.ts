@@ -20,6 +20,7 @@ import type {
   AgentCoordinationCheckpointView,
   WorkContinuationKind,
   WorkExecutionCheckpoint,
+  WorkExecutionAttemptSnapshot,
   WorkExecutionHostInvocation,
   WorkExecutionHostOutcome,
   WorkClaimResult,
@@ -33,6 +34,10 @@ import {
 } from '../domains/work-execution/submission.js';
 import type { WorkExecutionSubmissionRejectionCode } from '../domains/work-execution/types.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
+import {
+  workExecutionChainIdentity,
+  workExecutionRetryPolicy,
+} from '../domains/work-execution/retry-policy.js';
 
 export type SkillHumanCorrectionKind =
   | 'changes-requested'
@@ -131,6 +136,16 @@ function executionMatchesLifecycle(state: RunState, execution: WorkExecutionChec
   );
 }
 
+function attemptSnapshot(checkpoint: WorkExecutionCheckpoint): WorkExecutionAttemptSnapshot {
+  const snapshot = structuredClone(checkpoint);
+  delete snapshot.attemptHistory;
+  return snapshot;
+}
+
+function isUnresolvedCheckpoint(checkpoint: WorkExecutionCheckpoint): boolean {
+  return ['invoking', 'submitted', 'unknown'].includes(checkpoint.status);
+}
+
 function hasErrorCode(error: unknown, code: string): boolean {
   let current = error;
   for (let depth = 0; depth < 4 && current instanceof Error; depth += 1) {
@@ -154,12 +169,24 @@ export class WorkExecutionAuthority extends Service {
   }
 
   async bindClaim(packet: WorkExecutionPacket): Promise<WorkExecutionCheckpoint> {
+    if (!Number.isInteger(packet.claim.attempt) || packet.claim.attempt < 1) {
+      throw new Error('Work execution attempt must be a positive integer');
+    }
+    if (packet.claim.attempt > 3) {
+      throw new Error('Work execution exceeded the bounded retry policy');
+    }
     const stored = await this.ctx.workExecutionPacketStore.save(packet);
     const result = await this.ctx.runStore.commitGuarded(
       packet.claim.runId,
       ({ state, trajectory }) => {
         assertActivePacket(state, packet);
         const existing = state.workExecution;
+        const executionChainId = workExecutionChainIdentity(packet.work);
+        const retryPolicy = workExecutionRetryPolicy(packet.work);
+        let preserveAttemptHistory = false;
+        if (!existing && packet.claim.attempt !== 1) {
+          throw new Error('The first authoritative Work execution claim must use attempt 1');
+        }
         if (existing) {
           if (
             existing.workId === packet.claim.workId &&
@@ -171,21 +198,47 @@ export class WorkExecutionAuthority extends Service {
           }
           const retryAfterFailure =
             existing.workId === packet.claim.workId &&
-            ((existing.status === 'outcome' && existing.actionOutcome?.status === 'failed') ||
-              existing.status === 'not-executed') &&
+            existing.status === 'outcome' &&
+            existing.actionOutcome?.status === 'failed' &&
+            (existing.rejectedSubmissions?.length ?? 0) === 0 &&
+            existing.executionChainId === executionChainId &&
+            existing.retryPolicy === 'idempotent' &&
+            retryPolicy === existing.retryPolicy &&
             packet.claim.attempt === existing.attempt + 1;
+          const retryAfterReconciliation =
+            existing.workId === packet.claim.workId &&
+            existing.status === 'not-executed' &&
+            (existing.rejectedSubmissions?.length ?? 0) === 0 &&
+            existing.executionChainId === executionChainId &&
+            existing.retryPolicy === retryPolicy &&
+            packet.claim.attempt === existing.attempt + 1;
+          const safelyReplaceable = [
+            'claimed',
+            'context-delivered',
+            'not-executed',
+            'validated',
+          ].includes(existing.status);
           const nextAuthorizedWork =
             existing.workId !== packet.claim.workId &&
-            (existing.status === 'validated' || existing.checkEpoch < packet.claim.checkEpoch);
+            safelyReplaceable &&
+            existing.checkEpoch < packet.claim.checkEpoch &&
+            packet.claim.attempt === 1;
           const nextAuthorizedEpochForSameWork =
             existing.workId === packet.claim.workId &&
+            safelyReplaceable &&
             existing.checkEpoch < packet.claim.checkEpoch &&
-            packet.claim.attempt > existing.attempt;
-          if (!retryAfterFailure && !nextAuthorizedWork && !nextAuthorizedEpochForSameWork) {
+            packet.claim.attempt === existing.attempt + 1;
+          if (
+            !retryAfterFailure &&
+            !retryAfterReconciliation &&
+            !nextAuthorizedWork &&
+            !nextAuthorizedEpochForSameWork
+          ) {
             throw new Error(
               `Run already has an authoritative claim for ${existing.workId} attempt ${existing.attempt}`,
             );
           }
+          preserveAttemptHistory = retryAfterFailure || retryAfterReconciliation;
         }
         const timestamp = new Date().toISOString();
         const checkpoint: WorkExecutionCheckpoint = {
@@ -196,9 +249,16 @@ export class WorkExecutionAuthority extends Service {
           intentId: packet.claim.intentId,
           claimToken: packet.claim.claimToken,
           inputDigest: packet.claim.inputDigest,
+          executionChainId,
+          retryPolicy,
           packet: structuredClone(packet.identity),
           status: 'claimed',
           continuation: 'execute',
+          ...(existing && preserveAttemptHistory
+            ? {
+                attemptHistory: [...(existing.attemptHistory ?? []), attemptSnapshot(existing)],
+              }
+            : {}),
           updatedAt: timestamp,
         };
         const nextState: RunState = {
@@ -1022,6 +1082,15 @@ export class WorkExecutionAuthority extends Service {
         result: 'not-executed',
         reason,
       },
+      {},
+      (current) => {
+        if (
+          current.continuation === 'awaiting-correction' ||
+          (current.rejectedSubmissions?.length ?? 0) > 0
+        ) {
+          throw new Error('An invocation awaiting correction cannot be reconciled as not executed');
+        }
+      },
     );
   }
 
@@ -1500,6 +1569,7 @@ export class WorkExecutionAuthority extends Service {
     const reconciled = await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
       const current = state.workExecution;
       if (!current || executionMatchesLifecycle(state, current)) return { value: false };
+      if (isUnresolvedCheckpoint(current)) return { value: false };
       const timestamp = new Date().toISOString();
       const nextState = structuredClone(state);
       delete nextState.workExecution;
@@ -1719,6 +1789,7 @@ export class WorkExecutionAuthority extends Service {
     continuation: WorkContinuationKind,
     data: Record<string, unknown>,
     additions: Partial<WorkExecutionCheckpoint> = {},
+    guard?: (current: WorkExecutionCheckpoint) => void,
   ): Promise<WorkExecutionCheckpoint> {
     const result = await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
       const current = state.workExecution;
@@ -1736,6 +1807,7 @@ export class WorkExecutionAuthority extends Service {
         if (current.status === status) return { value: structuredClone(current) };
         throw new Error(`Work execution cannot move from ${current.status} to ${status}`);
       }
+      guard?.(current);
       const timestamp = new Date().toISOString();
       const checkpoint: WorkExecutionCheckpoint = {
         ...current,

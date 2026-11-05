@@ -1,5 +1,14 @@
 {
   "schemaVersion": 1,
+  "retiredProductionMarkers": [
+    "build\\.design-revision-(?:required|approved|rejected)",
+    "build-design-revision-(?:required|decision)",
+    "build-design:",
+    "host-reported-design-assumption-invalid",
+    "human-(?:approved|rejected)-design-revision",
+    "design_assumption_invalid",
+    "planning_semantics_changed"
+  ],
   "reviewedSourceRoots": ["app", "domains", "platform", "plugins", "services"],
   "capabilities": [
     {

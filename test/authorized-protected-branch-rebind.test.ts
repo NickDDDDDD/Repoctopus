@@ -62,6 +62,12 @@ const candidate = {
       expectedOutcomes: ['done'],
       validatorProfile: 'build-package-v1',
       dependsOn: [],
+      sideEffectClass: 'repository-write' as const,
+      completionContract: {
+        schemaVersion: 1 as const,
+        behaviorSlice: 'task-1',
+        requiredEvidence: ['acceptance', 'implementation', 'red', 'green', 'regression'] as const,
+      },
     },
     {
       packageKey: 'two',
@@ -72,6 +78,12 @@ const candidate = {
       expectedOutcomes: ['done'],
       validatorProfile: 'build-package-v1',
       dependsOn: ['one'],
+      sideEffectClass: 'repository-write' as const,
+      completionContract: {
+        schemaVersion: 1 as const,
+        behaviorSlice: 'task-2',
+        requiredEvidence: ['acceptance', 'implementation', 'red', 'green', 'regression'] as const,
+      },
     },
   ],
 };

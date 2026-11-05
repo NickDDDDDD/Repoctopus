@@ -18,6 +18,59 @@ import {
 import { compositionFixture, projectFixture, workflowFixture } from './helpers/fixtures.js';
 
 describe('telemetry mapping', () => {
+  it('projects bounded recovery dimensions without leaking decision identity into metrics', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-recovery-telemetry',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '1'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 2,
+      eventId: 'recovery-event',
+      timestamp: '2026-01-01T00:00:01.000Z',
+      type: 'recovery.applied',
+      runId: run.runId,
+      stateVersion: 2,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        decisionId: `recovery:sha256:${'a'.repeat(64)}`,
+        authority: 'plan',
+        action: 'revise-plan',
+        reasonCode: 'package-not-completable',
+        retainedCount: 4,
+        invalidatedCount: 2,
+        path: 'C:/private',
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+    expect(safeEventAttributes(batch, event)).toMatchObject({
+      'repoctopus.recovery.authority': 'plan',
+      'repoctopus.recovery.action': 'revise-plan',
+      'repoctopus.recovery.reason_code': 'package-not-completable',
+      'repoctopus.recovery.retained_count': 4,
+      'repoctopus.recovery.invalidated_count': 2,
+    });
+    const metric = workflowEventMetricAttributes(batch, event);
+    expect(metric).toMatchObject({
+      'repoctopus.recovery.authority': 'plan',
+      'repoctopus.recovery.action': 'revise-plan',
+      'repoctopus.recovery.reason_code': 'package-not-completable',
+    });
+    expect(JSON.stringify(metric)).not.toMatch(/sha256:|C:\/private|decision/u);
+  });
+
   it('exports allowlisted metadata and drops paths, summaries and credentials', () => {
     const workflow = workflowFixture();
     const project = projectFixture();
@@ -70,6 +123,48 @@ describe('telemetry mapping', () => {
     expect(JSON.stringify(attributes)).not.toMatch(
       /C:\/secret|source code|ghp_|session=secret|DATABASE_PASSWORD|data:image|private learning notes|\.repoctopus\/learning|matt-builtins/u,
     );
+  });
+
+  it.each([
+    ['implementation_failure', 'implementation_failure'],
+    ['authority_conflict', 'authority_conflict'],
+    ['plan_constraint', 'plan_constraint'],
+    ['evidence_mismatch', 'evidence_mismatch'],
+    ['evidence_unavailable', 'evidence_unavailable'],
+    ['external_result_unknown', 'external_result_unknown'],
+    ['design_assumption_invalid', 'unknown'],
+    ['planning_semantics_changed', 'unknown'],
+  ] as const)('normalizes execution finding kind %s to %s', (findingKind, expected) => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: `run-finding-${findingKind}`,
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-11-05T00:00:00.000Z',
+      traceId: '7'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 1,
+      eventId: `event-finding-${findingKind}`,
+      timestamp: run.createdAt,
+      type: 'work.host-completed',
+      runId: run.runId,
+      stateVersion: 1,
+      compositionDigest: run.composition.compositionDigest,
+      data: { findingKind },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+
+    expect(safeEventAttributes(batch, event)['repoctopus.execution.findingKind']).toBe(expected);
   });
 
   it('exports bounded Strategy and Binding lifecycle facts without raw digests or paths', () => {

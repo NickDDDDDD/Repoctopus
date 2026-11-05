@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import type { ActionClaimInput } from '../domains/action/types.js';
 import type {
   ExternalWorkExecutionOutcome,
   WorkExecutionHost,
@@ -9,7 +10,10 @@ import type {
   WorkExecutionResult,
   WorkExecutionSessionIdentity,
 } from '../domains/work-execution/types.js';
+import type { RunState } from '../domains/engine/types.js';
 import { ManagedWorkExecutor } from '../services/managed-work-executor.js';
+import { WorkDispatcher } from '../services/work-dispatcher.js';
+import { WorkExecutionAuthority } from '../services/work-execution-authority.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
@@ -183,6 +187,7 @@ function externalReplayHarness() {
     findings: [
       {
         kind: 'implementation_failure',
+        code: 'implementation-failed',
         summary: 'A bounded finding remains stable across transport retries.',
         taskIds: ['6.1'],
       },
@@ -399,11 +404,135 @@ describe('Managed Work Executor Build contract', () => {
     );
   });
 
+  it.each([2, 3])(
+    'rejects public external first claim attempt %s before Host invocation',
+    async (attempt) => {
+      const work = {
+        workId: 'open:change-intake',
+        inputDigest: digest('e'),
+        checkEpoch: 1,
+        phase: 'open',
+        kind: 'change.intake',
+        capabilities: [],
+        sideEffectClass: 'none',
+      };
+      let run = {
+        runId: 'run-1',
+        status: 'running',
+        stateVersion: 1,
+        composition: { compositionDigest: digest('f') },
+        changeLifecycle: {
+          identity: { changeId: 'change-1' },
+          phase: 'open',
+          checkEpoch: 1,
+          currentWork: work,
+          waitCondition: null,
+        },
+      } as unknown as RunState;
+      const runStore = {
+        loadRun: vi.fn().mockImplementation(() => Promise.resolve(run)),
+        commitGuarded: vi.fn().mockImplementation(
+          (
+            _runId: string,
+            reduce: (input: { state: RunState; trajectory: never[] }) => {
+              state?: RunState;
+              value: unknown;
+            },
+          ) => {
+            const reduced = reduce({ state: run, trajectory: [] });
+            if (reduced.state) run = reduced.state;
+            return Promise.resolve(reduced.value);
+          },
+        ),
+      };
+      const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+      const markHostStarted = vi.fn();
+      Object.defineProperty(authority, 'ctx', {
+        value: {
+          runStore,
+          workExecutionPacketStore: {
+            save: vi
+              .fn()
+              .mockImplementation((packet: WorkExecutionPacket) =>
+                Promise.resolve({ status: 'created', packet }),
+              ),
+          },
+        },
+      });
+      authority.markHostStarted = markHostStarted;
+      const dispatcher = Object.create(WorkDispatcher.prototype) as WorkDispatcher;
+      Object.defineProperty(dispatcher, 'contributors', { value: new Map() });
+      Object.defineProperty(dispatcher, 'ctx', {
+        value: {
+          runStore,
+          workExecutionAuthority: authority,
+          workContextAssembler: {
+            assemble: vi.fn().mockResolvedValue({
+              schemaVersion: 1,
+              workId: work.workId,
+              layers: [],
+              digest: digest('c'),
+            }),
+          },
+          actionDispatcher: {
+            claim: vi.fn().mockImplementation((input: ActionClaimInput) =>
+              Promise.resolve({
+                schemaVersion: 3,
+                intentId: `intent-${attempt}`,
+                idempotencyKey: `claim-${attempt}`,
+                runId: input.runId,
+                workId: input.workId,
+                attempt: input.attempt,
+                checkEpoch: input.checkEpoch,
+                claimToken: digest('d'),
+                inputDigest: input.inputDigest,
+                compositionDigest: digest('f'),
+                composition: input.composition,
+                action: input.action,
+                adapter: input.adapter,
+                executor: input.executor,
+                executionContext: input.executionContext,
+                createdAt: '2026-11-05T00:00:00.000Z',
+              }),
+            ),
+          },
+        },
+      });
+      dispatcher.register({
+        id: 'manual',
+        identity: { id: 'manual', kind: 'work' } as never,
+        requiredCapabilities: [],
+      });
+      const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+      Object.defineProperty(service, 'ctx', {
+        value: { runStore, workDispatcher: dispatcher, workExecutionAuthority: authority },
+      });
+
+      await expect(
+        service.claimExternal({
+          runId: 'run-1',
+          adapter: 'manual',
+          attempt,
+          executor: {
+            actorId: 'user-1',
+            runnerId: 'runner-1',
+            source: 'api',
+            authenticated: true,
+          },
+        }),
+      ).rejects.toThrow(/attempt 1/u);
+      expect(markHostStarted).not.toHaveBeenCalled();
+      expect(run.workExecution).toBeUndefined();
+    },
+  );
+
   it('rejects an under-capable external Runner before persisting the Work claim', async () => {
     const claim = vi
       .fn()
       .mockRejectedValue(
-        new Error('External Work Execution Host cannot claim work-plan; missing specification.read'),
+        new Error(
+          'External Work Execution Host cannot claim work-plan; missing specification.read',
+        ),
       );
     const markHostStarted = vi.fn();
     const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;

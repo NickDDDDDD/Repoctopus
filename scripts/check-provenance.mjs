@@ -3,14 +3,16 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 
+import { validateCometProvenance } from './provenance/comet.mjs';
+
 const root = path.resolve(import.meta.dirname, '..');
 const findings = [];
 const manifestPath = path.join(root, 'third_party', 'comet', 'source-manifest.json');
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
-if (manifest.schemaVersion !== 1 || !manifest.upstream?.commit || !Array.isArray(manifest.files)) {
-  throw new Error('Invalid third_party/comet/source-manifest.json');
-}
-for (const entry of manifest.files) {
+const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
+const packageLock = JSON.parse(await readFile(path.join(root, 'package-lock.json'), 'utf8'));
+findings.push(...validateCometProvenance(manifest, packageJson, packageLock));
+for (const entry of manifest.files ?? []) {
   if (
     typeof entry.source !== 'string' ||
     !/^[a-f0-9]{64}$/.test(entry.sourceSha256) ||
@@ -29,6 +31,14 @@ for (const entry of manifest.files) {
     const source = await readFile(path.join(process.env.COMET_UPSTREAM_ROOT, entry.source));
     if (createHash('sha256').update(source).digest('hex') !== entry.sourceSha256) {
       findings.push(`Source digest mismatch: ${entry.source}`);
+    }
+  }
+}
+for (const reference of manifest.references ?? []) {
+  if (process.env.COMET_UPSTREAM_ROOT) {
+    const source = await readFile(path.join(process.env.COMET_UPSTREAM_ROOT, reference.source));
+    if (createHash('sha256').update(source).digest('hex') !== reference.sourceSha256) {
+      findings.push(`Comet behavioral reference digest mismatch: ${reference.source}`);
     }
   }
 }
@@ -277,8 +287,6 @@ if (
 ) {
   findings.push('Invalid third_party/dsh-adoption.json');
 }
-const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
-const packageLock = JSON.parse(await readFile(path.join(root, 'package-lock.json'), 'utf8'));
 for (const entry of dshAdoption.npmPackages ?? []) {
   if (typeof entry.name !== 'string' || typeof entry.version !== 'string') {
     findings.push(`Invalid DSH package entry: ${entry.name ?? '(missing name)'}`);

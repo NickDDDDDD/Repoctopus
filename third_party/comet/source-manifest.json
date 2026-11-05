@@ -1,11 +1,43 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "upstream": {
     "repository": "https://github.com/rpamis/comet.git",
     "commit": "35c9860b77b42bafa0c2d80d8d695889f888a924",
     "version": "0.5.1",
     "license": "MIT"
   },
+  "references": [
+    {
+      "role": "revision-readiness",
+      "source": "domains/comet-classic/classic-sdk-revision-readiness.ts",
+      "sourceSha256": "27636b4eb8c2724f5b007fbc8e21471f4294aae6b15b3d2c1f5f667e449f97bd",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "revision-command",
+      "source": "domains/comet-classic/classic-sdk-revision.ts",
+      "sourceSha256": "eda9b0687b81cad719a555e6f5bbab983394c904f734347ad132b87e94c5f684",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "revision-application",
+      "source": "domains/comet-classic/classic-sdk-revision-application.ts",
+      "sourceSha256": "a893844d3376ce283f5c139a210bd5e0d1348718a56b85e68f52fd3975b95681",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "evidence-invalidation",
+      "source": "domains/engine/runtime-service.ts",
+      "sourceSha256": "69c903f5492087bdea6bfb0bd2ce31df594f42d910c0d3bbd721a2ede73fc44e",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "action-retry-policy",
+      "source": "domains/engine/runtime-action.ts",
+      "sourceSha256": "da3771d559025fac4442cffdc34d53c47c5ce69ac4c7054ec785676004c21cf4",
+      "adoption": "behavioral-reference"
+    }
+  ],
   "files": [
     {
       "source": "domains/engine/loop.ts",
@@ -116,7 +148,7 @@
       "source": "domains/comet-native/native-snapshot.ts",
       "sourceSha256": "865c7d16b87c6b04f96b404986b8c0bacdda6a4de5aa7e47224488b085a397bf",
       "target": "platform/git/evidence-fingerprint.ts",
-      "sha256": "71ddfac8f4340945debae9575a19ed3efd91ca20178f1a200aa706b6aaa60a58",
+      "sha256": "3028ce88b48ad3d5e618867c90a33409737d8867da74658e9b7a5b6d5bdf3e33",
       "adoption": "modified"
     },
     {
@@ -130,7 +162,7 @@
       "source": "domains/comet-classic/classic-guard.ts",
       "sourceSha256": "9d34982be2edce5a1ceb067310b4e82610beb6a874cd1ddbfa0fb5898ac36108",
       "target": "domains/runtime/workflow-runs.ts",
-      "sha256": "a7200559e2627a6cd074987ee23fd17fde1adf20bb96c13a25b89387f4dac74e",
+      "sha256": "40cec4a4ccd611d8ffdbd5572bd56a7b39d28c055d07298df085906177def616",
       "adoption": "modified"
     },
     {

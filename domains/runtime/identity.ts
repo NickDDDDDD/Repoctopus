@@ -10,7 +10,10 @@ export type RuntimeIdentityKind =
   | 'build-strategy'
   | 'execution-binding'
   | 'build-plan'
+  | 'work-input'
+  | 'package-completion'
   | 'execution-checkpoint'
+  | 'evidence-dependency'
   | 'verification-input'
   | 'publication-provenance';
 
@@ -22,7 +25,10 @@ export const RUNTIME_IDENTITY_KINDS: readonly RuntimeIdentityKind[] = [
   'build-strategy',
   'execution-binding',
   'build-plan',
+  'work-input',
+  'package-completion',
   'execution-checkpoint',
+  'evidence-dependency',
   'verification-input',
   'publication-provenance',
 ];
@@ -54,7 +60,10 @@ export const IDENTITY_OWNERS = {
   'build-strategy': 'build-strategy',
   'execution-binding': 'execution-binding',
   'build-plan': 'build-plan',
+  'work-input': 'work-execution',
+  'package-completion': 'work-execution',
   'execution-checkpoint': 'work-execution',
+  'evidence-dependency': 'verification-authority',
   'verification-input': 'verification-authority',
   'publication-provenance': 'delivery-adapter',
 } as const satisfies Record<RuntimeIdentityKind, RuntimeIdentityOwner>;
@@ -66,9 +75,23 @@ export const IDENTITY_DEPENDENCIES = {
   composition: [],
   'build-strategy': [],
   'execution-binding': ['build-strategy', 'composition'],
-  'build-plan': ['planning-semantic', 'build-strategy', 'execution-binding', 'composition'],
-  'execution-checkpoint': ['build-plan', 'execution-binding', 'composition'],
-  'verification-input': ['planning-semantic', 'build-plan'],
+  'build-plan': [
+    'planning-semantic',
+    'approval-authority',
+    'build-strategy',
+    'execution-binding',
+    'composition',
+  ],
+  'work-input': ['build-plan', 'execution-binding', 'composition'],
+  'package-completion': ['work-input'],
+  'execution-checkpoint': ['package-completion', 'execution-binding', 'composition'],
+  'evidence-dependency': [],
+  'verification-input': [
+    'planning-semantic',
+    'build-plan',
+    'package-completion',
+    'evidence-dependency',
+  ],
   'publication-provenance': [],
 } as const satisfies Record<RuntimeIdentityKind, readonly RuntimeIdentityKind[]>;
 
@@ -80,7 +103,10 @@ const BASIS_FIELDS = {
   buildStrategy: 'build-strategy',
   executionBinding: 'execution-binding',
   buildPlan: 'build-plan',
+  workInput: 'work-input',
+  packageCompletion: 'package-completion',
   executionCheckpoint: 'execution-checkpoint',
+  evidenceDependency: 'evidence-dependency',
   verificationInput: 'verification-input',
   publicationProvenance: 'publication-provenance',
 } as const;
@@ -96,7 +122,10 @@ export interface RuntimeIdentityBasis {
   buildStrategy?: RuntimeIdentity;
   executionBinding?: RuntimeIdentity;
   buildPlan?: RuntimeIdentity;
+  workInput?: RuntimeIdentity;
+  packageCompletion?: RuntimeIdentity;
   executionCheckpoint?: RuntimeIdentity;
+  evidenceDependency?: RuntimeIdentity;
   verificationInput?: RuntimeIdentity;
   publicationProvenance?: RuntimeIdentity;
 }

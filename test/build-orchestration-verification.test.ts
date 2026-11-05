@@ -75,6 +75,12 @@ describe('managed Build verification subject', () => {
             expectedOutcomes: ['managed-orchestration-passes'],
             validatorProfile: 'build.package-valid',
             dependsOn: [],
+            sideEffectClass: 'repository-write',
+            completionContract: {
+              schemaVersion: 1,
+              behaviorSlice: 'managed-orchestration',
+              requiredEvidence: ['acceptance', 'implementation', 'red', 'green', 'regression'],
+            },
           },
         ],
       },
@@ -98,16 +104,16 @@ describe('managed Build verification subject', () => {
     };
 
     expect(subject).toEqual({
-      definition: 'repoctopus-change@4.7.0',
-      definitionDigest: 'sha256:7b3fa57d9320d05ef4e0e50c938d5685a279cc0ab7c844b8f50cb9578ad8f294',
+      definition: 'repoctopus-change@4.9.0',
+      definitionDigest: 'sha256:9386818aa775d1a328934c99533c639294f20585bc54f0df8543cbd036dc2500',
       runId: 'change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5',
       blackBoxRunId: 'change-managed-blackbox-managed-blackbox-a56af5c947f984ce',
       strategyId: 'build-strategy:426031405571f2b72e439071',
       strategyDigest: 'sha256:912ec16c53070e44b5f6dc57005492e6b2d4362853a1253a149341e65cd4c50c',
       bindingId: 'execution-binding:fbfc15dcbf8411a9f3a89f2b',
       bindingStateDigest: 'sha256:691849e3d564f6f99fe3dde34ef68909e283d9cea775ca409cd22c90bc31bc09',
-      planId: 'build-plan:4cb137155e0bd881f82f4a81',
-      planDigest: 'sha256:a259ddbef061d896bdfb67867d1916b9e360ad6c4cb137155e0bd881f82f4a81',
+      planId: 'build-plan:937746cc48a1bd507f90cf61',
+      planDigest: 'sha256:3db0cd8710128292326e28c0d6172dd945cb1e5c937746cc48a1bd507f90cf61',
       taskSetDigest: 'sha256:d96a472d5f9b11f299872af949d92193398bfe295dc727cd7f7eeefb6629cc2f',
     });
   });

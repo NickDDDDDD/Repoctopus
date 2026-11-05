@@ -24,8 +24,18 @@ import type {
   PlanEvidence,
   PackageCompletionEvidence,
 } from './build-protocol.js';
-import { advanceBuildProtocol, suspendBuildProtocolForDesign } from './build-protocol.js';
+import {
+  advanceBuildProtocol,
+  compareBuildPlanAuthorizationEnvelope,
+  suspendBuildProtocolForDesign,
+} from './build-protocol.js';
 import { runtimeInvalidationScope } from '../runtime/invalidation.js';
+import {
+  assertRecoveryDecision,
+  type RecoveryAction,
+  type RecoveryAuthority,
+  type RecoveryDecision,
+} from '../runtime/recovery.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -391,6 +401,15 @@ export interface ChangeLifecycleTransitionFact {
     nextCheckEpoch: number;
     evidenceIds: readonly string[];
   };
+  recovery?: {
+    decisionId: `recovery:sha256:${string}`;
+    observationId: string;
+    action: RecoveryAction;
+    authority: RecoveryAuthority;
+    reasonCode: string;
+    retainedIdentities: readonly string[];
+    invalidatedIdentities: readonly string[];
+  };
 }
 
 export type OpenRepairSource =
@@ -550,21 +569,6 @@ export type ChangeLifecycleObservation =
       evidence: BuildCheckEvidence;
       invalidation: BuildInvalidation;
       work: WorkDescriptor;
-    }
-  | {
-      kind: 'build-design-revision-required';
-      requestId: string;
-      proposalDigest: `sha256:${string}`;
-      reason: string;
-      evidenceIds: readonly string[];
-    }
-  | {
-      kind: 'build-design-revision-decision';
-      decision: 'approve' | 'reject';
-      requestId: string;
-      proposalDigest: `sha256:${string}`;
-      actorId: string;
-      work?: WorkDescriptor;
     }
   | {
       kind: 'build-retry-exhausted';
@@ -772,6 +776,7 @@ export function applyChangeLifecycleTransition(options: {
     specificationClosure?: SpecificationClosureResult | null;
     publicationReceipt?: PublicationReceipt | null;
   };
+  preserveCheckEpoch?: boolean;
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
   if (
@@ -798,13 +803,15 @@ export function applyChangeLifecycleTransition(options: {
   if (!options.definition.phases.some((entry) => entry.phase === transition.to.phase)) {
     throw new Error(`Lifecycle transition ${transition.id} targets an undeclared phase`);
   }
-  if (options.current.checkEpoch === Number.MAX_SAFE_INTEGER) {
+  if (!options.preserveCheckEpoch && options.current.checkEpoch === Number.MAX_SAFE_INTEGER) {
     throw new Error('Change lifecycle checkEpoch cannot overflow');
   }
   const snapshot: ChangeLifecycleSnapshot = {
     ...structuredClone(options.current),
     revision: options.current.revision + 1,
-    checkEpoch: options.current.checkEpoch + 1,
+    checkEpoch: options.preserveCheckEpoch
+      ? options.current.checkEpoch
+      : options.current.checkEpoch + 1,
     phase: transition.to.phase,
     status: transition.to.status,
     currentWork: structuredClone(options.next.currentWork),
@@ -1491,13 +1498,22 @@ export function evolveChangeLifecycle(options: {
     });
   }
   if (observation.kind === 'build-plan-approval-required') {
+    const authorizationExpansion = current.buildProtocol?.authorizationEnvelope
+      ? compareBuildPlanAuthorizationEnvelope(
+          current.buildProtocol.authorizationEnvelope,
+          current.buildProtocol.plan!,
+        )
+      : null;
     if (
       current.phase !== 'build' ||
       current.status !== 'running' ||
       current.currentWork !== null ||
       !current.buildProtocol ||
       current.buildProtocol.currentAction !== 'plan-evidence' ||
-      observation.evidence.risk.level !== 'high' ||
+      !(
+        observation.evidence.risk.level === 'high' ||
+        authorizationExpansion?.requiresDecision === true
+      ) ||
       observation.evidence.planDigest !== current.buildProtocol.plan?.digest
     ) {
       throw new Error('Plan approval wait does not match the active Plan Evidence');
@@ -1542,7 +1558,7 @@ export function evolveChangeLifecycle(options: {
         ? {
             kind: 'plan-evidence-accepted',
             evidence: observation.evidence,
-            approvedRiskDigest: observation.evidence.riskDecisionDigest,
+            approvedAuthorizationEnvelopeDigest: observation.evidence.authorizationEnvelope.digest,
           }
         : { kind: 'plan-rejected' },
     );
@@ -1671,90 +1687,6 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         buildProtocol,
-      },
-    });
-  }
-  if (observation.kind === 'build-design-revision-required') {
-    if (
-      current.phase !== 'build' ||
-      current.status !== 'running' ||
-      !current.currentWork ||
-      !observation.reason.trim()
-    ) {
-      throw new Error('Design revision request requires an active Build Work');
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'build.design-revision-required',
-      next: {
-        currentWork: null,
-        waitCondition: {
-          schemaVersion: 1,
-          kind: 'human-decision',
-          waitId: `build-design:${observation.requestId}`,
-          requestId: observation.requestId,
-          proposalDigest: observation.proposalDigest,
-          inputDigest: observation.proposalDigest,
-          reason: observation.reason,
-        },
-        blocker: null,
-      },
-    });
-  }
-  if (observation.kind === 'build-design-revision-decision') {
-    const wait = current.waitCondition;
-    if (
-      current.phase !== 'build' ||
-      current.status !== 'waiting' ||
-      wait?.kind !== 'human-decision' ||
-      !wait.waitId.startsWith('build-design:') ||
-      wait.requestId !== observation.requestId ||
-      wait.proposalDigest !== observation.proposalDigest ||
-      !observation.actorId.trim()
-    ) {
-      throw new Error('Design revision decision does not match the active Build wait');
-    }
-    if (observation.decision === 'approve') {
-      if (observation.work?.phase !== 'design' || observation.work.kind !== 'specification.plan') {
-        throw new Error('Approved Design revision requires Runtime-selected Design Work');
-      }
-      const buildProtocol = current.buildProtocol
-        ? suspendBuildProtocolForDesign(current.buildProtocol, {
-            observedPlanningDigest: wait.proposalDigest,
-            reasonCode: 'build-design-revision',
-            invalidatedIdentities: ['planning-semantic'],
-          })
-        : undefined;
-      return applyChangeLifecycleTransition({
-        definition: options.definition,
-        current,
-        transitionId: 'build.design-revision-approved',
-        next: {
-          currentWork: observation.work,
-          waitCondition: null,
-          blocker: null,
-          buildProtocol: buildProtocol ?? null,
-          planningDigest: null,
-          adoptedCompletionClaimDigest: null,
-          verificationInput: null,
-          verificationInvalidation: null,
-        },
-      });
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'build.design-revision-rejected',
-      next: {
-        currentWork: null,
-        waitCondition: null,
-        blocker: {
-          code: 'build.design-revision-rejected',
-          message: 'Design revision was rejected by the Human Decision',
-          evidenceIds: [observation.proposalDigest],
-          sinceRevision: current.revision + 1,
-        },
       },
     });
   }
@@ -2283,4 +2215,231 @@ export function projectChangeRun(
       }
     : null;
   return structuredClone({ ...snapshot, ...details, build });
+}
+
+export interface LifecycleRecoveryMaterialization {
+  work: WorkDescriptor;
+  inputDigest?: `sha256:${string}`;
+  evidenceIds: readonly string[];
+  invalidation?: BuildInvalidation;
+  verificationInput?: VerificationInput;
+}
+
+function assertRecoveryDecisionCheckpoint(
+  current: ChangeLifecycleSnapshot,
+  decision: RecoveryDecision,
+): void {
+  assertRecoveryDecision(decision);
+  if (
+    decision.runId !== current.identity.runId ||
+    decision.expectedRevision !== current.revision ||
+    decision.checkEpoch !== current.checkEpoch
+  ) {
+    throw new Error('Recovery decision belongs to a stale lifecycle checkpoint');
+  }
+}
+
+function attachRecoveryDecision(
+  reduction: { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact },
+  decision: RecoveryDecision,
+): ChangeLifecycleReduction {
+  return {
+    snapshot: reduction.snapshot,
+    fact: {
+      ...reduction.fact,
+      recovery: {
+        decisionId: decision.decisionId,
+        observationId: decision.observationId,
+        action: decision.action,
+        authority: decision.authority,
+        reasonCode: decision.reasonCode,
+        retainedIdentities: [...decision.retainedIdentities],
+        invalidatedIdentities: [...decision.invalidatedIdentities],
+      },
+    },
+  };
+}
+
+function applyReviseDesignRecovery(input: {
+  definition: ChangeLifecycleDefinition;
+  current: ChangeLifecycleSnapshot;
+  decision: RecoveryDecision;
+  materialization: LifecycleRecoveryMaterialization;
+}): ChangeLifecycleReduction {
+  const { current, decision, materialization } = input;
+  if (decision.authority !== 'planning') {
+    throw new Error('revise-design requires a planning recovery decision');
+  }
+  if (!materialization.inputDigest || !/^sha256:[a-f0-9]{64}$/u.test(materialization.inputDigest)) {
+    throw new Error('revise-design requires the observed planning input digest');
+  }
+  const invalidationKind = decision.changedIdentities.includes('approval-authority')
+    ? 'approval-authority'
+    : 'semantic';
+  const reduction = evolveChangeLifecycle({
+    definition: input.definition,
+    current,
+    observation: {
+      kind: 'planning-authority-invalidated',
+      expectedRevision: decision.expectedRevision,
+      fromPhase: current.phase as 'build' | 'verify' | 'archive',
+      invalidationKind,
+      reason: decision.reasonCode,
+      evidenceIds: [...materialization.evidenceIds],
+      inputDigest: materialization.inputDigest,
+      work: materialization.work,
+    },
+  });
+  if (!reduction.fact) throw new Error('revise-design did not materialize a lifecycle transition');
+  return attachRecoveryDecision({ snapshot: reduction.snapshot, fact: reduction.fact }, decision);
+}
+
+function applyRevisePlanRecovery(input: {
+  definition: ChangeLifecycleDefinition;
+  current: ChangeLifecycleSnapshot;
+  decision: RecoveryDecision;
+  materialization: LifecycleRecoveryMaterialization;
+}): ChangeLifecycleReduction {
+  const { current, decision, materialization } = input;
+  if (decision.authority !== 'plan') {
+    throw new Error('revise-plan requires a Plan recovery decision');
+  }
+  if (
+    !['build', 'verify'].includes(current.phase) ||
+    !['running', 'blocked'].includes(current.status) ||
+    !current.buildProtocol ||
+    !materialization.invalidation ||
+    materialization.work.phase !== 'build' ||
+    materialization.work.kind !== 'build.plan' ||
+    materialization.work.checkEpoch !== current.checkEpoch + 1
+  ) {
+    throw new Error('revise-plan does not match the active Build checkpoint');
+  }
+  const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+    kind: 'revision-required',
+    invalidation: materialization.invalidation,
+  });
+  return attachRecoveryDecision(
+    applyChangeLifecycleTransition({
+      definition: input.definition,
+      current,
+      transitionId: current.phase === 'verify' ? 'verify.failed' : 'build.check-rejected',
+      next: {
+        currentWork: materialization.work,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol,
+        verificationInput: null,
+        verificationInvalidation: null,
+        archiveDeliveryInput: null,
+        specificationClosure: null,
+        publicationReceipt: null,
+      },
+    }),
+    decision,
+  );
+}
+
+function applyContinueBuildRecovery(input: {
+  definition: ChangeLifecycleDefinition;
+  current: ChangeLifecycleSnapshot;
+  decision: RecoveryDecision;
+  materialization: LifecycleRecoveryMaterialization;
+}): ChangeLifecycleReduction {
+  const { current, decision, materialization } = input;
+  if (decision.authority !== 'work') {
+    throw new Error('continue-build requires a Work recovery decision');
+  }
+  if (
+    current.phase !== 'build' ||
+    current.status !== 'running' ||
+    !current.currentWork ||
+    !current.buildProtocol?.currentAction ||
+    materialization.work.workId !== current.currentWork.workId ||
+    materialization.work.checkEpoch !== current.checkEpoch
+  ) {
+    throw new Error('continue-build does not match the active Work checkpoint');
+  }
+  const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+    kind: 'retry',
+    action: current.buildProtocol.currentAction,
+  });
+  return attachRecoveryDecision(
+    applyChangeLifecycleTransition({
+      definition: input.definition,
+      current,
+      transitionId: 'build.work-continued',
+      preserveCheckEpoch: true,
+      next: {
+        currentWork: current.currentWork,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol,
+      },
+    }),
+    decision,
+  );
+}
+
+function applyInvalidateEvidenceRecovery(input: {
+  definition: ChangeLifecycleDefinition;
+  current: ChangeLifecycleSnapshot;
+  decision: RecoveryDecision;
+  materialization: LifecycleRecoveryMaterialization;
+}): ChangeLifecycleReduction {
+  const { current, decision, materialization } = input;
+  const verificationInput = materialization.verificationInput;
+  if (decision.authority !== 'evidence') {
+    throw new Error('invalidate-evidence requires an Evidence recovery decision');
+  }
+  if (
+    current.phase !== 'verify' ||
+    !['running', 'blocked'].includes(current.status) ||
+    !current.buildProtocol ||
+    current.buildProtocol.status !== 'ready-for-verify' ||
+    materialization.work.phase !== 'verify' ||
+    materialization.work.kind !== 'evidence.verify' ||
+    materialization.work.checkEpoch !== current.checkEpoch + 1 ||
+    !verificationInput ||
+    verificationInput.checkEpoch !== materialization.work.checkEpoch ||
+    verificationInput.digest !== materialization.work.inputDigest
+  ) {
+    throw new Error('invalidate-evidence does not match the nearest Verify producer');
+  }
+  return attachRecoveryDecision(
+    applyChangeLifecycleTransition({
+      definition: input.definition,
+      current,
+      transitionId: 'verify.retry',
+      next: {
+        currentWork: materialization.work,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol: current.buildProtocol,
+        verificationInput,
+        verificationInvalidation: null,
+        archiveDeliveryInput: null,
+        specificationClosure: null,
+        publicationReceipt: null,
+      },
+    }),
+    decision,
+  );
+}
+
+export function applyLifecycleRecoveryDecision(input: {
+  definition: ChangeLifecycleDefinition;
+  current: ChangeLifecycleSnapshot;
+  decision: RecoveryDecision;
+  materialization: LifecycleRecoveryMaterialization;
+}): ChangeLifecycleReduction {
+  assertRecoveryDecisionCheckpoint(input.current, input.decision);
+  if (input.decision.action === 'revise-design') return applyReviseDesignRecovery(input);
+  if (input.decision.action === 'revise-plan') return applyRevisePlanRecovery(input);
+  if (input.decision.action === 'continue-build') return applyContinueBuildRecovery(input);
+  if (input.decision.action === 'invalidate-evidence')
+    return applyInvalidateEvidenceRecovery(input);
+  if (input.decision.action === 'retry-infrastructure')
+    return applyInvalidateEvidenceRecovery(input);
+  throw new Error(`Lifecycle recovery action is not materialized: ${input.decision.action}`);
 }

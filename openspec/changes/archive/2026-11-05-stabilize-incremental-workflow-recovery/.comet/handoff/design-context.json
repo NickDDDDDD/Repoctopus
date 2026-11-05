@@ -1,0 +1,19 @@
+{
+  "change": "stabilize-incremental-workflow-recovery",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "a0e0a5f467e4ee2665da76b029f20bb538a7c018350e4f64f5e4f5a865424c0e",
+  "files": [
+    { "path": "openspec/changes/stabilize-incremental-workflow-recovery/proposal.md", "sha256": "696b24ae91ad7992c208133adb1714b3c59cda3f1e1eda2914adcc9316bcb76f" },
+    { "path": "openspec/changes/stabilize-incremental-workflow-recovery/design.md", "sha256": "c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f" },
+    { "path": "openspec/changes/stabilize-incremental-workflow-recovery/tasks.md", "sha256": "b2f153fe6f50b735c49d7eaca7ae2abfca2852b85b626dd67d7ec70b2b6e9d23" },
+    { "path": "openspec/changes/stabilize-incremental-workflow-recovery/.openspec.yaml", "sha256": "3e16994612e657a7bbaefe38b70ef46f3e8e9f382f092dcaceb60ebabe7a5da0" },
+    { "path": "openspec/changes/stabilize-incremental-workflow-recovery/specs/change-lifecycle/spec.md", "sha256": "9ca2fc6d9d517fd9fc87b7f0d6b78c3ee73175647e729193accf6d8b8810b9a6" },
+    { "path": "openspec/changes/stabilize-incremental-workflow-recovery/specs/implementation-evidence/spec.md", "sha256": "6abc28c0ad9e53b01af3663a9c04a3253488132fa9f89b1572ae7850542d6b31" },
+    { "path": "openspec/changes/stabilize-incremental-workflow-recovery/specs/managed-work-execution/spec.md", "sha256": "8f448090e76eb7a2e0afccb677afbe85012164707daf70bf2b3c7916a58a0710" },
+    { "path": "openspec/changes/stabilize-incremental-workflow-recovery/specs/specification-authority/spec.md", "sha256": "11001345169192e57677cba839712c5ab3f7e24b67cd6ae808d9a8ffb26d1754" }
+  ]
+}

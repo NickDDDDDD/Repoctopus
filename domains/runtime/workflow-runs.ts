@@ -31,12 +31,15 @@ import {
   recoverChangeLifecycleSnapshot,
 } from '../change-lifecycle/definition.js';
 import {
+  applyLifecycleRecoveryDecision,
   evolveChangeLifecycle,
   projectChangeRun,
+  type LifecycleRecoveryMaterialization,
   type ChangeLifecycleObservation,
   type ChangeLifecycleSnapshot,
   type ChangeLifecycleState,
 } from '../change-lifecycle/transition.js';
+import type { RecoveryDecision } from './recovery.js';
 import {
   projectCommittedContinuation,
   projectLifecycleNextActions,
@@ -163,7 +166,8 @@ interface WorkExecutionRetirementFact {
 function retireMismatchedExecution(
   state: RunState,
   snapshot: ChangeLifecycleSnapshot,
-  observation: ChangeLifecycleObservation,
+  observationKind: string,
+  options: { authorizedRejectedCorrection?: boolean } = {},
 ): { state: RunState; fact: WorkExecutionRetirementFact | null } {
   const execution = state.workExecution;
   if (
@@ -173,13 +177,31 @@ function retireMismatchedExecution(
   ) {
     return { state, fact: null };
   }
+  const rejectedCorrectionCanBeRetired =
+    options.authorizedRejectedCorrection === true &&
+    execution.status === 'invoking' &&
+    execution.continuation === 'awaiting-correction' &&
+    execution.pendingSubmission === null &&
+    execution.rejectedSubmissions?.some(
+      (submission) =>
+        submission.rejection.reasonCode === 'outcome-rejected' &&
+        submission.outcome.result?.kind === 'build-plan-candidate',
+    ) === true;
+  if (
+    ['invoking', 'submitted', 'unknown'].includes(execution.status) &&
+    !rejectedCorrectionCanBeRetired
+  ) {
+    throw new Error(
+      'Lifecycle cannot replace an unresolved Work execution; reconcile the authoritative invocation first',
+    );
+  }
   const stateWithoutExecution = structuredClone(state);
   delete stateWithoutExecution.workExecution;
   return {
     state: stateWithoutExecution,
     fact: {
       reason: ['workspace-intent-revision-required', 'workspace-intent-revised'].includes(
-        observation.kind,
+        observationKind,
       )
         ? 'workspace-intent-revision'
         : 'lifecycle-work-changed',
@@ -487,6 +509,22 @@ export class WorkflowRunCoordinator {
         ) {
           throw new Error('Authorized branch rebind evidence is stale');
         }
+        const execution = state.workExecution;
+        if (
+          !execution ||
+          execution.workId !== state.changeLifecycle.currentWork.workId ||
+          execution.checkEpoch !== state.changeLifecycle.checkEpoch ||
+          execution.status !== 'invoking' ||
+          execution.continuation !== 'awaiting-correction' ||
+          execution.pendingSubmission !== null ||
+          execution.rejectedSubmissions?.some(
+            (submission) =>
+              submission.rejection.reasonCode === 'outcome-rejected' &&
+              submission.outcome.result?.kind === 'build-plan-candidate',
+          ) !== true
+        ) {
+          throw new Error('Authorized branch rebind does not match a rejected Plan checkpoint');
+        }
       }
       if (
         (observation.kind === 'verify-gate-satisfied' ||
@@ -507,7 +545,9 @@ export class WorkflowRunCoordinator {
       if (!reduced.fact) return { value: undefined };
       const timestamp = this.clock().toISOString();
       const { status, ...changeLifecycle } = reduced.snapshot;
-      const retirement = retireMismatchedExecution(state, reduced.snapshot, observation);
+      const retirement = retireMismatchedExecution(state, reduced.snapshot, observation.kind, {
+        authorizedRejectedCorrection: Boolean(authorizedRebind),
+      });
       const nextState: RunState = {
         ...retirement.state,
         status,
@@ -567,6 +607,136 @@ export class WorkflowRunCoordinator {
     });
     const diagnostics = await this.flushTelemetry(runId);
     return { value: await this.status(runId), diagnostics };
+  }
+
+  async acceptRecoveryDecision(
+    runId: string,
+    decision: RecoveryDecision,
+    materialization: LifecycleRecoveryMaterialization,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    await this.recoverChangeLifecycleDefinition(runId);
+    await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
+      if (decision.runId !== runId) throw new Error('Recovery decision Run identity is invalid');
+      const replayed = trajectory.some(
+        (entry) =>
+          entry.type === 'change.lifecycle.transitioned' &&
+          (entry.data.recoveryDecision as { decisionId?: unknown } | undefined)?.decisionId ===
+            decision.decisionId,
+      );
+      if (replayed) return { value: undefined };
+      const current: ChangeLifecycleSnapshot = {
+        ...structuredClone(state.changeLifecycle),
+        status: state.status,
+      };
+      const reduced = applyLifecycleRecoveryDecision({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        current,
+        decision,
+        materialization,
+      });
+      if (!reduced.fact) throw new Error('Recovery decision did not materialize a transition');
+      const timestamp = this.clock().toISOString();
+      const { status, ...changeLifecycle } = reduced.snapshot;
+      const retirement = retireMismatchedExecution(
+        state,
+        reduced.snapshot,
+        'runtime-recovery-decision',
+      );
+      const nextState: RunState = {
+        ...retirement.state,
+        status,
+        changeLifecycle,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId: stableEventId(runId, decision.decisionId),
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'change.lifecycle.transitioned',
+          state: nextState,
+          data: {
+            observationKind: 'runtime-recovery-decision',
+            recoveryDecision: structuredClone(decision),
+            changeLifecycleTransition: reduced.fact,
+            ...(retirement.fact ? { executionRetirement: structuredClone(retirement.fact) } : {}),
+          },
+        }),
+        value: undefined,
+      };
+    });
+    await this.recordRecoveryTrajectory(runId, decision);
+    const diagnostics = await this.flushTelemetry(runId);
+    return { value: await this.status(runId), diagnostics };
+  }
+
+  private async recordRecoveryTrajectory(runId: string, decision: RecoveryDecision): Promise<void> {
+    const stages = [
+      {
+        type: 'recovery.observed' as const,
+        data: { authority: decision.authority, reasonCode: decision.reasonCode },
+      },
+      {
+        type: 'recovery.classified' as const,
+        data: {
+          authority: decision.authority,
+          action: decision.action,
+          reasonCode: decision.reasonCode,
+        },
+      },
+      {
+        type: 'recovery.applied' as const,
+        data: {
+          authority: decision.authority,
+          action: decision.action,
+          result: 'applied',
+          retainedCount: decision.retainedIdentities.length,
+          invalidatedCount: decision.invalidatedIdentities.length,
+        },
+      },
+      ...(decision.action === 'invalidate-evidence'
+        ? [
+            {
+              type: 'evidence.invalidated' as const,
+              data: {
+                authority: decision.authority,
+                reasonCode: decision.reasonCode,
+                retainedCount: decision.retainedIdentities.length,
+                invalidatedCount: decision.invalidatedIdentities.length,
+              },
+            },
+          ]
+        : []),
+    ];
+    for (const stage of stages) {
+      await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+        const eventId = stableEventId(runId, decision.decisionId, stage.type);
+        if (trajectory.some((candidate) => candidate.eventId === eventId)) {
+          return { value: undefined };
+        }
+        const timestamp = this.clock().toISOString();
+        const nextState = {
+          ...state,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: event({
+            eventId,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: stage.type,
+            state: nextState,
+            data: { decisionId: decision.decisionId, ...stage.data },
+          }),
+          value: undefined,
+        };
+      });
+    }
   }
 
   private assertSameStartIdentity(

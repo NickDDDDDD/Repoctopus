@@ -185,7 +185,7 @@ describe('ObservationEnvelope', () => {
         changeLifecycleTransition: { to: { phase: 'build' }, work: null, wait: null },
         observation: {
           invalidation: {
-            classification: 'implementation_failure',
+            classification: 'authority_conflict',
             packageId: 'work-package:4',
           },
         },
@@ -195,7 +195,7 @@ describe('ObservationEnvelope', () => {
     expect(fallback.correlation).toMatchObject({ phase: 'build', packageId: 'work-package:4' });
     expect(fallback.attributes).toMatchObject({
       observationKind: 'build-fallback-applied',
-      findingKind: 'implementation_failure',
+      findingKind: 'authority_conflict',
     });
 
     for (const [type, state] of [

@@ -15,9 +15,12 @@ import {
   createExecutionWorkspaceIntent,
   createPackageCompletionEvidence,
   createPlanEvidence as createPlanEvidenceV2,
+  createBuildPlanAuthorizationEnvelope,
+  compareBuildPlanAuthorizationEnvelope,
   revalidateSuspendedBuildProtocol,
   suspendBuildProtocolForDesign,
   validateBuildPlan as validateBuildPlanV2,
+  type WorkPackageCandidate,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
 
@@ -168,9 +171,16 @@ function approvedConfiguration(
 
 type BuildFixture = ReturnType<typeof approvedConfiguration>;
 
+type TestWorkPackageCandidate = Omit<
+  WorkPackageCandidate,
+  'sideEffectClass' | 'completionContract'
+> &
+  Partial<Pick<WorkPackageCandidate, 'sideEffectClass' | 'completionContract'>>;
+
 function createBuildPlan(
-  input: Omit<Parameters<typeof createBuildPlanV2>[0], 'strategy' | 'binding'> & {
+  input: Omit<Parameters<typeof createBuildPlanV2>[0], 'strategy' | 'binding' | 'candidate'> & {
     configuration: BuildFixture;
+    candidate: { packages: readonly TestWorkPackageCandidate[] };
   },
 ) {
   const { configuration, ...rest } = input;
@@ -178,6 +188,22 @@ function createBuildPlan(
     ...rest,
     strategy: configuration.strategy,
     binding: configuration.binding,
+    candidate: {
+      packages: input.candidate.packages.map((candidate) => ({
+        ...candidate,
+        sideEffectClass: candidate.sideEffectClass ?? 'repository-write',
+        completionContract:
+          candidate.completionContract ??
+          ({
+            schemaVersion: 1,
+            behaviorSlice: candidate.packageKey,
+            requiredEvidence:
+              configuration.strategy.tddMode === 'tdd'
+                ? ['acceptance', 'implementation', 'red', 'green', 'regression']
+                : ['acceptance', 'implementation', 'test', 'regression'],
+          } as const),
+      })),
+    },
   });
 }
 
@@ -217,6 +243,222 @@ function createPlanEvidence(
 }
 
 describe('Build protocol domain', () => {
+  it('rejects a Package whose Outcome, Validator, and Evidence contract cannot close locally', () => {
+    const configuration = approvedConfiguration({ tddMode: 'tdd' });
+    const tasks = parseSpecificationTasks(
+      'package-closure',
+      '- [ ] 1.1 Implement the behavior.\n  **Acceptance:** The behavior passes.\n',
+    );
+    const acceptanceRefs = tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId);
+    const candidate = {
+      packageKey: 'behavior',
+      taskIds: ['1.1'],
+      repositoryIds: ['workspace'],
+      writeScopes: [{ repositoryId: 'workspace', paths: ['src/**'] }],
+      acceptanceRefs,
+      expectedOutcomes: ['behavior-passes'],
+      validatorProfile: 'build.package-valid',
+      dependsOn: [] as string[],
+      sideEffectClass: 'repository-write' as const,
+      completionContract: {
+        schemaVersion: 1 as const,
+        behaviorSlice: 'behavior-1',
+        requiredEvidence: ['acceptance', 'implementation', 'red', 'green'] as const,
+      },
+    };
+    const plan = createBuildPlan({
+      runId: 'run-package-closure',
+      revision: 1,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: { packages: [candidate] },
+    });
+
+    const validation = validateBuildPlan({ plan, configuration, tasks });
+
+    expect(validation.accepted).toBe(false);
+    expect(validation.findings).toContainEqual(
+      expect.objectContaining({
+        code: 'package-evidence-incomplete',
+        packageIds: [plan.packages[0]!.packageId],
+      }),
+    );
+  });
+
+  it('rejects RED and GREEN split across independently completable TDD Packages', () => {
+    const configuration = approvedConfiguration({ tddMode: 'tdd' });
+    const tasks = parseSpecificationTasks(
+      'tdd-slice',
+      '- [ ] 1.1 Implement one behavior slice.\n  **Acceptance:** The slice passes.\n',
+    );
+    const acceptanceRefs = tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId);
+    const base = {
+      taskIds: ['1.1'],
+      repositoryIds: ['workspace'],
+      writeScopes: [{ repositoryId: 'workspace', paths: ['src/**'] }],
+      acceptanceRefs,
+      expectedOutcomes: ['slice-passes'],
+      validatorProfile: 'build.package-valid',
+      dependsOn: [] as string[],
+      sideEffectClass: 'repository-write' as const,
+    };
+    const plan = createBuildPlan({
+      runId: 'run-tdd-slice',
+      revision: 1,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: [
+          {
+            ...base,
+            packageKey: 'red-only',
+            completionContract: {
+              schemaVersion: 1,
+              behaviorSlice: 'slice-1',
+              requiredEvidence: ['acceptance', 'red'],
+            },
+          },
+          {
+            ...base,
+            packageKey: 'green-only',
+            completionContract: {
+              schemaVersion: 1,
+              behaviorSlice: 'slice-1',
+              requiredEvidence: ['implementation', 'green', 'regression'],
+            },
+          },
+        ],
+      },
+    });
+
+    const validation = validateBuildPlan({ plan, configuration, tasks });
+
+    expect(validation.accepted).toBe(false);
+    expect(validation.findings.map((finding) => finding.code)).toContain('tdd-slice-split');
+  });
+
+  it('accepts a complete TDD behavior slice and a complete direct-mode slice', () => {
+    for (const tddMode of ['tdd', 'direct'] as const) {
+      const configuration = approvedConfiguration({ tddMode });
+      const tasks = parseSpecificationTasks(
+        `complete-${tddMode}`,
+        '- [ ] 1.1 Implement one behavior slice.\n  **Acceptance:** The slice passes.\n',
+      );
+      const requiredEvidence =
+        tddMode === 'tdd'
+          ? (['acceptance', 'implementation', 'red', 'green', 'regression'] as const)
+          : (['acceptance', 'implementation', 'test', 'regression'] as const);
+      const plan = createBuildPlan({
+        runId: `run-complete-${tddMode}`,
+        revision: 1,
+        configuration,
+        planningDigest: tasks.digest,
+        tasks,
+        candidate: {
+          packages: [
+            {
+              packageKey: 'complete-slice',
+              taskIds: ['1.1'],
+              repositoryIds: ['workspace'],
+              writeScopes: [{ repositoryId: 'workspace', paths: ['src/**'] }],
+              acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId),
+              expectedOutcomes: ['slice-passes'],
+              validatorProfile: 'build.package-valid',
+              dependsOn: [],
+              sideEffectClass: 'repository-write',
+              completionContract: {
+                schemaVersion: 1,
+                behaviorSlice: 'slice-1',
+                requiredEvidence,
+              },
+            },
+          ],
+        },
+      });
+
+      expect(validateBuildPlan({ plan, configuration, tasks })).toMatchObject({
+        accepted: true,
+        findings: [],
+      });
+    }
+  });
+
+  it('requires a Human Decision only when a Plan revision expands its authorization envelope', () => {
+    const configuration = approvedConfiguration({
+      repositoryIds: ['workspace', 'backend'],
+      tddMode: 'direct',
+    });
+    const tasks = parseSpecificationTasks(
+      'authorization-envelope',
+      '- [ ] 1.1 Implement the bounded behavior.\n  **Acceptance:** The bounded behavior passes.\n',
+    );
+    const packageCandidate = (overrides: Record<string, unknown> = {}) => ({
+      packageKey: 'bounded',
+      taskIds: ['1.1'],
+      repositoryIds: ['workspace'],
+      writeScopes: [{ repositoryId: 'workspace', paths: ['src/**'] }],
+      acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId),
+      expectedOutcomes: ['bounded-passes'],
+      validatorProfile: 'build.package-valid',
+      dependsOn: [] as string[],
+      sideEffectClass: 'repository-write' as const,
+      completionContract: {
+        schemaVersion: 1 as const,
+        behaviorSlice: 'bounded-1',
+        requiredEvidence: ['acceptance', 'implementation', 'test', 'regression'] as const,
+      },
+      ...overrides,
+    });
+    const create = (revision: number, packages: ReturnType<typeof packageCandidate>[]) =>
+      createBuildPlan({
+        runId: 'run-authorization-envelope',
+        revision,
+        configuration,
+        planningDigest: tasks.digest,
+        tasks,
+        candidate: { packages },
+      });
+    const approved = create(1, [packageCandidate()]);
+    const equivalent = create(2, [
+      packageCandidate({
+        expectedOutcomes: ['bounded-passes-with-equivalent-command'],
+        completionContract: {
+          schemaVersion: 1,
+          behaviorSlice: 'bounded-1',
+          requiredEvidence: ['regression', 'test', 'implementation', 'acceptance'],
+        },
+      }),
+    ]);
+    const expandedRepository = create(2, [
+      packageCandidate({
+        repositoryIds: ['workspace', 'backend'],
+        writeScopes: [
+          { repositoryId: 'workspace', paths: ['src/**'] },
+          { repositoryId: 'backend', paths: ['src/**'] },
+        ],
+      }),
+    ]);
+    const expandedWriteScope = create(2, [
+      packageCandidate({
+        writeScopes: [{ repositoryId: 'workspace', paths: ['src/**', 'infra/**'] }],
+      }),
+    ]);
+    const expandedSideEffect = create(2, [packageCandidate({ sideEffectClass: 'git-publish' })]);
+    const envelope = createBuildPlanAuthorizationEnvelope(approved);
+
+    expect(compareBuildPlanAuthorizationEnvelope(envelope, equivalent)).toMatchObject({
+      requiresDecision: false,
+      expansions: [],
+    });
+    for (const candidate of [expandedRepository, expandedWriteScope, expandedSideEffect]) {
+      expect(compareBuildPlanAuthorizationEnvelope(envelope, candidate).requiresDecision).toBe(
+        true,
+      );
+    }
+  });
+
   it('rejects protected branches only for repositories in the exact Plan write set', () => {
     const intent = createExecutionWorkspaceIntent({
       workspaceId: 'team-platform',
@@ -282,6 +524,12 @@ describe('Build protocol domain', () => {
             expectedOutcomes: ['blocked-state-is-exposed'],
             validatorProfile: 'build.package-valid',
             dependsOn: [],
+            sideEffectClass: 'repository-write',
+            completionContract: {
+              schemaVersion: 1,
+              behaviorSlice: 'web-design',
+              requiredEvidence: ['acceptance', 'implementation', 'red', 'green', 'regression'],
+            },
           },
         ],
       },
@@ -330,6 +578,8 @@ describe('Build protocol domain', () => {
           expectedOutcomes: workPackage.expectedOutcomes,
           validatorProfile: workPackage.validatorProfile,
           dependsOn: [],
+          sideEffectClass: workPackage.sideEffectClass,
+          completionContract: workPackage.completionContract,
         })),
       },
     });
