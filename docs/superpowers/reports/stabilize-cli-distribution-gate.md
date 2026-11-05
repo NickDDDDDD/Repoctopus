@@ -41,4 +41,3 @@ status: verified
 ## 清理
 
 语义摘要临时 tarball 已删除；package E2E 与 Desktop fixture 由测试 hooks 清理；没有保留 debug 日志、scratch 文件、临时消费者目录或后台进程。
-
