@@ -37,7 +37,7 @@
 - [x] 5.2 验证 pending/rejected candidate 不会进入 `not-executed` reconciliation，只有未知执行结果使用 reconciliation；运行 `npx vitest run test/work-execution-recovery.test.ts` 通过。 <!-- comet-task:8e1feeef-c6fb-434c-8351-4145260e64cb -->
 - [x] 5.3 为 accepted、rejected、processing error、validator 和 continuation 补齐一次性 OpenTelemetry 断言，禁止 payload/自由文本成为 label；运行 `npx vitest run test/telemetry-mapping.test.ts` 通过。 <!-- comet-task:e49aeb06-6b69-41a7-ab16-e9a2d0d0e9ce -->
 - [x] 5.4 验证多仓 Project Snapshot、Strategy、Binding、Plan 和 workspace checkpoint digest 在恢复前后保持绑定；运行多仓 managed execution E2E 通过。 <!-- comet-task:b6480ce8-12b7-49fb-a14a-bae722d75d9b -->
-- [ ] 5.5 更新正式 Runtime/Host 协议文档，说明统一接受顺序、纠正 identity 与 processing/reconciliation 区别；运行 `npm run check:managed-execution-report` 和文档内命令验证通过。 <!-- comet-task:83f2fd84-791f-404a-ae5d-48e55d753c5a -->
+- [x] 5.5 更新正式 Runtime/Host 协议文档，说明统一接受顺序、纠正 identity 与 processing/reconciliation 区别；运行 `npm run check:managed-execution-report` 和文档内命令验证通过。 <!-- comet-task:83f2fd84-791f-404a-ae5d-48e55d753c5a -->
 
 ## 6. 综合验收
 
