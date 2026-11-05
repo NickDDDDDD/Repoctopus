@@ -2,6 +2,7 @@
 change: stabilize-cross-platform-verification
 design-doc: openspec/changes/stabilize-cross-platform-verification/design.md
 base-ref: 2c885b75b2edf76b64be86941acb594ed2a152b6
+archived-with: 2026-11-05-stabilize-cross-platform-verification
 ---
 
 # 跨平台验证稳定性实施计划

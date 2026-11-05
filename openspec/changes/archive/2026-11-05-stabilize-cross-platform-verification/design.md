@@ -2,6 +2,8 @@
 comet_change: stabilize-cross-platform-verification
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-05-stabilize-cross-platform-verification
+status: final
 ---
 
 # Design
