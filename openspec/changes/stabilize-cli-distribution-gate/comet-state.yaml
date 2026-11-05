@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 9953f88d-d223-4b6e-9547-05bb828ce10f
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 04f71da2d204c7dd24106a5b9e0ae027b30ee652
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-05
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/stabilize-cli-distribution-gate
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: b78bf9025ce07d95a367114e45b9d43a7682d5548aadeb72e6942eb4eb65551d
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-cli-distribution-gate
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 2e99cab430713588159c035332f055eea575ed57e5484e3bb6e40853a2aa3e98
+    input:
+      change: stabilize-cli-distribution-gate
+      changeDir: openspec/changes/stabilize-cli-distribution-gate
+      workspaceBaseline:
+        ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 04f71da2d204c7dd24106a5b9e0ae027b30ee652
+      boundBranch: comet/stabilize-cli-distribution-gate
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-05
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: stabilize-cli-distribution-gate:1
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: efbf912427b50ff597095ac07c624175d9d0881f5a890543df640f8ec4b30ede
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      stabilize-cli-distribution-gate:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 9f740d8864b52d863ee565b791786e0952fb4eebf0580540fe46ac39e905cec9

@@ -1,0 +1,25 @@
+# Tasks
+
+## 1. 干净 checkout 的 CI 门禁
+
+- [ ] 1.1 新增仓库 CI 契约测试，先证明缺失或削弱 `.github/workflows/ci.yml` 时会失败；覆盖稳定 workflow/job 名、PR/`main`/人工触发、`contents: read`、并发取消、Ubuntu、Node 24、npm cache、`npm ci` 与唯一 `npm run verify` 调用，并以 `npx vitest run test/repository-ci.test.ts` 验证红灯来自预期缺口
+- [ ] 1.2 新增最小 `.github/workflows/ci.yml`，只负责干净 checkout、锁定依赖安装和调用标准完整验证命令，并以 `npx vitest run test/repository-ci.test.ts` 验证全部 CI 契约转绿
+- [ ] 1.3 对 workflow 契约测试补充反例，证明写权限、非 `main` 默认分支或复制内部检查清单会被拒绝，并以 `npx vitest run test/repository-ci.test.ts` 验证测试不会只接受当前文本快照
+
+## 2. 源码与安装包身份边界
+
+- [ ] 2.1 扩展 `test/self-hosting-docs.test.ts`，先证明文档必须要求源码更新后从当前 checkout 构建、再启动 CLI，且不得把历史 `dist` 当作验证证据，并以 `npx vitest run test/self-hosting-docs.test.ts` 验证新增断言在文档修改前按预期失败
+- [ ] 2.2 更新 `docs/self-hosting.md` 的源码准备与验收顺序，明确 `npm ci` 的适用时机、每次 checkout 更新后的 `npm run build`、旧/缺失 `dist` 的含义以及 CI 检查与 GitHub required check 的管理边界，并以 `npx vitest run test/self-hosting-docs.test.ts test/repository-ci.test.ts` 验证文档和 workflow 契约一致
+- [ ] 2.3 复验安装包独立消费边界，确认测试从当前源码生成 tarball 并通过隔离安装后的公共 `bin` 验证必要资源；如发现缺口就在 `test/e2e/package.e2e.test.ts` 补齐，并以 `npm run test:package-e2e` 验证，不用源码目录中的本地 `dist` 代替包验收
+
+## 3. 集成验证与交付证据
+
+- [ ] 3.1 对本 change 的 workflow、测试与文档执行 `npm run format:check`、`npm run lint` 和 `npm run typecheck`，修复所有失败并以三个命令均退出 0 验证静态质量
+- [ ] 3.2 在当前源码 worktree 执行 `npm run verify`，验证 CLI/Desktop 构建、完整 Vitest、生成物、品牌、架构、来源、Dashboard、OpenSpec 和 managed execution report 全部通过
+- [ ] 3.3 执行 `comet classic openspec -- validate stabilize-cli-distribution-gate --strict`、`git diff --check` 与工作区状态检查，确认四份 OpenSpec 产物严格有效、只包含预期改动，并把最终命令和结果记录到正式 Verification Evidence
+
+## Workflow follow-up
+
+- 分支推送并创建 pull request 后，观察 `Continuous integration / verify` 的首次 GitHub 托管执行结果；本地 YAML 测试不能替代该外部证据。
+- 如团队要求失败检查强制阻止合入，由仓库管理员把稳定检查配置为 required，并独立验证 branch protection；这不是仓库内 YAML 自动完成的能力。
+- 完成 Verify 与评审要求后归档 change。
