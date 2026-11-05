@@ -74,6 +74,10 @@ Comet 可以在单个 Runtime mutation 中完成 validator 与 transition；Repo
 
 如果锁外校验期间任一稳定输入变化，commit 返回可分类的 stale-validation，不接受旧候选；Runtime 重新观察而不是使用过期结果。外部系统写入或 Host 副作用不在 guarded commit 中发生。
 
+独立 thorough review 进一步收紧这一边界：validation record 采用 schema v2，同时绑定 Run `stateVersion`、完整 lifecycle digest、Project Snapshot digest、Work-specific validation input digest 与待应用 transition digest。guarded commit 重新核对 Run/lifecycle/Project Snapshot、pending submission、candidate、Action Outcome 和 Receipt 的完整身份；任何一项漂移都保留 pending candidate 并返回 typed stale-validation。外部 Task、workspace head 等事实以不可变观察值进入 validation/transition digest，后续 observation 仍按既有 drift/invalidation 协议重新观察，不能假装跨 Store 与 Git 存在单事务。
+
+Action Outcome identity 由 validation digest 确定性派生。若进程在 Action Receipt 持久化后、Run guarded commit 前退出，重试会请求同一个 Outcome/Receipt identity，Action Store 返回原 Receipt，再尝试唯一的 Run 绑定；不得生成新的随机 Outcome 并遗留第二条终态链。
+
 **备选方案：**把完整 Build 领域校验下沉到 `WorkExecutionAuthority`。这会让 Store authority 依赖 Specification、Project Snapshot 和 Build orchestration，破坏领域边界，故拒绝。
 
 ### 3. Work-specific 处理器拥有完整接受条件
@@ -87,6 +91,8 @@ Comet 可以在单个 Runtime mutation 中完成 validator 与 transition；Repo
 
 每个处理器返回确定性的 validation record，包含 validator/profile identity、输入 digest、候选 digest、结论与有界 findings。自由文本和 payload 不进入 Metric label。
 
+Processor registry 对所有 Build phase 成功结果 fail closed：`ManagedWorkExecutor` 不再维护“哪些 kind 延迟接受”的第二份白名单；未知 Build Work 必须进入 processing-error，等待 Runtime 安装明确处理器，不能退回通用 terminal acceptance。
+
 **备选方案：**让 `ManagedWorkExecutor` 持有四种领域处理逻辑。它虽然靠近 submission，却会把 Host transport、Build domain 和 lifecycle orchestration 混为一层，故拒绝。
 
 ### 4. 拒绝、处理失败与未知执行使用不同状态语义
@@ -96,6 +102,8 @@ Comet 可以在单个 Runtime mutation 中完成 validator 与 transition；Repo
 - **unknown execution**：只有无法确认 Host 是否执行或是否返回 candidate 时才进入 reconciliation。已有 pending 或 rejected candidate 的 invocation 不得被 reconcile 为 `not-executed`。
 
 相同 submission ID + 相同 candidate digest 是幂等重放，并继续未完成的处理；相同 ID + 不同 digest 是 conflict；纠正必须使用新 submission ID。这与 Comet 的 Outcome identity 语义一致。
+
+有界 Host payload 在 transport identity 校验后先持久化为 submission，再执行 result schema、delegation receipt 与 Skill consumption 分类。这样无效 payload 也有稳定审计身份；分类失败随后进入 correctable rejection。只有 payload 超过硬边界或根本无法归属当前 invocation 时才不进入 submission Store。重复 processing-error 使用同一 trajectory identity，不能在每次 pull 时追加重复事实。
 
 ### 5. acceptance 与 lifecycle observation 使用可恢复的单向顺序
 

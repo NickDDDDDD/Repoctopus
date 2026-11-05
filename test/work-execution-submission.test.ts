@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -13,6 +15,7 @@ import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import { WorkExecutionAuthority } from '../services/work-execution-authority.js';
 import { createAcceptedBuildWorkOutcome } from '../domains/work-execution/acceptance.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
+import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
@@ -43,8 +46,11 @@ describe('Work execution Host submission identity', () => {
       attempt: 1,
       checkEpoch: 12,
       intentId: 'intent-validated',
+      idempotencyKey: 'idempotency-validated',
       claimToken: digest('4'),
       inputDigest: digest('5'),
+      action: { id: 'action-validated' },
+      adapter: 'manual',
     } as ActionIntent;
     const hostOutcome = {
       ...outcome(),
@@ -68,6 +74,7 @@ describe('Work execution Host submission identity', () => {
       stateVersion: 1,
       updatedAt: '2026-11-05T00:00:00.000Z',
       composition: { compositionDigest: digest('6') },
+      projectSnapshotDigest: digest('a'),
       changeLifecycle: { checkEpoch: intent.checkEpoch, currentWork: work },
       workExecution: {
         schemaVersion: 3,
@@ -130,11 +137,18 @@ describe('Work execution Host submission identity', () => {
       work,
       submission,
       validatorId: work.validatorProfile.id,
+      expectedStateVersion: state.stateVersion,
+      lifecycleDigest: `sha256:${createHash('sha256')
+        .update(canonicalJson(state.changeLifecycle ?? null))
+        .digest('hex')}`,
+      projectSnapshotDigest: state.projectSnapshotDigest,
+      validationInput: { strategyDigest: digest('9') },
+      transition: { kind: 'build-binding-accepted' },
     });
     if (disposition.kind !== 'accepted') throw new Error('Expected accepted validation');
     const actionOutcome = {
       schemaVersion: 2,
-      outcomeId: 'outcome-validated',
+      outcomeId: disposition.validation.outcomeId,
       runId: intent.runId,
       workId: intent.workId,
       attempt: intent.attempt,
@@ -142,13 +156,15 @@ describe('Work execution Host submission identity', () => {
       claimToken: intent.claimToken,
       inputDigest: intent.inputDigest,
       status: 'succeeded',
-      summary: 'validated candidate',
+      summary: hostOutcome.summary,
     } satisfies ClaimedActionOutcome;
     const receipt = {
       schemaVersion: 3,
-      receiptId: 'receipt-validated',
+      receiptId: createHash('sha256')
+        .update(['receipt', intent.intentId, actionOutcome.outcomeId].join('\0'))
+        .digest('hex'),
       intentId: intent.intentId,
-      idempotencyKey: 'idempotency-validated',
+      idempotencyKey: intent.idempotencyKey,
       runId: intent.runId,
       workId: intent.workId,
       attempt: intent.attempt,
@@ -157,8 +173,8 @@ describe('Work execution Host submission identity', () => {
       inputDigest: intent.inputDigest,
       outcomeId: actionOutcome.outcomeId,
       compositionDigest: digest('6'),
-      actionId: 'action-validated',
-      adapter: 'manual',
+      actionId: intent.action.id,
+      adapter: intent.adapter,
       outcome: 'succeeded',
       summary: actionOutcome.summary,
       completedAt: '2026-11-05T00:00:01.000Z',
@@ -239,7 +255,7 @@ describe('Work execution Host submission identity', () => {
         receipt: fixture.receipt,
         validation: fixture.validation,
       }),
-    ).rejects.toThrow(/stable inputs changed/u);
+    ).rejects.toThrow(/acceptance inputs changed/u);
     expect(fixture.getState().workExecution).toMatchObject({
       status: 'submitted',
       pendingSubmission: { submissionId: fixture.validation.submissionId },
@@ -248,6 +264,53 @@ describe('Work execution Host submission identity', () => {
     expect(fixture.getState().workExecution?.actionOutcome).toBeUndefined();
     expect(fixture.getState().workExecution?.receiptId).toBeUndefined();
   });
+
+  it.each([
+    [
+      'Run state version',
+      (state: RunState) => {
+        state.stateVersion += 1;
+      },
+    ],
+    [
+      'lifecycle',
+      (state: RunState) => {
+        const lifecycle = state.changeLifecycle!;
+        state.changeLifecycle = {
+          ...lifecycle,
+          waitCondition: { kind: 'human-decision' },
+        } as typeof lifecycle;
+      },
+    ],
+    [
+      'Project Snapshot',
+      (state: RunState) => {
+        state.projectSnapshotDigest = digest('0');
+      },
+    ],
+  ] as const)(
+    'fails closed when the validated %s changes before terminal commit',
+    async (_label, mutate) => {
+      const fixture = validatedAcceptanceHarness();
+      mutate(fixture.getState());
+
+      await expect(
+        fixture.authority.bindValidatedOutcome({
+          intent: fixture.intent,
+          outcome: fixture.actionOutcome,
+          receipt: fixture.receipt,
+          validation: fixture.validation,
+        }),
+      ).rejects.toThrow(/acceptance inputs changed/u);
+      expect(fixture.getState().workExecution).toMatchObject({
+        status: 'submitted',
+        pendingSubmission: { submissionId: fixture.validation.submissionId },
+      });
+      expect(fixture.getState().workExecution?.acceptedSubmission).toBeUndefined();
+      expect(fixture.getState().workExecution?.actionOutcome).toBeUndefined();
+      expect(fixture.getState().workExecution?.receiptId).toBeUndefined();
+    },
+  );
 
   it('fails closed when the pending candidate changes after validation', async () => {
     const fixture = validatedAcceptanceHarness();
@@ -540,5 +603,17 @@ describe('Work execution Host submission identity', () => {
       pendingSubmission: { submissionId: 'submission-processing-error' },
       rejectedSubmissions: [],
     });
+
+    const firstStateVersion = state.stateVersion;
+    const firstTrajectoryLength = trajectory.length;
+    const duplicate = await authority.rejectHostSubmission({
+      intent: intent as never,
+      reasonCode: 'outcome-processing-error',
+      diagnostic: 'task provider temporarily unavailable',
+    });
+
+    expect(duplicate).toEqual(retryable);
+    expect(state.stateVersion).toBe(firstStateVersion);
+    expect(trajectory).toHaveLength(firstTrajectoryLength);
   });
 });

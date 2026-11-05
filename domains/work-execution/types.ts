@@ -174,15 +174,21 @@ export interface RejectedWorkExecutionSubmission extends WorkExecutionSubmission
 }
 
 export interface WorkOutcomeValidationRecord {
-  schemaVersion: 1;
+  schemaVersion: 2;
   workKind: 'build.configure' | 'build.plan' | 'build.execute' | 'build.check';
   validatorId: string;
   submissionId: string;
   submissionDigest: `sha256:${string}`;
   candidateDigest: `sha256:${string}`;
   stableInputDigest: `sha256:${string}`;
+  validationInputDigest: `sha256:${string}`;
+  transitionDigest: `sha256:${string}`;
+  lifecycleDigest: `sha256:${string}`;
+  projectSnapshotDigest: string;
+  expectedStateVersion: number;
   decision: 'accepted';
   validationDigest: `sha256:${string}`;
+  outcomeId: `sha256:${string}`;
 }
 
 export type WorkExecutionResult =

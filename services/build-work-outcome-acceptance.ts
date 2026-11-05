@@ -1,7 +1,11 @@
+import { createHash } from 'node:crypto';
+
 import type { WorkOutcomeAcceptance } from '../domains/action/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
+import type { RunState } from '../domains/engine/types.js';
 import {
   createAcceptedBuildWorkOutcome,
+  StaleWorkOutcomeValidationError,
   type BuildWorkOutcomeDisposition,
   validateBuildWorkResultShape,
 } from '../domains/work-execution/acceptance.js';
@@ -10,6 +14,7 @@ import type {
   WorkExecutionHostOutcome,
   WorkExecutionSubmission,
 } from '../domains/work-execution/types.js';
+import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 import type { WorkDispatcher } from './work-dispatcher.js';
 import type { WorkExecutionAuthority } from './work-execution-authority.js';
 
@@ -26,6 +31,7 @@ export class BuildWorkOutcomeAcceptanceCoordinator {
     private readonly dependencies: {
       workDispatcher: Pick<WorkDispatcher, 'outcome' | 'acceptValidatedOutcome'>;
       workExecutionAuthority: Pick<WorkExecutionAuthority, 'loadIntent' | 'rejectHostSubmission'>;
+      loadRun: (runId: string) => Promise<RunState>;
     },
   ) {}
 
@@ -78,30 +84,57 @@ export class BuildWorkOutcomeAcceptanceCoordinator {
     runId: string;
     candidate: PendingBuildWorkCandidate;
     validatorId: string;
-    stableInputDigest?: `sha256:${string}`;
-    assertTransitionFeasible: () => void;
-  }): Promise<WorkOutcomeAcceptance> {
+    validationInput: unknown;
+    transition: unknown;
+    assertTransitionFeasible: (state: RunState) => void;
+  }): Promise<
+    | { kind: 'accepted'; acceptance: WorkOutcomeAcceptance }
+    | { kind: 'processing-error'; diagnostic: string; checkpoint: WorkExecutionCheckpoint }
+  > {
     if (input.candidate.terminalized) {
       throw new Error('Build Work Outcome candidate is already terminalized');
     }
-    input.assertTransitionFeasible();
+    const state = await this.dependencies.loadRun(input.runId);
+    input.assertTransitionFeasible(state);
+    const lifecycleDigest = `sha256:${createHash('sha256')
+      .update(canonicalJson(state.changeLifecycle ?? null))
+      .digest('hex')}` as const;
     const disposition = createAcceptedBuildWorkOutcome({
       work: input.candidate.work,
       submission: input.candidate.submission,
       validatorId: input.validatorId,
-      ...(input.stableInputDigest ? { stableInputDigest: input.stableInputDigest } : {}),
+      expectedStateVersion: state.stateVersion,
+      lifecycleDigest,
+      projectSnapshotDigest: state.projectSnapshotDigest,
+      validationInput: input.validationInput,
+      transition: input.transition,
     });
     if (disposition.kind !== 'accepted') {
       throw new Error(`Build Work Outcome cannot be accepted: ${disposition.diagnostic}`);
     }
     const intent = await this.dependencies.workExecutionAuthority.loadIntent(input.runId);
-    return this.dependencies.workDispatcher.acceptValidatedOutcome({
-      outcome: this.dependencies.workDispatcher.outcome(
+    try {
+      return {
+        kind: 'accepted',
+        acceptance: await this.dependencies.workDispatcher.acceptValidatedOutcome({
+          outcome: this.dependencies.workDispatcher.outcome(
+            intent,
+            'succeeded',
+            input.candidate.outcome.summary,
+            disposition.validation.outcomeId,
+          ),
+          validation: disposition.validation,
+        }),
+      };
+    } catch (error) {
+      if (!(error instanceof StaleWorkOutcomeValidationError)) throw error;
+      const diagnostic = error.message;
+      const checkpoint = await this.dependencies.workExecutionAuthority.rejectHostSubmission({
         intent,
-        'succeeded',
-        input.candidate.outcome.summary,
-      ),
-      validation: disposition.validation,
-    });
+        reasonCode: 'outcome-processing-error',
+        diagnostic,
+      });
+      return { kind: 'processing-error', diagnostic, checkpoint };
+    }
   }
 }

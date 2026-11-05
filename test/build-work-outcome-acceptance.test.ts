@@ -63,11 +63,21 @@ describe('Build Work Outcome acceptance domain', () => {
       work,
       submission,
       validatorId: 'build.binding-valid',
+      expectedStateVersion: 7,
+      lifecycleDigest: digest('5'),
+      projectSnapshotDigest: digest('6'),
+      validationInput: { strategyDigest: digest('4') },
+      transition: { kind: 'build-binding-accepted' },
     });
     const replay = createAcceptedBuildWorkOutcome({
       work,
       submission,
       validatorId: 'build.binding-valid',
+      expectedStateVersion: 7,
+      lifecycleDigest: digest('5'),
+      projectSnapshotDigest: digest('6'),
+      validationInput: { strategyDigest: digest('4') },
+      transition: { kind: 'build-binding-accepted' },
     });
 
     expect(first).toEqual(replay);
@@ -78,8 +88,13 @@ describe('Build Work Outcome acceptance domain', () => {
         submissionId: 'submission-1',
         submissionDigest: submission.payloadDigest,
         stableInputDigest: work.inputDigest,
+        expectedStateVersion: 7,
+        lifecycleDigest: digest('5'),
+        projectSnapshotDigest: digest('6'),
         decision: 'accepted',
       },
     });
+    if (first.kind !== 'accepted') throw new Error('Expected accepted disposition');
+    expect(first.validation.outcomeId).toMatch(/^sha256:[a-f0-9]{64}$/u);
   });
 });

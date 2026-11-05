@@ -341,10 +341,11 @@ export class WorkDispatcher extends Service {
     intent: ActionIntent,
     status: 'succeeded' | 'failed',
     summary: string,
+    outcomeId: string = randomUUID(),
   ): ClaimedActionOutcome {
     return {
       schemaVersion: 2,
-      outcomeId: randomUUID(),
+      outcomeId,
       runId: intent.runId,
       workId: intent.workId,
       attempt: intent.attempt,

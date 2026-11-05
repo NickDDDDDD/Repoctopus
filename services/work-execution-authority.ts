@@ -41,7 +41,9 @@ import {
 } from '../domains/work-execution/retry-policy.js';
 import {
   buildWorkCandidateDigest,
+  buildValidatedOutcomeId,
   buildWorkValidationDigest,
+  StaleWorkOutcomeValidationError,
 } from '../domains/work-execution/acceptance.js';
 
 export type SkillHumanCorrectionKind =
@@ -1228,9 +1230,26 @@ export class WorkExecutionAuthority extends Service {
         if (current.status !== 'submitted') {
           throw new Error(`Work submission cannot be rejected from ${current.status}`);
         }
-        const timestamp = new Date().toISOString();
         const submission = current.pendingSubmission;
         const processingError = input.reasonCode === 'outcome-processing-error';
+        const eventType = processingError
+          ? 'work.outcome-processing-error'
+          : 'work.outcome-rejected';
+        const eventIdentity = [
+          current.workId,
+          String(current.attempt),
+          submission.submissionId,
+        ];
+        if (
+          processingError &&
+          trajectory.some(
+            (event) =>
+              event.eventId === digest(state.runId, eventType, ...eventIdentity),
+          )
+        ) {
+          return { value: structuredClone(current) };
+        }
+        const timestamp = new Date().toISOString();
         const rejectedSubmissions = processingError
           ? (current.rejectedSubmissions ?? [])
           : appendRejectedWorkExecutionSubmission(current.rejectedSubmissions ?? [], submission, {
@@ -1259,11 +1278,8 @@ export class WorkExecutionAuthority extends Service {
             state: nextState,
             sequence: trajectory.length + 1,
             timestamp,
-            type:
-              input.reasonCode === 'outcome-processing-error'
-                ? 'work.outcome-processing-error'
-                : 'work.outcome-rejected',
-            identity: [current.workId, String(current.attempt), submission.submissionId],
+            type: eventType,
+            identity: eventIdentity,
             data: {
               workId: current.workId,
               workKind: state.changeLifecycle?.currentWork?.kind ?? 'unknown',
@@ -1409,8 +1425,11 @@ export class WorkExecutionAuthority extends Service {
       ({ state, trajectory }) => {
         const current = state.workExecution;
         const work = state.changeLifecycle?.currentWork;
-        const { validationDigest, ...validationIdentity } = input.validation;
-        if (buildWorkValidationDigest(validationIdentity) !== validationDigest) {
+        const { validationDigest, outcomeId, ...validationIdentity } = input.validation;
+        if (
+          buildWorkValidationDigest(validationIdentity) !== validationDigest ||
+          buildValidatedOutcomeId(validationDigest) !== outcomeId
+        ) {
           throw new Error('Validated Work acceptance validation record is corrupt');
         }
         if (!current || current.intentId !== input.intent.intentId) {
@@ -1428,6 +1447,14 @@ export class WorkExecutionAuthority extends Service {
           throw new Error('Validated Work acceptance requires a pending Host submission');
         }
         if (
+          state.stateVersion !== input.validation.expectedStateVersion ||
+          digest(canonicalJson(state.changeLifecycle ?? null)) !==
+            input.validation.lifecycleDigest ||
+          state.projectSnapshotDigest !== input.validation.projectSnapshotDigest
+        ) {
+          throw new StaleWorkOutcomeValidationError();
+        }
+        if (
           !work ||
           work.workId !== current.workId ||
           work.checkEpoch !== current.checkEpoch ||
@@ -1436,7 +1463,7 @@ export class WorkExecutionAuthority extends Service {
           work.inputDigest !== input.validation.stableInputDigest ||
           work.validatorProfile.id !== input.validation.validatorId
         ) {
-          throw new Error('Validated Work acceptance stable inputs changed before terminal commit');
+          throw new StaleWorkOutcomeValidationError();
         }
         const acceptedSubmission = current.pendingSubmission;
         if (
@@ -1448,7 +1475,36 @@ export class WorkExecutionAuthority extends Service {
           current.hostInvocation.host.id !== acceptedSubmission.outcome.hostId ||
           current.packet.packetDigest !== acceptedSubmission.outcome.packetDigest
         ) {
-          throw new Error('Validated Work acceptance candidate identity changed before commit');
+          throw new StaleWorkOutcomeValidationError(
+            'Validated Work acceptance candidate identity changed before terminal commit',
+          );
+        }
+        if (
+          input.outcome.outcomeId !== input.validation.outcomeId ||
+          input.outcome.runId !== input.intent.runId ||
+          input.outcome.workId !== input.intent.workId ||
+          input.outcome.attempt !== input.intent.attempt ||
+          input.outcome.checkEpoch !== input.intent.checkEpoch ||
+          input.outcome.claimToken !== input.intent.claimToken ||
+          input.outcome.inputDigest !== input.intent.inputDigest ||
+          input.outcome.status !== 'succeeded' ||
+          input.receipt.receiptId !==
+            rawDigest('receipt', input.intent.intentId, input.outcome.outcomeId) ||
+          input.receipt.intentId !== input.intent.intentId ||
+          input.receipt.idempotencyKey !== input.intent.idempotencyKey ||
+          input.receipt.runId !== input.outcome.runId ||
+          input.receipt.workId !== input.outcome.workId ||
+          input.receipt.attempt !== input.outcome.attempt ||
+          input.receipt.checkEpoch !== input.outcome.checkEpoch ||
+          input.receipt.claimToken !== input.outcome.claimToken ||
+          input.receipt.inputDigest !== input.outcome.inputDigest ||
+          input.receipt.outcomeId !== input.outcome.outcomeId ||
+          input.receipt.actionId !== input.intent.action.id ||
+          input.receipt.adapter !== input.intent.adapter ||
+          input.receipt.outcome !== input.outcome.status ||
+          input.receipt.summary !== input.outcome.summary
+        ) {
+          throw new Error('Validated Work Outcome or Receipt identity changed before commit');
         }
         const timestamp = new Date().toISOString();
         const checkpoint: WorkExecutionCheckpoint = {

@@ -37,6 +37,7 @@ function frozenPacket(kind = 'build.execute'): WorkExecutionPacket {
       compositionDigest: digest('f'),
     },
     work: {
+      phase: 'build',
       kind,
       packageId: 'package-1',
     },
@@ -94,6 +95,7 @@ function executor(
       ),
     markHostUnknown: vi.fn(),
     markHostCompleted: vi.fn().mockResolvedValue({ status: 'submitted' }),
+    rejectHostSubmission: vi.fn().mockResolvedValue({ status: 'rejected' }),
     recordDelegationFacts: vi.fn(),
     recordSkillFacts: vi.fn(),
     recordSkillConsumptionRejected: vi.fn(),
@@ -244,6 +246,7 @@ function externalReplayHarness() {
       workExecutionAuthority: {
         loadIntent: vi.fn().mockResolvedValue({}),
         markHostCompleted,
+        rejectHostSubmission: vi.fn().mockResolvedValue({ status: 'rejected' }),
         recordDelegationFacts: vi.fn(),
         recordSkillFacts: vi.fn(),
       },
@@ -653,8 +656,14 @@ describe('Managed Work Executor Build contract', () => {
       consumed,
     );
 
-    await expect(service.execute({} as never)).rejects.toThrow(/consumption of every delivered/u);
-    expect(authority.markHostCompleted).not.toHaveBeenCalled();
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+    expect(authority.rejectHostSubmission).toHaveBeenCalledWith(
+      expect.objectContaining({ reasonCode: 'output-invalid' }),
+    );
     expect(authority.recordSkillConsumptionRejected).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -714,16 +723,57 @@ describe('Managed Work Executor Build contract', () => {
       implementationDigest: digest('6'),
       requestedNextAction: 'check',
     });
-    await expect(service.execute({} as never)).rejects.toThrow(/managed Build result schema/u);
-    expect(authority.markHostCompleted).not.toHaveBeenCalled();
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+    const rejection = authority.rejectHostSubmission.mock.calls[0]?.[0] as unknown as {
+      reasonCode: string;
+      diagnostic: string;
+    };
+    expect(rejection.reasonCode).toBe('output-invalid');
+    expect(rejection.diagnostic).toMatch(/managed Build result schema/u);
+  });
+
+  it('fails closed when a successful Build Work has no registered Outcome processor', async () => {
+    const { service, authority, workDispatcher } = executor(
+      {
+        schemaVersion: 1,
+        kind: 'future-build-candidate',
+      },
+      undefined,
+      undefined,
+      'build.future',
+    );
+
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+    const rejection = authority.rejectHostSubmission.mock.calls[0]?.[0] as unknown as {
+      reasonCode: string;
+      diagnostic: string;
+    };
+    expect(rejection.reasonCode).toBe('outcome-processing-error');
+    expect(rejection.diagnostic).toMatch(/no Build Work Outcome processor is registered/iu);
+    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
   });
 
   it('fails closed when a subagent response is lost before an attested receipt exists', async () => {
     const missingReceipt = executor(undefined, []);
-    await expect(missingReceipt.service.execute({} as never)).rejects.toThrow(
-      /bounded delegation receipts/u,
-    );
-    expect(missingReceipt.authority.markHostCompleted).not.toHaveBeenCalled();
+    await expect(missingReceipt.service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(missingReceipt.authority.markHostCompleted).toHaveBeenCalledOnce();
+    const rejection = missingReceipt.authority.rejectHostSubmission.mock.calls[0]?.[0] as unknown as {
+      reasonCode: string;
+      diagnostic: string;
+    };
+    expect(rejection.reasonCode).toBe('output-invalid');
+    expect(rejection.diagnostic).toMatch(/bounded delegation receipts/u);
 
     const lostResponse = executor(
       undefined,

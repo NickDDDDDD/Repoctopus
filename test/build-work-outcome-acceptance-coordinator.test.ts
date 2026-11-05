@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import type { ActionIntent } from '../domains/action/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
+import type { RunState } from '../domains/engine/types.js';
 import { createWorkExecutionSubmission } from '../domains/work-execution/submission.js';
 import type {
   WorkExecutionCheckpoint,
@@ -75,12 +77,38 @@ function harness(workKind: BuildWorkKind, validShape = true) {
     status: 'submitted',
     pendingSubmission: submission,
   } as WorkExecutionCheckpoint;
+  const runState = {
+    runId: 'run-1',
+    stateVersion: 7,
+    projectSnapshotDigest: digest('9'),
+    changeLifecycle: { checkEpoch: work.checkEpoch, currentWork: work },
+  } as unknown as RunState;
+  const loadRun = vi.fn().mockResolvedValue(runState);
   const loadIntent = vi.fn().mockResolvedValue({ runId: 'run-1' });
   const rejectHostSubmission = vi.fn().mockResolvedValue(execution);
-  const outcomeFactory = vi.fn().mockReturnValue({ outcomeId: 'outcome-1' });
+  const outcomeFactory = vi.fn(
+    (
+      intent: ActionIntent,
+      status: 'succeeded' | 'failed',
+      summary: string,
+      outcomeId: string = 'fallback-outcome',
+    ) => ({
+      schemaVersion: 2 as const,
+      outcomeId,
+      runId: intent.runId,
+      workId: intent.workId,
+      attempt: intent.attempt,
+      checkEpoch: intent.checkEpoch,
+      claimToken: intent.claimToken,
+      inputDigest: intent.inputDigest,
+      status,
+      summary,
+    }),
+  );
   const acceptValidatedOutcome = vi.fn().mockResolvedValue({ validation: 'accepted' });
   const coordinator = new BuildWorkOutcomeAcceptanceCoordinator({
     workExecutionAuthority: { loadIntent, rejectHostSubmission },
+    loadRun,
     workDispatcher: {
       outcome: outcomeFactory,
       acceptValidatedOutcome,
@@ -90,6 +118,7 @@ function harness(workKind: BuildWorkKind, validShape = true) {
     acceptValidatedOutcome,
     coordinator,
     execution,
+    loadRun,
     loadIntent,
     outcomeFactory,
     rejectHostSubmission,
@@ -146,6 +175,8 @@ describe('Build Work Outcome acceptance coordinator', () => {
       runId: 'run-1',
       candidate: inspected,
       validatorId: 'build.binding-valid',
+      validationInput: { strategyDigest: digest('4') },
+      transition: { kind: 'build-binding-accepted' },
       assertTransitionFeasible: vi.fn(),
     });
 
@@ -153,20 +184,60 @@ describe('Build Work Outcome acceptance coordinator', () => {
     const accepted = fixture.acceptValidatedOutcome.mock.calls[0]?.[0] as {
       outcome: { outcomeId: string };
       validation: {
+        expectedStateVersion: number;
+        projectSnapshotDigest: string;
         stableInputDigest: string;
         submissionId: string;
         workKind: string;
       };
     };
     expect(accepted).toMatchObject({
-      outcome: { outcomeId: 'outcome-1' },
       validation: {
         workKind: 'build.configure',
         submissionId: 'submission-1',
         stableInputDigest: fixture.work.inputDigest,
+        expectedStateVersion: 7,
+        projectSnapshotDigest: digest('9'),
       },
     });
+    expect(accepted.outcome.outcomeId).toMatch(/^sha256:[a-f0-9]{64}$/u);
     expect(fixture.rejectHostSubmission).not.toHaveBeenCalled();
+  });
+
+  it('reuses one deterministic Outcome identity when terminal binding is retried', async () => {
+    const fixture = harness('build.configure');
+    const inspected = fixture.coordinator.inspect({
+      work: fixture.work,
+      execution: fixture.execution,
+    });
+    if (!inspected || inspected.kind !== 'candidate') throw new Error('Expected candidate');
+    fixture.acceptValidatedOutcome
+      .mockRejectedValueOnce(new Error('Run state changed after Action Receipt save'))
+      .mockResolvedValueOnce({ validation: 'accepted' });
+    const input = {
+      runId: 'run-1',
+      candidate: inspected,
+      validatorId: 'build.binding-valid',
+      validationInput: { strategyDigest: digest('4') },
+      transition: { kind: 'build-binding-accepted' },
+      assertTransitionFeasible: vi.fn(),
+    };
+
+    await expect(fixture.coordinator.accept(input)).rejects.toThrow(/Receipt save/u);
+    await expect(fixture.coordinator.accept(input)).resolves.toMatchObject({
+      kind: 'accepted',
+      acceptance: { validation: 'accepted' },
+    });
+
+    type AcceptanceCall = {
+      outcome: { outcomeId: string };
+      validation: { outcomeId: string; validationDigest: string };
+    };
+    const first = fixture.acceptValidatedOutcome.mock.calls[0]?.[0] as unknown as AcceptanceCall;
+    const retry = fixture.acceptValidatedOutcome.mock.calls[1]?.[0] as unknown as AcceptanceCall;
+    expect(retry.outcome.outcomeId).toBe(first.outcome.outcomeId);
+    expect(retry.validation.validationDigest).toBe(first.validation.validationDigest);
+    expect(retry.validation.outcomeId).toBe(first.validation.outcomeId);
   });
 
   it.each(Object.keys(candidates) as BuildWorkKind[])(
@@ -184,6 +255,8 @@ describe('Build Work Outcome acceptance coordinator', () => {
           runId: 'run-1',
           candidate: inspected,
           validatorId: fixture.work.validatorProfile.id,
+          validationInput: { workKind },
+          transition: { kind: 'test-transition' },
           assertTransitionFeasible: () => {
             throw new Error('transition infeasible');
           },

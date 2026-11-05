@@ -24,6 +24,20 @@ export interface BuildWorkOutcomeProcessor {
   resultKind: BuildWorkResultKind;
 }
 
+export class StaleWorkOutcomeValidationError extends Error {
+  constructor(message = 'Validated Work acceptance inputs changed before terminal commit') {
+    super(message);
+    this.name = 'StaleWorkOutcomeValidationError';
+  }
+}
+
+export class UnregisteredBuildWorkOutcomeProcessorError extends Error {
+  constructor(kind: string) {
+    super(`No Build Work Outcome processor is registered for ${kind}`);
+    this.name = 'UnregisteredBuildWorkOutcomeProcessorError';
+  }
+}
+
 const PROCESSORS = new Map<BuildWorkKind, BuildWorkOutcomeProcessor>([
   ['build.configure', { workKind: 'build.configure', resultKind: 'execution-binding-candidate' }],
   ['build.plan', { workKind: 'build.plan', resultKind: 'build-plan-candidate' }],
@@ -52,19 +66,21 @@ function sha256(value: unknown): `sha256:${string}` {
 }
 
 export function buildWorkValidationDigest(
-  record: Omit<WorkOutcomeValidationRecord, 'validationDigest'>,
+  record: Omit<WorkOutcomeValidationRecord, 'validationDigest' | 'outcomeId'>,
 ): `sha256:${string}` {
   return sha256(record);
 }
 
-export function isBuildWorkKind(kind: string): kind is BuildWorkKind {
-  return BUILD_WORK_KINDS.includes(kind as BuildWorkKind);
+export function buildValidatedOutcomeId(
+  validationDigest: WorkOutcomeValidationRecord['validationDigest'],
+): `sha256:${string}` {
+  return sha256({ kind: 'validated-build-work-outcome', validationDigest });
 }
 
 export function resolveBuildWorkOutcomeProcessor(kind: string): BuildWorkOutcomeProcessor {
   const processor = PROCESSORS.get(kind as BuildWorkKind);
   if (!processor) {
-    throw new Error(`No Build Work Outcome processor is registered for ${kind}`);
+    throw new UnregisteredBuildWorkOutcomeProcessorError(kind);
   }
   return processor;
 }
@@ -104,7 +120,11 @@ export function createAcceptedBuildWorkOutcome(input: {
   work: WorkDescriptor;
   submission: WorkExecutionSubmission;
   validatorId: string;
-  stableInputDigest?: `sha256:${string}`;
+  expectedStateVersion: number;
+  lifecycleDigest: `sha256:${string}`;
+  projectSnapshotDigest: string;
+  validationInput: unknown;
+  transition: unknown;
 }): BuildWorkOutcomeDisposition {
   const processor = resolveBuildWorkOutcomeProcessor(input.work.kind);
   const shapeFailure = validateBuildWorkResultShape({
@@ -114,20 +134,27 @@ export function createAcceptedBuildWorkOutcome(input: {
   if (shapeFailure) return shapeFailure;
   const candidateDigest = sha256(input.submission.outcome.result);
   const recordWithoutDigest = {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     workKind: processor.workKind,
     validatorId: input.validatorId,
     submissionId: input.submission.submissionId,
     submissionDigest: input.submission.payloadDigest,
     candidateDigest,
-    stableInputDigest: input.stableInputDigest ?? input.work.inputDigest,
+    stableInputDigest: input.work.inputDigest,
+    validationInputDigest: sha256(input.validationInput),
+    transitionDigest: sha256(input.transition),
+    lifecycleDigest: input.lifecycleDigest,
+    projectSnapshotDigest: input.projectSnapshotDigest,
+    expectedStateVersion: input.expectedStateVersion,
     decision: 'accepted' as const,
   };
+  const validationDigest = buildWorkValidationDigest(recordWithoutDigest);
   return {
     kind: 'accepted',
     validation: {
       ...recordWithoutDigest,
-      validationDigest: buildWorkValidationDigest(recordWithoutDigest),
+      validationDigest,
+      outcomeId: buildValidatedOutcomeId(validationDigest),
     },
   };
 }
