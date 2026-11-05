@@ -2,7 +2,7 @@
 change_id: 61385da1-8cc6-4093-b2fb-302b1e017aa3
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v2
-  hash: 34edc28d1e9de182a6609396a95a112ef90588882733abe193c8499dc1f29d21
+  hash: e7838679f54e2682b445e82b5ab325d7f642f9c8beb783b925adc9015a693924
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 3
+      checkEpoch: 4
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,7 +69,7 @@ run_checkpoint:
       handoffHash: 024119658210f7edd1f86ce0f836939cec10f5e9d264cb1d7eb228711d3a0876
       isolation: worktree
       language: zh-CN
-      phase: design
+      phase: build
       plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
       reviewMode: thorough
       subagentDispatch: null
@@ -80,8 +80,8 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 25
+    status: running
+    sequence: 31
     actions:
       - attempt: 1
         claim:
@@ -695,6 +695,151 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-8332bd39fd9bad8318d03aa9ebd4bfad0e4424d2e7c87f384eeecee5a8c0d62e
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: repair-atomic-work-outcome-acceptance:26
+        input:
+          input:
+            change: repair-atomic-work-outcome-acceptance
+            changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+            workspaceBaseline:
+              ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+          outputs: {}
+        inputHash: cbd7272ea1466e739b5421ad1fed8e6e77b9ef91c833db808004cdf11a94393b
+        outcome:
+          actionId: repair-atomic-work-outcome-acceptance:26
+          attempt: 1
+          claimToken: portable-8332bd39fd9bad8318d03aa9ebd4bfad0e4424d2e7c87f384eeecee5a8c0d62e
+          inputHash: cbd7272ea1466e739b5421ad1fed8e6e77b9ef91c833db808004cdf11a94393b
+          outcomeId: 569b1bbd-8156-49a0-9c7b-cfbdfbd63e7c
+          output:
+            designDoc: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ef0ee04164c7179efc36e0817188bf79acf85de16c9f11f04edc9c18be5a24a2
+            outcomeId: 569b1bbd-8156-49a0-9c7b-cfbdfbd63e7c
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-atomic-work-outcome-acceptance
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-883ca27753944950e5a5271ee4f8f1d90ea1bc051e6acaa599139f5815bddf44
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: repair-atomic-work-outcome-acceptance:28
+        input:
+          input:
+            change: repair-atomic-work-outcome-acceptance
+            changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+            workspaceBaseline:
+              ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+          outputs: {}
+        inputHash: 7ea583fe01716c4924c746c5dd1164bae6562be8d720e53468339aee947e8dc4
+        outcome:
+          actionId: repair-atomic-work-outcome-acceptance:28
+          attempt: 1
+          claimToken: portable-883ca27753944950e5a5271ee4f8f1d90ea1bc051e6acaa599139f5815bddf44
+          inputHash: 7ea583fe01716c4924c746c5dd1164bae6562be8d720e53468339aee947e8dc4
+          outcomeId: b7d46fa6-fa51-4f3a-aaf9-ccf1423cdf04
+          output:
+            designEvidence:
+              contentHash: 41ac4eae1ae2250792809ea6c343678be666110a0b39afe0cd3d4a72b484a86b
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+            plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+            planEvidence:
+              contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+              ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+            taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 464cf527141db04218fbff84f6cd10d86eed303bde4b59767ff03fdb15314998
+            outcomeId: b7d46fa6-fa51-4f3a-aaf9-ccf1423cdf04
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-atomic-work-outcome-acceptance
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-atomic-acceptance-resume
+          token: portable-75855895e9bf90026d6516aa135bb102134f57217b24a436e009bedac5954c7a
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: repair-atomic-work-outcome-acceptance:30
+        input:
+          input:
+            change: repair-atomic-work-outcome-acceptance
+            changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+            workspaceBaseline:
+              ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+          outputs: {}
+        inputHash: 4de4d98eff2ca6b0e9f1fb532a14069ac2342ab80e56c89667f96f8fe478403a
+        outcome:
+          actionId: repair-atomic-work-outcome-acceptance:30
+          attempt: 1
+          claimToken: portable-75855895e9bf90026d6516aa135bb102134f57217b24a436e009bedac5954c7a
+          inputHash: 4de4d98eff2ca6b0e9f1fb532a14069ac2342ab80e56c89667f96f8fe478403a
+          outcomeId: ea87ec44-6637-4e99-ba24-927bf5c5505d
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f9304641f7082dc3bbf9f09ecb4940e54d5f9e821fbaa589ae50cf5f08d5c011
+            outcomeId: ea87ec44-6637-4e99-ba24-927bf5c5505d
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-atomic-work-outcome-acceptance
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        id: repair-atomic-work-outcome-acceptance:31
+        input:
+          input:
+            change: repair-atomic-work-outcome-acceptance
+            changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+            workspaceBaseline:
+              ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+          outputs: {}
+        inputHash: 7e5c2f82eac1b2bd655c18aa26b7662da29efc87f5adf5df873c02fe0c63b8ed
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-atomic-work-outcome-acceptance
+        status: pending
+        stepId: full.build.check
+        type: call_tool
     commands:
       - id: 9f8f97738f12da741c7a32fa47968d48e4160da187f38e555534ba4d7ac3934d
         name: revise-plan
@@ -739,6 +884,18 @@ run_checkpoint:
       repair-atomic-work-outcome-acceptance:24:
         results: {}
         sequence: 24
+      repair-atomic-work-outcome-acceptance:26:
+        results: {}
+        sequence: 26
+      repair-atomic-work-outcome-acceptance:28:
+        results: {}
+        sequence: 28
+      repair-atomic-work-outcome-acceptance:30:
+        results: {}
+        sequence: 30
+      repair-atomic-work-outcome-acceptance:31:
+        results: {}
+        sequence: 31
       repair-atomic-work-outcome-acceptance:4:
         results: {}
         sequence: 4
@@ -930,7 +1087,7 @@ run_checkpoint:
       - id: repair-atomic-work-outcome-acceptance:25
         stepId: full.design.confirm
         sequence: 25
-        status: pending
+        status: resolved
         proposal:
           input:
             change: repair-atomic-work-outcome-acceptance
@@ -953,6 +1110,10 @@ run_checkpoint:
           - approved
           - rejected
         results: {}
+        decision:
+          id: classic-design-c83d1d97868c3ece60b15037d8c41783505b9dfa0071a533451dee2ee22cf787-approved
+          choice: approved
+          proposalHash: c83d1d97868c3ece60b15037d8c41783505b9dfa0071a533451dee2ee22cf787
     evidenceWaits:
       - id: repair-atomic-work-outcome-acceptance:2
         stepId: full.open.evidence
@@ -1014,13 +1175,33 @@ run_checkpoint:
           ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
           contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
           submissionId: 4759078c-1a3e-4602-848b-425c4c4e744c
+      - id: repair-atomic-work-outcome-acceptance:27
+        stepId: full.design.evidence
+        sequence: 27
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          contentHash: 41ac4eae1ae2250792809ea6c343678be666110a0b39afe0cd3d4a72b484a86b
+          submissionId: e2a0ece3-5673-42da-9cfa-17cdc8aed699
+      - id: repair-atomic-work-outcome-acceptance:29
+        stepId: full.build.plan.evidence
+        sequence: 29
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+          contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+          submissionId: 0253f8b1-548e-4e49-8a3f-9ed52be65732
     ready: []
     joins: {}
     outputs: {}
     children: []
     lineage: []
-  sourceRevision: 36
-  sourceHash: abf69f53b918d5388b4fee3769ffa165975cdeef324eb0788d929d672b09d3ce
+  sourceRevision: 45
+  sourceHash: 6611d17406bffb4da932e2a327c212f708a77854f99a1f7a08215a461d4d51d3
   pool:
     version: 3
     values:
@@ -1273,6 +1454,44 @@ run_checkpoint:
           contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
           ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
         taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+      - choice: approved
+        proposal:
+          input:
+            change: repair-atomic-work-outcome-acceptance
+            changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+            workspaceBaseline:
+              ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+              handoffHash: 024119658210f7edd1f86ce0f836939cec10f5e9d264cb1d7eb228711d3a0876
+              proposal: "# Revised Design Summary"
+              requirementsEvidence:
+                contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+              sourceEvidence:
+                contentHash: 21995c726a6c277d15be83be614b69cf3ac053e776ea072981e1b2b0558b941f
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+      - handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+        handoffHash: 024119658210f7edd1f86ce0f836939cec10f5e9d264cb1d7eb228711d3a0876
+        proposal: "# Revised Design Summary"
+        requirementsEvidence:
+          contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+          ref: openspec/changes/repair-atomic-work-outcome-acceptance
+        sourceEvidence:
+          contentHash: 21995c726a6c277d15be83be614b69cf3ac053e776ea072981e1b2b0558b941f
+          ref: openspec/changes/repair-atomic-work-outcome-acceptance
+      - contentHash: 41ac4eae1ae2250792809ea6c343678be666110a0b39afe0cd3d4a72b484a86b
+        ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+      - designEvidence:
+          contentHash: 41ac4eae1ae2250792809ea6c343678be666110a0b39afe0cd3d4a72b484a86b
+          ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+        plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+        planEvidence:
+          contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+          ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+        taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+      - event: build-complete
       - sequence: 9
         value:
           boundBranch: comet/repair-atomic-work-outcome-acceptance
@@ -1566,6 +1785,26 @@ run_checkpoint:
         value:
           contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
           ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+      - sequence: 25
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: repair-atomic-work-outcome-acceptance
+              changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+              workspaceBaseline:
+                ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+                handoffHash: 024119658210f7edd1f86ce0f836939cec10f5e9d264cb1d7eb228711d3a0876
+                proposal: "# Revised Design Summary"
+                requirementsEvidence:
+                  contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                  ref: openspec/changes/repair-atomic-work-outcome-acceptance
+                sourceEvidence:
+                  contentHash: 21995c726a6c277d15be83be614b69cf3ac053e776ea072981e1b2b0558b941f
+                  ref: openspec/changes/repair-atomic-work-outcome-acceptance
       - sequence: 24
         value:
           handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
@@ -1577,6 +1816,30 @@ run_checkpoint:
           sourceEvidence:
             contentHash: 21995c726a6c277d15be83be614b69cf3ac053e776ea072981e1b2b0558b941f
             ref: openspec/changes/repair-atomic-work-outcome-acceptance
+      - sequence: 26
+        value:
+          designDoc: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+      - sequence: 27
+        value:
+          contentHash: 41ac4eae1ae2250792809ea6c343678be666110a0b39afe0cd3d4a72b484a86b
+          ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+      - sequence: 28
+        value:
+          designEvidence:
+            contentHash: 41ac4eae1ae2250792809ea6c343678be666110a0b39afe0cd3d4a72b484a86b
+            ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+          planEvidence:
+            contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+            ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+          taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+      - sequence: 29
+        value:
+          contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+          ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+      - sequence: 30
+        value:
+          event: build-complete
     nodes:
       - key: full.open
         value: 0
@@ -1773,460 +2036,645 @@ run_checkpoint:
         left: 37
         right: 33
         height: 3
-      - key: full.build.configure
+      - key: full.design.handoff
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 18
+        left: null
+        right: 39
+        height: 2
+      - key: full.design.confirm
         value: 18
         left: null
         right: null
         height: 1
-      - key: full.design.confirm
-        value: 20
-        left: null
-        right: null
-        height: 1
-      - key: full.build.confirm
-        value: 19
-        left: 39
-        right: 40
-        height: 2
       - key: full.design.evidence
-        value: 22
-        left: null
-        right: null
-        height: 1
-      - key: full.open
-        value: 24
+        value: 20
         left: null
         right: null
         height: 1
       - key: full.design.handoff
-        value: 23
+        value: 19
         left: 42
-        right: 43
-        height: 2
-      - key: full.open.revalidate
-        value: 27
-        left: null
         right: null
-        height: 1
-      - key: full.open.evidence
-        value: 26
-        left: null
-        right: 45
         height: 2
-      - key: full.open.confirm
-        value: 25
-        left: 44
-        right: 46
-        height: 3
       - key: full.design.document
-        value: 21
+        value: 6
         left: 41
-        right: 47
-        height: 4
+        right: 43
+        height: 3
       - key: full.build.plan
-        value: 28
+        value: 21
         left: null
         right: null
         height: 1
       - key: full.design.confirm
-        value: 20
+        value: 18
         left: null
         right: null
         height: 1
       - key: full.build.plan.evidence
-        value: 29
-        left: 49
-        right: 50
+        value: 13
+        left: 45
+        right: 46
         height: 2
-      - key: full.build.confirm
-        value: 19
-        left: 39
-        right: 51
+      - key: full.design.document
+        value: 6
+        left: 47
+        right: 43
+        height: 3
+      - key: full.build.execute
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 21
+        left: 49
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 13
+        left: 50
+        right: 46
         height: 3
       - key: full.design.document
-        value: 21
-        left: 52
-        right: 47
+        value: 6
+        left: 51
+        right: 43
+        height: 4
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 53
+        right: 54
+        height: 2
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 56
+        right: 57
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 59
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 58
+        right: 60
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 55
+        right: 61
+        height: 4
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: 63
+        right: 64
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 53
+        right: 65
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 66
+        right: 61
         height: 4
       - key: full.build.plan.evidence
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 35
+        left: null
+        right: 68
+        height: 2
+      - key: full.design.handoff
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: 70
+        height: 2
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 38
+        left: 73
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 39
+        left: 72
+        right: 74
+        height: 3
+      - key: full.build.plan
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 42
+        left: 76
+        right: 77
+        height: 2
+      - key: full.design.document
+        value: 39
+        left: 78
+        right: 74
+        height: 3
+      - key: full.design.handoff
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 43
+        left: null
+        right: 80
+        height: 2
+      - key: full.design.confirm
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 44
+        left: 83
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 45
+        left: 82
+        right: 84
+        height: 3
+      - key: full.build.plan
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 48
+        left: 86
+        right: 87
+        height: 2
+      - key: full.design.document
+        value: 45
+        left: 88
+        right: 84
+        height: 3
+      - key: full.build.execute
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 47
+        left: 90
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 48
+        left: 91
+        right: 87
+        height: 3
+      - key: full.design.document
+        value: 45
+        left: 92
+        right: 84
+        height: 4
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
         value: 31
         left: null
         right: null
         height: 1
-      - key: full.build.plan
+      - key: full.open.confirm
         value: 30
-        left: null
-        right: 54
+        left: 94
+        right: 95
         height: 2
-      - key: full.design.handoff
-        value: 33
-        left: null
-        right: null
-        height: 1
-      - key: full.design.confirm
+      - key: full.open.revalidate
         value: 32
-        left: null
-        right: 56
-        height: 2
-      - key: full.design.confirm
-        value: 32
-        left: null
-        right: null
-        height: 1
-      - key: full.design.evidence
-        value: 35
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 33
-        left: 59
-        right: null
-        height: 2
-      - key: full.design.document
-        value: 34
-        left: 58
-        right: 60
-        height: 3
-      - key: full.build.plan
-        value: 36
-        left: null
-        right: null
-        height: 1
-      - key: full.design.confirm
-        value: 32
-        left: null
-        right: null
-        height: 1
-      - key: full.build.plan.evidence
-        value: 37
-        left: 62
-        right: 63
-        height: 2
-      - key: full.design.document
-        value: 34
-        left: 64
-        right: 60
-        height: 3
-      - key: full.open
-        value: 24
         left: null
         right: null
         height: 1
       - key: full.open.evidence
-        value: 26
+        value: 31
+        left: null
+        right: 97
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 94
+        right: 98
+        height: 3
+      - key: full.design.confirm
+        value: 25
         left: null
         right: null
         height: 1
-      - key: full.open.confirm
-        value: 25
-        left: 66
-        right: 67
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 100
+        right: 101
         height: 2
-      - key: full.open.revalidate
+      - key: full.open.confirm
+        value: 30
+        left: 102
+        right: 98
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
         value: 27
         left: null
         right: null
         height: 1
-      - key: full.open.evidence
+      - key: full.design.document
         value: 26
-        left: null
-        right: 69
-        height: 2
-      - key: full.open.confirm
-        value: 25
-        left: 66
-        right: 70
-        height: 3
-      - key: full.design.confirm
-        value: 20
-        left: null
-        right: null
-        height: 1
-      - key: full.open
-        value: 24
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 23
-        left: 72
-        right: 73
-        height: 2
-      - key: full.open.confirm
-        value: 25
-        left: 74
-        right: 70
-        height: 3
-      - key: full.design.confirm
-        value: 20
-        left: null
-        right: null
-        height: 1
-      - key: full.design.evidence
-        value: 22
-        left: null
-        right: null
-        height: 1
-      - key: full.design.document
-        value: 21
-        left: 76
-        right: 77
+        left: 104
+        right: 105
         height: 2
       - key: full.design.handoff
-        value: 23
-        left: 78
-        right: 73
-        height: 3
-      - key: full.open.confirm
-        value: 25
-        left: 79
-        right: 70
-        height: 4
-      - key: full.build.configure
-        value: 18
-        left: null
-        right: null
-        height: 1
-      - key: full.build.plan
-        value: 36
-        left: null
-        right: null
-        height: 1
-      - key: full.design.confirm
-        value: 32
-        left: null
-        right: null
-        height: 1
-      - key: full.build.plan.evidence
-        value: 37
-        left: 82
-        right: 83
-        height: 2
-      - key: full.build.confirm
-        value: 19
-        left: 81
-        right: 84
-        height: 3
-      - key: full.design.evidence
-        value: 35
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 38
-        left: 86
-        right: 73
-        height: 2
-      - key: full.open.confirm
-        value: 25
-        left: 87
-        right: 70
-        height: 3
-      - key: full.design.document
-        value: 34
-        left: 85
-        right: 88
-        height: 4
-      - key: full.open.evidence
-        value: 26
-        left: null
-        right: null
-        height: 1
-      - key: full.open
-        value: 24
-        left: null
-        right: 90
-        height: 2
-      - key: full.design.handoff
-        value: 23
-        left: null
-        right: null
-        height: 1
-      - key: full.open.confirm
-        value: 25
-        left: null
-        right: null
-        height: 1
-      - key: full.open.revalidate
-        value: 27
-        left: null
-        right: null
-        height: 1
-      - key: full.open.evidence
-        value: 26
-        left: 93
-        right: 94
-        height: 2
-      - key: full.open
-        value: 24
-        left: 92
-        right: 95
-        height: 3
-      - key: full.build.configure
-        value: 18
-        left: null
-        right: null
-        height: 1
-      - key: full.design.document
-        value: 21
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 23
-        left: null
-        right: null
-        height: 1
-      - key: full.design.evidence
-        value: 22
-        left: 98
-        right: 99
-        height: 2
-      - key: full.design.confirm
-        value: 20
-        left: 97
-        right: 100
-        height: 3
-      - key: full.open
-        value: 24
-        left: 101
-        right: 95
-        height: 4
-      - key: full.design.handoff
-        value: 33
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 38
-        left: null
-        right: null
-        height: 1
-      - key: full.open
-        value: 24
-        left: null
-        right: null
-        height: 1
-      - key: full.design.confirm
-        value: 20
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 23
-        left: null
-        right: null
-        height: 1
-      - key: full.design.document
-        value: 21
+        value: 28
         left: 106
-        right: 107
-        height: 2
+        right: 101
+        height: 3
       - key: full.open.confirm
-        value: 25
+        value: 30
+        left: 107
+        right: 98
+        height: 4
+      - key: full.build.configure
+        value: 23
         left: null
         right: null
         height: 1
-      - key: full.open.revalidate
-        value: 27
+      - key: full.build.execute
+        value: 49
         left: null
         right: null
         height: 1
-      - key: full.open.evidence
-        value: 26
+      - key: full.build.confirm
+        value: 24
         left: 109
         right: 110
         height: 2
-      - key: full.open
-        value: 24
-        left: 108
-        right: 111
-        height: 3
-      - key: full.build.configure
-        value: 18
+      - key: full.build.plan.evidence
+        value: 48
         left: null
         right: null
         height: 1
+      - key: full.design.confirm
+        value: 43
+        left: 112
+        right: null
+        height: 2
       - key: full.build.plan
+        value: 47
+        left: 111
+        right: 113
+        height: 3
+      - key: full.design.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 44
+        left: 115
+        right: 101
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 116
+        right: 98
+        height: 3
+      - key: full.design.document
+        value: 45
+        left: 114
+        right: 117
+        height: 4
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: 119
+        height: 2
+      - key: full.design.handoff
         value: 28
         left: null
         right: null
         height: 1
-      - key: full.build.confirm
-        value: 19
-        left: 113
-        right: 114
-        height: 2
-      - key: full.design.document
-        value: 21
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 23
-        left: null
-        right: null
-        height: 1
-      - key: full.design.evidence
-        value: 22
-        left: 116
-        right: 117
-        height: 2
-      - key: full.design.confirm
-        value: 20
-        left: 115
-        right: 118
-        height: 3
-      - key: full.open
-        value: 24
-        left: 119
-        right: 111
-        height: 4
-      - key: full.build.plan
+      - key: full.open.confirm
         value: 30
         left: null
         right: null
         height: 1
-      - key: full.design.confirm
+      - key: full.open.revalidate
         value: 32
         left: null
         right: null
         height: 1
-      - key: full.design.handoff
-        value: 33
+      - key: full.open.evidence
+        value: 31
+        left: 122
+        right: 123
+        height: 2
+      - key: full.open
+        value: 29
+        left: 121
+        right: 124
+        height: 3
+      - key: full.build.configure
+        value: 23
         left: null
         right: null
         height: 1
       - key: full.design.document
-        value: 34
-        left: 122
-        right: 123
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 127
+        right: 128
         height: 2
-      - key: full.build.plan
-        value: 36
+      - key: full.design.confirm
+        value: 25
+        left: 126
+        right: 129
+        height: 3
+      - key: full.open
+        value: 29
+        left: 130
+        right: 124
+        height: 4
+      - key: full.design.handoff
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
         left: null
         right: null
         height: 1
       - key: full.design.confirm
-        value: 32
-        left: 125
+        value: 25
+        left: null
         right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 135
+        right: 136
         height: 2
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 138
+        right: 139
+        height: 2
+      - key: full.open
+        value: 29
+        left: 137
+        right: 140
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 142
+        right: 143
+        height: 2
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
       - key: full.design.evidence
+        value: 27
+        left: 145
+        right: 146
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 144
+        right: 147
+        height: 3
+      - key: full.open
+        value: 29
+        left: 148
+        right: 140
+        height: 4
+      - key: full.build.plan
         value: 35
         left: null
         right: null
         height: 1
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
       - key: full.design.handoff
-        value: 33
-        left: 127
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 39
+        left: 151
+        right: 152
+        height: 2
+      - key: full.build.plan
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 37
+        left: 154
+        right: null
+        height: 2
+      - key: full.design.evidence
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 38
+        left: 156
         right: null
         height: 2
       - key: full.design.document
-        value: 34
-        left: 126
-        right: 128
+        value: 39
+        left: 155
+        right: 157
+        height: 3
+      - key: full.design.confirm
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 45
+        left: 159
+        right: 160
+        height: 2
+      - key: full.build.plan
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 43
+        left: 162
+        right: null
+        height: 2
+      - key: full.design.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 44
+        left: 164
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 45
+        left: 163
+        right: 165
         height: 3
     maps:
       - null
@@ -2240,28 +2688,38 @@ run_checkpoint:
       - 30
       - 34
       - 38
+      - 40
+      - 44
       - 48
-      - 53
-      - 55
-      - 57
-      - 61
-      - 65
-      - 68
+      - 52
+      - 62
+      - 67
+      - 69
       - 71
       - 75
-      - 80
+      - 79
+      - 81
+      - 85
       - 89
-      - 91
+      - 93
       - 96
-      - 102
+      - 99
       - 103
-      - 104
-      - 105
-      - 112
+      - 108
+      - 118
       - 120
-      - 121
-      - 124
-      - 129
+      - 125
+      - 131
+      - 132
+      - 133
+      - 134
+      - 141
+      - 149
+      - 150
+      - 153
+      - 158
+      - 161
+      - 166
     bindings:
       - path:
           - actions
@@ -2348,6 +2806,30 @@ run_checkpoint:
           - outputs
         map: 0
       - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 14
+      - path:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:1
           - results
@@ -2356,12 +2838,12 @@ run_checkpoint:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:11
           - results
-        map: 11
+        map: 15
       - path:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:13
           - results
-        map: 12
+        map: 16
       - path:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:14
@@ -2371,7 +2853,7 @@ run_checkpoint:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:16
           - results
-        map: 13
+        map: 17
       - path:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:17
@@ -2381,17 +2863,17 @@ run_checkpoint:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:19
           - results
-        map: 14
+        map: 18
       - path:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:21
           - results
-        map: 15
+        map: 19
       - path:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:23
           - results
-        map: 16
+        map: 20
       - path:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:24
@@ -2399,81 +2881,111 @@ run_checkpoint:
         map: 0
       - path:
           - actionContexts
+          - repair-atomic-work-outcome-acceptance:26
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - repair-atomic-work-outcome-acceptance:28
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - repair-atomic-work-outcome-acceptance:30
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - repair-atomic-work-outcome-acceptance:31
+          - results
+        map: 24
+      - path:
+          - actionContexts
           - repair-atomic-work-outcome-acceptance:4
           - results
-        map: 17
+        map: 25
       - path:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:5
           - results
-        map: 18
+        map: 26
       - path:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:7
           - results
-        map: 19
+        map: 27
       - path:
           - actionContexts
           - repair-atomic-work-outcome-acceptance:9
           - results
-        map: 20
-      - path:
-          - outputs
-        map: 21
-      - path:
-          - waits
-          - "0"
-          - results
-        map: 22
-      - path:
-          - waits
-          - "1"
-          - results
-        map: 23
-      - path:
-          - waits
-          - "2"
-          - results
-        map: 24
-      - path:
-          - waits
-          - "3"
-          - results
-        map: 25
-      - path:
-          - waits
-          - "4"
-          - results
-        map: 26
-      - path:
-          - evidenceWaits
-          - "0"
-          - results
-        map: 27
-      - path:
-          - evidenceWaits
-          - "1"
-          - results
         map: 28
       - path:
-          - evidenceWaits
-          - "2"
-          - results
+          - outputs
         map: 29
       - path:
-          - evidenceWaits
-          - "3"
+          - waits
+          - "0"
           - results
         map: 30
       - path:
+          - waits
+          - "1"
+          - results
+        map: 31
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 32
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 33
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 36
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 37
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 38
+      - path:
           - evidenceWaits
           - "4"
           - results
-        map: 31
+        map: 39
       - path:
           - evidenceWaits
           - "5"
           - results
-        map: 32
-  storageHash: fb0bb2bc18803ba5e40cfd1f6d4bb5fdd8e8f3806ec9acea603d3f14b9c71883
-check_epoch: 3
+        map: 40
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 41
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 42
+  storageHash: ada959899121559c2c8675aed42494a211f3ecc41a982da4a17f0881f48fa104
+check_epoch: 4
