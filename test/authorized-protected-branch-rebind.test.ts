@@ -8,6 +8,11 @@ import {
 } from '../domains/change-lifecycle/build-protocol.js';
 import { createProjectSnapshot } from '../domains/project/snapshot.js';
 import { classifyProtectedBranchRebind } from '../domains/runtime/authorized-rebind.js';
+import { hostAbsolutePath } from './helpers/host-path.js';
+
+const projectRoot = hostAbsolutePath('project');
+const appCheckout = hostAbsolutePath('project', 'app');
+const workerCheckout = hostAbsolutePath('project', 'worker');
 
 const strategy = createBuildStrategy({
   runId: 'run-1',
@@ -27,7 +32,7 @@ const workspaceBinding = createExecutionWorkspaceBinding({
   repositories: [
     {
       repositoryId: 'app',
-      checkoutPath: 'C:/project/app',
+      checkoutPath: appCheckout,
       branch: 'main',
       head: 'a'.repeat(40),
       worktreeId: null,
@@ -35,7 +40,7 @@ const workspaceBinding = createExecutionWorkspaceBinding({
     },
     {
       repositoryId: 'worker',
-      checkoutPath: 'C:/project/worker',
+      checkoutPath: workerCheckout,
       branch: 'main',
       head: 'b'.repeat(40),
       worktreeId: null,
@@ -88,11 +93,11 @@ const candidate = {
   ],
 };
 
-function snapshot(branches: { app: string; worker: string }, appPath = 'C:/project/app') {
+function snapshot(branches: { app: string; worker: string }, appPath = appCheckout) {
   return createProjectSnapshot({
     schemaVersion: 1,
     projectId: 'project-1',
-    root: 'C:/project',
+    root: projectRoot,
     capturedAt: '2026-11-04T00:00:00.000Z',
     repositories: [
       {
@@ -107,7 +112,7 @@ function snapshot(branches: { app: string; worker: string }, appPath = 'C:/proje
       {
         id: 'worker',
         name: 'worker',
-        path: 'C:/project/worker',
+        path: workerCheckout,
         remoteIdentity: 'remote-worker',
         branch: branches.worker,
         head: 'b'.repeat(40),

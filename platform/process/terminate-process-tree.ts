@@ -6,6 +6,7 @@ import { inspectProcessOwnership } from './process-identity.js';
 const WINDOWS_TASKKILL_ATTEMPT_MS = 1_000;
 const WINDOWS_TASKKILL_ATTEMPTS = 2;
 const POSIX_GROUP_EXIT_WAIT_MS = 1_000;
+const POSIX_EXIT_POLL_MS = 20;
 
 async function waitForPosixGroupExit(pid: number): Promise<boolean> {
   const deadline = Date.now() + POSIX_GROUP_EXIT_WAIT_MS;
@@ -18,7 +19,7 @@ async function waitForPosixGroupExit(pid: number): Promise<boolean> {
       if (code !== 'EPERM') return false;
     }
     if (Date.now() >= deadline) return false;
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await new Promise((resolve) => setTimeout(resolve, POSIX_EXIT_POLL_MS));
   }
 }
 
@@ -153,5 +154,5 @@ export async function terminateRecoveredProcessTree(
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ESRCH') return 'unknown';
   }
-  return 'terminated';
+  return (await waitForPosixGroupExit(pid)) ? 'terminated' : 'unknown';
 }

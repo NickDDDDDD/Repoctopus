@@ -180,16 +180,16 @@ function windowsSecurity(environment: NodeJS.ProcessEnv): DesktopDiscoverySecuri
 export function resolveDesktopReceiverDiscoveryRoot(environment: NodeJS.ProcessEnv): string {
   const override = environment.REPOCTOPUS_DESKTOP_DISCOVERY_ROOT?.trim();
   if (override) {
-    if (!path.isAbsolute(override)) {
+    if (!path.win32.isAbsolute(override)) {
       throw new Error('REPOCTOPUS_DESKTOP_DISCOVERY_ROOT must be an absolute path');
     }
-    return path.resolve(override);
+    return path.win32.resolve(override);
   }
   const localAppData = environment.LOCALAPPDATA;
-  if (!localAppData || !path.isAbsolute(localAppData)) {
+  if (!localAppData || !path.win32.isAbsolute(localAppData)) {
     throw new Error('LOCALAPPDATA is required for Windows Desktop discovery');
   }
-  return path.join(localAppData, 'Repoctopus', 'discovery');
+  return path.win32.join(localAppData, 'Repoctopus', 'discovery');
 }
 
 function validEndpoint(value: string): boolean {

@@ -57,17 +57,44 @@ GitHub Token 只由 Delivery/Consistency 平台 Adapter 读取。不要把值放
 
 ## 3. 运行与恢复
 
+### 多仓验收默认：隔离安装包
+
+多仓验收默认采用 package-first：从当前提交构建并生成 tarball，把它安装到全新的消费者目录，再通过安装包公开的 `bin` 运行 CLI。这样验收对象是即将被其他仓库消费的包，而不是长期源码 checkout 中可能残留的忽略文件。下面的 `<change-id>` 和目标仓路径仍需替换为本轮验收值：
+
+```powershell
+$packageDirectory = Join-Path ([IO.Path]::GetTempPath()) ('repoctopus-pack-' + [guid]::NewGuid())
+$consumerDirectory = Join-Path ([IO.Path]::GetTempPath()) ('repoctopus-consumer-' + [guid]::NewGuid())
+New-Item -ItemType Directory -Path $packageDirectory, $consumerDirectory | Out-Null
+
+npm run build
+$package = npm pack --json --pack-destination $packageDirectory | ConvertFrom-Json
+$tarball = Join-Path $packageDirectory $package[0].filename
+npm install --ignore-scripts --omit=dev --prefix $consumerDirectory $tarball
+node (Join-Path $consumerDirectory 'node_modules/repoctopus/bin/repoctopus.js') run start --workspace <workspace-path> --change <change-id> --target main --json
+```
+
+首次 checkout、`node_modules` 缺失或 `package-lock.json` 更新时，先执行 `npm ci`；依赖未变化时不要求每次验收都重复安装。验收结束后可以删除这两个唯一命名的临时目录。仓库的 `npm run test:package-e2e` 会自动执行同样的打包、隔离安装和公共 `bin` 边界检查，但不能替代针对真实多仓拓扑的生命周期验收。
+
+### 诊断例外：直接运行源码
+
+只有在诊断尚未打包的源码改动时才直接运行源码 checkout。每次切换、拉取或合入源码后，都必须从当前 checkout 重新构建并先执行 freshness preflight：
+
 ```powershell
 npm ci
 npm run build
+node scripts/build.mjs --check
 node bin/repoctopus.js run start --workspace . --change <change-id> --target main --json
 node bin/repoctopus.js run status --workspace . --run <run-id> --json
 node bin/repoctopus.js run next --workspace . --run <run-id> --json
 ```
 
+`npm ci` 仍只在依赖需要恢复时执行；后两个构建命令则不能因为 `dist/` 已存在而省略。缺失 `dist/` 表示源码 CLI 尚未构建；历史 `dist/` 即使仍能启动，也可能属于旧提交，不能作为验证证据。CLI launcher 不会隐式重建源码。
+
+仓库内的 `Continuous integration / verify` 会在 pull request、`main` push 和人工触发时，从干净 checkout 执行 `npm ci` 与 `npm run verify`。这份检查状态不等于服务端已经启用合入保护；如果团队要求失败时阻止合入，仓库管理员还必须在 GitHub 规则中把该稳定检查配置为 required check，并单独验证平台配置。
+
 `run start` 在创建新 Run 前执行一次有界 consistency reconcile。平台暂时不可用只产生警告，不阻断新任务；命令不会启动 listener 或 Timer。
 
-在 Windows x64 上，成功创建或恢复 Change Run 后，Runtime 会自动启动或激活 Desktop Dashboard 并转交当前 Run 上下文。源码正常路径只要求先运行标准 `npm run build`；不需要配置 Desktop executable。`unavailable` 或 `unsupported` 诊断不回滚 Run，也不停止远端 OTLP。完整步骤见[启动或恢复 Desktop Dashboard](desktop-activation.md)。
+在 Windows x64 上，成功创建或恢复 Change Run 后，Runtime 会自动启动或激活 Desktop Dashboard 并转交当前 Run 上下文。直接运行源码时仍须遵循本节统一的 build、freshness preflight、CLI 顺序；不需要配置 Desktop executable。`unavailable` 或 `unsupported` 诊断不回滚 Run，也不停止远端 OTLP。完整步骤见[启动或恢复 Desktop Dashboard](desktop-activation.md)。
 
 同一 Workspace/change 的 `run start` 总是创建或恢复同一个稳定 runId，不接受 mode 或代次参数。Runner 必须先建立并公开 source branch 或 worktree；Runtime 在任何 Run/Skill/Work/Desktop 成功写入前校验 attached source、target、remote 与多仓 topology，并冻结不含 path、HEAD、dirty 状态和时间的 `ChangeStartBinding`。等价重放直接采用 Store 中的 current Work，不重建候选 Work；绑定漂移返回公共 conflict code，且不修改 checkpoint。Runtime 本版只观察和校验，不创建或切换 checkout。
 

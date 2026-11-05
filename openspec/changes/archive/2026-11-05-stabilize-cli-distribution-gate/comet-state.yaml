@@ -1,0 +1,4363 @@
+# comet-execution: managed-run
+change_id: 9953f88d-d223-4b6e-9547-05bb828ce10f
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 04f71da2d204c7dd24106a5b9e0ae027b30ee652
+design_doc: openspec/changes/archive/2026-11-05-stabilize-cli-distribution-gate/design.md
+plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+branch_status: pending
+created_at: 2026-11-05
+verified_at: 2026-11-05
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/stabilize-cli-distribution-gate
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-05-stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+handoff_hash: 0c399df293261863a315cf37a8ef3a17a2ee9a36af1bc0be9b2fc84c1ccce14d
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: ea86251b8cde3e7c34d4fdbd86140071ffc151efcc773cb9bded7e09cc940f79
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-cli-distribution-gate
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    definitionHashes:
+      '["comet-classic-full","1"]': 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    initialStateHash: 2e99cab430713588159c035332f055eea575ed57e5484e3bb6e40853a2aa3e98
+    input:
+      change: stabilize-cli-distribution-gate
+      changeDir: openspec/changes/stabilize-cli-distribution-gate
+      workspaceBaseline:
+        ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 04f71da2d204c7dd24106a5b9e0ae027b30ee652
+      boundBranch: comet/stabilize-cli-distribution-gate
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 11
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-05
+      designDoc: openspec/changes/archive/2026-11-05-stabilize-cli-distribution-gate/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-05-stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+      handoffHash: 0c399df293261863a315cf37a8ef3a17a2ee9a36af1bc0be9b2fc84c1ccce14d
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+      verifiedAt: 2026-11-05
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 41
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-90af285ea3ecb6288ffb6c53b6440e6b6f6d741e9a3cce18d7661d1fc7dd668c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:1
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: efbf912427b50ff597095ac07c624175d9d0881f5a890543df640f8ec4b30ede
+        outcome:
+          actionId: stabilize-cli-distribution-gate:1
+          attempt: 1
+          claimToken: portable-90af285ea3ecb6288ffb6c53b6440e6b6f6d741e9a3cce18d7661d1fc7dd668c
+          inputHash: efbf912427b50ff597095ac07c624175d9d0881f5a890543df640f8ec4b30ede
+          outcomeId: dde5d2e5-9a40-41ee-9ef4-b0a543d41b68
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: dd007276db9153b0e28d4e2e082b11eea2d0258c2817901251d58d201ec5e56c
+            outcomeId: dde5d2e5-9a40-41ee-9ef4-b0a543d41b68
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-c1e7d1aec96d47a53c70e86403abffc5cee66e187ad249dc8629bcff94648e06
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:4
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: cf732e74146fc5bb3bcaa9d99ec264021bca3e4cb3e25fd42731ca1329fe0e1a
+        outcome:
+          actionId: stabilize-cli-distribution-gate:4
+          attempt: 1
+          claimToken: portable-c1e7d1aec96d47a53c70e86403abffc5cee66e187ad249dc8629bcff94648e06
+          inputHash: cf732e74146fc5bb3bcaa9d99ec264021bca3e4cb3e25fd42731ca1329fe0e1a
+          outcomeId: stabilize-cli-distribution-gate:4:1:executor-result
+          output:
+            contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6e2c1aeafdf48b7fc71160881cc71fdb406b12e8a81c079774be8c5815945333
+            outcomeId: stabilize-cli-distribution-gate:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-ba7196f57cf305d7845f2baf638aad6e6406243602de1eb1e3c1293cad383f54
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:5
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: ec3ac78d8f6eea0be9aa24da40ed2da3f0029d41028ce63e097fab30492ad1e9
+        outcome:
+          actionId: stabilize-cli-distribution-gate:5
+          attempt: 1
+          claimToken: portable-ba7196f57cf305d7845f2baf638aad6e6406243602de1eb1e3c1293cad383f54
+          inputHash: ec3ac78d8f6eea0be9aa24da40ed2da3f0029d41028ce63e097fab30492ad1e9
+          outcomeId: 105653be-0e35-4635-88c7-9c721e066c7b
+          output:
+            handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+            handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+            proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+              build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+              scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual
+              GitHub workflow，固定 Continuous integration / verify，运行 npm ci 与唯一权威
+              npm run verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node
+              24、锁定安装、单一验证命令、package-first 与源码例外顺序。拒绝提交 dist（双重权威）和 launcher
+              自动构建/本次 fail-closed 改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+              check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把 package-first
+              设为默认控制。已批准的 product-distribution Spec Patch 已包含 package-first 与源码
+              freshness 场景，本候选不新增行为范围。
+            requirementsEvidence:
+              contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+              ref: openspec/changes/stabilize-cli-distribution-gate
+            sourceEvidence:
+              contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+              ref: openspec/changes/stabilize-cli-distribution-gate
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 17a97221f74eb707cada3fa3d005b9a1a2ba43d3f9bb5ec4ee3fe4d8690d8602
+            outcomeId: 105653be-0e35-4635-88c7-9c721e066c7b
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-af296a75f474af947bcf7fcb2b2afabf0fc5b6782ca01e0ec34fa52e08ce9dbb
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:7
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: a888b5eeee2852942d8b9792485e3f74f4e5fc5cead3c5cc689f4c3dbb407654
+        outcome:
+          actionId: stabilize-cli-distribution-gate:7
+          attempt: 1
+          claimToken: portable-af296a75f474af947bcf7fcb2b2afabf0fc5b6782ca01e0ec34fa52e08ce9dbb
+          inputHash: a888b5eeee2852942d8b9792485e3f74f4e5fc5cead3c5cc689f4c3dbb407654
+          outcomeId: 530c0e84-be0c-4e5a-a97f-abc282211f18
+          output:
+            designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e6ea44403ef8ff0412cf5ea511d5d08c3938a1a067ac1e87166a508dd79707ff
+            outcomeId: 530c0e84-be0c-4e5a-a97f-abc282211f18
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e0ce41e101de875028532697906d91217da43234a01fd20a12dad607b88c1f22
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:9
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: dccb9ee2b1af6f47a7328e6c9a3a3f79da7f607bcf54082f9900afd844390649
+        outcome:
+          actionId: stabilize-cli-distribution-gate:9
+          attempt: 1
+          claimToken: portable-e0ce41e101de875028532697906d91217da43234a01fd20a12dad607b88c1f22
+          inputHash: dccb9ee2b1af6f47a7328e6c9a3a3f79da7f607bcf54082f9900afd844390649
+          outcomeId: d8941725-0a5c-415d-bcef-ba937ce442d3
+          output:
+            boundBranch: comet/stabilize-cli-distribution-gate
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5237438f892b9e75eb9a1b839496eb3c684ce3ed2a54e0cb68abd2b233711e51
+            outcomeId: d8941725-0a5c-415d-bcef-ba937ce442d3
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-da91a7917e794d27be2bd875003ae391f7cf13b7a072e09e35c6284001c29008
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:11
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: f6d1e2a106519d24d4f5650c8f2a9004e232666ffb94f0fc8c0732c6bab4db31
+        outcome:
+          actionId: stabilize-cli-distribution-gate:11
+          attempt: 1
+          claimToken: portable-da91a7917e794d27be2bd875003ae391f7cf13b7a072e09e35c6284001c29008
+          inputHash: f6d1e2a106519d24d4f5650c8f2a9004e232666ffb94f0fc8c0732c6bab4db31
+          outcomeId: ed777786-a0f1-4877-ae50-9a2021f20783
+          output:
+            designEvidence:
+              contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+              ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+            plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+            planEvidence:
+              contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+              ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+            taskRevision: cf805e66aca54d81b96dc9617ba6929c419c104b10bbf3a1724aea1e7edb426d
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3ed3bc91a439002ca2f1963ea8408adaefecae100b826909fbf0cba8cf8dc9b6
+            outcomeId: ed777786-a0f1-4877-ae50-9a2021f20783
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-root-stabilize-cli-distribution-gate
+          token: portable-87610ddc695b6b614de4fd52c393687c0b91bec5a21f0dc5884e35b80ac0818b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:13
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: f6564ba52500d80a0544dd6a9980e9cb5a34cb512483e47f2179e21737b00e36
+        outcome:
+          actionId: stabilize-cli-distribution-gate:13
+          attempt: 1
+          claimToken: portable-87610ddc695b6b614de4fd52c393687c0b91bec5a21f0dc5884e35b80ac0818b
+          inputHash: f6564ba52500d80a0544dd6a9980e9cb5a34cb512483e47f2179e21737b00e36
+          outcomeId: 4be27902-fba8-4e7b-af7d-c52135d17bfe
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2e29e4bf68d27f9c43723789c1cb241e9eba2a53b4cf9e833a8f721cc3ef9e86
+            outcomeId: 4be27902-fba8-4e7b-af7d-c52135d17bfe
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-98d26579bef44a3b24b1324e68a930a7b82c90803ca5d59a47ce92406d38ab6c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:14
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: 813289189249d6ab171f17280b5afd5d2b50ca1f1dccb8630f13fd34d7e6d0b4
+        outcome:
+          actionId: stabilize-cli-distribution-gate:14
+          attempt: 1
+          claimToken: portable-98d26579bef44a3b24b1324e68a930a7b82c90803ca5d59a47ce92406d38ab6c
+          inputHash: 813289189249d6ab171f17280b5afd5d2b50ca1f1dccb8630f13fd34d7e6d0b4
+          outcomeId: 75f37a9d-8436-4e48-8155-919fd5548056
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 5956f4689356a17284d2cd3514df6ffe3a2686219476f0c6d7a8ae5286261871
+            cwd: .
+            environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+            exitCode: 0
+            inputAfter: 691e6052bd6774dea49da3f92392752889bbcbb0427c69db01730889194db95c
+            inputBefore: 691e6052bd6774dea49da3f92392752889bbcbb0427c69db01730889194db95c
+            manifestHash: a585846cbd81f07379bd29a69514866a618d024fa0073787df23924ccfac19b8
+            manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/19b151f0-5f59-4a98-a042-7c4e092fe49a.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/c5d28a89-6a07-412b-abf3-7c25bf36da08.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 332c507e339ef168996ff27b8f8a699fadced08e19c8ab8526fe5d71ead05e46
+            outcomeId: 75f37a9d-8436-4e48-8155-919fd5548056
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-228888caad82ac1adfad3bb704bca02bc4b4e42313cec49be6a9c0aebc88276c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:16
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: 82546eb036355cbe83138fdc9b67c8384846875a3fcb4f72f307d4ec19336835
+        outcome:
+          actionId: stabilize-cli-distribution-gate:16
+          attempt: 1
+          claimToken: portable-228888caad82ac1adfad3bb704bca02bc4b4e42313cec49be6a9c0aebc88276c
+          inputHash: 82546eb036355cbe83138fdc9b67c8384846875a3fcb4f72f307d4ec19336835
+          outcomeId: bc8388c6-c10e-49ce-a8a4-19d88aa00936
+          output:
+            event: verify-fail
+            reason: Independent review found package E2E can pack stale dist, task 3.1
+              conflicts with its recorded baseline exception, job-level
+              permissions can bypass the CI test, and self-hosting docs retain a
+              contradictory build-only sentence.
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8701d298081aa7c924b691f20508aa7cec53c1effc474b061c9bce854555088f
+            outcomeId: bc8388c6-c10e-49ce-a8a4-19d88aa00936
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        id: stabilize-cli-distribution-gate:17
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: 88e76556ec34500453c8eb3f8521f1aa1180b356739836f8908086713ceb9802
+        protocolVersion: 1
+        reason: 命令 revise-design 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: cancelled
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-8e6efcd517b203794b209064d3a4532c76f5ebf7dbf6a1ce76f3d4487e650044
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:18
+        input:
+          activation:
+            expectedRevision: 26
+            fromPhase: build
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: a720239c7852a6676cdd918dfbc882f8845d621e9308a74fbce7b4db0de4fa60
+        outcome:
+          actionId: stabilize-cli-distribution-gate:18
+          attempt: 1
+          claimToken: portable-8e6efcd517b203794b209064d3a4532c76f5ebf7dbf6a1ce76f3d4487e650044
+          inputHash: a720239c7852a6676cdd918dfbc882f8845d621e9308a74fbce7b4db0de4fa60
+          outcomeId: bbefe497-181a-4eab-bcba-a27ee4fa42a6
+          output:
+            handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+            handoffHash: 0c399df293261863a315cf37a8ef3a17a2ee9a36af1bc0be9b2fc84c1ccce14d
+            proposal: "首次 Verify 的独立审查发现四项同范围证据缺口，修订方案不改变 product-distribution Spec Patch：1)
+              standalone npm run test:package-e2e 通过 pretest lifecycle 先执行 npm
+              run build，并用脚本契约测试防止历史 dist 被打包；2) workflow 契约拒绝 verify job 的
+              permissions 覆盖，保持顶层 contents: read 单一权威；3) self-hosting 文档删除
+              build-only 矛盾，唯一源码例外固定 build -> build.mjs --check -> CLI；4) Tasks
+              3.1 与已批准 Build Plan 对齐，全量 format:check 只记录既有 116-file baseline，本
+              change 精确 Prettier、全量 lint/typecheck 必须退出 0。取舍是 standalone package
+              E2E 多一次 build、权限配置更保守；不新增依赖，不改变 delta
+              spec、Runtime、Cordis、launcher、OTLP、协议或 tracked dist。"
+            requirementsEvidence:
+              contentHash: b49d63ba5af9dc43fd1815c03a5c1578386b5c3c66d040759c67d738ac38676f
+              ref: openspec/changes/stabilize-cli-distribution-gate
+            sourceEvidence:
+              contentHash: 786157ce23459985f933553bf6f572c94b24e2eccdb55940aa1ad7cd5520344a
+              ref: openspec/changes/stabilize-cli-distribution-gate
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 10cfb31c542181d81699fb90c380d24d703820d438792bb2f0079fb745e85d04
+            outcomeId: bbefe497-181a-4eab-bcba-a27ee4fa42a6
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-af942fdbc04f4c18df14730ab3365ca38c45c05c0d6ac7de849650faa3bd86f4
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:20
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: a288d231d4b7ec00aa731282a063f97b91209f55cc43d2ce186480b2114d7925
+        outcome:
+          actionId: stabilize-cli-distribution-gate:20
+          attempt: 1
+          claimToken: portable-af942fdbc04f4c18df14730ab3365ca38c45c05c0d6ac7de849650faa3bd86f4
+          inputHash: a288d231d4b7ec00aa731282a063f97b91209f55cc43d2ce186480b2114d7925
+          outcomeId: 45ce6c08-90ce-40f6-b056-401ecebd149a
+          output:
+            designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9ea6ebb1fa103b63e0108a39dd76c4b85bf052932520583185a01a789036e0d0
+            outcomeId: 45ce6c08-90ce-40f6-b056-401ecebd149a
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-255339f7a093dbc817c593c7c9d7b1232b9545e752052fc89806ad0512110f36
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:22
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: ec4d852868873b707e2d90b39235d32fc2068b1f56b6d74dd9061b80b6b53c56
+        outcome:
+          actionId: stabilize-cli-distribution-gate:22
+          attempt: 1
+          claimToken: portable-255339f7a093dbc817c593c7c9d7b1232b9545e752052fc89806ad0512110f36
+          inputHash: ec4d852868873b707e2d90b39235d32fc2068b1f56b6d74dd9061b80b6b53c56
+          outcomeId: 9c64dd0d-97d6-42b1-a018-9798ef8a66b3
+          output:
+            designEvidence:
+              contentHash: 480f1f15439b0c6f842c8bac22b45b89698190daf9a76624aa8682313e054189
+              ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+            plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+            planEvidence:
+              contentHash: 9d2dddf9eae0ce191331ff953d25d613d4129c017db498f2dfa27239a1b7e5c5
+              ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+            taskRevision: 2700be4a1458c17560639a59883cd97417ea93e3d4da17a53b52a0dfdf01f2dd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3b5d23f22feacf2e5500954cca5fbdf1e309483760bd3f4c436a39c81a39c65b
+            outcomeId: 9c64dd0d-97d6-42b1-a018-9798ef8a66b3
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/stabilize-cli-distribution-gate:24/1
+          token: portable-106504ab9acf1a614bb496f46ff19e589a4a4134e06bf65e5db238bd4da2fffd
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:24
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: f25dcd00e448c73d4ead9cc80e9ac5217b1f382aab7994674c93390977ba05cc
+        outcome:
+          actionId: stabilize-cli-distribution-gate:24
+          attempt: 1
+          claimToken: portable-106504ab9acf1a614bb496f46ff19e589a4a4134e06bf65e5db238bd4da2fffd
+          inputHash: f25dcd00e448c73d4ead9cc80e9ac5217b1f382aab7994674c93390977ba05cc
+          outcomeId: 356ea2a4-4706-4a00-90ed-74efabcbbe8b
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2d1489d5d2250fb50297007e128202556053eac9bab2a52c88b03b7568316dae
+            outcomeId: 356ea2a4-4706-4a00-90ed-74efabcbbe8b
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-fa288213a7b486603a205ab26601adb78b64d6cd7fb86f7fe164801be562dbf5
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:25
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: d3aea60c5c276c400d068a8a8bac2a736c646635f03b24a5d41a0045e649ec34
+        outcome:
+          actionId: stabilize-cli-distribution-gate:25
+          attempt: 1
+          claimToken: portable-fa288213a7b486603a205ab26601adb78b64d6cd7fb86f7fe164801be562dbf5
+          inputHash: d3aea60c5c276c400d068a8a8bac2a736c646635f03b24a5d41a0045e649ec34
+          outcomeId: 7cdcb6bd-e00d-4867-9633-1e0929430ead
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: f3a96446f195f8b1f74d29cdc4649814e8f23d4ddaa4518a660696eeb6d1a238
+            cwd: .
+            environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+            exitCode: 0
+            inputAfter: 8a46d682d37ba48fb3e263a55712ad9702d1b06b86b830e628ebed96de015a32
+            inputBefore: 8a46d682d37ba48fb3e263a55712ad9702d1b06b86b830e628ebed96de015a32
+            manifestHash: 0aa6e356403e30f907b2cedca837e55baf3b6140ff37323775b7382ddb01b3b3
+            manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/d6053bcd-4dc1-441e-bd0c-e93d681fef36.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/f7609f1b-b040-474a-8768-aec8f34b9e75.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ae26797548a6efe61bceac830503facd015535dce5fbfdf6d714d1cf6aea2b66
+            outcomeId: 7cdcb6bd-e00d-4867-9633-1e0929430ead
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-cc16fdced0b205675a24b1f3572573678a30a30e015143bf31e0f3d1c9be53d7
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:27
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: 4a52c73b431ef2fe88caf5edaa77cc06741d1e7fe17b1f2d745825663bc9d758
+        outcome:
+          actionId: stabilize-cli-distribution-gate:27
+          attempt: 1
+          claimToken: portable-cc16fdced0b205675a24b1f3572573678a30a30e015143bf31e0f3d1c9be53d7
+          inputHash: 4a52c73b431ef2fe88caf5edaa77cc06741d1e7fe17b1f2d745825663bc9d758
+          outcomeId: 5839b08c-dc06-4a4c-a11c-4920deedf466
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 36b1a9479ba3b3ebc9ed44fa7777b48e7f3e4b5ca6549053389199b49691965b
+            outcomeId: 5839b08c-dc06-4a4c-a11c-4920deedf466
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-59c984321d6778283875f8e4639eab5b8344884644db5cad3c6fbb361358def8
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:29
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: d519781486bee8b353e42b78bdc05a7265bc4e87cc4ce566139c26d270c600ca
+        outcome:
+          actionId: stabilize-cli-distribution-gate:29
+          attempt: 1
+          claimToken: portable-59c984321d6778283875f8e4639eab5b8344884644db5cad3c6fbb361358def8
+          inputHash: d519781486bee8b353e42b78bdc05a7265bc4e87cc4ce566139c26d270c600ca
+          outcomeId: a9991cda-7579-49f2-9d38-c7d687bc99d2
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 6
+            contentHash: dd45635fb68eb371ded5a6222e9b91b47ec770efe9a4f1e82589185d319c2717
+            cwd: .
+            deliveryInputs: {}
+            environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+            exitCode: 0
+            inputAfter: 79e601d85948523cd41a088c88ae25761e1c9927fda3516f65098fc34d76adff
+            inputBefore: 79e601d85948523cd41a088c88ae25761e1c9927fda3516f65098fc34d76adff
+            manifestHash: 6ec71d2e5df3aad3cf2de4269aad7ce1250a5c582b90e6386c4c8236935ecaf3
+            manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/f9a29ae4-d142-4688-bbfb-bb68228a84d6.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/bfbc9b47-e1b2-4d81-96de-24dae3b6e435.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 794e617395d4296e9e1a36d426caf08fa9e1c9f029a21a9099f8c65408848482
+            outcomeId: a9991cda-7579-49f2-9d38-c7d687bc99d2
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-66cbaef3e534355f214a0317b20eb545d18cd3d4e70de3c5d7af6898a57d8875
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:31
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: f3393ff3ce3dd7811e6d955fa9e4bb062e7ebc159e5d8e23d18b7761ab81178c
+        outcome:
+          actionId: stabilize-cli-distribution-gate:31
+          attempt: 1
+          claimToken: portable-66cbaef3e534355f214a0317b20eb545d18cd3d4e70de3c5d7af6898a57d8875
+          inputHash: f3393ff3ce3dd7811e6d955fa9e4bb062e7ebc159e5d8e23d18b7761ab81178c
+          outcomeId: 46b61f73-9c78-4380-bc41-4dc0bf3d044e
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档 stabilize-cli-distribution-gate：将 product-distribution delta
+              同步到主规格，把活动 change 移入 2026-11-05 归档目录，并提交 Archive 产物。当前分支
+              comet/stabilize-cli-distribution-gate 已公开且与 origin 同步；目标 remote 为
+              origin，PR base 为 main。选择 pr 后将推送唯一归档提交并创建 PR；不会自动合入，不会等待远端合入，也不修改
+              Runtime/Cordis/launcher/协议。Verify 已通过 full npm.cmd run
+              verify，独立复审无 CRITICAL/IMPORTANT/WARNING，GitHub 托管检查与
+              required-check 平台配置仍保留为外部证据边界。
+            targetBranch: comet/stabilize-cli-distribution-gate
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8a5217b8a99c45a66c7bf84d332ae42f3e262468d2946fdf2f68592213bcb43c
+            outcomeId: 46b61f73-9c78-4380-bc41-4dc0bf3d044e
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-2025c70a9c3dd1fb8cb38ed43e0fc33d889cf9d7e30b1efaab0799667e7fec68
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:33
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: c050f1ef34a3d4161396c9aba9b40ec03543e0807c278a205254f76db248843e
+        outcome:
+          actionId: stabilize-cli-distribution-gate:33
+          attempt: 1
+          claimToken: portable-2025c70a9c3dd1fb8cb38ed43e0fc33d889cf9d7e30b1efaab0799667e7fec68
+          inputHash: c050f1ef34a3d4161396c9aba9b40ec03543e0807c278a205254f76db248843e
+          outcomeId: 50bc4e3b-96d1-4541-8545-31352e513e6a
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 41bb5a51fb21ad9b6d46b2d2a5cb77043cfbeb848a948ce41b8f93bc5b497b13
+            outcomeId: 50bc4e3b-96d1-4541-8545-31352e513e6a
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-cfc76d858542bd6869f3cf808769efc6f1245732010148a5a252e3ca86bcd56b
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:35
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: c050f1ef34a3d4161396c9aba9b40ec03543e0807c278a205254f76db248843e
+        outcome:
+          actionId: stabilize-cli-distribution-gate:35
+          attempt: 1
+          claimToken: portable-cfc76d858542bd6869f3cf808769efc6f1245732010148a5a252e3ca86bcd56b
+          inputHash: c050f1ef34a3d4161396c9aba9b40ec03543e0807c278a205254f76db248843e
+          outcomeId: 3c8a3171-3e68-44e1-8b4d-e96408769a2b
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 8
+            contentHash: 031f2763c5724f923c5748143ce14f9cfee19d9307c652b9f67e3b69cdc54520
+            cwd: .
+            deliveryInputs: {}
+            environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+            exitCode: 0
+            inputAfter: 24149e6e56cb3f82fa40e8a56dc365b2bc4074076c77b14dc0e3bb6b7fe6dd56
+            inputBefore: 24149e6e56cb3f82fa40e8a56dc365b2bc4074076c77b14dc0e3bb6b7fe6dd56
+            manifestHash: feb1e3f657d2d65e426b475ab44acf7ee7cd640d1554da8ef2ae4b1abea8184a
+            manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/eeb92eb7-c3b9-4d58-b52a-bcde617e7e68.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/ad69fd37-aad1-44c8-99e2-b4559823d419.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5e3adcea5e7ef00e3e64e734ab093432d275b0bd3ea7a9fff29e8e3f76d8cd8f
+            outcomeId: 3c8a3171-3e68-44e1-8b4d-e96408769a2b
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-6c2863b92991eec2e7b3c4e50aa452f043f862e072bd5f4fcf01dc43600b1758
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:37
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: 9bcce54a08aec2861b301dc5dfdf69e25d582e3999e006d9532bf404903a724a
+        outcome:
+          actionId: stabilize-cli-distribution-gate:37
+          attempt: 1
+          claimToken: portable-6c2863b92991eec2e7b3c4e50aa452f043f862e072bd5f4fcf01dc43600b1758
+          inputHash: 9bcce54a08aec2861b301dc5dfdf69e25d582e3999e006d9532bf404903a724a
+          outcomeId: e0b6d69f-2a2d-4ce2-866f-8f16d72986ff
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档 stabilize-cli-distribution-gate：将 product-distribution delta
+              同步到主规格，把活动 change 移入 2026-11-05 归档目录，并提交 Archive 产物。当前分支
+              comet/stabilize-cli-distribution-gate 已公开且与 origin 同步；目标 remote 为
+              origin，PR base 为 main。选择 pr 后将推送唯一归档提交并创建 PR；不会自动合入，不会等待远端合入，也不修改
+              Runtime/Cordis/launcher/协议。Verify 已通过 full npm.cmd run
+              verify，独立复审无 CRITICAL/IMPORTANT/WARNING，GitHub 托管检查与
+              required-check 平台配置仍保留为外部证据边界。
+            targetBranch: comet/stabilize-cli-distribution-gate
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 61659f9a7c0235fb5c50d382e20cb0c33e6daf976bf4e2f635daef238d16de1c
+            outcomeId: e0b6d69f-2a2d-4ce2-866f-8f16d72986ff
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-3035ad11eb0c6e3a4cae6275fd3b5fefd73d1136abbc5af01e431136306c3193
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:39
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: 3a08cc0cd0f0a2ad98b02c80054994f21fe83aaf4fbaebf360c85fafeeae7b78
+        outcome:
+          actionId: stabilize-cli-distribution-gate:39
+          attempt: 1
+          claimToken: portable-3035ad11eb0c6e3a4cae6275fd3b5fefd73d1136abbc5af01e431136306c3193
+          inputHash: 3a08cc0cd0f0a2ad98b02c80054994f21fe83aaf4fbaebf360c85fafeeae7b78
+          outcomeId: 8705c3d2-6bf0-4447-ab6e-29c93dd9e397
+          output:
+            baseCommit: 6a546090bfbd236409cf8ea8d8d9f6c8385b57d7
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/stabilize-cli-distribution-gate
+            verifiedBranch: comet/stabilize-cli-distribution-gate
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7501a73ef10f8cc1cce9eaaab97309fa30e5a3b48e2f40966a534f5297d1d33f
+            outcomeId: 8705c3d2-6bf0-4447-ab6e-29c93dd9e397
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-756baa4893e6f01b1da806e298eaada91817afb3d70794936c80d603b48f24c2
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cli-distribution-gate:40
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: d63d9654098cccf30d9966e0cba6b38ef7e1350c9547706683e19189c99f1ffc
+        outcome:
+          actionId: stabilize-cli-distribution-gate:40
+          artifacts:
+            - sha256: 25ea617253a03575797f98402e29546e3fae3bd9b7b8fe99d1b2e8ab42732177
+              uri: openspec/changes/archive/2026-11-05-stabilize-cli-distribution-gate/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-756baa4893e6f01b1da806e298eaada91817afb3d70794936c80d603b48f24c2
+          inputHash: d63d9654098cccf30d9966e0cba6b38ef7e1350c9547706683e19189c99f1ffc
+          outcomeId: b02b2443-e365-4785-a786-59d20c4cb462
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-05-stabilize-cli-distribution-gate
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8bbca454a540d5671eb51a2d853ba5135a915cfdd2c55f630fcde03e73631be0
+            outcomeId: b02b2443-e365-4785-a786-59d20c4cb462
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: stabilize-cli-distribution-gate:41
+        input:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs: {}
+        inputHash: 21d35eb205e64c6cbd33e352b7ecdc9ba38cbd04642e7e1024de89d8e979fcf7
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cli-distribution-gate
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    commands:
+      - id: 88efccce4d983316a026d9314b1955b2f3d034eaac7c95ae3ad268f8dbcd5d8b
+        name: revise-design
+        inputHash: 5e1094e5505cdd85878732cc0116eb636fe230c7606fe74a14dd505ec72ee918
+        actionId: stabilize-cli-distribution-gate:18
+    actionContexts:
+      stabilize-cli-distribution-gate:1:
+        results: {}
+        sequence: 1
+      stabilize-cli-distribution-gate:11:
+        results: {}
+        sequence: 11
+      stabilize-cli-distribution-gate:13:
+        results: {}
+        sequence: 13
+      stabilize-cli-distribution-gate:14:
+        results: {}
+        sequence: 14
+      stabilize-cli-distribution-gate:16:
+        results: {}
+        sequence: 16
+      stabilize-cli-distribution-gate:17:
+        results: {}
+        sequence: 17
+      stabilize-cli-distribution-gate:18:
+        results: {}
+        sequence: 18
+      stabilize-cli-distribution-gate:20:
+        results: {}
+        sequence: 20
+      stabilize-cli-distribution-gate:22:
+        results: {}
+        sequence: 22
+      stabilize-cli-distribution-gate:24:
+        results: {}
+        sequence: 24
+      stabilize-cli-distribution-gate:25:
+        results: {}
+        sequence: 25
+      stabilize-cli-distribution-gate:27:
+        results: {}
+        sequence: 27
+      stabilize-cli-distribution-gate:29:
+        results: {}
+        sequence: 29
+      stabilize-cli-distribution-gate:31:
+        results: {}
+        sequence: 31
+      stabilize-cli-distribution-gate:33:
+        results: {}
+        sequence: 33
+      stabilize-cli-distribution-gate:35:
+        results: {}
+        sequence: 35
+      stabilize-cli-distribution-gate:37:
+        results: {}
+        sequence: 37
+      stabilize-cli-distribution-gate:39:
+        results: {}
+        sequence: 39
+      stabilize-cli-distribution-gate:4:
+        results: {}
+        sequence: 4
+      stabilize-cli-distribution-gate:40:
+        results: {}
+        sequence: 40
+      stabilize-cli-distribution-gate:41:
+        results: {}
+        sequence: 41
+      stabilize-cli-distribution-gate:5:
+        results: {}
+        sequence: 5
+      stabilize-cli-distribution-gate:7:
+        results: {}
+        sequence: 7
+      stabilize-cli-distribution-gate:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: stabilize-cli-distribution-gate:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+              ref: openspec/changes/stabilize-cli-distribution-gate
+        proposalHash: c173f4aeb14e3a3984d20322f860f5505d623b50901fe28cf69878336080deea
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+          choice: approved
+          proposalHash: c173f4aeb14e3a3984d20322f860f5505d623b50901fe28cf69878336080deea
+      - id: stabilize-cli-distribution-gate:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+              handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+              proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual
+                GitHub workflow，固定 Continuous integration / verify，运行 npm ci
+                与唯一权威 npm run verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node
+                24、锁定安装、单一验证命令、package-first 与源码例外顺序。拒绝提交 dist（双重权威）和 launcher
+                自动构建/本次 fail-closed 改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把 package-first
+                设为默认控制。已批准的 product-distribution Spec Patch 已包含 package-first
+                与源码 freshness 场景，本候选不新增行为范围。
+              requirementsEvidence:
+                contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                ref: openspec/changes/stabilize-cli-distribution-gate
+              sourceEvidence:
+                contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                ref: openspec/changes/stabilize-cli-distribution-gate
+        proposalHash: e0a699f473ed6da443c3155cab970dc77dec126425175a9b7835d3b2be55f17a
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-e0a699f473ed6da443c3155cab970dc77dec126425175a9b7835d3b2be55f17a-approved
+          choice: approved
+          proposalHash: e0a699f473ed6da443c3155cab970dc77dec126425175a9b7835d3b2be55f17a
+      - id: stabilize-cli-distribution-gate:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.build.configure:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 6bcaa95e8b309a6253df20607eeeb0cd7b16fd4d6eeac841732b44576a8e4ab1
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 007fb5df-4af9-439e-91c2-dd15644648bf
+          choice: approved
+          proposalHash: 6bcaa95e8b309a6253df20607eeeb0cd7b16fd4d6eeac841732b44576a8e4ab1
+      - id: stabilize-cli-distribution-gate:19
+        stepId: full.design.confirm
+        sequence: 19
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+              handoffHash: 0c399df293261863a315cf37a8ef3a17a2ee9a36af1bc0be9b2fc84c1ccce14d
+              proposal: "首次 Verify 的独立审查发现四项同范围证据缺口，修订方案不改变 product-distribution Spec Patch：1)
+                standalone npm run test:package-e2e 通过 pretest lifecycle 先执行 npm
+                run build，并用脚本契约测试防止历史 dist 被打包；2) workflow 契约拒绝 verify job 的
+                permissions 覆盖，保持顶层 contents: read 单一权威；3) self-hosting 文档删除
+                build-only 矛盾，唯一源码例外固定 build -> build.mjs --check -> CLI；4)
+                Tasks 3.1 与已批准 Build Plan 对齐，全量 format:check 只记录既有 116-file
+                baseline，本 change 精确 Prettier、全量 lint/typecheck 必须退出 0。取舍是
+                standalone package E2E 多一次 build、权限配置更保守；不新增依赖，不改变 delta
+                spec、Runtime、Cordis、launcher、OTLP、协议或 tracked dist。"
+              requirementsEvidence:
+                contentHash: b49d63ba5af9dc43fd1815c03a5c1578386b5c3c66d040759c67d738ac38676f
+                ref: openspec/changes/stabilize-cli-distribution-gate
+              sourceEvidence:
+                contentHash: 786157ce23459985f933553bf6f572c94b24e2eccdb55940aa1ad7cd5520344a
+                ref: openspec/changes/stabilize-cli-distribution-gate
+        proposalHash: abdeb49d1d6e32fb00fe46c570b06f4da9122f84023b21b3f7c039c3a4da988f
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-abdeb49d1d6e32fb00fe46c570b06f4da9122f84023b21b3f7c039c3a4da988f-approved
+          choice: approved
+          proposalHash: abdeb49d1d6e32fb00fe46c570b06f4da9122f84023b21b3f7c039c3a4da988f
+      - id: stabilize-cli-distribution-gate:32
+        stepId: full.archive.confirm
+        sequence: 32
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 stabilize-cli-distribution-gate：将 product-distribution delta
+                同步到主规格，把活动 change 移入 2026-11-05 归档目录，并提交 Archive 产物。当前分支
+                comet/stabilize-cli-distribution-gate 已公开且与 origin 同步；目标 remote
+                为 origin，PR base 为 main。选择 pr 后将推送唯一归档提交并创建
+                PR；不会自动合入，不会等待远端合入，也不修改 Runtime/Cordis/launcher/协议。Verify 已通过
+                full npm.cmd run verify，独立复审无 CRITICAL/IMPORTANT/WARNING，GitHub
+                托管检查与 required-check 平台配置仍保留为外部证据边界。
+              targetBranch: comet/stabilize-cli-distribution-gate
+        proposalHash: 9496f4f895fd794bb37fdd0507dd23138f16067c5a5412281afa2bdeb1ba05e1
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-9496f4f895fd794bb37fdd0507dd23138f16067c5a5412281afa2bdeb1ba05e1-reverify
+          choice: reverify
+          proposalHash: 9496f4f895fd794bb37fdd0507dd23138f16067c5a5412281afa2bdeb1ba05e1
+      - id: stabilize-cli-distribution-gate:38
+        stepId: full.archive.confirm
+        sequence: 38
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 stabilize-cli-distribution-gate：将 product-distribution delta
+                同步到主规格，把活动 change 移入 2026-11-05 归档目录，并提交 Archive 产物。当前分支
+                comet/stabilize-cli-distribution-gate 已公开且与 origin 同步；目标 remote
+                为 origin，PR base 为 main。选择 pr 后将推送唯一归档提交并创建
+                PR；不会自动合入，不会等待远端合入，也不修改 Runtime/Cordis/launcher/协议。Verify 已通过
+                full npm.cmd run verify，独立复审无 CRITICAL/IMPORTANT/WARNING，GitHub
+                托管检查与 required-check 平台配置仍保留为外部证据边界。
+              targetBranch: comet/stabilize-cli-distribution-gate
+        proposalHash: 9496f4f895fd794bb37fdd0507dd23138f16067c5a5412281afa2bdeb1ba05e1
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-9496f4f895fd794bb37fdd0507dd23138f16067c5a5412281afa2bdeb1ba05e1-pr
+          choice: pr
+          proposalHash: 9496f4f895fd794bb37fdd0507dd23138f16067c5a5412281afa2bdeb1ba05e1
+    evidenceWaits:
+      - id: stabilize-cli-distribution-gate:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-cli-distribution-gate
+          contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+          submissionId: b72020ee-413f-478e-b346-563cc9008361
+      - id: stabilize-cli-distribution-gate:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+          contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+          submissionId: b5fae5cc-556c-4813-b32c-3dd6987391a9
+      - id: stabilize-cli-distribution-gate:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+          contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+          submissionId: 3b698ffa-5d4c-4be5-b6f4-d53715af60e4
+      - id: stabilize-cli-distribution-gate:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/c5d28a89-6a07-412b-abf3-7c25bf36da08.log
+          contentHash: 5956f4689356a17284d2cd3514df6ffe3a2686219476f0c6d7a8ae5286261871
+          submissionId: 8b70f7d8-19d7-45e4-b5b9-b54aace20344
+      - id: stabilize-cli-distribution-gate:21
+        stepId: full.design.evidence
+        sequence: 21
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+          contentHash: 480f1f15439b0c6f842c8bac22b45b89698190daf9a76624aa8682313e054189
+          submissionId: eb19b681-e3f6-4c67-9747-6439b7827204
+      - id: stabilize-cli-distribution-gate:23
+        stepId: full.build.plan.evidence
+        sequence: 23
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+          contentHash: 9d2dddf9eae0ce191331ff953d25d613d4129c017db498f2dfa27239a1b7e5c5
+          submissionId: 5619b1bf-8698-40b9-aa36-1f744776b473
+      - id: stabilize-cli-distribution-gate:26
+        stepId: full.build.check.evidence
+        sequence: 26
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/f7609f1b-b040-474a-8768-aec8f34b9e75.log
+          contentHash: f3a96446f195f8b1f74d29cdc4649814e8f23d4ddaa4518a660696eeb6d1a238
+          submissionId: d0e0c59a-4183-465a-9ee0-19ae4e1f4023
+      - id: stabilize-cli-distribution-gate:28
+        stepId: full.verify.report.evidence
+        sequence: 28
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+          contentHash: 28c50e98456b1647db5c8ec28659616fe95e1591a97e6d76c652b4b78ba72c61
+          submissionId: 16eaf50f-4792-43dd-81aa-34c918628e3b
+      - id: stabilize-cli-distribution-gate:30
+        stepId: full.verify.check.evidence
+        sequence: 30
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/bfbc9b47-e1b2-4d81-96de-24dae3b6e435.log
+          contentHash: dd45635fb68eb371ded5a6222e9b91b47ec770efe9a4f1e82589185d319c2717
+          submissionId: 14581f15-e64e-48e1-a83e-59bed3dbcbf1
+      - id: stabilize-cli-distribution-gate:34
+        stepId: full.verify.report.evidence
+        sequence: 34
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+          contentHash: 28c50e98456b1647db5c8ec28659616fe95e1591a97e6d76c652b4b78ba72c61
+          submissionId: 294bf8d7-75e6-4619-8edb-0bf335f7155c
+      - id: stabilize-cli-distribution-gate:36
+        stepId: full.verify.check.evidence
+        sequence: 36
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/ad69fd37-aad1-44c8-99e2-b4559823d419.log
+          contentHash: 031f2763c5724f923c5748143ce14f9cfee19d9307c652b9f67e3b69cdc54520
+          submissionId: 20a831a2-ec2f-4cb1-baed-227692b79335
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 63
+  sourceHash: ffb4cbcf4aa9ece548edd0cb25365922c58c0867c73bfc67afd90d368927d604
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+              ref: openspec/changes/stabilize-cli-distribution-gate
+      - contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+        ref: openspec/changes/stabilize-cli-distribution-gate
+      - contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+              handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+              proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual
+                GitHub workflow，固定 Continuous integration / verify，运行 npm ci
+                与唯一权威 npm run verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node
+                24、锁定安装、单一验证命令、package-first 与源码例外顺序。拒绝提交 dist（双重权威）和 launcher
+                自动构建/本次 fail-closed 改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把 package-first
+                设为默认控制。已批准的 product-distribution Spec Patch 已包含 package-first
+                与源码 freshness 场景，本候选不新增行为范围。
+              requirementsEvidence:
+                contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                ref: openspec/changes/stabilize-cli-distribution-gate
+              sourceEvidence:
+                contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                ref: openspec/changes/stabilize-cli-distribution-gate
+      - handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+        handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+        proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+          build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+          scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual GitHub
+          workflow，固定 Continuous integration / verify，运行 npm ci 与唯一权威 npm run
+          verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node 24、锁定安装、单一验证命令、package-first
+          与源码例外顺序。拒绝提交 dist（双重权威）和 launcher 自动构建/本次 fail-closed
+          改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+          check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把 package-first
+          设为默认控制。已批准的 product-distribution Spec Patch 已包含 package-first 与源码
+          freshness 场景，本候选不新增行为范围。
+        requirementsEvidence:
+          contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+          ref: openspec/changes/stabilize-cli-distribution-gate
+        sourceEvidence:
+          contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+          ref: openspec/changes/stabilize-cli-distribution-gate
+      - designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
+      - contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+        ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+      - boundBranch: comet/stabilize-cli-distribution-gate
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.build.configure:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+          ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+        plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+        planEvidence:
+          contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+        taskRevision: cf805e66aca54d81b96dc9617ba6929c419c104b10bbf3a1724aea1e7edb426d
+      - contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+        ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 5956f4689356a17284d2cd3514df6ffe3a2686219476f0c6d7a8ae5286261871
+        cwd: .
+        environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+        exitCode: 0
+        inputAfter: 691e6052bd6774dea49da3f92392752889bbcbb0427c69db01730889194db95c
+        inputBefore: 691e6052bd6774dea49da3f92392752889bbcbb0427c69db01730889194db95c
+        manifestHash: a585846cbd81f07379bd29a69514866a618d024fa0073787df23924ccfac19b8
+        manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/19b151f0-5f59-4a98-a042-7c4e092fe49a.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/c5d28a89-6a07-412b-abf3-7c25bf36da08.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 5956f4689356a17284d2cd3514df6ffe3a2686219476f0c6d7a8ae5286261871
+        ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/c5d28a89-6a07-412b-abf3-7c25bf36da08.log
+      - event: verify-fail
+        reason: Independent review found package E2E can pack stale dist, task 3.1
+          conflicts with its recorded baseline exception, job-level permissions
+          can bypass the CI test, and self-hosting docs retain a contradictory
+          build-only sentence.
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+              handoffHash: 0c399df293261863a315cf37a8ef3a17a2ee9a36af1bc0be9b2fc84c1ccce14d
+              proposal: "首次 Verify 的独立审查发现四项同范围证据缺口，修订方案不改变 product-distribution Spec Patch：1)
+                standalone npm run test:package-e2e 通过 pretest lifecycle 先执行 npm
+                run build，并用脚本契约测试防止历史 dist 被打包；2) workflow 契约拒绝 verify job 的
+                permissions 覆盖，保持顶层 contents: read 单一权威；3) self-hosting 文档删除
+                build-only 矛盾，唯一源码例外固定 build -> build.mjs --check -> CLI；4)
+                Tasks 3.1 与已批准 Build Plan 对齐，全量 format:check 只记录既有 116-file
+                baseline，本 change 精确 Prettier、全量 lint/typecheck 必须退出 0。取舍是
+                standalone package E2E 多一次 build、权限配置更保守；不新增依赖，不改变 delta
+                spec、Runtime、Cordis、launcher、OTLP、协议或 tracked dist。"
+              requirementsEvidence:
+                contentHash: b49d63ba5af9dc43fd1815c03a5c1578386b5c3c66d040759c67d738ac38676f
+                ref: openspec/changes/stabilize-cli-distribution-gate
+              sourceEvidence:
+                contentHash: 786157ce23459985f933553bf6f572c94b24e2eccdb55940aa1ad7cd5520344a
+                ref: openspec/changes/stabilize-cli-distribution-gate
+      - handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+        handoffHash: 0c399df293261863a315cf37a8ef3a17a2ee9a36af1bc0be9b2fc84c1ccce14d
+        proposal: "首次 Verify 的独立审查发现四项同范围证据缺口，修订方案不改变 product-distribution Spec Patch：1)
+          standalone npm run test:package-e2e 通过 pretest lifecycle 先执行 npm run
+          build，并用脚本契约测试防止历史 dist 被打包；2) workflow 契约拒绝 verify job 的 permissions
+          覆盖，保持顶层 contents: read 单一权威；3) self-hosting 文档删除 build-only
+          矛盾，唯一源码例外固定 build -> build.mjs --check -> CLI；4) Tasks 3.1 与已批准 Build
+          Plan 对齐，全量 format:check 只记录既有 116-file baseline，本 change 精确
+          Prettier、全量 lint/typecheck 必须退出 0。取舍是 standalone package E2E 多一次
+          build、权限配置更保守；不新增依赖，不改变 delta spec、Runtime、Cordis、launcher、OTLP、协议或
+          tracked dist。"
+        requirementsEvidence:
+          contentHash: b49d63ba5af9dc43fd1815c03a5c1578386b5c3c66d040759c67d738ac38676f
+          ref: openspec/changes/stabilize-cli-distribution-gate
+        sourceEvidence:
+          contentHash: 786157ce23459985f933553bf6f572c94b24e2eccdb55940aa1ad7cd5520344a
+          ref: openspec/changes/stabilize-cli-distribution-gate
+      - contentHash: 480f1f15439b0c6f842c8bac22b45b89698190daf9a76624aa8682313e054189
+        ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+      - designEvidence:
+          contentHash: 480f1f15439b0c6f842c8bac22b45b89698190daf9a76624aa8682313e054189
+          ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+        plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+        planEvidence:
+          contentHash: 9d2dddf9eae0ce191331ff953d25d613d4129c017db498f2dfa27239a1b7e5c5
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+        taskRevision: 2700be4a1458c17560639a59883cd97417ea93e3d4da17a53b52a0dfdf01f2dd
+      - contentHash: 9d2dddf9eae0ce191331ff953d25d613d4129c017db498f2dfa27239a1b7e5c5
+        ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: f3a96446f195f8b1f74d29cdc4649814e8f23d4ddaa4518a660696eeb6d1a238
+        cwd: .
+        environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+        exitCode: 0
+        inputAfter: 8a46d682d37ba48fb3e263a55712ad9702d1b06b86b830e628ebed96de015a32
+        inputBefore: 8a46d682d37ba48fb3e263a55712ad9702d1b06b86b830e628ebed96de015a32
+        manifestHash: 0aa6e356403e30f907b2cedca837e55baf3b6140ff37323775b7382ddb01b3b3
+        manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/d6053bcd-4dc1-441e-bd0c-e93d681fef36.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/f7609f1b-b040-474a-8768-aec8f34b9e75.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: f3a96446f195f8b1f74d29cdc4649814e8f23d4ddaa4518a660696eeb6d1a238
+        ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/f7609f1b-b040-474a-8768-aec8f34b9e75.log
+      - contentHash: 28c50e98456b1647db5c8ec28659616fe95e1591a97e6d76c652b4b78ba72c61
+        ref: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 6
+        contentHash: dd45635fb68eb371ded5a6222e9b91b47ec770efe9a4f1e82589185d319c2717
+        cwd: .
+        deliveryInputs: {}
+        environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+        exitCode: 0
+        inputAfter: 79e601d85948523cd41a088c88ae25761e1c9927fda3516f65098fc34d76adff
+        inputBefore: 79e601d85948523cd41a088c88ae25761e1c9927fda3516f65098fc34d76adff
+        manifestHash: 6ec71d2e5df3aad3cf2de4269aad7ce1250a5c582b90e6386c4c8236935ecaf3
+        manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/f9a29ae4-d142-4688-bbfb-bb68228a84d6.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/bfbc9b47-e1b2-4d81-96de-24dae3b6e435.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: dd45635fb68eb371ded5a6222e9b91b47ec770efe9a4f1e82589185d319c2717
+        ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/bfbc9b47-e1b2-4d81-96de-24dae3b6e435.log
+      - choice: reverify
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 stabilize-cli-distribution-gate：将 product-distribution delta
+                同步到主规格，把活动 change 移入 2026-11-05 归档目录，并提交 Archive 产物。当前分支
+                comet/stabilize-cli-distribution-gate 已公开且与 origin 同步；目标 remote
+                为 origin，PR base 为 main。选择 pr 后将推送唯一归档提交并创建
+                PR；不会自动合入，不会等待远端合入，也不修改 Runtime/Cordis/launcher/协议。Verify 已通过
+                full npm.cmd run verify，独立复审无 CRITICAL/IMPORTANT/WARNING，GitHub
+                托管检查与 required-check 平台配置仍保留为外部证据边界。
+              targetBranch: comet/stabilize-cli-distribution-gate
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档 stabilize-cli-distribution-gate：将 product-distribution delta
+          同步到主规格，把活动 change 移入 2026-11-05 归档目录，并提交 Archive 产物。当前分支
+          comet/stabilize-cli-distribution-gate 已公开且与 origin 同步；目标 remote 为
+          origin，PR base 为 main。选择 pr 后将推送唯一归档提交并创建 PR；不会自动合入，不会等待远端合入，也不修改
+          Runtime/Cordis/launcher/协议。Verify 已通过 full npm.cmd run verify，独立复审无
+          CRITICAL/IMPORTANT/WARNING，GitHub 托管检查与 required-check 平台配置仍保留为外部证据边界。
+        targetBranch: comet/stabilize-cli-distribution-gate
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 8
+        contentHash: 031f2763c5724f923c5748143ce14f9cfee19d9307c652b9f67e3b69cdc54520
+        cwd: .
+        deliveryInputs: {}
+        environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+        exitCode: 0
+        inputAfter: 24149e6e56cb3f82fa40e8a56dc365b2bc4074076c77b14dc0e3bb6b7fe6dd56
+        inputBefore: 24149e6e56cb3f82fa40e8a56dc365b2bc4074076c77b14dc0e3bb6b7fe6dd56
+        manifestHash: feb1e3f657d2d65e426b475ab44acf7ee7cd640d1554da8ef2ae4b1abea8184a
+        manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/eeb92eb7-c3b9-4d58-b52a-bcde617e7e68.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/ad69fd37-aad1-44c8-99e2-b4559823d419.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 031f2763c5724f923c5748143ce14f9cfee19d9307c652b9f67e3b69cdc54520
+        ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/ad69fd37-aad1-44c8-99e2-b4559823d419.log
+      - choice: pr
+        proposal:
+          input:
+            change: stabilize-cli-distribution-gate
+            changeDir: openspec/changes/stabilize-cli-distribution-gate
+            workspaceBaseline:
+              ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 stabilize-cli-distribution-gate：将 product-distribution delta
+                同步到主规格，把活动 change 移入 2026-11-05 归档目录，并提交 Archive 产物。当前分支
+                comet/stabilize-cli-distribution-gate 已公开且与 origin 同步；目标 remote
+                为 origin，PR base 为 main。选择 pr 后将推送唯一归档提交并创建
+                PR；不会自动合入，不会等待远端合入，也不修改 Runtime/Cordis/launcher/协议。Verify 已通过
+                full npm.cmd run verify，独立复审无 CRITICAL/IMPORTANT/WARNING，GitHub
+                托管检查与 required-check 平台配置仍保留为外部证据边界。
+              targetBranch: comet/stabilize-cli-distribution-gate
+      - baseCommit: 6a546090bfbd236409cf8ea8d8d9f6c8385b57d7
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: comet/stabilize-cli-distribution-gate
+        verifiedBranch: comet/stabilize-cli-distribution-gate
+      - archiveDirectory: openspec/changes/archive/2026-11-05-stabilize-cli-distribution-gate
+      - sequence: 9
+        value:
+          boundBranch: comet/stabilize-cli-distribution-gate
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cli-distribution-gate
+              changeDir: openspec/changes/stabilize-cli-distribution-gate
+              workspaceBaseline:
+                ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+            outputs:
+              full.build.configure:
+                boundBranch: comet/stabilize-cli-distribution-gate
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cli-distribution-gate
+              changeDir: openspec/changes/stabilize-cli-distribution-gate
+              workspaceBaseline:
+                ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+                handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+                proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+                  build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+                  scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual
+                  GitHub workflow，固定 Continuous integration / verify，运行 npm ci
+                  与唯一权威 npm run verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node
+                  24、锁定安装、单一验证命令、package-first 与源码例外顺序。拒绝提交 dist（双重权威）和 launcher
+                  自动构建/本次 fail-closed 改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+                  check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把
+                  package-first 设为默认控制。已批准的 product-distribution Spec Patch 已包含
+                  package-first 与源码 freshness 场景，本候选不新增行为范围。
+                requirementsEvidence:
+                  contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+                  ref: openspec/changes/stabilize-cli-distribution-gate
+                sourceEvidence:
+                  contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+                  ref: openspec/changes/stabilize-cli-distribution-gate
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
+      - sequence: 8
+        value:
+          contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+          ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+          handoffHash: cde43f2135a2d1e607eea6cf6da8586f6a26554e9c88d805070d741f852691fc
+          proposal: 采用 package-first + 显式源码 freshness preflight + 干净 CI：多仓验收默认从目标提交
+            build/pack 后安装到隔离消费者目录；只有诊断未打包源码时才按 npm run build、node
+            scripts/build.mjs --check、源码 CLI 顺序执行。新增只读权限的 PR/main/manual GitHub
+            workflow，固定 Continuous integration / verify，运行 npm ci 与唯一权威 npm run
+            verify；用结构化 YAML 契约测试和自举文档测试保护触发器、权限、Node
+            24、锁定安装、单一验证命令、package-first 与源码例外顺序。拒绝提交 dist（双重权威）和 launcher
+            自动构建/本次 fail-closed 改造（启动副作用与范围膨胀）。主要风险是 CI 状态不等于 required
+            check、完整验证耗时、源码例外仍需操作者遵守；通过明确平台管理边界、保留单一 verify 和把 package-first
+            设为默认控制。已批准的 product-distribution Spec Patch 已包含 package-first 与源码
+            freshness 场景，本候选不新增行为范围。
+          requirementsEvidence:
+            contentHash: 9315a0dbec833629eb5dc7f29398e2e52634f34ae423253cb31206a8cfd3ba08
+            ref: openspec/changes/stabilize-cli-distribution-gate
+          sourceEvidence:
+            contentHash: 78876d4f2ede6775c3fee1c4381b829c88d82c73e78fd484a44351c4b8a02cda
+            ref: openspec/changes/stabilize-cli-distribution-gate
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cli-distribution-gate
+              changeDir: openspec/changes/stabilize-cli-distribution-gate
+              workspaceBaseline:
+                ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+                ref: openspec/changes/stabilize-cli-distribution-gate
+      - sequence: 2
+        value:
+          contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+          ref: openspec/changes/stabilize-cli-distribution-gate
+      - sequence: 4
+        value:
+          contentHash: 4ffce78bb56fe75aab53c723f1b5234894117cb1b26c065b5d2bb74755f64397
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397
+            ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+          plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+          planEvidence:
+            contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+            ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+          taskRevision: cf805e66aca54d81b96dc9617ba6929c419c104b10bbf3a1724aea1e7edb426d
+      - sequence: 12
+        value:
+          contentHash: 10af7e3ac7188a5f8a9ac7bc360fd51c9d4d54c02ff091dc78ceaee8b94c7f20
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 5956f4689356a17284d2cd3514df6ffe3a2686219476f0c6d7a8ae5286261871
+          cwd: .
+          environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+          exitCode: 0
+          inputAfter: 691e6052bd6774dea49da3f92392752889bbcbb0427c69db01730889194db95c
+          inputBefore: 691e6052bd6774dea49da3f92392752889bbcbb0427c69db01730889194db95c
+          manifestHash: a585846cbd81f07379bd29a69514866a618d024fa0073787df23924ccfac19b8
+          manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/19b151f0-5f59-4a98-a042-7c4e092fe49a.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/c5d28a89-6a07-412b-abf3-7c25bf36da08.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 15
+        value:
+          contentHash: 5956f4689356a17284d2cd3514df6ffe3a2686219476f0c6d7a8ae5286261871
+          ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/c5d28a89-6a07-412b-abf3-7c25bf36da08.log
+      - sequence: 16
+        value:
+          event: verify-fail
+          reason: Independent review found package E2E can pack stale dist, task 3.1
+            conflicts with its recorded baseline exception, job-level
+            permissions can bypass the CI test, and self-hosting docs retain a
+            contradictory build-only sentence.
+      - sequence: 19
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cli-distribution-gate
+              changeDir: openspec/changes/stabilize-cli-distribution-gate
+              workspaceBaseline:
+                ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+                handoffHash: 0c399df293261863a315cf37a8ef3a17a2ee9a36af1bc0be9b2fc84c1ccce14d
+                proposal: "首次 Verify 的独立审查发现四项同范围证据缺口，修订方案不改变 product-distribution Spec Patch：1)
+                  standalone npm run test:package-e2e 通过 pretest lifecycle 先执行
+                  npm run build，并用脚本契约测试防止历史 dist 被打包；2) workflow 契约拒绝 verify
+                  job 的 permissions 覆盖，保持顶层 contents: read 单一权威；3) self-hosting
+                  文档删除 build-only 矛盾，唯一源码例外固定 build -> build.mjs --check ->
+                  CLI；4) Tasks 3.1 与已批准 Build Plan 对齐，全量 format:check 只记录既有
+                  116-file baseline，本 change 精确 Prettier、全量 lint/typecheck 必须退出
+                  0。取舍是 standalone package E2E 多一次 build、权限配置更保守；不新增依赖，不改变 delta
+                  spec、Runtime、Cordis、launcher、OTLP、协议或 tracked dist。"
+                requirementsEvidence:
+                  contentHash: b49d63ba5af9dc43fd1815c03a5c1578386b5c3c66d040759c67d738ac38676f
+                  ref: openspec/changes/stabilize-cli-distribution-gate
+                sourceEvidence:
+                  contentHash: 786157ce23459985f933553bf6f572c94b24e2eccdb55940aa1ad7cd5520344a
+                  ref: openspec/changes/stabilize-cli-distribution-gate
+      - sequence: 18
+        value:
+          handoffContext: openspec/changes/stabilize-cli-distribution-gate/.comet/handoff/design-context.json
+          handoffHash: 0c399df293261863a315cf37a8ef3a17a2ee9a36af1bc0be9b2fc84c1ccce14d
+          proposal: "首次 Verify 的独立审查发现四项同范围证据缺口，修订方案不改变 product-distribution Spec Patch：1)
+            standalone npm run test:package-e2e 通过 pretest lifecycle 先执行 npm run
+            build，并用脚本契约测试防止历史 dist 被打包；2) workflow 契约拒绝 verify job 的
+            permissions 覆盖，保持顶层 contents: read 单一权威；3) self-hosting 文档删除
+            build-only 矛盾，唯一源码例外固定 build -> build.mjs --check -> CLI；4) Tasks
+            3.1 与已批准 Build Plan 对齐，全量 format:check 只记录既有 116-file baseline，本
+            change 精确 Prettier、全量 lint/typecheck 必须退出 0。取舍是 standalone package
+            E2E 多一次 build、权限配置更保守；不新增依赖，不改变 delta
+            spec、Runtime、Cordis、launcher、OTLP、协议或 tracked dist。"
+          requirementsEvidence:
+            contentHash: b49d63ba5af9dc43fd1815c03a5c1578386b5c3c66d040759c67d738ac38676f
+            ref: openspec/changes/stabilize-cli-distribution-gate
+          sourceEvidence:
+            contentHash: 786157ce23459985f933553bf6f572c94b24e2eccdb55940aa1ad7cd5520344a
+            ref: openspec/changes/stabilize-cli-distribution-gate
+      - sequence: 20
+        value:
+          designDoc: openspec/changes/stabilize-cli-distribution-gate/design.md
+      - sequence: 21
+        value:
+          contentHash: 480f1f15439b0c6f842c8bac22b45b89698190daf9a76624aa8682313e054189
+          ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+      - sequence: 22
+        value:
+          designEvidence:
+            contentHash: 480f1f15439b0c6f842c8bac22b45b89698190daf9a76624aa8682313e054189
+            ref: openspec/changes/stabilize-cli-distribution-gate/design.md
+          plan: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+          planEvidence:
+            contentHash: 9d2dddf9eae0ce191331ff953d25d613d4129c017db498f2dfa27239a1b7e5c5
+            ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+          taskRevision: 2700be4a1458c17560639a59883cd97417ea93e3d4da17a53b52a0dfdf01f2dd
+      - sequence: 23
+        value:
+          contentHash: 9d2dddf9eae0ce191331ff953d25d613d4129c017db498f2dfa27239a1b7e5c5
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
+      - sequence: 24
+        value:
+          event: build-complete
+      - sequence: 25
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: f3a96446f195f8b1f74d29cdc4649814e8f23d4ddaa4518a660696eeb6d1a238
+          cwd: .
+          environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+          exitCode: 0
+          inputAfter: 8a46d682d37ba48fb3e263a55712ad9702d1b06b86b830e628ebed96de015a32
+          inputBefore: 8a46d682d37ba48fb3e263a55712ad9702d1b06b86b830e628ebed96de015a32
+          manifestHash: 0aa6e356403e30f907b2cedca837e55baf3b6140ff37323775b7382ddb01b3b3
+          manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/d6053bcd-4dc1-441e-bd0c-e93d681fef36.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/f7609f1b-b040-474a-8768-aec8f34b9e75.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 26
+        value:
+          contentHash: f3a96446f195f8b1f74d29cdc4649814e8f23d4ddaa4518a660696eeb6d1a238
+          ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/f7609f1b-b040-474a-8768-aec8f34b9e75.log
+      - sequence: 28
+        value:
+          contentHash: 28c50e98456b1647db5c8ec28659616fe95e1591a97e6d76c652b4b78ba72c61
+          ref: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+      - sequence: 27
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+      - sequence: 29
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 6
+          contentHash: dd45635fb68eb371ded5a6222e9b91b47ec770efe9a4f1e82589185d319c2717
+          cwd: .
+          deliveryInputs: {}
+          environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+          exitCode: 0
+          inputAfter: 79e601d85948523cd41a088c88ae25761e1c9927fda3516f65098fc34d76adff
+          inputBefore: 79e601d85948523cd41a088c88ae25761e1c9927fda3516f65098fc34d76adff
+          manifestHash: 6ec71d2e5df3aad3cf2de4269aad7ce1250a5c582b90e6386c4c8236935ecaf3
+          manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/f9a29ae4-d142-4688-bbfb-bb68228a84d6.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/bfbc9b47-e1b2-4d81-96de-24dae3b6e435.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 30
+        value:
+          contentHash: dd45635fb68eb371ded5a6222e9b91b47ec770efe9a4f1e82589185d319c2717
+          ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/bfbc9b47-e1b2-4d81-96de-24dae3b6e435.log
+      - sequence: 32
+        value:
+          choice: reverify
+          proposal:
+            input:
+              change: stabilize-cli-distribution-gate
+              changeDir: openspec/changes/stabilize-cli-distribution-gate
+              workspaceBaseline:
+                ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档 stabilize-cli-distribution-gate：将 product-distribution delta
+                  同步到主规格，把活动 change 移入 2026-11-05 归档目录，并提交 Archive 产物。当前分支
+                  comet/stabilize-cli-distribution-gate 已公开且与 origin 同步；目标
+                  remote 为 origin，PR base 为 main。选择 pr 后将推送唯一归档提交并创建
+                  PR；不会自动合入，不会等待远端合入，也不修改 Runtime/Cordis/launcher/协议。Verify 已通过
+                  full npm.cmd run verify，独立复审无
+                  CRITICAL/IMPORTANT/WARNING，GitHub 托管检查与 required-check
+                  平台配置仍保留为外部证据边界。
+                targetBranch: comet/stabilize-cli-distribution-gate
+      - sequence: 31
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档 stabilize-cli-distribution-gate：将 product-distribution delta
+            同步到主规格，把活动 change 移入 2026-11-05 归档目录，并提交 Archive 产物。当前分支
+            comet/stabilize-cli-distribution-gate 已公开且与 origin 同步；目标 remote 为
+            origin，PR base 为 main。选择 pr 后将推送唯一归档提交并创建 PR；不会自动合入，不会等待远端合入，也不修改
+            Runtime/Cordis/launcher/协议。Verify 已通过 full npm.cmd run verify，独立复审无
+            CRITICAL/IMPORTANT/WARNING，GitHub 托管检查与 required-check
+            平台配置仍保留为外部证据边界。
+          targetBranch: comet/stabilize-cli-distribution-gate
+      - sequence: 34
+        value:
+          contentHash: 28c50e98456b1647db5c8ec28659616fe95e1591a97e6d76c652b4b78ba72c61
+          ref: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+      - sequence: 33
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-cli-distribution-gate.md
+      - sequence: 35
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 8
+          contentHash: 031f2763c5724f923c5748143ce14f9cfee19d9307c652b9f67e3b69cdc54520
+          cwd: .
+          deliveryInputs: {}
+          environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+          exitCode: 0
+          inputAfter: 24149e6e56cb3f82fa40e8a56dc365b2bc4074076c77b14dc0e3bb6b7fe6dd56
+          inputBefore: 24149e6e56cb3f82fa40e8a56dc365b2bc4074076c77b14dc0e3bb6b7fe6dd56
+          manifestHash: feb1e3f657d2d65e426b475ab44acf7ee7cd640d1554da8ef2ae4b1abea8184a
+          manifestRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/eeb92eb7-c3b9-4d58-b52a-bcde617e7e68.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/ad69fd37-aad1-44c8-99e2-b4559823d419.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 36
+        value:
+          contentHash: 031f2763c5724f923c5748143ce14f9cfee19d9307c652b9f67e3b69cdc54520
+          ref: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/ad69fd37-aad1-44c8-99e2-b4559823d419.log
+      - sequence: 38
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: stabilize-cli-distribution-gate
+              changeDir: openspec/changes/stabilize-cli-distribution-gate
+              workspaceBaseline:
+                ref: e2453ee2-66cd-4546-b687-ba3b178e7a36
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档 stabilize-cli-distribution-gate：将 product-distribution delta
+                  同步到主规格，把活动 change 移入 2026-11-05 归档目录，并提交 Archive 产物。当前分支
+                  comet/stabilize-cli-distribution-gate 已公开且与 origin 同步；目标
+                  remote 为 origin，PR base 为 main。选择 pr 后将推送唯一归档提交并创建
+                  PR；不会自动合入，不会等待远端合入，也不修改 Runtime/Cordis/launcher/协议。Verify 已通过
+                  full npm.cmd run verify，独立复审无
+                  CRITICAL/IMPORTANT/WARNING，GitHub 托管检查与 required-check
+                  平台配置仍保留为外部证据边界。
+                targetBranch: comet/stabilize-cli-distribution-gate
+      - sequence: 37
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档 stabilize-cli-distribution-gate：将 product-distribution delta
+            同步到主规格，把活动 change 移入 2026-11-05 归档目录，并提交 Archive 产物。当前分支
+            comet/stabilize-cli-distribution-gate 已公开且与 origin 同步；目标 remote 为
+            origin，PR base 为 main。选择 pr 后将推送唯一归档提交并创建 PR；不会自动合入，不会等待远端合入，也不修改
+            Runtime/Cordis/launcher/协议。Verify 已通过 full npm.cmd run verify，独立复审无
+            CRITICAL/IMPORTANT/WARNING，GitHub 托管检查与 required-check
+            平台配置仍保留为外部证据边界。
+          targetBranch: comet/stabilize-cli-distribution-gate
+      - sequence: 39
+        value:
+          baseCommit: 6a546090bfbd236409cf8ea8d8d9f6c8385b57d7
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/stabilize-cli-distribution-gate
+          verifiedBranch: comet/stabilize-cli-distribution-gate
+      - sequence: 40
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-05-stabilize-cli-distribution-gate
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 15
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 39
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 40
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 41
+        height: 5
+      - key: full.design.handoff
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 16
+        left: null
+        right: 43
+        height: 2
+      - key: full.design.confirm
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 17
+        left: 46
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 45
+        right: 47
+        height: 3
+      - key: full.build.plan
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 20
+        left: 49
+        right: 50
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 51
+        right: 47
+        height: 3
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 19
+        left: 53
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 20
+        left: 54
+        right: 50
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 47
+        height: 4
+      - key: full.build.check.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 21
+        left: null
+        right: 57
+        height: 2
+      - key: full.build.plan
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 20
+        left: 59
+        right: 50
+        height: 2
+      - key: full.build.execute
+        value: 12
+        left: 58
+        right: 60
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 47
+        height: 4
+      - key: full.verify.run
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 23
+        left: null
+        right: 63
+        height: 2
+      - key: full.design.handoff
+        value: 17
+        left: 46
+        right: 64
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 65
+        height: 4
+      - key: full.design.handoff
+        value: 17
+        left: 46
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 23
+        left: 68
+        right: 63
+        height: 2
+      - key: full.verify.check
+        value: 25
+        left: 67
+        right: 69
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 70
+        height: 4
+      - key: full.archive.prepare
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: 72
+        height: 2
+      - key: full.build.check
+        value: 21
+        left: 73
+        right: 57
+        height: 3
+      - key: full.build.execute
+        value: 12
+        left: 74
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 75
+        right: 70
+        height: 5
+      - key: full.verify.check.evidence
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 23
+        left: 77
+        right: 63
+        height: 2
+      - key: full.verify.check
+        value: 29
+        left: 67
+        right: 78
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 75
+        right: 79
+        height: 5
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: 72
+        height: 2
+      - key: full.build.check
+        value: 21
+        left: 81
+        right: 57
+        height: 3
+      - key: full.build.execute
+        value: 12
+        left: 82
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 83
+        right: 79
+        height: 5
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 32
+        left: 85
+        right: 86
+        height: 2
+      - key: full.build.check
+        value: 21
+        left: 87
+        right: 57
+        height: 3
+      - key: full.build.execute
+        value: 12
+        left: 88
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 89
+        right: 79
+        height: 5
+      - key: full.archive.execute
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: 91
+        height: 2
+      - key: full.build.check
+        value: 21
+        left: 86
+        right: 57
+        height: 2
+      - key: full.archive.preflight
+        value: 32
+        left: 92
+        right: 93
+        height: 3
+      - key: full.build.execute
+        value: 12
+        left: 94
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 95
+        right: 79
+        height: 5
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 35
+        left: 97
+        right: 98
+        height: 2
+      - key: full.design.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: 100
+        right: 101
+        height: 2
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: 103
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: 102
+        right: 104
+        height: 3
+      - key: full.design.document
+        value: 37
+        left: 99
+        right: 105
+        height: 4
+      - key: full.build.plan
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 45
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 97
+        right: 109
+        height: 3
+      - key: full.design.document
+        value: 37
+        left: 110
+        right: 105
+        height: 4
+      - key: full.build.execute
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 35
+        left: 97
+        right: 112
+        height: 2
+      - key: full.build.plan.evidence
+        value: 45
+        left: null
+        right: 108
+        height: 2
+      - key: full.build.plan
+        value: 44
+        left: 113
+        right: 114
+        height: 3
+      - key: full.design.document
+        value: 37
+        left: 115
+        right: 105
+        height: 4
+      - key: full.build.check
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 48
+        left: 117
+        right: 118
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 119
+        right: 112
+        height: 3
+      - key: full.build.plan
+        value: 44
+        left: 120
+        right: 114
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 121
+        right: 105
+        height: 5
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: 123
+        right: 124
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: 102
+        right: 125
+        height: 3
+      - key: full.design.document
+        value: 37
+        left: 121
+        right: 126
+        height: 5
+      - key: full.design.handoff
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 50
+        left: null
+        right: 128
+        height: 2
+      - key: full.design.confirm
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 51
+        left: 131
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 52
+        left: 130
+        right: 132
+        height: 3
+      - key: full.build.plan
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 55
+        left: 134
+        right: 135
+        height: 2
+      - key: full.design.document
+        value: 52
+        left: 136
+        right: 132
+        height: 3
+      - key: full.build.execute
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 54
+        left: 138
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 55
+        left: 139
+        right: 135
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 140
+        right: 132
+        height: 4
+      - key: full.build.check.evidence
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 57
+        left: null
+        right: 142
+        height: 2
+      - key: full.build.plan
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 55
+        left: 144
+        right: 135
+        height: 2
+      - key: full.build.execute
+        value: 56
+        left: 143
+        right: 145
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 146
+        right: 132
+        height: 4
+      - key: full.verify.run
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 59
+        left: null
+        right: 148
+        height: 2
+      - key: full.design.handoff
+        value: 51
+        left: 131
+        right: 149
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 146
+        right: 150
+        height: 4
+      - key: full.design.handoff
+        value: 51
+        left: 131
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 59
+        left: 153
+        right: 148
+        height: 2
+      - key: full.verify.check
+        value: 61
+        left: 152
+        right: 154
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 146
+        right: 155
+        height: 4
+      - key: full.archive.prepare
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 63
+        left: null
+        right: 157
+        height: 2
+      - key: full.build.check
+        value: 57
+        left: 158
+        right: 142
+        height: 3
+      - key: full.build.execute
+        value: 56
+        left: 159
+        right: 145
+        height: 4
+      - key: full.design.document
+        value: 52
+        left: 160
+        right: 155
+        height: 5
+      - key: full.verify.run
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 65
+        left: 153
+        right: 162
+        height: 2
+      - key: full.verify.check
+        value: 61
+        left: 152
+        right: 163
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 160
+        right: 164
+        height: 5
+      - key: full.verify.check.evidence
+        value: 68
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 65
+        left: 166
+        right: 162
+        height: 2
+      - key: full.verify.check
+        value: 67
+        left: 152
+        right: 167
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 160
+        right: 168
+        height: 5
+      - key: full.archive.prepare
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 69
+        left: null
+        right: 170
+        height: 2
+      - key: full.build.check
+        value: 57
+        left: 171
+        right: 142
+        height: 3
+      - key: full.build.execute
+        value: 56
+        left: 172
+        right: 145
+        height: 4
+      - key: full.design.document
+        value: 52
+        left: 173
+        right: 168
+        height: 5
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 41
+        left: 175
+        right: 176
+        height: 2
+      - key: full.archive.confirm
+        value: 69
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 71
+        left: 178
+        right: 179
+        height: 2
+      - key: full.build.check.evidence
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.execute
+        value: 56
+        left: 181
+        right: 182
+        height: 2
+      - key: full.build.check
+        value: 57
+        left: 180
+        right: 183
+        height: 3
+      - key: full.design.confirm
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 52
+        left: 185
+        right: 186
+        height: 2
+      - key: full.verify.check
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 65
+        left: null
+        right: 189
+        height: 2
+      - key: full.verify.check.evidence
+        value: 68
+        left: 188
+        right: 190
+        height: 3
+      - key: full.design.handoff
+        value: 51
+        left: 187
+        right: 191
+        height: 4
+      - key: full.build.plan.evidence
+        value: 55
+        left: 184
+        right: 192
+        height: 5
+      - key: full.archive.execute
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 69
+        left: null
+        right: 194
+        height: 2
+      - key: full.archive.preflight
+        value: 71
+        left: 195
+        right: 179
+        height: 3
+      - key: full.build.check
+        value: 57
+        left: 196
+        right: 183
+        height: 4
+      - key: full.build.plan.evidence
+        value: 55
+        left: 197
+        right: 192
+        height: 5
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: 200
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: 199
+        right: 201
+        height: 3
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: 203
+        right: 204
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: 205
+        right: 201
+        height: 3
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 37
+        left: 207
+        right: 208
+        height: 2
+      - key: full.design.handoff
+        value: 39
+        left: 209
+        right: 204
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 210
+        right: 201
+        height: 4
+      - key: full.archive.confirm
+        value: 69
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 71
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 72
+        left: 212
+        right: 213
+        height: 2
+      - key: full.build.check
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 58
+        left: 215
+        right: 216
+        height: 2
+      - key: full.archive.prepare
+        value: 70
+        left: 214
+        right: 217
+        height: 3
+      - key: full.build.execute
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 50
+        left: 220
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 54
+        left: 219
+        right: 221
+        height: 3
+      - key: full.build.confirm
+        value: 35
+        left: 218
+        right: 222
+        height: 4
+      - key: full.design.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 51
+        left: 224
+        right: 204
+        height: 2
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: 226
+        right: 227
+        height: 2
+      - key: full.verify.run
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 65
+        left: null
+        right: 229
+        height: 2
+      - key: full.verify.check.evidence
+        value: 68
+        left: 228
+        right: 230
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 225
+        right: 231
+        height: 4
+      - key: full.design.document
+        value: 52
+        left: 223
+        right: 232
+        height: 5
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 40
+        left: null
+        right: 234
+        height: 2
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: 237
+        right: 238
+        height: 2
+      - key: full.open
+        value: 40
+        left: 236
+        right: 239
+        height: 3
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 38
+        left: 242
+        right: 243
+        height: 2
+      - key: full.design.confirm
+        value: 36
+        left: 241
+        right: 244
+        height: 3
+      - key: full.open
+        value: 40
+        left: 245
+        right: 239
+        height: 4
+      - key: full.design.handoff
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 57
+        left: 248
+        right: 249
+        height: 2
+      - key: full.build.plan
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 55
+        left: 251
+        right: 252
+        height: 2
+      - key: full.build.execute
+        value: 56
+        left: 250
+        right: 253
+        height: 3
+      - key: full.design.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 51
+        left: 255
+        right: 256
+        height: 2
+      - key: full.verify.run
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 59
+        left: null
+        right: 258
+        height: 2
+      - key: full.verify.check.evidence
+        value: 62
+        left: 257
+        right: 259
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 254
+        right: 260
+        height: 4
+      - key: full.archive.confirm
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 70
+        left: 262
+        right: null
+        height: 2
+      - key: full.build.check
+        value: 57
+        left: 263
+        right: 249
+        height: 3
+      - key: full.build.execute
+        value: 56
+        left: 264
+        right: 253
+        height: 4
+      - key: full.verify.check
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 51
+        left: 255
+        right: 266
+        height: 2
+      - key: full.verify.run
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 65
+        left: null
+        right: 268
+        height: 2
+      - key: full.verify.check.evidence
+        value: 68
+        left: 267
+        right: 269
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 265
+        right: 270
+        height: 5
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 37
+        left: 273
+        right: 274
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: 276
+        right: 277
+        height: 2
+      - key: full.open
+        value: 40
+        left: 275
+        right: 278
+        height: 3
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 35
+        left: 280
+        right: 281
+        height: 2
+      - key: full.design.document
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 38
+        left: 283
+        right: 284
+        height: 2
+      - key: full.design.confirm
+        value: 36
+        left: 282
+        right: 285
+        height: 3
+      - key: full.open
+        value: 40
+        left: 286
+        right: 278
+        height: 4
+      - key: full.build.check
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 34
+        left: 288
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 44
+        left: 290
+        right: 291
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 289
+        right: 292
+        height: 3
+      - key: full.open
+        value: 40
+        left: 285
+        right: 278
+        height: 3
+      - key: full.design.confirm
+        value: 36
+        left: 293
+        right: 294
+        height: 4
+      - key: full.design.confirm
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 52
+        left: 296
+        right: 297
+        height: 2
+      - key: full.build.plan
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 50
+        left: 299
+        right: null
+        height: 2
+      - key: full.design.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 51
+        left: 301
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 52
+        left: 300
+        right: 302
+        height: 3
+      - key: full.build.execute
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 57
+        left: null
+        right: 304
+        height: 2
+      - key: full.build.plan.evidence
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 50
+        left: 306
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 54
+        left: 305
+        right: 307
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 308
+        right: 302
+        height: 4
+      - key: full.build.check
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.build.execute
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 58
+        left: 310
+        right: 311
+        height: 2
+      - key: full.build.plan
+        value: 54
+        left: 312
+        right: 307
+        height: 3
+      - key: full.verify.run
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 51
+        left: 301
+        right: 314
+        height: 2
+      - key: full.design.document
+        value: 52
+        left: 313
+        right: 315
+        height: 4
+      - key: full.verify.check
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 59
+        left: 317
+        right: 318
+        height: 2
+      - key: full.design.handoff
+        value: 51
+        left: 301
+        right: 319
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 313
+        right: 320
+        height: 4
+      - key: full.archive.confirm
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 64
+        left: 322
+        right: 323
+        height: 2
+      - key: full.build.check.evidence
+        value: 58
+        left: 324
+        right: 311
+        height: 3
+      - key: full.build.plan
+        value: 54
+        left: 325
+        right: 307
+        height: 4
+      - key: full.design.handoff
+        value: 51
+        left: 301
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 59
+        left: 328
+        right: 329
+        height: 2
+      - key: full.verify.check
+        value: 61
+        left: 327
+        right: 330
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 326
+        right: 331
+        height: 5
+      - key: full.verify.report.evidence
+        value: 65
+        left: 328
+        right: 329
+        height: 2
+      - key: full.verify.check
+        value: 67
+        left: 327
+        right: 333
+        height: 3
+      - key: full.design.document
+        value: 52
+        left: 326
+        right: 334
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 42
+      - 44
+      - 48
+      - 52
+      - 56
+      - 62
+      - 66
+      - 71
+      - 76
+      - 80
+      - 84
+      - 90
+      - 96
+      - 106
+      - 111
+      - 116
+      - 122
+      - 127
+      - 129
+      - 133
+      - 137
+      - 141
+      - 147
+      - 151
+      - 156
+      - 161
+      - 165
+      - 169
+      - 174
+      - 177
+      - 193
+      - 198
+      - 202
+      - 206
+      - 211
+      - 233
+      - 235
+      - 240
+      - 246
+      - 247
+      - 261
+      - 271
+      - 272
+      - 279
+      - 287
+      - 295
+      - 298
+      - 303
+      - 309
+      - 316
+      - 321
+      - 332
+      - 335
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 18
+      - path:
+          - actions
+          - "21"
+          - input
+          - outputs
+        map: 19
+      - path:
+          - actions
+          - "22"
+          - input
+          - outputs
+        map: 20
+      - path:
+          - actions
+          - "23"
+          - input
+          - outputs
+        map: 21
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:11
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:13
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:14
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:16
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:17
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:18
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:20
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:22
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:24
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:25
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:27
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:29
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:31
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:33
+          - results
+        map: 34
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:35
+          - results
+        map: 35
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:37
+          - results
+        map: 36
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:39
+          - results
+        map: 37
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:4
+          - results
+        map: 38
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:40
+          - results
+        map: 39
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:41
+          - results
+        map: 40
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:5
+          - results
+        map: 41
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:7
+          - results
+        map: 42
+      - path:
+          - actionContexts
+          - stabilize-cli-distribution-gate:9
+          - results
+        map: 43
+      - path:
+          - outputs
+        map: 44
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 45
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 46
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 47
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 48
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 49
+      - path:
+          - waits
+          - "5"
+          - results
+        map: 50
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 51
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 52
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 53
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 54
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 55
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 56
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 57
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 58
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 59
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 60
+      - path:
+          - evidenceWaits
+          - "10"
+          - results
+        map: 61
+  storageHash: d9e88a7cf5d7e5edb7f89bc5d28af9ca5002b9ea8d9a26676011c3cf92958585
+check_epoch: 11

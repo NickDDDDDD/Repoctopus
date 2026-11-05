@@ -1,0 +1,4613 @@
+# comet-execution: managed-run
+change_id: 6741acb1-98f0-4bb5-a825-6164b3b5cd32
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: 2c885b75b2edf76b64be86941acb594ed2a152b6
+design_doc: openspec/changes/archive/2026-11-05-stabilize-cross-platform-verification/design.md
+plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/stabilize-cross-platform-verification.md
+branch_status: pending
+created_at: 2026-11-05
+verified_at: 2026-11-05
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/stabilize-cli-distribution-gate
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-05-stabilize-cross-platform-verification/.comet/handoff/design-context.json
+handoff_hash: 2c021a6d233679c7374952ee39c39fb4b142b60e755c5ac5d45e1e6efce06bae
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 9e3861d244d2fb066326983efb90c3911d880ce452c398bf74498065b4a26b08
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-cross-platform-verification
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    definitionHashes:
+      '["comet-classic-full","1"]': 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    initialStateHash: c4133e6f33c0977647a7d6551a8d0b47a3a1df490c9166682a164b3c00fa1ac3
+    input:
+      change: stabilize-cross-platform-verification
+      changeDir: openspec/changes/stabilize-cross-platform-verification
+      workspaceBaseline:
+        ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 2c885b75b2edf76b64be86941acb594ed2a152b6
+      boundBranch: comet/stabilize-cli-distribution-gate
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 11
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-05
+      designDoc: openspec/changes/archive/2026-11-05-stabilize-cross-platform-verification/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-05-stabilize-cross-platform-verification/.comet/handoff/design-context.json
+      handoffHash: 2c021a6d233679c7374952ee39c39fb4b142b60e755c5ac5d45e1e6efce06bae
+      isolation: current
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/stabilize-cross-platform-verification.md
+      verifiedAt: 2026-11-05
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 43
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-ededd5aae8153033095cb3313a51e806b26548ad6ff801f66daaf7b6440be136
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:1
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: b7314ae20f815beab1f0591ea424523968f8ac3fb45e50d25d2c6442205c34d6
+        outcome:
+          actionId: stabilize-cross-platform-verification:1
+          attempt: 1
+          claimToken: portable-ededd5aae8153033095cb3313a51e806b26548ad6ff801f66daaf7b6440be136
+          inputHash: b7314ae20f815beab1f0591ea424523968f8ac3fb45e50d25d2c6442205c34d6
+          outcomeId: c42c866d-338f-4c93-adb1-042e7a6ed4ef
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7e00918da3a64a0a63a88bc6cfc27ed91bbf60147be91f2a45c204877073ef69
+            outcomeId: c42c866d-338f-4c93-adb1-042e7a6ed4ef
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-9b33c62be3b00302ba0b0645031d55eee52eabfc8f57664658d659cfa0ceb21d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:4
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 928efb65e39db14e1ed458ea2c1793f94840273a3d7e35edcb021f9cafbcbc9f
+        outcome:
+          actionId: stabilize-cross-platform-verification:4
+          attempt: 1
+          claimToken: portable-9b33c62be3b00302ba0b0645031d55eee52eabfc8f57664658d659cfa0ceb21d
+          inputHash: 928efb65e39db14e1ed458ea2c1793f94840273a3d7e35edcb021f9cafbcbc9f
+          outcomeId: stabilize-cross-platform-verification:4:1:executor-result
+          output:
+            contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: cf1627506ce300e614ec72d6314a3b6786d64558b97a03329ab5ff3ee3ed1026
+            outcomeId: stabilize-cross-platform-verification:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-7399b120cee15df5cd1caa4f816af8eb763eb488cb184a08dc30f587f2710f29
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:5
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: b92f7e514b7d30f8e07bb1d1d33da6f65ffeb7adf6e61e591ee7d0dce88b78e2
+        outcome:
+          actionId: stabilize-cross-platform-verification:5
+          attempt: 1
+          claimToken: portable-7399b120cee15df5cd1caa4f816af8eb763eb488cb184a08dc30f587f2710f29
+          inputHash: b92f7e514b7d30f8e07bb1d1d33da6f65ffeb7adf6e61e591ee7d0dce88b78e2
+          outcomeId: 19390298-b2af-4acf-a96a-6b041406b99d
+          output:
+            handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+            handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+            proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+              Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+              recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+              product-distribution、desktop-observability-dashboard、feedback-collection
+              与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+              Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存 TDD
+              证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+              共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+              时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+            requirementsEvidence:
+              contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+              ref: openspec/changes/stabilize-cross-platform-verification
+            sourceEvidence:
+              contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+              ref: openspec/changes/stabilize-cross-platform-verification
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a9ef195b30f87e28b9f5d127593b8db691798a9eeaa08a31dd1f9219f78ca97c
+            outcomeId: 19390298-b2af-4acf-a96a-6b041406b99d
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d10a093ab8cb3ccb9479ce6e5c0d8f38bd0baaabf89736b8d76958911c0ea32a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:7
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 1610337e6c82bc3316e242ef01ce200e06bb7ff8fcf35002eac78fed7e0c80d0
+        outcome:
+          actionId: stabilize-cross-platform-verification:7
+          attempt: 1
+          claimToken: portable-d10a093ab8cb3ccb9479ce6e5c0d8f38bd0baaabf89736b8d76958911c0ea32a
+          inputHash: 1610337e6c82bc3316e242ef01ce200e06bb7ff8fcf35002eac78fed7e0c80d0
+          outcomeId: 75f8261e-17e6-4c69-a9ab-ea1ea3b67351
+          output:
+            designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e05802e399e971900fa027380fbdb32edc11bc6207a1933d5d4d02cd9a7481f4
+            outcomeId: 75f8261e-17e6-4c69-a9ab-ea1ea3b67351
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-7367ac8d6d66efad2dbe140aada2ba83dffb79fb48c566f14dc1eb6c46e7e6b2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:9
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 6966ee1d6079935e9768b622ab0a1f10365799d005f57cfc6b08f4d6ce5ed516
+        outcome:
+          actionId: stabilize-cross-platform-verification:9
+          attempt: 1
+          claimToken: portable-7367ac8d6d66efad2dbe140aada2ba83dffb79fb48c566f14dc1eb6c46e7e6b2
+          inputHash: 6966ee1d6079935e9768b622ab0a1f10365799d005f57cfc6b08f4d6ce5ed516
+          outcomeId: cc547676-9ee7-498b-bb3c-86b0574ed03a
+          output:
+            boundBranch: comet/stabilize-cli-distribution-gate
+            buildMode: autonomous
+            directOverride: false
+            isolation: current
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: caee61a6fdd1f138eccf29fa11f3e1fb936ce7a35c4893a8c0bae6241ab382a3
+            outcomeId: cc547676-9ee7-498b-bb3c-86b0574ed03a
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-98e1df165cccbc4be57549c3c3103c912a7ff6b1f08994ed03d5f28811aa6df8
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:11
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: c19903a3bec9093390c576e81576915b5f54afba86d52df30f11d8a40692ebaf
+        outcome:
+          actionId: stabilize-cross-platform-verification:11
+          attempt: 1
+          claimToken: portable-98e1df165cccbc4be57549c3c3103c912a7ff6b1f08994ed03d5f28811aa6df8
+          inputHash: c19903a3bec9093390c576e81576915b5f54afba86d52df30f11d8a40692ebaf
+          outcomeId: db54edbc-53c3-45ff-8571-bc26b9762e22
+          output:
+            designEvidence:
+              contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+              ref: openspec/changes/stabilize-cross-platform-verification/design.md
+            plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+            planEvidence:
+              contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+              ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+            taskRevision: f359d68dec121b0fcfd26507397427884a825e9fd50ca6ca2145d03246fbfff0
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: cbad8fc554bf316220fa77ff5bb9b935fdafa01d991f9b5d359ed37f3d38d958
+            outcomeId: db54edbc-53c3-45ff-8571-bc26b9762e22
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/stabilize-cross-platform-verification:13/1
+          token: portable-102feb205d9e22aea790b3072df7bfe3ffab560556995bfbbf08b44fcb0ba581
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:13
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 9e980a1118c1e298c5b77cd63d59e06337000fd019cdf77130176200762451d6
+        outcome:
+          actionId: stabilize-cross-platform-verification:13
+          attempt: 1
+          claimToken: portable-102feb205d9e22aea790b3072df7bfe3ffab560556995bfbbf08b44fcb0ba581
+          inputHash: 9e980a1118c1e298c5b77cd63d59e06337000fd019cdf77130176200762451d6
+          outcomeId: 4f232b16-7a99-4e65-b1e7-b411edf4e2df
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0d5f4da29249ad6a440eb6bf9875393b1e3ac12b370d2734ea62d01a9a403c5f
+            outcomeId: 4f232b16-7a99-4e65-b1e7-b411edf4e2df
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-402d6f0a48c60bd0692661ef51ff5d5a1ae5ea2cbe3217217aaa18a691fe6dbf
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:14
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 913946b15abc892e41ed27aa6bd5a826d87ffce824b60db7f64f765562e35fca
+        outcome:
+          actionId: stabilize-cross-platform-verification:14
+          attempt: 1
+          claimToken: portable-402d6f0a48c60bd0692661ef51ff5d5a1ae5ea2cbe3217217aaa18a691fe6dbf
+          inputHash: 913946b15abc892e41ed27aa6bd5a826d87ffce824b60db7f64f765562e35fca
+          outcomeId: 98bde454-eead-476a-8970-0fb2a7cd5eb8
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: ef092382d5b0b7d38cf5a9f7508dfe37f44b84eb1f962304f1a76b7e759587e7
+            cwd: .
+            environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+            exitCode: 0
+            inputAfter: c3c8f559e24d31b346958c7b6cd7db20fe2ea46835e2e450f0b2500494239c8b
+            inputBefore: c3c8f559e24d31b346958c7b6cd7db20fe2ea46835e2e450f0b2500494239c8b
+            manifestHash: 7d0186d36ee88c6fead05f4ae8a7b01e2becb994a8e7485c677d94a08e27818e
+            manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/030a6325-6f87-40f6-aa5f-20ccc0b6db28.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/8ccce841-2410-40b2-8190-4a44c3b7a8a5.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6449fa8d635e9bf6703358e0c1131676323a7af10ef4f6a54f9f3d758684722d
+            outcomeId: 98bde454-eead-476a-8970-0fb2a7cd5eb8
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-5cf010869863226c53d75cc4a1d507a1f81dccd3837909a9fa2b305239a94118
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:16
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: f1a51411ec68cc0fbf05c25659d9dfbd737f69dcecd4a33e4dea027c0c7b5972
+        outcome:
+          actionId: stabilize-cross-platform-verification:16
+          attempt: 1
+          claimToken: portable-5cf010869863226c53d75cc4a1d507a1f81dccd3837909a9fa2b305239a94118
+          inputHash: f1a51411ec68cc0fbf05c25659d9dfbd737f69dcecd4a33e4dea027c0c7b5972
+          outcomeId: f70e8bfe-39f5-4e69-af51-661135b388e0
+          output:
+            event: verify-fail
+            reason: Independent review found POSIX recovered termination confirms only
+              leader PID ownership, not complete process-group exit; canonical
+              Design/Tasks also need the CI ancestry and package-content v2
+              decisions recorded.
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 31537d0cd4b714aef188344bf840ff01ff5cf3d69a3a63039cda88594a1b63d6
+            outcomeId: f70e8bfe-39f5-4e69-af51-661135b388e0
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        id: stabilize-cross-platform-verification:17
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 4e36a8bf18f05dca1ab146083f932bcf6120e8f251ad84ad9cf2b32e61548dae
+        protocolVersion: 1
+        reason: 命令 revise-design 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: cancelled
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-b3252ad0d3350026f500ef7c84f91c3697134ee5ac5bc8d214ac39f1dda6a16b
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:18
+        input:
+          activation:
+            expectedRevision: 26
+            fromPhase: build
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 40d725a326d9ddeb64a9088eaf6dbe6871a933f92fb60804c62ae7845ddc3c4f
+        outcome:
+          actionId: stabilize-cross-platform-verification:18
+          attempt: 1
+          claimToken: portable-b3252ad0d3350026f500ef7c84f91c3697134ee5ac5bc8d214ac39f1dda6a16b
+          inputHash: 40d725a326d9ddeb64a9088eaf6dbe6871a933f92fb60804c62ae7845ddc3c4f
+          outcomeId: fe474e15-0aca-413b-b89f-b24fab9be2fe
+          output:
+            handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+            handoffHash: b32b914fd864f9ae5667803680d51be2c125f3c7148b07c9a11cee38f6659d4b
+            proposal: 修订方案：独立 Verify 审查确认 POSIX recovered termination 只观察 leader PID，会在
+              leader 消失但同一 process group 的 descendant 仍存活时错误返回
+              terminated。采用同模块已有的 waitForPosixGroupExit：发送破坏性信号前继续用 leader
+              creation identity 授权，发送后只以 kill(-pgid, 0) 返回 ESRCH 证明整组退出；超时或
+              EPERM 保持 unknown。新增 leader-not-running/group-still-alive 的真实
+              RED，并运行 terminate-process-tree 与 service-recovery 回归。拒绝在 ownership
+              轮询上叠加第二套 group 算法，也拒绝枚举 /proc/ps。同步把已由 GitHub 失败证明的两项门禁决定写入唯一
+              design.md：CI checkout 使用完整历史完成 tested commit
+              ancestry；package-content v2 排除 host-derived tar mode，同时继续绑定
+              path、entry type、file size/content digest 与 link target。仍
+              skip_specs，不改变公共 API、Runtime 状态机、桌面支持范围或产品需求。主要风险是 process-group
+              id 复用与权限未知，均通过短时有界 probe 并 fail closed 为 unknown；完成后重跑 Windows
+              全量、GitHub Linux 精确 HEAD 和独立补审。
+            requirementsEvidence:
+              contentHash: e84a95d26912b8e5916a1857458904ce21dbee07b41affa0cc1cd277c3bd9b0c
+              ref: openspec/changes/stabilize-cross-platform-verification
+            sourceEvidence:
+              contentHash: e3d6b545827c6ac27b8fd98e9141b469f40c1e032849e41e2e9fd3143dde3fa9
+              ref: openspec/changes/stabilize-cross-platform-verification
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 24d40153999ba1162ded45faead98b05522b69c276c77bcc5c48001e3070c55d
+            outcomeId: fe474e15-0aca-413b-b89f-b24fab9be2fe
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c29dc83aa3f316ffe21aeade7cc266d5cffd85df9532816c4fa444e6fa0d9bc2
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:20
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: fd07f2bb428b01787391fef57e2c68f5361b0ecd5953c6f2d6534c7e4b97c3a2
+        outcome:
+          actionId: stabilize-cross-platform-verification:20
+          attempt: 1
+          claimToken: portable-c29dc83aa3f316ffe21aeade7cc266d5cffd85df9532816c4fa444e6fa0d9bc2
+          inputHash: fd07f2bb428b01787391fef57e2c68f5361b0ecd5953c6f2d6534c7e4b97c3a2
+          outcomeId: 25005396-66aa-4169-87fa-eb1950a986b6
+          output:
+            handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+            handoffHash: 2c021a6d233679c7374952ee39c39fb4b142b60e755c5ac5d45e1e6efce06bae
+            proposal: 修订方案（补齐 Comet 成熟测试经验）：独立 Verify 审查确认 POSIX recovered termination 只观察
+              leader PID，会在 leader 消失但同一 process group 的 descendant 仍存活时错误返回
+              terminated。实现采用固定 Comet 0.5.1 与当前上游共有的 waitForPosixGroupExit
+              原语：发送破坏性信号前继续用 leader creation identity 授权，发送后只以 kill(-pgid, 0) 返回
+              ESRCH 证明整组退出；超时或 EPERM 保持 unknown，不维护第二套 ownership 轮询，也不枚举
+              /proc/ps。验证采用两层证据：一是 fake-timer 单测稳定构造
+              leader-not-running/group-still-alive 并保存旧实现 RED；二是借鉴 Comet
+              test/platform/process/owned-command-termination.test.ts，在 GitHub
+              Linux 使用真实 detached parent/descendant fixture，任何 terminated
+              成功都必须对应父进程和后代实际停止，finally 强制清理全部 PID。同步把 GitHub 已证明的两项门禁决定写入唯一
+              design.md：CI 完整历史用于 tested commit ancestry；package-content v2 排除
+              host-derived tar mode，但继续绑定 path、entry type、file size/content
+              digest 与 link target。仍 skip_specs，不改变公共 API、Runtime
+              状态机、桌面支持范围或产品需求。完成后重跑 Windows 全量、GitHub Linux 精确 HEAD，并让独立
+              reviewer 补审 process-group 与 canonical 文档差异。
+            requirementsEvidence:
+              contentHash: 259d44da56c8778916dafaa0d99c7c2e2a85f6eed85eccb866250e7af0876f3e
+              ref: openspec/changes/stabilize-cross-platform-verification
+            sourceEvidence:
+              contentHash: 5cf5a450bb4167168d32796062a45b0a7fe0ed94079ba59b55eaaa3bdbbf1c43
+              ref: openspec/changes/stabilize-cross-platform-verification
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 33d312121440a3c6f472cc90d5af4d913154e94c21651adfe24892361fa85d01
+            outcomeId: 25005396-66aa-4169-87fa-eb1950a986b6
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-838c13fe536f6e8db19a741fedf434d6c1c0f4c98134e19536e7a78e63dbd3d0
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:22
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: f5cf6f6e45db3843f3054f73442ad81e9674fd68be5c3918820d3ad033a7b31d
+        outcome:
+          actionId: stabilize-cross-platform-verification:22
+          attempt: 1
+          claimToken: portable-838c13fe536f6e8db19a741fedf434d6c1c0f4c98134e19536e7a78e63dbd3d0
+          inputHash: f5cf6f6e45db3843f3054f73442ad81e9674fd68be5c3918820d3ad033a7b31d
+          outcomeId: df232b9c-4e53-408f-a07b-f52f7c7da529
+          output:
+            designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f3dcc67f7b8c32382a75bc8e29729d10f62e65337469be84bcfd2c6430d98e3f
+            outcomeId: df232b9c-4e53-408f-a07b-f52f7c7da529
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-a209e300bc18cce900b74a06d5f93fe7909d1d49955c4efdbae550ab24e25a43
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:24
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 7f0818e7814f932b46b4475602f2e7d2589b884176c6db32ebbcd0b7d372cb4c
+        outcome:
+          actionId: stabilize-cross-platform-verification:24
+          attempt: 1
+          claimToken: portable-a209e300bc18cce900b74a06d5f93fe7909d1d49955c4efdbae550ab24e25a43
+          inputHash: 7f0818e7814f932b46b4475602f2e7d2589b884176c6db32ebbcd0b7d372cb4c
+          outcomeId: 5650d5b0-53d1-4cb1-b3c8-cd588580377e
+          output:
+            designEvidence:
+              contentHash: 8d077d26b09d97656ee95911a43f95c035bf71d2d76d6e4170173bdd18f3a656
+              ref: openspec/changes/stabilize-cross-platform-verification/design.md
+            plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+            planEvidence:
+              contentHash: 22127290069aadf02bdf0bd0376f4d17ec5bd760ef88aa0f342c86a5693bf4a8
+              ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+            taskRevision: 26ff7855411ad5a17d44a8a454e02747f67908a2bd9a1ab110060ecd073dc642
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c302c3404fc953b6e81c4104eddd31968a8f0a704ae2d6a4600ce7157739a63f
+            outcomeId: 5650d5b0-53d1-4cb1-b3c8-cd588580377e
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/stabilize-cross-platform-verification:26/1
+          token: portable-f055c32269ad94e8d06a2dbc9c9a84b72321f913bcf8808b21d989207f16ffbc
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:26
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 93052143ef0e55b6ec0f9444f5021e15205707e6d9a3eebcbe83fb70585139ce
+        outcome:
+          actionId: stabilize-cross-platform-verification:26
+          attempt: 1
+          claimToken: portable-f055c32269ad94e8d06a2dbc9c9a84b72321f913bcf8808b21d989207f16ffbc
+          inputHash: 93052143ef0e55b6ec0f9444f5021e15205707e6d9a3eebcbe83fb70585139ce
+          outcomeId: b7ae8f2c-4ca4-417e-b25e-b23f098e1902
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2bc99f5e0db6fe5057d073183ae2e044de379d586fe9379f009bfac249566bfb
+            outcomeId: b7ae8f2c-4ca4-417e-b25e-b23f098e1902
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-77e3dbd4e8f55fd3127b1f9e58750de88c50df3477a639fca6fe4d543f6277b6
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:27
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 29a75cc2149315c8754acfb321a4475d31a208e4a29c60c599b47e2e64d6082b
+        outcome:
+          actionId: stabilize-cross-platform-verification:27
+          attempt: 1
+          claimToken: portable-77e3dbd4e8f55fd3127b1f9e58750de88c50df3477a639fca6fe4d543f6277b6
+          inputHash: 29a75cc2149315c8754acfb321a4475d31a208e4a29c60c599b47e2e64d6082b
+          outcomeId: 66c860d9-70fd-491f-b92a-1600588f6f59
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: 9a7597052b924e51310f32e1a9fcde061f1c2f850cc99cc71bcc022be2d2f08f
+            cwd: .
+            environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+            exitCode: 0
+            inputAfter: 7f6975c2e10e922608c622eb2edc0070a4423d9746417e1d70aaabf7a2aed35a
+            inputBefore: 7f6975c2e10e922608c622eb2edc0070a4423d9746417e1d70aaabf7a2aed35a
+            manifestHash: 5894506ff0ab08ffc371cfb1df9fd7e5b1bffd3cb56e4ea5285b29b8d7a869c3
+            manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/3c11d877-a8dc-4edd-8658-9dd836fb2eaf.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/0436c0ff-ed95-4e90-927e-35e34e164a1b.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 600000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ad824d8bc98bde1b13780bd087cc6720fe09d16dfd5efb44e793de143442289a
+            outcomeId: 66c860d9-70fd-491f-b92a-1600588f6f59
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-a0c598f443fa82e276288c5104a392858d3c9bd2d5e743b8c75272db9cc5fb39
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:29
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 291bf531e9c30ebfa0b7b15dc6a0aebeb683864b38fecfd6c92bc176829a851c
+        outcome:
+          actionId: stabilize-cross-platform-verification:29
+          attempt: 1
+          claimToken: portable-a0c598f443fa82e276288c5104a392858d3c9bd2d5e743b8c75272db9cc5fb39
+          inputHash: 291bf531e9c30ebfa0b7b15dc6a0aebeb683864b38fecfd6c92bc176829a851c
+          outcomeId: 3130010a-0296-4522-8e0b-92697833952d
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-cross-platform-verification.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0230e72f74fccaf9b47c73cc54dc13e0d98e1691243f2925b2dfc50348dc363f
+            outcomeId: 3130010a-0296-4522-8e0b-92697833952d
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-5afd9727350a3b04614447a8e8682f368c264e893ce854ade25d750fdaed1ab7
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:31
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 110f4ed4a30807a46ce4d8f4c85ffc01e08f5a2d7ed544034316904d8c5dce89
+        outcome:
+          actionId: stabilize-cross-platform-verification:31
+          attempt: 1
+          claimToken: portable-5afd9727350a3b04614447a8e8682f368c264e893ce854ade25d750fdaed1ab7
+          inputHash: 110f4ed4a30807a46ce4d8f4c85ffc01e08f5a2d7ed544034316904d8c5dce89
+          outcomeId: f002be22-083e-433c-97d5-5058833d19bf
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 6
+            contentHash: 8c401d7b43a9028dbc32a5ab8040896c051431142a40a4ddf39f63d7b0df4b2c
+            cwd: .
+            deliveryInputs: {}
+            environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+            exitCode: 0
+            inputAfter: 4e14b9f54e7f7564ba08caabbc6e249872a50ae5464e5da2d863e8281eae29c6
+            inputBefore: 4e14b9f54e7f7564ba08caabbc6e249872a50ae5464e5da2d863e8281eae29c6
+            manifestHash: 1e9bd8ba51bbdb8f9170c0e3b3ee4282fca05b31c8ebc2066b4504e09875382a
+            manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/1612a51f-3f8d-4b5f-8a06-e2f3d9c49268.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7b4ba051-8d41-410c-b311-4b9cfca633f7.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 130295ad3ff1fcb6695ba84c4983296beec3351871cd96e7f8f0bce7d046c459
+            outcomeId: f002be22-083e-433c-97d5-5058833d19bf
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-1370e5e85ba5a6dca81349c3b5b521e3ea62589f5f225264e840413042495364
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:33
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: c7d86763d1f9f241779e11b776cd074da572f7944aa9f986d95527058a3c31e3
+        outcome:
+          actionId: stabilize-cross-platform-verification:33
+          attempt: 1
+          claimToken: portable-1370e5e85ba5a6dca81349c3b5b521e3ea62589f5f225264e840413042495364
+          inputHash: c7d86763d1f9f241779e11b776cd074da572f7944aa9f986d95527058a3c31e3
+          outcomeId: 8e6937f1-c39f-402e-a586-92762ba22aed
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: "归档已完成的跨平台验证稳定性修复：13/13 Tasks 完成，Windows 与 GitHub Linux 全量门禁、真实 POSIX
+              parent/descendant 验收、Comet Build/Verify receipts 和独立 0 CRITICAL/0
+              IMPORTANT/0 WARNING 审查均通过；归档产物提交并 push 到当前公开分支，更新现有 PR #66，不自动合入
+              main。"
+            targetBranch: comet/stabilize-cli-distribution-gate
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0ae563d9a5c9acef50ef943dfa66963dfc15bbeb6c4ddc35992a72bcc64dd2cd
+            outcomeId: 8e6937f1-c39f-402e-a586-92762ba22aed
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-83bfbff8adf3b5168dd28ba6ffad57fe340bb7a1cc8f17315a8f029bfaa4fd1c
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:35
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 579c6afe224197fc7c2970dac468c802427d64cdd81063c080630d3b8eda77a5
+        outcome:
+          actionId: stabilize-cross-platform-verification:35
+          attempt: 1
+          claimToken: portable-83bfbff8adf3b5168dd28ba6ffad57fe340bb7a1cc8f17315a8f029bfaa4fd1c
+          inputHash: 579c6afe224197fc7c2970dac468c802427d64cdd81063c080630d3b8eda77a5
+          outcomeId: e8485de2-b588-4e44-8f14-ee8ec78b37a1
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-cross-platform-verification.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fa145378cfef1d76b0c13a897c65878225a958e3f5d1c0a67be4184c0d1499dd
+            outcomeId: e8485de2-b588-4e44-8f14-ee8ec78b37a1
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-e9448d9f43c50d3cfdf3308b6095c8b455a4458d5aae7571ddce0b3174f385ef
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:37
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 579c6afe224197fc7c2970dac468c802427d64cdd81063c080630d3b8eda77a5
+        outcome:
+          actionId: stabilize-cross-platform-verification:37
+          attempt: 1
+          claimToken: portable-e9448d9f43c50d3cfdf3308b6095c8b455a4458d5aae7571ddce0b3174f385ef
+          inputHash: 579c6afe224197fc7c2970dac468c802427d64cdd81063c080630d3b8eda77a5
+          outcomeId: 73df9ad2-cc08-4952-b140-f94d895ca552
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 8
+            contentHash: f8345e5b4c4f8e96d8917d854bf766a64624ecbed0f1d2b9d96b2c3ce152aa23
+            cwd: .
+            deliveryInputs: {}
+            environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+            exitCode: 0
+            inputAfter: c38e00c3b4719d7e461e04ed1c2b4bfc3436ce04b4318ba6243248fc18323f34
+            inputBefore: c38e00c3b4719d7e461e04ed1c2b4bfc3436ce04b4318ba6243248fc18323f34
+            manifestHash: c356638c5a0dada33884589be0ad745adb5532feb61692a013062a0372b18980
+            manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/d0fbf088-1143-46a7-91d1-bac5348431dc.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7afa81ed-3690-49fc-8f95-8bb6f0de080d.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f8ead853ad8515754b150c86b3d444711de38c31563985b1a5344b4a1fccac0c
+            outcomeId: 73df9ad2-cc08-4952-b140-f94d895ca552
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-5affcabf36adf2100c3f3deda5736a2e025e86def57bdd7e510fe8632c0ad26f
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:39
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 1aea43597521e75ace83f80f80bb6b40fc2fa372e06deeaa6ee7de5702d9208b
+        outcome:
+          actionId: stabilize-cross-platform-verification:39
+          attempt: 1
+          claimToken: portable-5affcabf36adf2100c3f3deda5736a2e025e86def57bdd7e510fe8632c0ad26f
+          inputHash: 1aea43597521e75ace83f80f80bb6b40fc2fa372e06deeaa6ee7de5702d9208b
+          outcomeId: 9e09e7d0-e052-44aa-8faa-7081819a84da
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: "归档已完成的跨平台验证稳定性修复：13/13 Tasks 完成，Windows 与 GitHub Linux 全量门禁、真实 POSIX
+              parent/descendant 验收、Comet Build/Verify receipts 和独立 0 CRITICAL/0
+              IMPORTANT/0 WARNING 审查均通过；归档产物提交并 push 到当前公开分支，更新现有 PR #66，不自动合入
+              main。"
+            targetBranch: comet/stabilize-cli-distribution-gate
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c1c683e2fc83e4cb1d26bf9e04c6ee0c61bf889e983f4c7fc5315b6014a8850a
+            outcomeId: 9e09e7d0-e052-44aa-8faa-7081819a84da
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-2af8469269bc53877ae10a4d4d3be93108b6ca22423c7e78ab065cee9ac68270
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:41
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 6bfd2183844068c7db2fcaaa9fb50c459928c679719452a845a7a77710dc8cd7
+        outcome:
+          actionId: stabilize-cross-platform-verification:41
+          attempt: 1
+          claimToken: portable-2af8469269bc53877ae10a4d4d3be93108b6ca22423c7e78ab065cee9ac68270
+          inputHash: 6bfd2183844068c7db2fcaaa9fb50c459928c679719452a845a7a77710dc8cd7
+          outcomeId: 66e6ecf7-10b7-4afc-b886-e16e91c67a29
+          output:
+            baseCommit: b943bd31d07e49b0af2c0fed9bacaae787875901
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/stabilize-cli-distribution-gate
+            verifiedBranch: comet/stabilize-cli-distribution-gate
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ea694731e2ee3f183095bc9d163f10588bd383420b74c59198792ac086ee11fd
+            outcomeId: 66e6ecf7-10b7-4afc-b886-e16e91c67a29
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-261effc5d69c8e6e98df0694c2a3b95118099112664a061e2b8e7b2a30607194
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:42
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 7e66f6cc898215ed707eeea0c4f04074be4ee26e618c64d47666c4e7d2117182
+        outcome:
+          actionId: stabilize-cross-platform-verification:42
+          artifacts:
+            - sha256: 414ff90ad0fd74609876c45246ab68de88bec9fd7d14c784bce7c69bb19b803b
+              uri: openspec/changes/archive/2026-11-05-stabilize-cross-platform-verification/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-261effc5d69c8e6e98df0694c2a3b95118099112664a061e2b8e7b2a30607194
+          inputHash: 7e66f6cc898215ed707eeea0c4f04074be4ee26e618c64d47666c4e7d2117182
+          outcomeId: c7b8ae86-4e7c-44c0-9790-25cae8c5767a
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-05-stabilize-cross-platform-verification
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5260045202cd6f76bf639b39e51b35bc409f1a9dbaa0d7f9bac66c70f8b646ad
+            outcomeId: c7b8ae86-4e7c-44c0-9790-25cae8c5767a
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: stabilize-cross-platform-verification:43
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: 90e965c49770f3f63123499fa5889f665f5d603a9d3786621a4a4292fa706cc7
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    commands:
+      - id: 275a357a5feefa165b1c6dd73b685950e2ee58cd296a9f53e457a1fddb9de384
+        name: revise-design
+        inputHash: 5e1094e5505cdd85878732cc0116eb636fe230c7606fe74a14dd505ec72ee918
+        actionId: stabilize-cross-platform-verification:18
+    actionContexts:
+      stabilize-cross-platform-verification:1:
+        results: {}
+        sequence: 1
+      stabilize-cross-platform-verification:11:
+        results: {}
+        sequence: 11
+      stabilize-cross-platform-verification:13:
+        results: {}
+        sequence: 13
+      stabilize-cross-platform-verification:14:
+        results: {}
+        sequence: 14
+      stabilize-cross-platform-verification:16:
+        results: {}
+        sequence: 16
+      stabilize-cross-platform-verification:17:
+        results: {}
+        sequence: 17
+      stabilize-cross-platform-verification:18:
+        results: {}
+        sequence: 18
+      stabilize-cross-platform-verification:20:
+        results: {}
+        sequence: 20
+      stabilize-cross-platform-verification:22:
+        results: {}
+        sequence: 22
+      stabilize-cross-platform-verification:24:
+        results: {}
+        sequence: 24
+      stabilize-cross-platform-verification:26:
+        results: {}
+        sequence: 26
+      stabilize-cross-platform-verification:27:
+        results: {}
+        sequence: 27
+      stabilize-cross-platform-verification:29:
+        results: {}
+        sequence: 29
+      stabilize-cross-platform-verification:31:
+        results: {}
+        sequence: 31
+      stabilize-cross-platform-verification:33:
+        results: {}
+        sequence: 33
+      stabilize-cross-platform-verification:35:
+        results: {}
+        sequence: 35
+      stabilize-cross-platform-verification:37:
+        results: {}
+        sequence: 37
+      stabilize-cross-platform-verification:39:
+        results: {}
+        sequence: 39
+      stabilize-cross-platform-verification:4:
+        results: {}
+        sequence: 4
+      stabilize-cross-platform-verification:41:
+        results: {}
+        sequence: 41
+      stabilize-cross-platform-verification:42:
+        results: {}
+        sequence: 42
+      stabilize-cross-platform-verification:43:
+        results: {}
+        sequence: 43
+      stabilize-cross-platform-verification:5:
+        results: {}
+        sequence: 5
+      stabilize-cross-platform-verification:7:
+        results: {}
+        sequence: 7
+      stabilize-cross-platform-verification:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: stabilize-cross-platform-verification:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+        proposalHash: d2f4b8ab6673a107ac6c6b64cbfd3b702df646727cbbe15c2ee010bface150f2
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+          choice: approved
+          proposalHash: d2f4b8ab6673a107ac6c6b64cbfd3b702df646727cbbe15c2ee010bface150f2
+      - id: stabilize-cross-platform-verification:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+        proposalHash: 59c15aecf3dac013985e431b4beea93b8493e65eb96857bad57d4b257739a2f0
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-59c15aecf3dac013985e431b4beea93b8493e65eb96857bad57d4b257739a2f0-approved
+          choice: approved
+          proposalHash: 59c15aecf3dac013985e431b4beea93b8493e65eb96857bad57d4b257739a2f0
+      - id: stabilize-cross-platform-verification:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.build.configure:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 97144adae1ddbddf5cf8d7a802eaf89a64f1622a9602379ddfe496163d604542
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 5852122e-d009-4adc-a89a-1b9109b7e313
+          choice: approved
+          proposalHash: 97144adae1ddbddf5cf8d7a802eaf89a64f1622a9602379ddfe496163d604542
+      - id: stabilize-cross-platform-verification:19
+        stepId: full.design.confirm
+        sequence: 19
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: b32b914fd864f9ae5667803680d51be2c125f3c7148b07c9a11cee38f6659d4b
+              proposal: 修订方案：独立 Verify 审查确认 POSIX recovered termination 只观察 leader PID，会在
+                leader 消失但同一 process group 的 descendant 仍存活时错误返回
+                terminated。采用同模块已有的 waitForPosixGroupExit：发送破坏性信号前继续用 leader
+                creation identity 授权，发送后只以 kill(-pgid, 0) 返回 ESRCH 证明整组退出；超时或
+                EPERM 保持 unknown。新增 leader-not-running/group-still-alive 的真实
+                RED，并运行 terminate-process-tree 与 service-recovery 回归。拒绝在
+                ownership 轮询上叠加第二套 group 算法，也拒绝枚举 /proc/ps。同步把已由 GitHub
+                失败证明的两项门禁决定写入唯一 design.md：CI checkout 使用完整历史完成 tested commit
+                ancestry；package-content v2 排除 host-derived tar mode，同时继续绑定
+                path、entry type、file size/content digest 与 link target。仍
+                skip_specs，不改变公共 API、Runtime 状态机、桌面支持范围或产品需求。主要风险是 process-group
+                id 复用与权限未知，均通过短时有界 probe 并 fail closed 为 unknown；完成后重跑 Windows
+                全量、GitHub Linux 精确 HEAD 和独立补审。
+              requirementsEvidence:
+                contentHash: e84a95d26912b8e5916a1857458904ce21dbee07b41affa0cc1cd277c3bd9b0c
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: e3d6b545827c6ac27b8fd98e9141b469f40c1e032849e41e2e9fd3143dde3fa9
+                ref: openspec/changes/stabilize-cross-platform-verification
+        proposalHash: cc69b3ef8ace9e10c563cf0ee44e0505d8a76c1307a269017ab206d4d2b7db7a
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-cc69b3ef8ace9e10c563cf0ee44e0505d8a76c1307a269017ab206d4d2b7db7a-rejected
+          choice: rejected
+          proposalHash: cc69b3ef8ace9e10c563cf0ee44e0505d8a76c1307a269017ab206d4d2b7db7a
+      - id: stabilize-cross-platform-verification:21
+        stepId: full.design.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: 2c021a6d233679c7374952ee39c39fb4b142b60e755c5ac5d45e1e6efce06bae
+              proposal: 修订方案（补齐 Comet 成熟测试经验）：独立 Verify 审查确认 POSIX recovered termination 只观察
+                leader PID，会在 leader 消失但同一 process group 的 descendant 仍存活时错误返回
+                terminated。实现采用固定 Comet 0.5.1 与当前上游共有的 waitForPosixGroupExit
+                原语：发送破坏性信号前继续用 leader creation identity 授权，发送后只以 kill(-pgid, 0)
+                返回 ESRCH 证明整组退出；超时或 EPERM 保持 unknown，不维护第二套 ownership 轮询，也不枚举
+                /proc/ps。验证采用两层证据：一是 fake-timer 单测稳定构造
+                leader-not-running/group-still-alive 并保存旧实现 RED；二是借鉴 Comet
+                test/platform/process/owned-command-termination.test.ts，在 GitHub
+                Linux 使用真实 detached parent/descendant fixture，任何 terminated
+                成功都必须对应父进程和后代实际停止，finally 强制清理全部 PID。同步把 GitHub 已证明的两项门禁决定写入唯一
+                design.md：CI 完整历史用于 tested commit ancestry；package-content v2 排除
+                host-derived tar mode，但继续绑定 path、entry type、file size/content
+                digest 与 link target。仍 skip_specs，不改变公共 API、Runtime
+                状态机、桌面支持范围或产品需求。完成后重跑 Windows 全量、GitHub Linux 精确 HEAD，并让独立
+                reviewer 补审 process-group 与 canonical 文档差异。
+              requirementsEvidence:
+                contentHash: 259d44da56c8778916dafaa0d99c7c2e2a85f6eed85eccb866250e7af0876f3e
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 5cf5a450bb4167168d32796062a45b0a7fe0ed94079ba59b55eaaa3bdbbf1c43
+                ref: openspec/changes/stabilize-cross-platform-verification
+        proposalHash: f08b444b5119b5b9b53b1fe69273c2fb4596735c4331d5bef329597b277fecab
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-f08b444b5119b5b9b53b1fe69273c2fb4596735c4331d5bef329597b277fecab-approved
+          choice: approved
+          proposalHash: f08b444b5119b5b9b53b1fe69273c2fb4596735c4331d5bef329597b277fecab
+      - id: stabilize-cross-platform-verification:34
+        stepId: full.archive.confirm
+        sequence: 34
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: "归档已完成的跨平台验证稳定性修复：13/13 Tasks 完成，Windows 与 GitHub Linux 全量门禁、真实 POSIX
+                parent/descendant 验收、Comet Build/Verify receipts 和独立 0
+                CRITICAL/0 IMPORTANT/0 WARNING 审查均通过；归档产物提交并 push 到当前公开分支，更新现有
+                PR #66，不自动合入 main。"
+              targetBranch: comet/stabilize-cli-distribution-gate
+        proposalHash: 086e1521d00534973a77b1ba7f4516cbdfab90e4bd976c6352158329e0981fb4
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-086e1521d00534973a77b1ba7f4516cbdfab90e4bd976c6352158329e0981fb4-reverify
+          choice: reverify
+          proposalHash: 086e1521d00534973a77b1ba7f4516cbdfab90e4bd976c6352158329e0981fb4
+      - id: stabilize-cross-platform-verification:40
+        stepId: full.archive.confirm
+        sequence: 40
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: "归档已完成的跨平台验证稳定性修复：13/13 Tasks 完成，Windows 与 GitHub Linux 全量门禁、真实 POSIX
+                parent/descendant 验收、Comet Build/Verify receipts 和独立 0
+                CRITICAL/0 IMPORTANT/0 WARNING 审查均通过；归档产物提交并 push 到当前公开分支，更新现有
+                PR #66，不自动合入 main。"
+              targetBranch: comet/stabilize-cli-distribution-gate
+        proposalHash: 086e1521d00534973a77b1ba7f4516cbdfab90e4bd976c6352158329e0981fb4
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-086e1521d00534973a77b1ba7f4516cbdfab90e4bd976c6352158329e0981fb4-pr
+          choice: pr
+          proposalHash: 086e1521d00534973a77b1ba7f4516cbdfab90e4bd976c6352158329e0981fb4
+    evidenceWaits:
+      - id: stabilize-cross-platform-verification:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-cross-platform-verification
+          contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+          submissionId: d1960d6f-de2a-4ada-8a92-cbb8db943117
+      - id: stabilize-cross-platform-verification:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-cross-platform-verification/design.md
+          contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+          submissionId: c85ad1fa-993f-49f8-8060-7d6fe31b8c65
+      - id: stabilize-cross-platform-verification:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+          contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+          submissionId: 78b4bec9-3aad-42e1-ae72-2e9e828c53d1
+      - id: stabilize-cross-platform-verification:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/8ccce841-2410-40b2-8190-4a44c3b7a8a5.log
+          contentHash: ef092382d5b0b7d38cf5a9f7508dfe37f44b84eb1f962304f1a76b7e759587e7
+          submissionId: a0851b86-595b-4001-9250-ed8391ceba47
+      - id: stabilize-cross-platform-verification:23
+        stepId: full.design.evidence
+        sequence: 23
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-cross-platform-verification/design.md
+          contentHash: 8d077d26b09d97656ee95911a43f95c035bf71d2d76d6e4170173bdd18f3a656
+          submissionId: b55b1f85-42c5-4dbd-a5e4-7cd0c2061035
+      - id: stabilize-cross-platform-verification:25
+        stepId: full.build.plan.evidence
+        sequence: 25
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+          contentHash: 22127290069aadf02bdf0bd0376f4d17ec5bd760ef88aa0f342c86a5693bf4a8
+          submissionId: 776eb88c-05ac-44ae-a82f-bfd73b26337a
+      - id: stabilize-cross-platform-verification:28
+        stepId: full.build.check.evidence
+        sequence: 28
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/0436c0ff-ed95-4e90-927e-35e34e164a1b.log
+          contentHash: 9a7597052b924e51310f32e1a9fcde061f1c2f850cc99cc71bcc022be2d2f08f
+          submissionId: 177042fc-5955-442b-8e09-80cbd8fd8b65
+      - id: stabilize-cross-platform-verification:30
+        stepId: full.verify.report.evidence
+        sequence: 30
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stabilize-cross-platform-verification.md
+          contentHash: 026ddb5757f802065d37881646b83527aec6b0cf6c65b782fc433ff1ec295f45
+          submissionId: 8102cf7d-d756-4cbe-ae7d-1157a86df4d7
+      - id: stabilize-cross-platform-verification:32
+        stepId: full.verify.check.evidence
+        sequence: 32
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7b4ba051-8d41-410c-b311-4b9cfca633f7.log
+          contentHash: 8c401d7b43a9028dbc32a5ab8040896c051431142a40a4ddf39f63d7b0df4b2c
+          submissionId: d0693192-0dd1-4816-853b-17a1f709cb03
+      - id: stabilize-cross-platform-verification:36
+        stepId: full.verify.report.evidence
+        sequence: 36
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stabilize-cross-platform-verification.md
+          contentHash: 026ddb5757f802065d37881646b83527aec6b0cf6c65b782fc433ff1ec295f45
+          submissionId: da6068a2-624c-4311-8e5b-81c826fa56ab
+      - id: stabilize-cross-platform-verification:38
+        stepId: full.verify.check.evidence
+        sequence: 38
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7afa81ed-3690-49fc-8f95-8bb6f0de080d.log
+          contentHash: f8345e5b4c4f8e96d8917d854bf766a64624ecbed0f1d2b9d96b2c3ce152aa23
+          submissionId: f6d78b5b-ccd0-443c-a5cb-5db0057d2a91
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 66
+  sourceHash: 41c6ffaace9d92f814900acc83c6d31604e4ad4fa558ad829d834c6111a26933
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+      - contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        ref: openspec/changes/stabilize-cross-platform-verification
+      - contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+      - handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+        handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+        proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+          Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+          recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+          product-distribution、desktop-observability-dashboard、feedback-collection
+          与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+          Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存 TDD
+          证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+          共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+          时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+        requirementsEvidence:
+          contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+          ref: openspec/changes/stabilize-cross-platform-verification
+        sourceEvidence:
+          contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+          ref: openspec/changes/stabilize-cross-platform-verification
+      - designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+      - contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+        ref: openspec/changes/stabilize-cross-platform-verification/design.md
+      - boundBranch: comet/stabilize-cli-distribution-gate
+        buildMode: autonomous
+        directOverride: false
+        isolation: current
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.build.configure:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+          ref: openspec/changes/stabilize-cross-platform-verification/design.md
+        plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+        planEvidence:
+          contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+        taskRevision: f359d68dec121b0fcfd26507397427884a825e9fd50ca6ca2145d03246fbfff0
+      - contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+        ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: ef092382d5b0b7d38cf5a9f7508dfe37f44b84eb1f962304f1a76b7e759587e7
+        cwd: .
+        environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+        exitCode: 0
+        inputAfter: c3c8f559e24d31b346958c7b6cd7db20fe2ea46835e2e450f0b2500494239c8b
+        inputBefore: c3c8f559e24d31b346958c7b6cd7db20fe2ea46835e2e450f0b2500494239c8b
+        manifestHash: 7d0186d36ee88c6fead05f4ae8a7b01e2becb994a8e7485c677d94a08e27818e
+        manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/030a6325-6f87-40f6-aa5f-20ccc0b6db28.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/8ccce841-2410-40b2-8190-4a44c3b7a8a5.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: ef092382d5b0b7d38cf5a9f7508dfe37f44b84eb1f962304f1a76b7e759587e7
+        ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/8ccce841-2410-40b2-8190-4a44c3b7a8a5.log
+      - event: verify-fail
+        reason: Independent review found POSIX recovered termination confirms only
+          leader PID ownership, not complete process-group exit; canonical
+          Design/Tasks also need the CI ancestry and package-content v2
+          decisions recorded.
+      - choice: rejected
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: b32b914fd864f9ae5667803680d51be2c125f3c7148b07c9a11cee38f6659d4b
+              proposal: 修订方案：独立 Verify 审查确认 POSIX recovered termination 只观察 leader PID，会在
+                leader 消失但同一 process group 的 descendant 仍存活时错误返回
+                terminated。采用同模块已有的 waitForPosixGroupExit：发送破坏性信号前继续用 leader
+                creation identity 授权，发送后只以 kill(-pgid, 0) 返回 ESRCH 证明整组退出；超时或
+                EPERM 保持 unknown。新增 leader-not-running/group-still-alive 的真实
+                RED，并运行 terminate-process-tree 与 service-recovery 回归。拒绝在
+                ownership 轮询上叠加第二套 group 算法，也拒绝枚举 /proc/ps。同步把已由 GitHub
+                失败证明的两项门禁决定写入唯一 design.md：CI checkout 使用完整历史完成 tested commit
+                ancestry；package-content v2 排除 host-derived tar mode，同时继续绑定
+                path、entry type、file size/content digest 与 link target。仍
+                skip_specs，不改变公共 API、Runtime 状态机、桌面支持范围或产品需求。主要风险是 process-group
+                id 复用与权限未知，均通过短时有界 probe 并 fail closed 为 unknown；完成后重跑 Windows
+                全量、GitHub Linux 精确 HEAD 和独立补审。
+              requirementsEvidence:
+                contentHash: e84a95d26912b8e5916a1857458904ce21dbee07b41affa0cc1cd277c3bd9b0c
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: e3d6b545827c6ac27b8fd98e9141b469f40c1e032849e41e2e9fd3143dde3fa9
+                ref: openspec/changes/stabilize-cross-platform-verification
+      - handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+        handoffHash: b32b914fd864f9ae5667803680d51be2c125f3c7148b07c9a11cee38f6659d4b
+        proposal: 修订方案：独立 Verify 审查确认 POSIX recovered termination 只观察 leader PID，会在
+          leader 消失但同一 process group 的 descendant 仍存活时错误返回 terminated。采用同模块已有的
+          waitForPosixGroupExit：发送破坏性信号前继续用 leader creation identity 授权，发送后只以
+          kill(-pgid, 0) 返回 ESRCH 证明整组退出；超时或 EPERM 保持 unknown。新增
+          leader-not-running/group-still-alive 的真实 RED，并运行
+          terminate-process-tree 与 service-recovery 回归。拒绝在 ownership 轮询上叠加第二套
+          group 算法，也拒绝枚举 /proc/ps。同步把已由 GitHub 失败证明的两项门禁决定写入唯一 design.md：CI
+          checkout 使用完整历史完成 tested commit ancestry；package-content v2 排除
+          host-derived tar mode，同时继续绑定 path、entry type、file size/content digest
+          与 link target。仍 skip_specs，不改变公共 API、Runtime 状态机、桌面支持范围或产品需求。主要风险是
+          process-group id 复用与权限未知，均通过短时有界 probe 并 fail closed 为 unknown；完成后重跑
+          Windows 全量、GitHub Linux 精确 HEAD 和独立补审。
+        requirementsEvidence:
+          contentHash: e84a95d26912b8e5916a1857458904ce21dbee07b41affa0cc1cd277c3bd9b0c
+          ref: openspec/changes/stabilize-cross-platform-verification
+        sourceEvidence:
+          contentHash: e3d6b545827c6ac27b8fd98e9141b469f40c1e032849e41e2e9fd3143dde3fa9
+          ref: openspec/changes/stabilize-cross-platform-verification
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: 2c021a6d233679c7374952ee39c39fb4b142b60e755c5ac5d45e1e6efce06bae
+              proposal: 修订方案（补齐 Comet 成熟测试经验）：独立 Verify 审查确认 POSIX recovered termination 只观察
+                leader PID，会在 leader 消失但同一 process group 的 descendant 仍存活时错误返回
+                terminated。实现采用固定 Comet 0.5.1 与当前上游共有的 waitForPosixGroupExit
+                原语：发送破坏性信号前继续用 leader creation identity 授权，发送后只以 kill(-pgid, 0)
+                返回 ESRCH 证明整组退出；超时或 EPERM 保持 unknown，不维护第二套 ownership 轮询，也不枚举
+                /proc/ps。验证采用两层证据：一是 fake-timer 单测稳定构造
+                leader-not-running/group-still-alive 并保存旧实现 RED；二是借鉴 Comet
+                test/platform/process/owned-command-termination.test.ts，在 GitHub
+                Linux 使用真实 detached parent/descendant fixture，任何 terminated
+                成功都必须对应父进程和后代实际停止，finally 强制清理全部 PID。同步把 GitHub 已证明的两项门禁决定写入唯一
+                design.md：CI 完整历史用于 tested commit ancestry；package-content v2 排除
+                host-derived tar mode，但继续绑定 path、entry type、file size/content
+                digest 与 link target。仍 skip_specs，不改变公共 API、Runtime
+                状态机、桌面支持范围或产品需求。完成后重跑 Windows 全量、GitHub Linux 精确 HEAD，并让独立
+                reviewer 补审 process-group 与 canonical 文档差异。
+              requirementsEvidence:
+                contentHash: 259d44da56c8778916dafaa0d99c7c2e2a85f6eed85eccb866250e7af0876f3e
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 5cf5a450bb4167168d32796062a45b0a7fe0ed94079ba59b55eaaa3bdbbf1c43
+                ref: openspec/changes/stabilize-cross-platform-verification
+      - handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+        handoffHash: 2c021a6d233679c7374952ee39c39fb4b142b60e755c5ac5d45e1e6efce06bae
+        proposal: 修订方案（补齐 Comet 成熟测试经验）：独立 Verify 审查确认 POSIX recovered termination 只观察
+          leader PID，会在 leader 消失但同一 process group 的 descendant 仍存活时错误返回
+          terminated。实现采用固定 Comet 0.5.1 与当前上游共有的 waitForPosixGroupExit
+          原语：发送破坏性信号前继续用 leader creation identity 授权，发送后只以 kill(-pgid, 0) 返回
+          ESRCH 证明整组退出；超时或 EPERM 保持 unknown，不维护第二套 ownership 轮询，也不枚举
+          /proc/ps。验证采用两层证据：一是 fake-timer 单测稳定构造
+          leader-not-running/group-still-alive 并保存旧实现 RED；二是借鉴 Comet
+          test/platform/process/owned-command-termination.test.ts，在 GitHub Linux
+          使用真实 detached parent/descendant fixture，任何 terminated
+          成功都必须对应父进程和后代实际停止，finally 强制清理全部 PID。同步把 GitHub 已证明的两项门禁决定写入唯一
+          design.md：CI 完整历史用于 tested commit ancestry；package-content v2 排除
+          host-derived tar mode，但继续绑定 path、entry type、file size/content digest 与
+          link target。仍 skip_specs，不改变公共 API、Runtime 状态机、桌面支持范围或产品需求。完成后重跑
+          Windows 全量、GitHub Linux 精确 HEAD，并让独立 reviewer 补审 process-group 与
+          canonical 文档差异。
+        requirementsEvidence:
+          contentHash: 259d44da56c8778916dafaa0d99c7c2e2a85f6eed85eccb866250e7af0876f3e
+          ref: openspec/changes/stabilize-cross-platform-verification
+        sourceEvidence:
+          contentHash: 5cf5a450bb4167168d32796062a45b0a7fe0ed94079ba59b55eaaa3bdbbf1c43
+          ref: openspec/changes/stabilize-cross-platform-verification
+      - contentHash: 8d077d26b09d97656ee95911a43f95c035bf71d2d76d6e4170173bdd18f3a656
+        ref: openspec/changes/stabilize-cross-platform-verification/design.md
+      - designEvidence:
+          contentHash: 8d077d26b09d97656ee95911a43f95c035bf71d2d76d6e4170173bdd18f3a656
+          ref: openspec/changes/stabilize-cross-platform-verification/design.md
+        plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+        planEvidence:
+          contentHash: 22127290069aadf02bdf0bd0376f4d17ec5bd760ef88aa0f342c86a5693bf4a8
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+        taskRevision: 26ff7855411ad5a17d44a8a454e02747f67908a2bd9a1ab110060ecd073dc642
+      - contentHash: 22127290069aadf02bdf0bd0376f4d17ec5bd760ef88aa0f342c86a5693bf4a8
+        ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: 9a7597052b924e51310f32e1a9fcde061f1c2f850cc99cc71bcc022be2d2f08f
+        cwd: .
+        environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+        exitCode: 0
+        inputAfter: 7f6975c2e10e922608c622eb2edc0070a4423d9746417e1d70aaabf7a2aed35a
+        inputBefore: 7f6975c2e10e922608c622eb2edc0070a4423d9746417e1d70aaabf7a2aed35a
+        manifestHash: 5894506ff0ab08ffc371cfb1df9fd7e5b1bffd3cb56e4ea5285b29b8d7a869c3
+        manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/3c11d877-a8dc-4edd-8658-9dd836fb2eaf.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/0436c0ff-ed95-4e90-927e-35e34e164a1b.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 600000
+      - contentHash: 9a7597052b924e51310f32e1a9fcde061f1c2f850cc99cc71bcc022be2d2f08f
+        ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/0436c0ff-ed95-4e90-927e-35e34e164a1b.log
+      - contentHash: 026ddb5757f802065d37881646b83527aec6b0cf6c65b782fc433ff1ec295f45
+        ref: docs/superpowers/reports/stabilize-cross-platform-verification.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/stabilize-cross-platform-verification.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 6
+        contentHash: 8c401d7b43a9028dbc32a5ab8040896c051431142a40a4ddf39f63d7b0df4b2c
+        cwd: .
+        deliveryInputs: {}
+        environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+        exitCode: 0
+        inputAfter: 4e14b9f54e7f7564ba08caabbc6e249872a50ae5464e5da2d863e8281eae29c6
+        inputBefore: 4e14b9f54e7f7564ba08caabbc6e249872a50ae5464e5da2d863e8281eae29c6
+        manifestHash: 1e9bd8ba51bbdb8f9170c0e3b3ee4282fca05b31c8ebc2066b4504e09875382a
+        manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/1612a51f-3f8d-4b5f-8a06-e2f3d9c49268.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7b4ba051-8d41-410c-b311-4b9cfca633f7.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 8c401d7b43a9028dbc32a5ab8040896c051431142a40a4ddf39f63d7b0df4b2c
+        ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7b4ba051-8d41-410c-b311-4b9cfca633f7.log
+      - choice: reverify
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: "归档已完成的跨平台验证稳定性修复：13/13 Tasks 完成，Windows 与 GitHub Linux 全量门禁、真实 POSIX
+                parent/descendant 验收、Comet Build/Verify receipts 和独立 0
+                CRITICAL/0 IMPORTANT/0 WARNING 审查均通过；归档产物提交并 push 到当前公开分支，更新现有
+                PR #66，不自动合入 main。"
+              targetBranch: comet/stabilize-cli-distribution-gate
+      - prBaseBranch: main
+        remote: origin
+        summary: "归档已完成的跨平台验证稳定性修复：13/13 Tasks 完成，Windows 与 GitHub Linux 全量门禁、真实 POSIX
+          parent/descendant 验收、Comet Build/Verify receipts 和独立 0 CRITICAL/0
+          IMPORTANT/0 WARNING 审查均通过；归档产物提交并 push 到当前公开分支，更新现有 PR #66，不自动合入
+          main。"
+        targetBranch: comet/stabilize-cli-distribution-gate
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 8
+        contentHash: f8345e5b4c4f8e96d8917d854bf766a64624ecbed0f1d2b9d96b2c3ce152aa23
+        cwd: .
+        deliveryInputs: {}
+        environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+        exitCode: 0
+        inputAfter: c38e00c3b4719d7e461e04ed1c2b4bfc3436ce04b4318ba6243248fc18323f34
+        inputBefore: c38e00c3b4719d7e461e04ed1c2b4bfc3436ce04b4318ba6243248fc18323f34
+        manifestHash: c356638c5a0dada33884589be0ad745adb5532feb61692a013062a0372b18980
+        manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/d0fbf088-1143-46a7-91d1-bac5348431dc.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7afa81ed-3690-49fc-8f95-8bb6f0de080d.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: f8345e5b4c4f8e96d8917d854bf766a64624ecbed0f1d2b9d96b2c3ce152aa23
+        ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7afa81ed-3690-49fc-8f95-8bb6f0de080d.log
+      - choice: pr
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: "归档已完成的跨平台验证稳定性修复：13/13 Tasks 完成，Windows 与 GitHub Linux 全量门禁、真实 POSIX
+                parent/descendant 验收、Comet Build/Verify receipts 和独立 0
+                CRITICAL/0 IMPORTANT/0 WARNING 审查均通过；归档产物提交并 push 到当前公开分支，更新现有
+                PR #66，不自动合入 main。"
+              targetBranch: comet/stabilize-cli-distribution-gate
+      - baseCommit: b943bd31d07e49b0af2c0fed9bacaae787875901
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: comet/stabilize-cli-distribution-gate
+        verifiedBranch: comet/stabilize-cli-distribution-gate
+      - archiveDirectory: openspec/changes/archive/2026-11-05-stabilize-cross-platform-verification
+      - sequence: 9
+        value:
+          boundBranch: comet/stabilize-cli-distribution-gate
+          buildMode: autonomous
+          directOverride: false
+          isolation: current
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cross-platform-verification
+              changeDir: openspec/changes/stabilize-cross-platform-verification
+              workspaceBaseline:
+                ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+            outputs:
+              full.build.configure:
+                boundBranch: comet/stabilize-cli-distribution-gate
+                buildMode: autonomous
+                directOverride: false
+                isolation: current
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cross-platform-verification
+              changeDir: openspec/changes/stabilize-cross-platform-verification
+              workspaceBaseline:
+                ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                  Windows checkout；Windows Desktop discovery 显式使用
+                  path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                  terminated，超时保持 unknown。既有
+                  product-distribution、desktop-observability-dashboard、feedback-collection
+                  与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                  Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                  TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                  共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                  zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                requirementsEvidence:
+                  contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                  ref: openspec/changes/stabilize-cross-platform-verification
+                sourceEvidence:
+                  contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                  ref: openspec/changes/stabilize-cross-platform-verification
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+      - sequence: 8
+        value:
+          contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+          ref: openspec/changes/stabilize-cross-platform-verification/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+          handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+          proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+            Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+            recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+            product-distribution、desktop-observability-dashboard、feedback-collection
+            与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+            Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存 TDD
+            证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+            共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+            时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+          requirementsEvidence:
+            contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+            ref: openspec/changes/stabilize-cross-platform-verification
+          sourceEvidence:
+            contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+            ref: openspec/changes/stabilize-cross-platform-verification
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cross-platform-verification
+              changeDir: openspec/changes/stabilize-cross-platform-verification
+              workspaceBaseline:
+                ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                ref: openspec/changes/stabilize-cross-platform-verification
+      - sequence: 2
+        value:
+          contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+          ref: openspec/changes/stabilize-cross-platform-verification
+      - sequence: 4
+        value:
+          contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+            ref: openspec/changes/stabilize-cross-platform-verification/design.md
+          plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+          planEvidence:
+            contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+            ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+          taskRevision: f359d68dec121b0fcfd26507397427884a825e9fd50ca6ca2145d03246fbfff0
+      - sequence: 12
+        value:
+          contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: ef092382d5b0b7d38cf5a9f7508dfe37f44b84eb1f962304f1a76b7e759587e7
+          cwd: .
+          environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+          exitCode: 0
+          inputAfter: c3c8f559e24d31b346958c7b6cd7db20fe2ea46835e2e450f0b2500494239c8b
+          inputBefore: c3c8f559e24d31b346958c7b6cd7db20fe2ea46835e2e450f0b2500494239c8b
+          manifestHash: 7d0186d36ee88c6fead05f4ae8a7b01e2becb994a8e7485c677d94a08e27818e
+          manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/030a6325-6f87-40f6-aa5f-20ccc0b6db28.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/8ccce841-2410-40b2-8190-4a44c3b7a8a5.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 15
+        value:
+          contentHash: ef092382d5b0b7d38cf5a9f7508dfe37f44b84eb1f962304f1a76b7e759587e7
+          ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/8ccce841-2410-40b2-8190-4a44c3b7a8a5.log
+      - sequence: 16
+        value:
+          event: verify-fail
+          reason: Independent review found POSIX recovered termination confirms only
+            leader PID ownership, not complete process-group exit; canonical
+            Design/Tasks also need the CI ancestry and package-content v2
+            decisions recorded.
+      - sequence: 19
+        value:
+          choice: rejected
+          proposal:
+            input:
+              change: stabilize-cross-platform-verification
+              changeDir: openspec/changes/stabilize-cross-platform-verification
+              workspaceBaseline:
+                ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                handoffHash: b32b914fd864f9ae5667803680d51be2c125f3c7148b07c9a11cee38f6659d4b
+                proposal: 修订方案：独立 Verify 审查确认 POSIX recovered termination 只观察 leader PID，会在
+                  leader 消失但同一 process group 的 descendant 仍存活时错误返回
+                  terminated。采用同模块已有的 waitForPosixGroupExit：发送破坏性信号前继续用 leader
+                  creation identity 授权，发送后只以 kill(-pgid, 0) 返回 ESRCH 证明整组退出；超时或
+                  EPERM 保持 unknown。新增 leader-not-running/group-still-alive 的真实
+                  RED，并运行 terminate-process-tree 与 service-recovery 回归。拒绝在
+                  ownership 轮询上叠加第二套 group 算法，也拒绝枚举 /proc/ps。同步把已由 GitHub
+                  失败证明的两项门禁决定写入唯一 design.md：CI checkout 使用完整历史完成 tested commit
+                  ancestry；package-content v2 排除 host-derived tar mode，同时继续绑定
+                  path、entry type、file size/content digest 与 link target。仍
+                  skip_specs，不改变公共 API、Runtime 状态机、桌面支持范围或产品需求。主要风险是
+                  process-group id 复用与权限未知，均通过短时有界 probe 并 fail closed 为
+                  unknown；完成后重跑 Windows 全量、GitHub Linux 精确 HEAD 和独立补审。
+                requirementsEvidence:
+                  contentHash: e84a95d26912b8e5916a1857458904ce21dbee07b41affa0cc1cd277c3bd9b0c
+                  ref: openspec/changes/stabilize-cross-platform-verification
+                sourceEvidence:
+                  contentHash: e3d6b545827c6ac27b8fd98e9141b469f40c1e032849e41e2e9fd3143dde3fa9
+                  ref: openspec/changes/stabilize-cross-platform-verification
+      - sequence: 18
+        value:
+          handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+          handoffHash: b32b914fd864f9ae5667803680d51be2c125f3c7148b07c9a11cee38f6659d4b
+          proposal: 修订方案：独立 Verify 审查确认 POSIX recovered termination 只观察 leader PID，会在
+            leader 消失但同一 process group 的 descendant 仍存活时错误返回 terminated。采用同模块已有的
+            waitForPosixGroupExit：发送破坏性信号前继续用 leader creation identity 授权，发送后只以
+            kill(-pgid, 0) 返回 ESRCH 证明整组退出；超时或 EPERM 保持 unknown。新增
+            leader-not-running/group-still-alive 的真实 RED，并运行
+            terminate-process-tree 与 service-recovery 回归。拒绝在 ownership 轮询上叠加第二套
+            group 算法，也拒绝枚举 /proc/ps。同步把已由 GitHub 失败证明的两项门禁决定写入唯一 design.md：CI
+            checkout 使用完整历史完成 tested commit ancestry；package-content v2 排除
+            host-derived tar mode，同时继续绑定 path、entry type、file size/content
+            digest 与 link target。仍 skip_specs，不改变公共 API、Runtime
+            状态机、桌面支持范围或产品需求。主要风险是 process-group id 复用与权限未知，均通过短时有界 probe 并 fail
+            closed 为 unknown；完成后重跑 Windows 全量、GitHub Linux 精确 HEAD 和独立补审。
+          requirementsEvidence:
+            contentHash: e84a95d26912b8e5916a1857458904ce21dbee07b41affa0cc1cd277c3bd9b0c
+            ref: openspec/changes/stabilize-cross-platform-verification
+          sourceEvidence:
+            contentHash: e3d6b545827c6ac27b8fd98e9141b469f40c1e032849e41e2e9fd3143dde3fa9
+            ref: openspec/changes/stabilize-cross-platform-verification
+      - sequence: 21
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cross-platform-verification
+              changeDir: openspec/changes/stabilize-cross-platform-verification
+              workspaceBaseline:
+                ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                handoffHash: 2c021a6d233679c7374952ee39c39fb4b142b60e755c5ac5d45e1e6efce06bae
+                proposal: 修订方案（补齐 Comet 成熟测试经验）：独立 Verify 审查确认 POSIX recovered termination 只观察
+                  leader PID，会在 leader 消失但同一 process group 的 descendant 仍存活时错误返回
+                  terminated。实现采用固定 Comet 0.5.1 与当前上游共有的 waitForPosixGroupExit
+                  原语：发送破坏性信号前继续用 leader creation identity 授权，发送后只以 kill(-pgid,
+                  0) 返回 ESRCH 证明整组退出；超时或 EPERM 保持 unknown，不维护第二套 ownership
+                  轮询，也不枚举 /proc/ps。验证采用两层证据：一是 fake-timer 单测稳定构造
+                  leader-not-running/group-still-alive 并保存旧实现 RED；二是借鉴 Comet
+                  test/platform/process/owned-command-termination.test.ts，在
+                  GitHub Linux 使用真实 detached parent/descendant fixture，任何
+                  terminated 成功都必须对应父进程和后代实际停止，finally 强制清理全部 PID。同步把 GitHub
+                  已证明的两项门禁决定写入唯一 design.md：CI 完整历史用于 tested commit
+                  ancestry；package-content v2 排除 host-derived tar mode，但继续绑定
+                  path、entry type、file size/content digest 与 link target。仍
+                  skip_specs，不改变公共 API、Runtime 状态机、桌面支持范围或产品需求。完成后重跑 Windows
+                  全量、GitHub Linux 精确 HEAD，并让独立 reviewer 补审 process-group 与
+                  canonical 文档差异。
+                requirementsEvidence:
+                  contentHash: 259d44da56c8778916dafaa0d99c7c2e2a85f6eed85eccb866250e7af0876f3e
+                  ref: openspec/changes/stabilize-cross-platform-verification
+                sourceEvidence:
+                  contentHash: 5cf5a450bb4167168d32796062a45b0a7fe0ed94079ba59b55eaaa3bdbbf1c43
+                  ref: openspec/changes/stabilize-cross-platform-verification
+      - sequence: 20
+        value:
+          handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+          handoffHash: 2c021a6d233679c7374952ee39c39fb4b142b60e755c5ac5d45e1e6efce06bae
+          proposal: 修订方案（补齐 Comet 成熟测试经验）：独立 Verify 审查确认 POSIX recovered termination 只观察
+            leader PID，会在 leader 消失但同一 process group 的 descendant 仍存活时错误返回
+            terminated。实现采用固定 Comet 0.5.1 与当前上游共有的 waitForPosixGroupExit
+            原语：发送破坏性信号前继续用 leader creation identity 授权，发送后只以 kill(-pgid, 0) 返回
+            ESRCH 证明整组退出；超时或 EPERM 保持 unknown，不维护第二套 ownership 轮询，也不枚举
+            /proc/ps。验证采用两层证据：一是 fake-timer 单测稳定构造
+            leader-not-running/group-still-alive 并保存旧实现 RED；二是借鉴 Comet
+            test/platform/process/owned-command-termination.test.ts，在 GitHub
+            Linux 使用真实 detached parent/descendant fixture，任何 terminated
+            成功都必须对应父进程和后代实际停止，finally 强制清理全部 PID。同步把 GitHub 已证明的两项门禁决定写入唯一
+            design.md：CI 完整历史用于 tested commit ancestry；package-content v2 排除
+            host-derived tar mode，但继续绑定 path、entry type、file size/content digest
+            与 link target。仍 skip_specs，不改变公共 API、Runtime 状态机、桌面支持范围或产品需求。完成后重跑
+            Windows 全量、GitHub Linux 精确 HEAD，并让独立 reviewer 补审 process-group 与
+            canonical 文档差异。
+          requirementsEvidence:
+            contentHash: 259d44da56c8778916dafaa0d99c7c2e2a85f6eed85eccb866250e7af0876f3e
+            ref: openspec/changes/stabilize-cross-platform-verification
+          sourceEvidence:
+            contentHash: 5cf5a450bb4167168d32796062a45b0a7fe0ed94079ba59b55eaaa3bdbbf1c43
+            ref: openspec/changes/stabilize-cross-platform-verification
+      - sequence: 22
+        value:
+          designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+      - sequence: 23
+        value:
+          contentHash: 8d077d26b09d97656ee95911a43f95c035bf71d2d76d6e4170173bdd18f3a656
+          ref: openspec/changes/stabilize-cross-platform-verification/design.md
+      - sequence: 24
+        value:
+          designEvidence:
+            contentHash: 8d077d26b09d97656ee95911a43f95c035bf71d2d76d6e4170173bdd18f3a656
+            ref: openspec/changes/stabilize-cross-platform-verification/design.md
+          plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+          planEvidence:
+            contentHash: 22127290069aadf02bdf0bd0376f4d17ec5bd760ef88aa0f342c86a5693bf4a8
+            ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+          taskRevision: 26ff7855411ad5a17d44a8a454e02747f67908a2bd9a1ab110060ecd073dc642
+      - sequence: 25
+        value:
+          contentHash: 22127290069aadf02bdf0bd0376f4d17ec5bd760ef88aa0f342c86a5693bf4a8
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+      - sequence: 26
+        value:
+          event: build-complete
+      - sequence: 27
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: 9a7597052b924e51310f32e1a9fcde061f1c2f850cc99cc71bcc022be2d2f08f
+          cwd: .
+          environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+          exitCode: 0
+          inputAfter: 7f6975c2e10e922608c622eb2edc0070a4423d9746417e1d70aaabf7a2aed35a
+          inputBefore: 7f6975c2e10e922608c622eb2edc0070a4423d9746417e1d70aaabf7a2aed35a
+          manifestHash: 5894506ff0ab08ffc371cfb1df9fd7e5b1bffd3cb56e4ea5285b29b8d7a869c3
+          manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/3c11d877-a8dc-4edd-8658-9dd836fb2eaf.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/0436c0ff-ed95-4e90-927e-35e34e164a1b.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 600000
+      - sequence: 28
+        value:
+          contentHash: 9a7597052b924e51310f32e1a9fcde061f1c2f850cc99cc71bcc022be2d2f08f
+          ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/0436c0ff-ed95-4e90-927e-35e34e164a1b.log
+      - sequence: 30
+        value:
+          contentHash: 026ddb5757f802065d37881646b83527aec6b0cf6c65b782fc433ff1ec295f45
+          ref: docs/superpowers/reports/stabilize-cross-platform-verification.md
+      - sequence: 29
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-cross-platform-verification.md
+      - sequence: 31
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 6
+          contentHash: 8c401d7b43a9028dbc32a5ab8040896c051431142a40a4ddf39f63d7b0df4b2c
+          cwd: .
+          deliveryInputs: {}
+          environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+          exitCode: 0
+          inputAfter: 4e14b9f54e7f7564ba08caabbc6e249872a50ae5464e5da2d863e8281eae29c6
+          inputBefore: 4e14b9f54e7f7564ba08caabbc6e249872a50ae5464e5da2d863e8281eae29c6
+          manifestHash: 1e9bd8ba51bbdb8f9170c0e3b3ee4282fca05b31c8ebc2066b4504e09875382a
+          manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/1612a51f-3f8d-4b5f-8a06-e2f3d9c49268.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7b4ba051-8d41-410c-b311-4b9cfca633f7.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 32
+        value:
+          contentHash: 8c401d7b43a9028dbc32a5ab8040896c051431142a40a4ddf39f63d7b0df4b2c
+          ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7b4ba051-8d41-410c-b311-4b9cfca633f7.log
+      - sequence: 34
+        value:
+          choice: reverify
+          proposal:
+            input:
+              change: stabilize-cross-platform-verification
+              changeDir: openspec/changes/stabilize-cross-platform-verification
+              workspaceBaseline:
+                ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: "归档已完成的跨平台验证稳定性修复：13/13 Tasks 完成，Windows 与 GitHub Linux 全量门禁、真实 POSIX
+                  parent/descendant 验收、Comet Build/Verify receipts 和独立 0
+                  CRITICAL/0 IMPORTANT/0 WARNING 审查均通过；归档产物提交并 push 到当前公开分支，更新现有
+                  PR #66，不自动合入 main。"
+                targetBranch: comet/stabilize-cli-distribution-gate
+      - sequence: 33
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: "归档已完成的跨平台验证稳定性修复：13/13 Tasks 完成，Windows 与 GitHub Linux 全量门禁、真实 POSIX
+            parent/descendant 验收、Comet Build/Verify receipts 和独立 0 CRITICAL/0
+            IMPORTANT/0 WARNING 审查均通过；归档产物提交并 push 到当前公开分支，更新现有 PR #66，不自动合入
+            main。"
+          targetBranch: comet/stabilize-cli-distribution-gate
+      - sequence: 36
+        value:
+          contentHash: 026ddb5757f802065d37881646b83527aec6b0cf6c65b782fc433ff1ec295f45
+          ref: docs/superpowers/reports/stabilize-cross-platform-verification.md
+      - sequence: 35
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-cross-platform-verification.md
+      - sequence: 37
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 8
+          contentHash: f8345e5b4c4f8e96d8917d854bf766a64624ecbed0f1d2b9d96b2c3ce152aa23
+          cwd: .
+          deliveryInputs: {}
+          environment: 922a76b48edfcc5d866a6dee8baf1ecf66c31ea33d1dc89329e60ba6d9c462c5
+          exitCode: 0
+          inputAfter: c38e00c3b4719d7e461e04ed1c2b4bfc3436ce04b4318ba6243248fc18323f34
+          inputBefore: c38e00c3b4719d7e461e04ed1c2b4bfc3436ce04b4318ba6243248fc18323f34
+          manifestHash: c356638c5a0dada33884589be0ad745adb5532feb61692a013062a0372b18980
+          manifestRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/d0fbf088-1143-46a7-91d1-bac5348431dc.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7afa81ed-3690-49fc-8f95-8bb6f0de080d.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 38
+        value:
+          contentHash: f8345e5b4c4f8e96d8917d854bf766a64624ecbed0f1d2b9d96b2c3ce152aa23
+          ref: .comet/runtime/classic-sdk-checks/4e7269109f802181b8dd2fc49c01a0ca78aeebdc17bf33b6a1003b8f439b3a57/7afa81ed-3690-49fc-8f95-8bb6f0de080d.log
+      - sequence: 40
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: stabilize-cross-platform-verification
+              changeDir: openspec/changes/stabilize-cross-platform-verification
+              workspaceBaseline:
+                ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: "归档已完成的跨平台验证稳定性修复：13/13 Tasks 完成，Windows 与 GitHub Linux 全量门禁、真实 POSIX
+                  parent/descendant 验收、Comet Build/Verify receipts 和独立 0
+                  CRITICAL/0 IMPORTANT/0 WARNING 审查均通过；归档产物提交并 push 到当前公开分支，更新现有
+                  PR #66，不自动合入 main。"
+                targetBranch: comet/stabilize-cli-distribution-gate
+      - sequence: 39
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: "归档已完成的跨平台验证稳定性修复：13/13 Tasks 完成，Windows 与 GitHub Linux 全量门禁、真实 POSIX
+            parent/descendant 验收、Comet Build/Verify receipts 和独立 0 CRITICAL/0
+            IMPORTANT/0 WARNING 审查均通过；归档产物提交并 push 到当前公开分支，更新现有 PR #66，不自动合入
+            main。"
+          targetBranch: comet/stabilize-cli-distribution-gate
+      - sequence: 41
+        value:
+          baseCommit: b943bd31d07e49b0af2c0fed9bacaae787875901
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/stabilize-cli-distribution-gate
+          verifiedBranch: comet/stabilize-cli-distribution-gate
+      - sequence: 42
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-05-stabilize-cross-platform-verification
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 15
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 39
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 40
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 41
+        height: 5
+      - key: full.design.handoff
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 16
+        left: null
+        right: 43
+        height: 2
+      - key: full.design.handoff
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 18
+        left: null
+        right: 45
+        height: 2
+      - key: full.design.confirm
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 19
+        left: 48
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 47
+        right: 49
+        height: 3
+      - key: full.build.plan
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 22
+        left: 51
+        right: 52
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 53
+        right: 49
+        height: 3
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 21
+        left: 55
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 22
+        left: 56
+        right: 52
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 57
+        right: 49
+        height: 4
+      - key: full.build.check.evidence
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 23
+        left: null
+        right: 59
+        height: 2
+      - key: full.build.plan
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 22
+        left: 61
+        right: 52
+        height: 2
+      - key: full.build.execute
+        value: 12
+        left: 60
+        right: 62
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 63
+        right: 49
+        height: 4
+      - key: full.verify.run
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 25
+        left: null
+        right: 65
+        height: 2
+      - key: full.design.handoff
+        value: 19
+        left: 48
+        right: 66
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 63
+        right: 67
+        height: 4
+      - key: full.design.handoff
+        value: 19
+        left: 48
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 25
+        left: 70
+        right: 65
+        height: 2
+      - key: full.verify.check
+        value: 27
+        left: 69
+        right: 71
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 63
+        right: 72
+        height: 4
+      - key: full.archive.prepare
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 29
+        left: null
+        right: 74
+        height: 2
+      - key: full.build.check
+        value: 23
+        left: 75
+        right: 59
+        height: 3
+      - key: full.build.execute
+        value: 12
+        left: 76
+        right: 62
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 77
+        right: 72
+        height: 5
+      - key: full.verify.check.evidence
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 25
+        left: 79
+        right: 65
+        height: 2
+      - key: full.verify.check
+        value: 31
+        left: 69
+        right: 80
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 77
+        right: 81
+        height: 5
+      - key: full.archive.confirm
+        value: 33
+        left: null
+        right: 74
+        height: 2
+      - key: full.build.check
+        value: 23
+        left: 83
+        right: 59
+        height: 3
+      - key: full.build.execute
+        value: 12
+        left: 84
+        right: 62
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 85
+        right: 81
+        height: 5
+      - key: full.archive.confirm
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 34
+        left: 87
+        right: 88
+        height: 2
+      - key: full.build.check
+        value: 23
+        left: 89
+        right: 59
+        height: 3
+      - key: full.build.execute
+        value: 12
+        left: 90
+        right: 62
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 91
+        right: 81
+        height: 5
+      - key: full.archive.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 33
+        left: null
+        right: 93
+        height: 2
+      - key: full.build.check
+        value: 23
+        left: 88
+        right: 59
+        height: 2
+      - key: full.archive.preflight
+        value: 34
+        left: 94
+        right: 95
+        height: 3
+      - key: full.build.execute
+        value: 12
+        left: 96
+        right: 62
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 97
+        right: 81
+        height: 5
+      - key: full.build.configure
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 37
+        left: 99
+        right: 100
+        height: 2
+      - key: full.design.evidence
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 41
+        left: 102
+        right: 103
+        height: 2
+      - key: full.open.revalidate
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 44
+        left: null
+        right: 105
+        height: 2
+      - key: full.open.confirm
+        value: 43
+        left: 104
+        right: 106
+        height: 3
+      - key: full.design.document
+        value: 39
+        left: 101
+        right: 107
+        height: 4
+      - key: full.build.plan
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 47
+        left: 109
+        right: 110
+        height: 2
+      - key: full.build.confirm
+        value: 37
+        left: 99
+        right: 111
+        height: 3
+      - key: full.design.document
+        value: 39
+        left: 112
+        right: 107
+        height: 4
+      - key: full.build.execute
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 37
+        left: 99
+        right: 114
+        height: 2
+      - key: full.build.plan.evidence
+        value: 47
+        left: null
+        right: 110
+        height: 2
+      - key: full.build.plan
+        value: 46
+        left: 115
+        right: 116
+        height: 3
+      - key: full.design.document
+        value: 39
+        left: 117
+        right: 107
+        height: 4
+      - key: full.build.check
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 50
+        left: 119
+        right: 120
+        height: 2
+      - key: full.build.confirm
+        value: 37
+        left: 121
+        right: 114
+        height: 3
+      - key: full.build.plan
+        value: 46
+        left: 122
+        right: 116
+        height: 4
+      - key: full.design.document
+        value: 39
+        left: 123
+        right: 107
+        height: 5
+      - key: full.open.evidence
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 45
+        left: 125
+        right: 126
+        height: 2
+      - key: full.open.confirm
+        value: 43
+        left: 104
+        right: 127
+        height: 3
+      - key: full.design.document
+        value: 39
+        left: 123
+        right: 128
+        height: 5
+      - key: full.design.handoff
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 52
+        left: null
+        right: 130
+        height: 2
+      - key: full.design.handoff
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 54
+        left: null
+        right: 132
+        height: 2
+      - key: full.design.confirm
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 55
+        left: 135
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 56
+        left: 134
+        right: 136
+        height: 3
+      - key: full.build.plan
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 59
+        left: 138
+        right: 139
+        height: 2
+      - key: full.design.document
+        value: 56
+        left: 140
+        right: 136
+        height: 3
+      - key: full.build.execute
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 58
+        left: 142
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 59
+        left: 143
+        right: 139
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: 144
+        right: 136
+        height: 4
+      - key: full.build.check.evidence
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 61
+        left: null
+        right: 146
+        height: 2
+      - key: full.build.plan
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 59
+        left: 148
+        right: 139
+        height: 2
+      - key: full.build.execute
+        value: 60
+        left: 147
+        right: 149
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: 150
+        right: 136
+        height: 4
+      - key: full.verify.run
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 63
+        left: null
+        right: 152
+        height: 2
+      - key: full.design.handoff
+        value: 55
+        left: 135
+        right: 153
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: 150
+        right: 154
+        height: 4
+      - key: full.design.handoff
+        value: 55
+        left: 135
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 63
+        left: 157
+        right: 152
+        height: 2
+      - key: full.verify.check
+        value: 65
+        left: 156
+        right: 158
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: 150
+        right: 159
+        height: 4
+      - key: full.archive.prepare
+        value: 68
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 67
+        left: null
+        right: 161
+        height: 2
+      - key: full.build.check
+        value: 61
+        left: 162
+        right: 146
+        height: 3
+      - key: full.build.execute
+        value: 60
+        left: 163
+        right: 149
+        height: 4
+      - key: full.design.document
+        value: 56
+        left: 164
+        right: 159
+        height: 5
+      - key: full.verify.run
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 69
+        left: 157
+        right: 166
+        height: 2
+      - key: full.verify.check
+        value: 65
+        left: 156
+        right: 167
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: 164
+        right: 168
+        height: 5
+      - key: full.verify.check.evidence
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 69
+        left: 170
+        right: 166
+        height: 2
+      - key: full.verify.check
+        value: 71
+        left: 156
+        right: 171
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: 164
+        right: 172
+        height: 5
+      - key: full.open
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 43
+        left: 174
+        right: 175
+        height: 2
+      - key: full.archive.confirm
+        value: 73
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 74
+        left: 177
+        right: 178
+        height: 2
+      - key: full.build.execute
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 58
+        left: 180
+        right: 181
+        height: 2
+      - key: full.build.check.evidence
+        value: 62
+        left: 179
+        right: 182
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 57
+        left: 184
+        right: 185
+        height: 2
+      - key: full.verify.check.evidence
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 69
+        left: 187
+        right: 188
+        height: 2
+      - key: full.verify.check
+        value: 71
+        left: 186
+        right: 189
+        height: 3
+      - key: full.design.confirm
+        value: 54
+        left: 183
+        right: 190
+        height: 4
+      - key: full.archive.preflight
+        value: 75
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 73
+        left: null
+        right: 192
+        height: 2
+      - key: full.archive.prepare
+        value: 74
+        left: 193
+        right: 178
+        height: 3
+      - key: full.build.check.evidence
+        value: 62
+        left: 194
+        right: 182
+        height: 4
+      - key: full.design.confirm
+        value: 54
+        left: 195
+        right: 190
+        height: 5
+      - key: full.archive.confirm
+        value: 73
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 75
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 76
+        left: 197
+        right: 198
+        height: 2
+      - key: full.archive.prepare
+        value: 74
+        left: 199
+        right: 178
+        height: 3
+      - key: full.build.check.evidence
+        value: 62
+        left: 200
+        right: 182
+        height: 4
+      - key: full.design.confirm
+        value: 54
+        left: 201
+        right: 190
+        height: 5
+      - key: full.open
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 44
+        left: null
+        right: 204
+        height: 2
+      - key: full.open.confirm
+        value: 43
+        left: 203
+        right: 205
+        height: 3
+      - key: full.design.confirm
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 41
+        left: 207
+        right: 208
+        height: 2
+      - key: full.open.confirm
+        value: 43
+        left: 209
+        right: 205
+        height: 3
+      - key: full.design.confirm
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 39
+        left: 211
+        right: 212
+        height: 2
+      - key: full.design.handoff
+        value: 41
+        left: 213
+        right: 208
+        height: 3
+      - key: full.open.confirm
+        value: 43
+        left: 214
+        right: 205
+        height: 4
+      - key: full.archive.confirm
+        value: 73
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 75
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 76
+        left: 216
+        right: 217
+        height: 2
+      - key: full.build.check
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 62
+        left: 219
+        right: 220
+        height: 2
+      - key: full.archive.prepare
+        value: 74
+        left: 218
+        right: 221
+        height: 3
+      - key: full.build.execute
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 54
+        left: 224
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 58
+        left: 223
+        right: 225
+        height: 3
+      - key: full.build.confirm
+        value: 37
+        left: 222
+        right: 226
+        height: 4
+      - key: full.design.evidence
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 55
+        left: 228
+        right: 208
+        height: 2
+      - key: full.open.evidence
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 71
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 45
+        left: 230
+        right: 231
+        height: 2
+      - key: full.verify.run
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 69
+        left: null
+        right: 233
+        height: 2
+      - key: full.verify.check.evidence
+        value: 72
+        left: 232
+        right: 234
+        height: 3
+      - key: full.open.confirm
+        value: 43
+        left: 229
+        right: 235
+        height: 4
+      - key: full.design.document
+        value: 56
+        left: 227
+        right: 236
+        height: 5
+      - key: full.open.evidence
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 42
+        left: null
+        right: 238
+        height: 2
+      - key: full.design.handoff
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 44
+        left: 241
+        right: 242
+        height: 2
+      - key: full.open
+        value: 42
+        left: 240
+        right: 243
+        height: 3
+      - key: full.build.configure
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 40
+        left: 246
+        right: 247
+        height: 2
+      - key: full.design.confirm
+        value: 38
+        left: 245
+        right: 248
+        height: 3
+      - key: full.open
+        value: 42
+        left: 249
+        right: 243
+        height: 4
+      - key: full.design.handoff
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 52
+        left: null
+        right: 252
+        height: 2
+      - key: full.archive.prepare
+        value: 68
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 61
+        left: 254
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 58
+        left: 256
+        right: 257
+        height: 2
+      - key: full.build.check.evidence
+        value: 62
+        left: 255
+        right: 258
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 57
+        left: 260
+        right: 261
+        height: 2
+      - key: full.verify.check.evidence
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 63
+        left: 263
+        right: 264
+        height: 2
+      - key: full.verify.check
+        value: 65
+        left: 262
+        right: 265
+        height: 3
+      - key: full.design.confirm
+        value: 54
+        left: 259
+        right: 266
+        height: 4
+      - key: full.archive.confirm
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 74
+        left: 268
+        right: 269
+        height: 2
+      - key: full.build.check.evidence
+        value: 62
+        left: 270
+        right: 258
+        height: 3
+      - key: full.verify.check.evidence
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 69
+        left: 272
+        right: 273
+        height: 2
+      - key: full.verify.check
+        value: 71
+        left: 262
+        right: 274
+        height: 3
+      - key: full.design.confirm
+        value: 54
+        left: 271
+        right: 275
+        height: 4
+      - key: full.open
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 39
+        left: 278
+        right: 279
+        height: 2
+      - key: full.open.confirm
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 44
+        left: 281
+        right: 282
+        height: 2
+      - key: full.open
+        value: 42
+        left: 280
+        right: 283
+        height: 3
+      - key: full.build.configure
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 37
+        left: 285
+        right: 286
+        height: 2
+      - key: full.design.document
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 40
+        left: 288
+        right: 289
+        height: 2
+      - key: full.design.confirm
+        value: 38
+        left: 287
+        right: 290
+        height: 3
+      - key: full.open
+        value: 42
+        left: 291
+        right: 283
+        height: 4
+      - key: full.build.check
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 36
+        left: 293
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 46
+        left: 295
+        right: 296
+        height: 2
+      - key: full.build.confirm
+        value: 37
+        left: 294
+        right: 297
+        height: 3
+      - key: full.open
+        value: 42
+        left: 290
+        right: 283
+        height: 3
+      - key: full.design.confirm
+        value: 38
+        left: 298
+        right: 299
+        height: 4
+      - key: full.design.confirm
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 56
+        left: 301
+        right: 302
+        height: 2
+      - key: full.build.plan
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 54
+        left: 304
+        right: null
+        height: 2
+      - key: full.design.evidence
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 55
+        left: 306
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 56
+        left: 305
+        right: 307
+        height: 3
+      - key: full.build.execute
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 61
+        left: null
+        right: 309
+        height: 2
+      - key: full.build.plan.evidence
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 54
+        left: 311
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 58
+        left: 310
+        right: 312
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: 313
+        right: 307
+        height: 4
+      - key: full.build.check
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.build.execute
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 62
+        left: 315
+        right: 316
+        height: 2
+      - key: full.build.plan
+        value: 58
+        left: 317
+        right: 312
+        height: 3
+      - key: full.verify.run
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 55
+        left: 306
+        right: 319
+        height: 2
+      - key: full.design.document
+        value: 56
+        left: 318
+        right: 320
+        height: 4
+      - key: full.verify.check
+        value: 65
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 63
+        left: 322
+        right: 323
+        height: 2
+      - key: full.design.handoff
+        value: 55
+        left: 306
+        right: 324
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: 318
+        right: 325
+        height: 4
+      - key: full.archive.confirm
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 68
+        left: 327
+        right: 328
+        height: 2
+      - key: full.build.check.evidence
+        value: 62
+        left: 329
+        right: 316
+        height: 3
+      - key: full.build.plan
+        value: 58
+        left: 330
+        right: 312
+        height: 4
+      - key: full.design.handoff
+        value: 55
+        left: 306
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 63
+        left: 333
+        right: 334
+        height: 2
+      - key: full.verify.check
+        value: 65
+        left: 332
+        right: 335
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: 331
+        right: 336
+        height: 5
+      - key: full.verify.report.evidence
+        value: 69
+        left: 333
+        right: 334
+        height: 2
+      - key: full.verify.check
+        value: 71
+        left: 332
+        right: 338
+        height: 3
+      - key: full.design.document
+        value: 56
+        left: 331
+        right: 339
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 42
+      - 44
+      - 46
+      - 50
+      - 54
+      - 58
+      - 64
+      - 68
+      - 73
+      - 78
+      - 82
+      - 86
+      - 92
+      - 98
+      - 108
+      - 113
+      - 118
+      - 124
+      - 129
+      - 131
+      - 133
+      - 137
+      - 141
+      - 145
+      - 151
+      - 155
+      - 160
+      - 165
+      - 169
+      - 173
+      - 176
+      - 191
+      - 196
+      - 202
+      - 206
+      - 210
+      - 215
+      - 237
+      - 239
+      - 244
+      - 250
+      - 251
+      - 253
+      - 267
+      - 276
+      - 277
+      - 284
+      - 292
+      - 300
+      - 303
+      - 308
+      - 314
+      - 321
+      - 326
+      - 337
+      - 340
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 18
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 18
+      - path:
+          - actions
+          - "21"
+          - input
+          - outputs
+        map: 19
+      - path:
+          - actions
+          - "22"
+          - input
+          - outputs
+        map: 20
+      - path:
+          - actions
+          - "23"
+          - input
+          - outputs
+        map: 21
+      - path:
+          - actions
+          - "24"
+          - input
+          - outputs
+        map: 22
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:11
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:13
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:14
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:16
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:17
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:18
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:20
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:22
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:24
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:26
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:27
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:29
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:31
+          - results
+        map: 34
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:33
+          - results
+        map: 35
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:35
+          - results
+        map: 36
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:37
+          - results
+        map: 37
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:39
+          - results
+        map: 38
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:4
+          - results
+        map: 39
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:41
+          - results
+        map: 40
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:42
+          - results
+        map: 41
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:43
+          - results
+        map: 42
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:5
+          - results
+        map: 43
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:7
+          - results
+        map: 44
+      - path:
+          - actionContexts
+          - stabilize-cross-platform-verification:9
+          - results
+        map: 45
+      - path:
+          - outputs
+        map: 46
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 47
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 48
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 49
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 50
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 51
+      - path:
+          - waits
+          - "5"
+          - results
+        map: 52
+      - path:
+          - waits
+          - "6"
+          - results
+        map: 53
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 54
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 55
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 56
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 57
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 58
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 59
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 60
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 61
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 62
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 63
+      - path:
+          - evidenceWaits
+          - "10"
+          - results
+        map: 64
+  storageHash: 454851e560a55c2b8b6ba3603d0209e89f65266eff5b8c42c1f1e072b9653890
+check_epoch: 11

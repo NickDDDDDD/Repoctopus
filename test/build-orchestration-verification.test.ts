@@ -10,6 +10,7 @@ import {
 import { prepareChangeLifecycleDefinition } from '../domains/change-lifecycle/definition.js';
 import { changeRunId } from '../domains/change-lifecycle/host-workflow.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
+import { hostAbsolutePath } from './helpers/host-path.js';
 
 describe('managed Build verification subject', () => {
   it('pins a reproducible definition, Strategy, Binding, Plan, and Run identity', () => {
@@ -23,7 +24,7 @@ describe('managed Build verification subject', () => {
       repositories: [
         {
           repositoryId: 'workspace',
-          checkoutPath: 'C:\\verification\\workspace',
+          checkoutPath: hostAbsolutePath('verification', 'workspace'),
           branch: 'codex/spec-restore-build-orchestration',
           head: '1'.repeat(40),
           worktreeId: null,

@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import { createExecutionWorkspaceIntent } from '../domains/change-lifecycle/build-protocol.js';
@@ -13,10 +15,12 @@ import {
   type ExecutionCheckoutFacts,
 } from '../services/execution-workspace.js';
 import { WorkflowRuns } from '../services/workflow-runs.js';
+import { hostAbsolutePath } from './helpers/host-path.js';
 
 const sha = (value: string): `sha256:${string}` => `sha256:${value.padEnd(64, value).slice(0, 64)}`;
+const workspaceCheckout = hostAbsolutePath('workspace');
 
-function project(path = 'C:\\workspace'): ProjectSnapshot {
+function project(path = workspaceCheckout): ProjectSnapshot {
   return {
     schemaVersion: 1,
     projectId: 'team',
@@ -39,13 +43,14 @@ function project(path = 'C:\\workspace'): ProjectSnapshot {
 }
 
 function facts(overrides: Partial<ExecutionCheckoutFacts> = {}): ExecutionCheckoutFacts {
+  const checkoutPath = overrides.checkoutPath ?? workspaceCheckout;
   return {
-    checkoutPath: 'C:\\workspace',
+    checkoutPath,
     branch: 'main',
     head: '1'.repeat(40),
     remoteIdentity: 'github.com/team/workspace',
-    gitDirectory: 'C:\\workspace\\.git',
-    commonDirectory: 'C:\\workspace\\.git',
+    gitDirectory: path.join(checkoutPath, '.git'),
+    commonDirectory: path.join(checkoutPath, '.git'),
     worktreeId: null,
     ...overrides,
   };
@@ -55,19 +60,19 @@ describe('Execution Workspace binding', () => {
   it.each([
     {
       isolation: 'current' as const,
-      path: 'C:\\workspace',
+      path: workspaceCheckout,
       fact: facts(),
     },
     {
       isolation: 'branch' as const,
-      path: 'C:\\workspace-branch',
-      fact: facts({ checkoutPath: 'C:\\workspace-branch', branch: 'feature' }),
+      path: hostAbsolutePath('workspace-branch'),
+      fact: facts({ checkoutPath: hostAbsolutePath('workspace-branch'), branch: 'feature' }),
     },
     {
       isolation: 'worktree' as const,
-      path: 'C:\\workspace-worktree',
+      path: hostAbsolutePath('workspace-worktree'),
       fact: facts({
-        checkoutPath: 'C:\\workspace-worktree',
+        checkoutPath: hostAbsolutePath('workspace-worktree'),
         branch: 'feature',
         worktreeId: 'wt-1',
       }),
@@ -112,11 +117,16 @@ describe('Execution Workspace binding', () => {
         {
           intent: worktree,
           project: project(),
-          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\workspace-worktree' }],
+          checkouts: [
+            { repositoryId: 'workspace', checkoutPath: hostAbsolutePath('workspace-worktree') },
+          ],
         },
         () =>
           Promise.resolve(
-            facts({ checkoutPath: 'C:\\workspace-worktree', remoteIdentity: 'other' }),
+            facts({
+              checkoutPath: hostAbsolutePath('workspace-worktree'),
+              remoteIdentity: 'other',
+            }),
           ),
       ),
     ).rejects.toThrow(/identity drifted/u);
@@ -125,9 +135,11 @@ describe('Execution Workspace binding', () => {
         {
           intent: worktree,
           project: project(),
-          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\workspace-worktree' }],
+          checkouts: [
+            { repositoryId: 'workspace', checkoutPath: hostAbsolutePath('workspace-worktree') },
+          ],
         },
-        () => Promise.resolve(facts({ checkoutPath: 'C:\\workspace-worktree' })),
+        () => Promise.resolve(facts({ checkoutPath: hostAbsolutePath('workspace-worktree') })),
       ),
     ).rejects.toThrow(/ownership facts/u);
   });
@@ -144,7 +156,7 @@ describe('Execution Workspace binding', () => {
         {
           intent,
           project: project(),
-          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\workspace' }],
+          checkouts: [{ repositoryId: 'workspace', checkoutPath: workspaceCheckout }],
         },
         () => Promise.resolve(facts({ worktreeId: 'linked-worktree' })),
       ),
@@ -172,9 +184,9 @@ describe('Execution Workspace binding', () => {
         {
           intent: current,
           project: project(),
-          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\other' }],
+          checkouts: [{ repositoryId: 'workspace', checkoutPath: hostAbsolutePath('other') }],
         },
-        () => Promise.resolve(facts({ checkoutPath: 'C:\\other' })),
+        () => Promise.resolve(facts({ checkoutPath: hostAbsolutePath('other') })),
       ),
     ).rejects.toMatchObject({
       code: 'current-checkout-mismatch',
@@ -185,9 +197,9 @@ describe('Execution Workspace binding', () => {
         {
           intent: worktree,
           project: project(),
-          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\worktree' }],
+          checkouts: [{ repositoryId: 'workspace', checkoutPath: hostAbsolutePath('worktree') }],
         },
-        () => Promise.resolve(facts({ checkoutPath: 'C:\\worktree' })),
+        () => Promise.resolve(facts({ checkoutPath: hostAbsolutePath('worktree') })),
       ),
     ).rejects.toMatchObject({
       code: 'worktree-ownership-missing',
@@ -203,12 +215,12 @@ describe('Execution Workspace binding', () => {
         {
           intent: worktree,
           project: project(),
-          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\worktree' }],
+          checkouts: [{ repositoryId: 'workspace', checkoutPath: hostAbsolutePath('worktree') }],
         },
         () =>
           Promise.resolve(
             facts({
-              checkoutPath: 'C:\\worktree',
+              checkoutPath: hostAbsolutePath('worktree'),
               remoteIdentity: 'github.com/other/workspace',
               worktreeId: 'wt-1',
             }),
@@ -240,13 +252,13 @@ describe('Execution Workspace binding', () => {
       ...project().repositories[0]!,
       id,
       name: id,
-      path: `C:\\acceptance\\${id}`,
+      path: hostAbsolutePath('acceptance', id),
       remoteIdentity: `github.com/team/${id}`,
       branch,
       head: String(index).repeat(40),
     }));
     const multiRepositoryProject: ProjectSnapshot = {
-      ...project('C:\\acceptance\\workspace'),
+      ...project(hostAbsolutePath('acceptance', 'workspace')),
       repositories,
     };
     const intent = createExecutionWorkspaceIntent({
@@ -269,8 +281,8 @@ describe('Execution Workspace binding', () => {
             branch: branches.get(repository.id)!,
             head: repository.head,
             remoteIdentity: repository.remoteIdentity,
-            gitDirectory: `${checkoutPath}\\.git`,
-            commonDirectory: `${checkoutPath}\\.git`,
+            gitDirectory: path.join(checkoutPath, '.git'),
+            commonDirectory: path.join(checkoutPath, '.git'),
           }),
         );
       },
@@ -295,9 +307,9 @@ describe('Execution Workspace binding', () => {
         {
           intent,
           project: project(),
-          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\branch' }],
+          checkouts: [{ repositoryId: 'workspace', checkoutPath: hostAbsolutePath('branch') }],
         },
-        () => Promise.resolve(facts({ checkoutPath: 'C:\\branch', branch: '' })),
+        () => Promise.resolve(facts({ checkoutPath: hostAbsolutePath('branch'), branch: '' })),
       ),
     ).rejects.toThrow(/branch/iu);
   });
@@ -311,7 +323,7 @@ describe('Execution Workspace binding', () => {
           ...project().repositories[0]!,
           id: 'worker',
           name: 'worker',
-          path: 'C:\\worker',
+          path: hostAbsolutePath('worker'),
           remoteIdentity: 'github.com/team/worker',
         },
       ],
@@ -322,8 +334,8 @@ describe('Execution Workspace binding', () => {
       isolation: 'current',
     });
     const checkouts = [
-      { repositoryId: 'workspace', checkoutPath: 'C:\\workspace' },
-      { repositoryId: 'worker', checkoutPath: 'C:\\worker' },
+      { repositoryId: 'workspace', checkoutPath: workspaceCheckout },
+      { repositoryId: 'worker', checkoutPath: hostAbsolutePath('worker') },
     ];
     const inspect = (checkoutPath: string) =>
       Promise.resolve(
@@ -331,8 +343,8 @@ describe('Execution Workspace binding', () => {
           ? facts({
               checkoutPath,
               remoteIdentity: 'github.com/team/worker',
-              gitDirectory: 'C:\\worker\\.git',
-              commonDirectory: 'C:\\worker\\.git',
+              gitDirectory: path.join(hostAbsolutePath('worker'), '.git'),
+              commonDirectory: path.join(hostAbsolutePath('worker'), '.git'),
             })
           : facts({ checkoutPath }),
       );
@@ -461,7 +473,7 @@ describe('Execution Workspace binding', () => {
               trigger: {
                 facts: {
                   executionCheckouts: [
-                    { repositoryId: 'workspace', checkoutPath: 'C:\\workspace' },
+                    { repositoryId: 'workspace', checkoutPath: workspaceCheckout },
                   ],
                 },
               },

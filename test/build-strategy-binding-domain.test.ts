@@ -7,6 +7,7 @@ import {
   createExecutionWorkspaceBinding,
   createExecutionWorkspaceIntent,
 } from '../domains/change-lifecycle/build-protocol.js';
+import { hostAbsolutePath } from './helpers/host-path.js';
 
 function workspaceBinding(options: {
   head?: string;
@@ -26,7 +27,7 @@ function workspaceBinding(options: {
       repositories: [
         {
           repositoryId: 'workspace',
-          checkoutPath: options.hostPath ?? 'C:\\work\\repoctopus-strategy-binding',
+          checkoutPath: options.hostPath ?? hostAbsolutePath('repoctopus-strategy-binding'),
           branch: isolation === 'branch' ? 'codex/strategy-binding' : 'main',
           head: options.head ?? 'a'.repeat(40),
           worktreeId: isolation === 'worktree' ? 'wt-strategy-binding' : null,
@@ -50,7 +51,7 @@ describe('Build Strategy and Execution Binding', () => {
     const firstWorkspace = workspaceBinding({});
     const secondWorkspace = workspaceBinding({
       head: 'b'.repeat(40),
-      hostPath: 'D:\\runner-2\\repoctopus-strategy-binding',
+      hostPath: hostAbsolutePath('runner-2', 'repoctopus-strategy-binding'),
     });
     const first = createExecutionBinding({
       strategy,
@@ -74,8 +75,12 @@ describe('Build Strategy and Execution Binding', () => {
     expect(second.semanticDigest).not.toBe(first.semanticDigest);
     expect(second.stateDigest).not.toBe(first.stateDigest);
     expect(second.bindingId).not.toBe(first.bindingId);
-    expect(JSON.stringify(first)).not.toContain('C:\\work');
-    expect(JSON.stringify(second)).not.toContain('D:\\runner-2');
+    expect(JSON.stringify(first)).not.toContain(
+      firstWorkspace.binding.repositories[0]!.checkoutPath,
+    );
+    expect(JSON.stringify(second)).not.toContain(
+      secondWorkspace.binding.repositories[0]!.checkoutPath,
+    );
   });
 
   it('changes Strategy identity only for a human semantic choice', () => {

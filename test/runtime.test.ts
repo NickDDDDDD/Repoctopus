@@ -31,6 +31,7 @@ import {
   temporaryDirectory,
   workflowFixture,
 } from './helpers/fixtures.js';
+import { hostAbsolutePath } from './helpers/host-path.js';
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
@@ -666,7 +667,7 @@ describe('Repoctopus runtime', () => {
       repositories: [
         {
           repositoryId: 'workspace',
-          checkoutPath: 'C:/workspace',
+          checkoutPath: hostAbsolutePath('workspace'),
           branch: 'main',
           head: '1'.repeat(40),
           worktreeId: null,

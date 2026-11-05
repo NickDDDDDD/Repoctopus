@@ -1,0 +1,16 @@
+{
+  "change": "stabilize-cli-distribution-gate",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "0c399df293261863a315cf37a8ef3a17a2ee9a36af1bc0be9b2fc84c1ccce14d",
+  "files": [
+    { "path": "openspec/changes/stabilize-cli-distribution-gate/proposal.md", "sha256": "44a3a470f152dfa473bcb80851805dc909d9aabc98ded2c5639752d3fd89d8b4" },
+    { "path": "openspec/changes/stabilize-cli-distribution-gate/design.md", "sha256": "58ed815abb91a649fe53788fcaf5e971ec0d7cb23b09505393d4cdb07caa3397" },
+    { "path": "openspec/changes/stabilize-cli-distribution-gate/tasks.md", "sha256": "2700be4a1458c17560639a59883cd97417ea93e3d4da17a53b52a0dfdf01f2dd" },
+    { "path": "openspec/changes/stabilize-cli-distribution-gate/.openspec.yaml", "sha256": "3e16994612e657a7bbaefe38b70ef46f3e8e9f382f092dcaceb60ebabe7a5da0" },
+    { "path": "openspec/changes/stabilize-cli-distribution-gate/specs/product-distribution/spec.md", "sha256": "61b22492f1ef86287ae98eb1f6347e91d3f6978fee56a8ab9f8c4897f26bd79b" }
+  ]
+}
