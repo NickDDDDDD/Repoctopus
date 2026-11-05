@@ -132,6 +132,10 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'specification.artifacts-observed',
   'specification.validation-observed',
   'recovery.reconciled',
+  'recovery.observed',
+  'recovery.classified',
+  'recovery.applied',
+  'evidence.invalidated',
 ]);
 
 function safeExecutionId(value: string): boolean {
@@ -363,6 +367,50 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
   addEvidenceCorrelation(attributes, event);
   addProjectReconciliationAttributes(attributes, event);
   addAuthorizedBranchRebindTraceAttributes(attributes, event);
+  if (
+    event.type === 'recovery.observed' ||
+    event.type === 'recovery.classified' ||
+    event.type === 'recovery.applied' ||
+    event.type === 'evidence.invalidated'
+  ) {
+    const authority = event.data.authority;
+    const action = event.data.action;
+    const reasonCode = event.data.reasonCode;
+    if (
+      typeof authority === 'string' &&
+      ['planning', 'plan', 'work', 'evidence'].includes(authority)
+    ) {
+      attributes['repoctopus.recovery.authority'] = authority;
+    }
+    if (
+      typeof action === 'string' &&
+      [
+        'revise-design',
+        'revise-plan',
+        'continue-build',
+        'invalidate-evidence',
+        'retry-infrastructure',
+        'reconcile-external',
+      ].includes(action)
+    ) {
+      attributes['repoctopus.recovery.action'] = action;
+    }
+    if (typeof reasonCode === 'string' && /^[a-z0-9-]{1,64}$/u.test(reasonCode)) {
+      attributes['repoctopus.recovery.reason_code'] = reasonCode;
+    }
+    if (
+      typeof event.data.decisionId === 'string' &&
+      /^recovery:sha256:[a-f0-9]{64}$/u.test(event.data.decisionId)
+    ) {
+      attributes['repoctopus.recovery.decision.id'] = event.data.decisionId;
+    }
+    if (typeof event.data.retainedCount === 'number') {
+      attributes['repoctopus.recovery.retained_count'] = event.data.retainedCount;
+    }
+    if (typeof event.data.invalidatedCount === 'number') {
+      attributes['repoctopus.recovery.invalidated_count'] = event.data.invalidatedCount;
+    }
+  }
   if (
     event.type === 'continuation.selected' &&
     (event.data.observationStage === 'provider-validation' ||
@@ -621,6 +669,34 @@ export function workflowEventMetricAttributes(
   };
   addProjectReconciliationAttributes(result, event);
   addAuthorizedBranchRebindMetricAttributes(result, event);
+  if (
+    event.type === 'recovery.observed' ||
+    event.type === 'recovery.classified' ||
+    event.type === 'recovery.applied' ||
+    event.type === 'evidence.invalidated'
+  ) {
+    result['repoctopus.recovery.authority'] =
+      typeof event.data.authority === 'string' &&
+      ['planning', 'plan', 'work', 'evidence'].includes(event.data.authority)
+        ? event.data.authority
+        : 'unknown';
+    result['repoctopus.recovery.action'] =
+      typeof event.data.action === 'string' &&
+      [
+        'revise-design',
+        'revise-plan',
+        'continue-build',
+        'invalidate-evidence',
+        'retry-infrastructure',
+        'reconcile-external',
+      ].includes(event.data.action)
+        ? event.data.action
+        : 'none';
+    result['repoctopus.recovery.reason_code'] =
+      typeof event.data.reasonCode === 'string' && /^[a-z0-9-]{1,64}$/u.test(event.data.reasonCode)
+        ? event.data.reasonCode
+        : 'unknown';
+  }
   if (event.type === 'work.packet-stored' || event.type === 'work.packet-recovered') {
     const packetResult = event.data.result;
     const allowed =

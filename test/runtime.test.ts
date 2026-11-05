@@ -384,7 +384,13 @@ describe('Repoctopus runtime', () => {
       tasks: [{ taskId: tasks.tasks[0]!.taskId }],
       buildProtocol: { status: 'suspended-for-design', currentAction: null },
     });
-    expect(trajectory.at(-1)?.data).toMatchObject({
+    expect(
+      trajectory.find(
+        (entry) =>
+          entry.type === 'change.lifecycle.transitioned' &&
+          entry.data.observationKind === 'runtime-recovery-decision',
+      )?.data,
+    ).toMatchObject({
       observationKind: 'runtime-recovery-decision',
       recoveryDecision: {
         decisionId: decision.decisionId,
@@ -400,6 +406,12 @@ describe('Repoctopus runtime', () => {
         nextWorkId: designWork.workId,
       },
     });
+    expect(
+      trajectory.filter((entry) => entry.type.startsWith('recovery.')).map((entry) => entry.type),
+    ).toEqual(['recovery.observed', 'recovery.classified', 'recovery.applied']);
+    expect(new Set(trajectory.slice(-3).map((entry) => entry.data.decisionId))).toEqual(
+      new Set([decision.decisionId]),
+    );
     expect(await store.loadTrajectory(runId)).toHaveLength(trajectory.length);
   });
 

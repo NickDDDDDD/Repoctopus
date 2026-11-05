@@ -18,6 +18,59 @@ import {
 import { compositionFixture, projectFixture, workflowFixture } from './helpers/fixtures.js';
 
 describe('telemetry mapping', () => {
+  it('projects bounded recovery dimensions without leaking decision identity into metrics', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-recovery-telemetry',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '1'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 2,
+      eventId: 'recovery-event',
+      timestamp: '2026-01-01T00:00:01.000Z',
+      type: 'recovery.applied',
+      runId: run.runId,
+      stateVersion: 2,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        decisionId: `recovery:sha256:${'a'.repeat(64)}`,
+        authority: 'plan',
+        action: 'revise-plan',
+        reasonCode: 'package-not-completable',
+        retainedCount: 4,
+        invalidatedCount: 2,
+        path: 'C:/private',
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+    expect(safeEventAttributes(batch, event)).toMatchObject({
+      'repoctopus.recovery.authority': 'plan',
+      'repoctopus.recovery.action': 'revise-plan',
+      'repoctopus.recovery.reason_code': 'package-not-completable',
+      'repoctopus.recovery.retained_count': 4,
+      'repoctopus.recovery.invalidated_count': 2,
+    });
+    const metric = workflowEventMetricAttributes(batch, event);
+    expect(metric).toMatchObject({
+      'repoctopus.recovery.authority': 'plan',
+      'repoctopus.recovery.action': 'revise-plan',
+      'repoctopus.recovery.reason_code': 'package-not-completable',
+    });
+    expect(JSON.stringify(metric)).not.toMatch(/sha256:|C:\/private|decision/u);
+  });
+
   it('exports allowlisted metadata and drops paths, summaries and credentials', () => {
     const workflow = workflowFixture();
     const project = projectFixture();

@@ -638,8 +638,75 @@ export class WorkflowRunCoordinator {
         value: undefined,
       };
     });
+    await this.recordRecoveryTrajectory(runId, decision);
     const diagnostics = await this.flushTelemetry(runId);
     return { value: await this.status(runId), diagnostics };
+  }
+
+  private async recordRecoveryTrajectory(runId: string, decision: RecoveryDecision): Promise<void> {
+    const stages = [
+      {
+        type: 'recovery.observed' as const,
+        data: { authority: decision.authority, reasonCode: decision.reasonCode },
+      },
+      {
+        type: 'recovery.classified' as const,
+        data: {
+          authority: decision.authority,
+          action: decision.action,
+          reasonCode: decision.reasonCode,
+        },
+      },
+      {
+        type: 'recovery.applied' as const,
+        data: {
+          authority: decision.authority,
+          action: decision.action,
+          result: 'applied',
+          retainedCount: decision.retainedIdentities.length,
+          invalidatedCount: decision.invalidatedIdentities.length,
+        },
+      },
+      ...(decision.action === 'invalidate-evidence'
+        ? [
+            {
+              type: 'evidence.invalidated' as const,
+              data: {
+                authority: decision.authority,
+                reasonCode: decision.reasonCode,
+                retainedCount: decision.retainedIdentities.length,
+                invalidatedCount: decision.invalidatedIdentities.length,
+              },
+            },
+          ]
+        : []),
+    ];
+    for (const stage of stages) {
+      await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+        const eventId = stableEventId(runId, decision.decisionId, stage.type);
+        if (trajectory.some((candidate) => candidate.eventId === eventId)) {
+          return { value: undefined };
+        }
+        const timestamp = this.clock().toISOString();
+        const nextState = {
+          ...state,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: event({
+            eventId,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: stage.type,
+            state: nextState,
+            data: { decisionId: decision.decisionId, ...stage.data },
+          }),
+          value: undefined,
+        };
+      });
+    }
   }
 
   private assertSameStartIdentity(
