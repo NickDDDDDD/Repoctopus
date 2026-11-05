@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 61385da1-8cc6-4093-b2fb-302b1e017aa3
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 6006b298ccdac43b7e5b138c31336a08691ab6e7
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-05
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/repair-atomic-work-outcome-acceptance
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 6c51c579f765396f10681542f737219f57fb5548c55d925edd79ba612de908e3
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: repair-atomic-work-outcome-acceptance
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 753973d0a7ead88eb3477d2da0b551ea29f01ceee568c37f85686f811c99cec9
+    input:
+      change: repair-atomic-work-outcome-acceptance
+      changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+      workspaceBaseline:
+        ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 6006b298ccdac43b7e5b138c31336a08691ab6e7
+      boundBranch: comet/repair-atomic-work-outcome-acceptance
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-05
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: repair-atomic-work-outcome-acceptance:1
+        input:
+          input:
+            change: repair-atomic-work-outcome-acceptance
+            changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+            workspaceBaseline:
+              ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+          outputs: {}
+        inputHash: a3ee09c6c2029d8c4c7b2fa88f632dea0f40a5d9f8094ac1ec9a37e577fa1ec3
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-atomic-work-outcome-acceptance
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      repair-atomic-work-outcome-acceptance:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: db4f7f2b78c53ba3f49646a64bd627d89679704e4e5f2f3a3478cafd60714b90
