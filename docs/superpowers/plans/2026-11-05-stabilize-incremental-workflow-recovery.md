@@ -2,6 +2,7 @@
 change: stabilize-incremental-workflow-recovery
 design-doc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
 base-ref: 22195e9eaf05579ceb5d5ad67695246a372225c2
+archived-with: 2026-11-05-stabilize-incremental-workflow-recovery
 ---
 
 # Stabilize incremental workflow recovery implementation plan

@@ -2,6 +2,8 @@
 comet_change: stabilize-incremental-workflow-recovery
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-05-stabilize-incremental-workflow-recovery
+status: final
 ---
 
 # Design

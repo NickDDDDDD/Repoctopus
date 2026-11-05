@@ -1,0 +1,3663 @@
+# comet-execution: managed-run
+change_id: e315e531-2e33-49a0-869c-32e6abbf8fa6
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: a0493aec962b52af96bb73aa2aef69fefb95e074
+design_doc: openspec/changes/archive/2026-11-05-stabilize-incremental-workflow-recovery/design.md
+plan: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/stabilize-incremental-workflow-recovery.md
+branch_status: pending
+created_at: 2026-11-04
+verified_at: 2026-11-05
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/stabilize-incremental-workflow-recovery
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-05-stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+handoff_hash: a0e0a5f467e4ee2665da76b029f20bb538a7c018350e4f64f5e4f5a865424c0e
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 20b844ce9c1e8384296c0deb50029f61cc62fddec7dc80e5d668f0fd40ecd17d
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-incremental-workflow-recovery
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    definitionHashes:
+      '["comet-classic-full","1"]': 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    initialStateHash: cf992c2d22eb37ed927a2582a25941c6612810fe728f9a885ac5f647043060c9
+    input:
+      change: stabilize-incremental-workflow-recovery
+      changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+      workspaceBaseline:
+        ref: 23af2b75-8232-4850-83c2-57806b1476e2
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: a0493aec962b52af96bb73aa2aef69fefb95e074
+      boundBranch: codex/stabilize-incremental-workflow-recovery
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 7
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-04
+      designDoc: openspec/changes/archive/2026-11-05-stabilize-incremental-workflow-recovery/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-05-stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+      handoffHash: a0e0a5f467e4ee2665da76b029f20bb538a7c018350e4f64f5e4f5a865424c0e
+      isolation: current
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/stabilize-incremental-workflow-recovery.md
+      verifiedAt: 2026-11-05
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 36
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-001d29feae53a045c2cb06f9db3aeee7c157f25069aa71c39e54f8c717f55cfe
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:1
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: e49d85b78a1ad7119d488d748f8ff63c1b9d3ebe842c2d4478812a23a41b47a4
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:1
+          attempt: 1
+          claimToken: portable-001d29feae53a045c2cb06f9db3aeee7c157f25069aa71c39e54f8c717f55cfe
+          inputHash: e49d85b78a1ad7119d488d748f8ff63c1b9d3ebe842c2d4478812a23a41b47a4
+          outcomeId: b4fbec5d-706c-429f-90d8-bc0bf901d2fd
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fa8b1e9e6e204809ae0d6876cbcf49cfa475bbf3478cb05f7df8e2fddbc48513
+            outcomeId: b4fbec5d-706c-429f-90d8-bc0bf901d2fd
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-c1c9a517b8aa35839f694b0fa7b6234869ae60d559c141d9ce7939671bd6a155
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:4
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 131faa1798a6848338617a874f9a3d71ede1411d4e6c2a9394cc4669ecc8e91b
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:4
+          attempt: 1
+          claimToken: portable-c1c9a517b8aa35839f694b0fa7b6234869ae60d559c141d9ce7939671bd6a155
+          inputHash: 131faa1798a6848338617a874f9a3d71ede1411d4e6c2a9394cc4669ecc8e91b
+          outcomeId: stabilize-incremental-workflow-recovery:4:1:executor-result
+          output:
+            contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7d7a3201f1de60703419395cf3174b01efa267ead06dd9ea5f5cfdf9fa09275d
+            outcomeId: stabilize-incremental-workflow-recovery:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e4a01bb4a1dd991f1cf9cdef9274808e4ab1a5a3d3f193587de25a05c20dae7b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:5
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: ca0a6670f2edb5be213133b4a47ee900cd0c601d6b07312c19549d3ebca4d5b1
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:5
+          attempt: 1
+          claimToken: portable-e4a01bb4a1dd991f1cf9cdef9274808e4ab1a5a3d3f193587de25a05c20dae7b
+          inputHash: ca0a6670f2edb5be213133b4a47ee900cd0c601d6b07312c19549d3ebca4d5b1
+          outcomeId: 8fce9b6c-fe24-4c62-b00a-4812ab192a1a
+          output:
+            handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+            handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+            proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+              Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+              revision、稳定decision identity并由Runtime
+              CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+              Evidence前置验证TDD Package闭包与授权包络，Specification
+              Provider前置验证Requirement映射和Capability
+              Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+              SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+            requirementsEvidence:
+              contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+            sourceEvidence:
+              contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7828782e5c92fedd96556c082d1fdf47fb1991848edca70f7f6c2bfd10674fdd
+            outcomeId: 8fce9b6c-fe24-4c62-b00a-4812ab192a1a
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-dad9817d9cd49fbcd250905c6b1ec9da71cec0c02eaf104506b68e2018d31b7a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:7
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: df9b03ffb327f394aec346b790516928486b861254f9a8b578033868edeea7cb
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:7
+          attempt: 1
+          claimToken: portable-dad9817d9cd49fbcd250905c6b1ec9da71cec0c02eaf104506b68e2018d31b7a
+          inputHash: df9b03ffb327f394aec346b790516928486b861254f9a8b578033868edeea7cb
+          outcomeId: 689f696b-a821-43cd-b541-c8c232b2d99a
+          output:
+            handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+            handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+            proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+              Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+              revision、稳定decision identity并由Runtime
+              CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+              Evidence前置验证TDD Package闭包与授权包络，Specification
+              Provider前置验证Requirement映射和Capability
+              Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+              SDK。已批准的Spec Patch明确三类输入边界：普通Git tracked产品路径保持产品输入；注册Specification
+              Authority中的官方规划工件即使tracked也属于planning
+              semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+            requirementsEvidence:
+              contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+            sourceEvidence:
+              contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 32d225f9825072b1790489e7dba3695667ca7f90a217f3e40d8d8bcf40858c93
+            outcomeId: 689f696b-a821-43cd-b541-c8c232b2d99a
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-4beb09f33cded435462a16740532872ab989b71cd70b86712071f2a42dccf3c0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:9
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 5a33e51687980c41afc20057d7c5ac924a89ad4d86adb13b6e8298826418a176
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:9
+          attempt: 1
+          claimToken: portable-4beb09f33cded435462a16740532872ab989b71cd70b86712071f2a42dccf3c0
+          inputHash: 5a33e51687980c41afc20057d7c5ac924a89ad4d86adb13b6e8298826418a176
+          outcomeId: 66e326e1-6afa-4826-8098-55d41e99a3d9
+          output:
+            designDoc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b42c05268ebf6caf2bea5ea64dbf95174c8a11cf1f905468f028575e709b5ab7
+            outcomeId: 66e326e1-6afa-4826-8098-55d41e99a3d9
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-f0c06da4b029bcba73d9bf8c451379ae6048a54c1054552e9b770184ed6b238b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:11
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 4a842af5320125dd05c450d0851b93f28bec7ae439922281cc2cfb4cd9f1fad5
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:11
+          attempt: 1
+          claimToken: portable-f0c06da4b029bcba73d9bf8c451379ae6048a54c1054552e9b770184ed6b238b
+          inputHash: 4a842af5320125dd05c450d0851b93f28bec7ae439922281cc2cfb4cd9f1fad5
+          outcomeId: 7838a6a5-00df-40ee-90f5-78487a3f217e
+          output:
+            boundBranch: codex/stabilize-incremental-workflow-recovery
+            buildMode: autonomous
+            directOverride: false
+            isolation: current
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bc2b9ca1f0c16b0acd368a407f635441a1af6826434c083116348cc9ead5056f
+            outcomeId: 7838a6a5-00df-40ee-90f5-78487a3f217e
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-ce774a8bd8781c1c0b2d57e99a5da4bf4d4a6891ff477ce97fc12c1f85c40401
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:13
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 9f8c369642d892983b60831a2f2d7ce62ecad31afe093abd4e45c2bf04e5883f
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:13
+          attempt: 1
+          claimToken: portable-ce774a8bd8781c1c0b2d57e99a5da4bf4d4a6891ff477ce97fc12c1f85c40401
+          inputHash: 9f8c369642d892983b60831a2f2d7ce62ecad31afe093abd4e45c2bf04e5883f
+          outcomeId: f545a817-af67-4c4e-8d15-77117673b8c0
+          output:
+            designEvidence:
+              contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+              ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+            plan: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+            planEvidence:
+              contentHash: 04f4c50a73de5faf34f1ae3e3c12825803adfefee18311f82ad770a4aacf9df7
+              ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+            taskRevision: a4f63e4aff6b23be2c03ceb83bd4d6598f71e23ba74d80f1e428c94137f0966b
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b85925d620439cb7837c0df05bce10e817a4cb462ac60d8f75564fb30e4668de
+            outcomeId: f545a817-af67-4c4e-8d15-77117673b8c0
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: stabilize-incremental-workflow-recovery:15
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 7cb34b419780f0ef8b2a8641fe496c461d5a071a83a4463da237ad382c6f475e
+        protocolVersion: 1
+        reason: 命令 revise-plan 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: cancelled
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-4a574387e6b2891356365bf8db5d2c68e57576bd9bf0b8701147e9b521d12701
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:16
+        input:
+          activation:
+            expectedRevision: 22
+            fromPhase: build
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: ad82c2146d18d9831a1454d7de746876faa599a76e5bc72999a443eb3a6556f8
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:16
+          attempt: 1
+          claimToken: portable-4a574387e6b2891356365bf8db5d2c68e57576bd9bf0b8701147e9b521d12701
+          inputHash: ad82c2146d18d9831a1454d7de746876faa599a76e5bc72999a443eb3a6556f8
+          outcomeId: 4b64bb47-7aab-42a4-93e1-0e7f1520e2ac
+          output:
+            designEvidence:
+              contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+              ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+            plan: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+            planEvidence:
+              contentHash: 371dfda0699af2b2cb5007c63d4d8f71c6d0521033f4d1e806f3152ee8acebb0
+              ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+            taskRevision: a4f63e4aff6b23be2c03ceb83bd4d6598f71e23ba74d80f1e428c94137f0966b
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 865e039ec757aad7a22272a06b0cf5b35d4de9456256487602a8b44c9c1ece6c
+            outcomeId: 4b64bb47-7aab-42a4-93e1-0e7f1520e2ac
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: stabilize-incremental-workflow-recovery:18
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: ecf75b9b035f403f3852750d04866117f171483f294730a2477be00ae1f89db1
+        protocolVersion: 1
+        reason: 命令 revise-design 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: cancelled
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-71cd2053dec995f33c2c6174c1086b410b935b686258470add3449c3e3f37afe
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:19
+        input:
+          activation:
+            expectedRevision: 26
+            fromPhase: build
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 0abe007f206f71f733eafc6d6148c22df27166d586587729ba61c46ab54fa624
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:19
+          attempt: 1
+          claimToken: portable-71cd2053dec995f33c2c6174c1086b410b935b686258470add3449c3e3f37afe
+          inputHash: 0abe007f206f71f733eafc6d6148c22df27166d586587729ba61c46ab54fa624
+          outcomeId: 923c2251-85c0-44c3-a592-efaca7845be0
+          output:
+            handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+            handoffHash: a0e0a5f467e4ee2665da76b029f20bb538a7c018350e4f64f5e4f5a865424c0e
+            proposal: 以当前已完成并验证的 OpenSpec 产物为唯一设计权威：Runtime 按 Requirements/Design、Plan、当前
+              Work、Evidence 的固定优先级分类事实，原子选择
+              revise-design、revise-plan、continue-build、invalidate-evidence、retry-infrastructure、reconcile-external
+              或 halt；Host 只能提交有界事实，不能选择阶段。规划语义、实现内容、执行控制、可选 Git identity 与
+              publication provenance 分区；任务复选框和证据提交不使获批 Build Protocol
+              失效。Evidence 按声明依赖图精确失效，基础设施不可用不回退 Build 或 Design。Specification
+              Provider 在 Open/Design 前置解析 Requirement identities 与 closure
+              feasibility；Plan Validator 前置验证 TDD Package 闭包和授权包络。保留 Repoctopus
+              的 OpenSpec、多仓 Binding、外部 Host、Cordis 与 OTLP 架构，只借鉴 Comet 0.5.1 的
+              Runtime 权威、恢复顺序、checkpoint 延续和增量失效，不引入 Comet SDK。当前 Spec Patch 即
+              change 内已严格校验的 delta；不新增第二套规格或兼容旧 lifecycle。主要风险为 authority
+              输入漏分区、错误失效扩散和重复恢复，已由 118 项聚焦测试、6 个真实多仓场景及 189 文件完整矩阵覆盖。
+            requirementsEvidence:
+              contentHash: e7908a3fb39ba3b6fb2926472e0914f6cd509eaa7680463729e75fa90ccc0195
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+            sourceEvidence:
+              contentHash: 79a7ad0e052593375f888881bece500a2dfc1434639fab9123eadb92c1d0dd48
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 4f21e36106c94fa646bd133098eeb0e6cad8bac3de538b7475544c1ee986db62
+            outcomeId: 923c2251-85c0-44c3-a592-efaca7845be0
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-f4da69836a8e51fdce988a2822f22ca8b2d51f9a6895fcd582c7a9a184960b59
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:21
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: af5b51631a6eed5d034ed2c975a4e30538c534c5c7e1a6ef1543eca53e6f25ce
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:21
+          attempt: 1
+          claimToken: portable-f4da69836a8e51fdce988a2822f22ca8b2d51f9a6895fcd582c7a9a184960b59
+          inputHash: af5b51631a6eed5d034ed2c975a4e30538c534c5c7e1a6ef1543eca53e6f25ce
+          outcomeId: a4446d2a-7fdd-40cf-9e9a-3c73c513db14
+          output:
+            designDoc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b84a648e30a8cbbba44c6f08a95697d6f2dd249aa3a23b6004cd2b661ae8bc65
+            outcomeId: a4446d2a-7fdd-40cf-9e9a-3c73c513db14
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d775a9276a6d22813e1568750ebbd596509f4fcc1eacf0109dba2cb59e75b568
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:23
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 76d9f0b90e3ae301a4cfe853c30c96c13ff7acc50ad56882a6ce09a9992ff417
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:23
+          attempt: 1
+          claimToken: portable-d775a9276a6d22813e1568750ebbd596509f4fcc1eacf0109dba2cb59e75b568
+          inputHash: 76d9f0b90e3ae301a4cfe853c30c96c13ff7acc50ad56882a6ce09a9992ff417
+          outcomeId: 533b4269-4998-4db4-a57c-3a4e2976c179
+          output:
+            designEvidence:
+              contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+              ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+            plan: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+            planEvidence:
+              contentHash: 6d1eef69d2efae1862c5148b2cb40b6bacd479f5085c9fe3f75cf56602c9b310
+              ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+            taskRevision: b2f153fe6f50b735c49d7eaca7ae2abfca2852b85b626dd67d7ec70b2b6e9d23
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 22240d73b29cdc07cc1d0f9c23108241503b2243cd9a097a8d322109cf7a059b
+            outcomeId: 533b4269-4998-4db4-a57c-3a4e2976c179
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/stabilize-incremental-workflow-recovery:25/1
+          token: portable-3b8eadef119740b5909b6c6028d29e3459c16a9a2813fd2a7cae5619cddc42e1
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:25
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 58d9ac25a75e0bc2f9144e851dfc7ac2cd37896f9a7c2b2019322cad63478d9b
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:25
+          attempt: 1
+          claimToken: portable-3b8eadef119740b5909b6c6028d29e3459c16a9a2813fd2a7cae5619cddc42e1
+          inputHash: 58d9ac25a75e0bc2f9144e851dfc7ac2cd37896f9a7c2b2019322cad63478d9b
+          outcomeId: ed464b8a-844e-4785-9c36-ce43b8928712
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a231b96c17815efb5ae5a77812787aa4596f4c1cf15129baf5b8c1dc0c233876
+            outcomeId: ed464b8a-844e-4785-9c36-ce43b8928712
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 2
+        claim:
+          executorId: comet-classic-check
+          token: portable-292cc18d055d02b325e41a1514a7afe8fdcf05a7eb712996c14172e1cd87cf0e
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:26
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 8c8433045c4e845a7bba6e8a45473daaeb926cdae093c04371ce9e4754fda266
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:26
+          attempt: 2
+          claimToken: portable-292cc18d055d02b325e41a1514a7afe8fdcf05a7eb712996c14172e1cd87cf0e
+          inputHash: 8c8433045c4e845a7bba6e8a45473daaeb926cdae093c04371ce9e4754fda266
+          outcomeId: 868a8f88-0afd-4091-b66b-cadc92b88521
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: cd8a0a1bf456b28c7dcc5d062b6abd410a33ef01242268c6d193e93bd7716d9e
+            cwd: .
+            environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+            exitCode: 0
+            inputAfter: 89568e373c98cde3365df2befb38039924058e22534ba39958f86099cbe1f087
+            inputBefore: 89568e373c98cde3365df2befb38039924058e22534ba39958f86099cbe1f087
+            manifestHash: decce4f3bb6c52121f49ede0a0e5ebab73c504e32ae3a7f2bbf3b66a44a2a88d
+            manifestRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/ac15977e-498e-45eb-94d2-4f6a10a8bb21.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/368f383f-78dd-44d3-88cf-331519c7420a.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 654c0e996d45077437a71aee66ecb32934a3792009b4acef513c631d83b513bd
+            outcomeId: 868a8f88-0afd-4091-b66b-cadc92b88521
+        reconciliations:
+          - attempt: 1
+            evidence:
+              summary: "The claimed check stopped in Comet input-snapshot preflight before
+                child-process creation: the controller returned
+                CLASSIC_COMMAND_FAILED because unmatched argv caused
+                conservative traversal to reject the node_modules junction. The
+                check record is missing, command is null, and no receipt or
+                manifest exists. npm was therefore never started for this
+                attempt."
+            resolution: not-executed
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-39e6ce13a39027030fbd349ec836a830aad8845ff7f36219204c4e224e12de52
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:28
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 1e52a6ec68884346492e9c3a2a53e0a51250c359f26c2a1ef2345d3e4028b565
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:28
+          attempt: 1
+          claimToken: portable-39e6ce13a39027030fbd349ec836a830aad8845ff7f36219204c4e224e12de52
+          inputHash: 1e52a6ec68884346492e9c3a2a53e0a51250c359f26c2a1ef2345d3e4028b565
+          outcomeId: 6045442d-d0fc-43bc-a6b4-aa0e760e00fc
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-incremental-workflow-recovery.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6b76bdb5713fe9037153378e68e2bbfc3f78cd9d347ae3c12a6276b7d533ab3c
+            outcomeId: 6045442d-d0fc-43bc-a6b4-aa0e760e00fc
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-23b4e049800f6f054f9a8327a24e0e94ae81bf2f279f3d0519ce04b5dcd4bcac
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:30
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 341802e332a75d759850241bea071ec69542f117a3861c91ae13049e070d4010
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:30
+          attempt: 1
+          claimToken: portable-23b4e049800f6f054f9a8327a24e0e94ae81bf2f279f3d0519ce04b5dcd4bcac
+          inputHash: 341802e332a75d759850241bea071ec69542f117a3861c91ae13049e070d4010
+          outcomeId: bc69e4c3-04cf-4c5e-afa0-3e2606e03bad
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 9db41f820446e76fdcfbb2fbd16f8ba6fe9d2f0392e610b185508722c967c5a6
+            cwd: .
+            deliveryInputs: {}
+            environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+            exitCode: 0
+            inputAfter: 6f9a43df36eb99f1616ea64c3a8e359989878d513b229d9491c3ee5b26f99ad0
+            inputBefore: 6f9a43df36eb99f1616ea64c3a8e359989878d513b229d9491c3ee5b26f99ad0
+            manifestHash: 981af5d97255c7e090cbb4500053a20e83ccc4deea8440f71137d2aac920274b
+            manifestRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/d5db7af6-b21d-43dd-a524-3e3759a32b28.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/5be04080-89a2-4cb6-9fe9-67d2862e6887.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d108e0b85742d219c3f4d0c820566f0d665c18cae4cbbb4d27f473a07ebb0490
+            outcomeId: bc69e4c3-04cf-4c5e-afa0-3e2606e03bad
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-509eac522ad27cacd43247fdf8576102b7580f6ef81c6cd6272b486216f7f9b9
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:32
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 672860210c6223d60238d1a2e0b75f6fbfd0d26524778fad19920c273378b747
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:32
+          attempt: 1
+          claimToken: portable-509eac522ad27cacd43247fdf8576102b7580f6ef81c6cd6272b486216f7f9b9
+          inputHash: 672860210c6223d60238d1a2e0b75f6fbfd0d26524778fad19920c273378b747
+          outcomeId: 1ed60741-5c8f-4920-bb40-c6b1a0e344bb
+          output:
+            remote: origin
+            summary: 完成增量工作流恢复稳定化：统一 Runtime 恢复权威与 CAS 应用，新增
+              revise-design、revise-plan、continue-build 和精确 Evidence
+              invalidation，前置 Requirement 与 closure 校验，补齐低基数 OTLP 轨迹；29/29
+              OpenSpec 任务、六个真实多仓场景和 189 文件完整验证全部通过。Archive 将正式同步四个 delta
+              capability 到主规格并把 change 移入历史；交付仅推送当前公开分支到 origin，不创建或合入 MR。
+            targetBranch: codex/stabilize-incremental-workflow-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d50cc8549b587241bb4c083ee0e41b5d7860ef4cc1d3a4f1862d3900d2ec9406
+            outcomeId: 1ed60741-5c8f-4920-bb40-c6b1a0e344bb
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-67563f48a530b02391992b419f8b07a896ce45b80cb6e4b1f00fed212e976989
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:34
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 8220facf7797855afac863069be6421f35fa1b94ce08c167237876d949a520de
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:34
+          attempt: 1
+          claimToken: portable-67563f48a530b02391992b419f8b07a896ce45b80cb6e4b1f00fed212e976989
+          inputHash: 8220facf7797855afac863069be6421f35fa1b94ce08c167237876d949a520de
+          outcomeId: af7fc74a-9f23-4d21-96bd-8471b9258e1b
+          output:
+            baseCommit: b39be5eeb7d4bec2f55d2efeae0944a1ebe79a17
+            deliveryAction: push
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/stabilize-incremental-workflow-recovery
+            verifiedBranch: codex/stabilize-incremental-workflow-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 34e424efef07e6c19e2e25ee043382e6af31bb971d11efc9fb302d6a2843a99f
+            outcomeId: af7fc74a-9f23-4d21-96bd-8471b9258e1b
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-2b403fb71a3f2ab59f06fdf547be69cee60ae16ec90f5cb7061ab4ec726498dd
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:35
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: 212662e05ce1716d1698ee28a824606616a524501af79bf466e8391c34a4ade1
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:35
+          artifacts:
+            - sha256: e87161ea337f730b8abd2f849e724ffa9d3bf9ce63d5ea906a09ad54cc5014dd
+              uri: openspec/changes/archive/2026-11-05-stabilize-incremental-workflow-recovery/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-2b403fb71a3f2ab59f06fdf547be69cee60ae16ec90f5cb7061ab4ec726498dd
+          inputHash: 212662e05ce1716d1698ee28a824606616a524501af79bf466e8391c34a4ade1
+          outcomeId: 5b74ecfd-e397-48a5-9b55-198f66687535
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-05-stabilize-incremental-workflow-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 614879463ce9b7e05c89c8876557871f222be5c7050c85d3dd82125d346bd894
+            outcomeId: 5b74ecfd-e397-48a5-9b55-198f66687535
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: stabilize-incremental-workflow-recovery:36
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: e2ab541c85bc22d62c949eba380659c2631b6d8bdae136b1fa668ea7e0dc8d03
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    commands:
+      - id: dcc4c4342c629c90feb7870236b07c985966721f678a51f2c49e84a32e4d68f5
+        name: revise-plan
+        inputHash: 416877678b8ce14a589fcc5b6a6cc30f689bfd69ed0326d11d70ee3cc5ede124
+        actionId: stabilize-incremental-workflow-recovery:16
+      - id: 4168729ada9579145aab58dfd83a60199c18ba574e951dca74bc0959e66e37a5
+        name: revise-design
+        inputHash: 5e1094e5505cdd85878732cc0116eb636fe230c7606fe74a14dd505ec72ee918
+        actionId: stabilize-incremental-workflow-recovery:19
+    actionContexts:
+      stabilize-incremental-workflow-recovery:1:
+        results: {}
+        sequence: 1
+      stabilize-incremental-workflow-recovery:11:
+        results: {}
+        sequence: 11
+      stabilize-incremental-workflow-recovery:13:
+        results: {}
+        sequence: 13
+      stabilize-incremental-workflow-recovery:15:
+        results: {}
+        sequence: 15
+      stabilize-incremental-workflow-recovery:16:
+        results: {}
+        sequence: 16
+      stabilize-incremental-workflow-recovery:18:
+        results: {}
+        sequence: 18
+      stabilize-incremental-workflow-recovery:19:
+        results: {}
+        sequence: 19
+      stabilize-incremental-workflow-recovery:21:
+        results: {}
+        sequence: 21
+      stabilize-incremental-workflow-recovery:23:
+        results: {}
+        sequence: 23
+      stabilize-incremental-workflow-recovery:25:
+        results: {}
+        sequence: 25
+      stabilize-incremental-workflow-recovery:26:
+        results: {}
+        sequence: 26
+      stabilize-incremental-workflow-recovery:28:
+        results: {}
+        sequence: 28
+      stabilize-incremental-workflow-recovery:30:
+        results: {}
+        sequence: 30
+      stabilize-incremental-workflow-recovery:32:
+        results: {}
+        sequence: 32
+      stabilize-incremental-workflow-recovery:34:
+        results: {}
+        sequence: 34
+      stabilize-incremental-workflow-recovery:35:
+        results: {}
+        sequence: 35
+      stabilize-incremental-workflow-recovery:36:
+        results: {}
+        sequence: 36
+      stabilize-incremental-workflow-recovery:4:
+        results: {}
+        sequence: 4
+      stabilize-incremental-workflow-recovery:5:
+        results: {}
+        sequence: 5
+      stabilize-incremental-workflow-recovery:7:
+        results: {}
+        sequence: 7
+      stabilize-incremental-workflow-recovery:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: stabilize-incremental-workflow-recovery:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+        proposalHash: 7870effe2997a351d13141bae9be7db5c222de333af2cf3ecf9ca15950ee446a
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+          choice: approved
+          proposalHash: 7870effe2997a351d13141bae9be7db5c222de333af2cf3ecf9ca15950ee446a
+      - id: stabilize-incremental-workflow-recovery:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+              requirementsEvidence:
+                contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+        proposalHash: 7110582f4258256d4f524b4a451f50fa647eee182f49994047db95214fa8d215
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-7110582f4258256d4f524b4a451f50fa647eee182f49994047db95214fa8d215-rejected
+          choice: rejected
+          proposalHash: 7110582f4258256d4f524b4a451f50fa647eee182f49994047db95214fa8d215
+      - id: stabilize-incremental-workflow-recovery:8
+        stepId: full.design.confirm
+        sequence: 8
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                tracked产品路径保持产品输入；注册Specification
+                Authority中的官方规划工件即使tracked也属于planning
+                semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+              requirementsEvidence:
+                contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+        proposalHash: d56116a9637dc5886116c742c89888d34128e5825b4e66cab82b9f6562eaa04e
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-d56116a9637dc5886116c742c89888d34128e5825b4e66cab82b9f6562eaa04e-approved
+          choice: approved
+          proposalHash: d56116a9637dc5886116c742c89888d34128e5825b4e66cab82b9f6562eaa04e
+      - id: stabilize-incremental-workflow-recovery:12
+        stepId: full.build.confirm
+        sequence: 12
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.build.configure:
+              boundBranch: codex/stabilize-incremental-workflow-recovery
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: bebcc6a1a8d7f190537d289d42b889e1fdcf55ab4835b495dffdf5d3ffcfbcc8
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 73721501-fe56-4b82-935d-41eccda5934b
+          choice: approved
+          proposalHash: bebcc6a1a8d7f190537d289d42b889e1fdcf55ab4835b495dffdf5d3ffcfbcc8
+      - id: stabilize-incremental-workflow-recovery:20
+        stepId: full.design.confirm
+        sequence: 20
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: a0e0a5f467e4ee2665da76b029f20bb538a7c018350e4f64f5e4f5a865424c0e
+              proposal: 以当前已完成并验证的 OpenSpec 产物为唯一设计权威：Runtime 按 Requirements/Design、Plan、当前
+                Work、Evidence 的固定优先级分类事实，原子选择
+                revise-design、revise-plan、continue-build、invalidate-evidence、retry-infrastructure、reconcile-external
+                或 halt；Host 只能提交有界事实，不能选择阶段。规划语义、实现内容、执行控制、可选 Git identity 与
+                publication provenance 分区；任务复选框和证据提交不使获批 Build Protocol
+                失效。Evidence 按声明依赖图精确失效，基础设施不可用不回退 Build 或 Design。Specification
+                Provider 在 Open/Design 前置解析 Requirement identities 与 closure
+                feasibility；Plan Validator 前置验证 TDD Package 闭包和授权包络。保留
+                Repoctopus 的 OpenSpec、多仓 Binding、外部 Host、Cordis 与 OTLP 架构，只借鉴
+                Comet 0.5.1 的 Runtime 权威、恢复顺序、checkpoint 延续和增量失效，不引入 Comet
+                SDK。当前 Spec Patch 即 change 内已严格校验的 delta；不新增第二套规格或兼容旧
+                lifecycle。主要风险为 authority 输入漏分区、错误失效扩散和重复恢复，已由 118 项聚焦测试、6
+                个真实多仓场景及 189 文件完整矩阵覆盖。
+              requirementsEvidence:
+                contentHash: e7908a3fb39ba3b6fb2926472e0914f6cd509eaa7680463729e75fa90ccc0195
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: 79a7ad0e052593375f888881bece500a2dfc1434639fab9123eadb92c1d0dd48
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+        proposalHash: 0cf335b34092e847429753d374d5d58d5e1ab11a0d7b014d06fc1e5a17caead0
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-0cf335b34092e847429753d374d5d58d5e1ab11a0d7b014d06fc1e5a17caead0-approved
+          choice: approved
+          proposalHash: 0cf335b34092e847429753d374d5d58d5e1ab11a0d7b014d06fc1e5a17caead0
+      - id: stabilize-incremental-workflow-recovery:33
+        stepId: full.archive.confirm
+        sequence: 33
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.archive.prepare:
+              remote: origin
+              summary: 完成增量工作流恢复稳定化：统一 Runtime 恢复权威与 CAS 应用，新增
+                revise-design、revise-plan、continue-build 和精确 Evidence
+                invalidation，前置 Requirement 与 closure 校验，补齐低基数 OTLP 轨迹；29/29
+                OpenSpec 任务、六个真实多仓场景和 189 文件完整验证全部通过。Archive 将正式同步四个 delta
+                capability 到主规格并把 change 移入历史；交付仅推送当前公开分支到 origin，不创建或合入 MR。
+              targetBranch: codex/stabilize-incremental-workflow-recovery
+        proposalHash: b3600b7c724592b0ab408f75d4baab1c5ab5844f2eac04d9e9b63b45ea39eeb8
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-b3600b7c724592b0ab408f75d4baab1c5ab5844f2eac04d9e9b63b45ea39eeb8-push
+          choice: push
+          proposalHash: b3600b7c724592b0ab408f75d4baab1c5ab5844f2eac04d9e9b63b45ea39eeb8
+    evidenceWaits:
+      - id: stabilize-incremental-workflow-recovery:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-incremental-workflow-recovery
+          contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+          submissionId: e3846add-0a0f-4cba-98d6-973ee40b0a84
+      - id: stabilize-incremental-workflow-recovery:10
+        stepId: full.design.evidence
+        sequence: 10
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+          submissionId: 92de8c12-d384-453a-879b-a9ea45a39a1b
+      - id: stabilize-incremental-workflow-recovery:14
+        stepId: full.build.plan.evidence
+        sequence: 14
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+          contentHash: 04f4c50a73de5faf34f1ae3e3c12825803adfefee18311f82ad770a4aacf9df7
+          submissionId: 1a7c8ff3-74ff-47d5-a25e-8eb8603789fe
+      - id: stabilize-incremental-workflow-recovery:17
+        stepId: full.build.plan.evidence
+        sequence: 17
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+          contentHash: 371dfda0699af2b2cb5007c63d4d8f71c6d0521033f4d1e806f3152ee8acebb0
+          submissionId: 1d92bc5b-eea9-4e56-b5ca-72124b21980d
+      - id: stabilize-incremental-workflow-recovery:22
+        stepId: full.design.evidence
+        sequence: 22
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+          submissionId: eebc2f01-562d-4031-972e-d4dc0c3b8d32
+      - id: stabilize-incremental-workflow-recovery:24
+        stepId: full.build.plan.evidence
+        sequence: 24
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+          contentHash: 6d1eef69d2efae1862c5148b2cb40b6bacd479f5085c9fe3f75cf56602c9b310
+          submissionId: fa502f3f-f040-42ef-b996-1297e58df75c
+      - id: stabilize-incremental-workflow-recovery:27
+        stepId: full.build.check.evidence
+        sequence: 27
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/368f383f-78dd-44d3-88cf-331519c7420a.log
+          contentHash: cd8a0a1bf456b28c7dcc5d062b6abd410a33ef01242268c6d193e93bd7716d9e
+          submissionId: 0a4a596d-791e-4d1d-b7a2-74226244c701
+      - id: stabilize-incremental-workflow-recovery:29
+        stepId: full.verify.report.evidence
+        sequence: 29
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stabilize-incremental-workflow-recovery.md
+          contentHash: 5e4bbebf1dd92cfa51e8d70f91259f3b4fae022b4e9109ca4889671219de9998
+          submissionId: 9eb18769-ac94-4bd7-b17d-9dc2c85dced6
+      - id: stabilize-incremental-workflow-recovery:31
+        stepId: full.verify.check.evidence
+        sequence: 31
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/5be04080-89a2-4cb6-9fe9-67d2862e6887.log
+          contentHash: 9db41f820446e76fdcfbb2fbd16f8ba6fe9d2f0392e610b185508722c967c5a6
+          submissionId: 91ded846-bc09-41b2-8da5-e12dc268aea9
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 57
+  sourceHash: dcc3ef01910a934f76160992576fc8dabfa1b83a96bbbe817d4806a7b1757aae
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+      - choice: rejected
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+              requirementsEvidence:
+                contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+        handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+        proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+          Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+          revision、稳定decision identity并由Runtime
+          CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+          Evidence前置验证TDD Package闭包与授权包络，Specification
+          Provider前置验证Requirement映射和Capability
+          Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+          SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+        requirementsEvidence:
+          contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+          ref: openspec/changes/stabilize-incremental-workflow-recovery
+        sourceEvidence:
+          contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+          ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                tracked产品路径保持产品输入；注册Specification
+                Authority中的官方规划工件即使tracked也属于planning
+                semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+              requirementsEvidence:
+                contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+        handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+        proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+          Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+          revision、稳定decision identity并由Runtime
+          CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+          Evidence前置验证TDD Package闭包与授权包络，Specification
+          Provider前置验证Requirement映射和Capability
+          Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+          SDK。已批准的Spec Patch明确三类输入边界：普通Git tracked产品路径保持产品输入；注册Specification
+          Authority中的官方规划工件即使tracked也属于planning
+          semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+        requirementsEvidence:
+          contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+          ref: openspec/changes/stabilize-incremental-workflow-recovery
+        sourceEvidence:
+          contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+          ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - designDoc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+      - contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+        ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+      - boundBranch: codex/stabilize-incremental-workflow-recovery
+        buildMode: autonomous
+        directOverride: false
+        isolation: current
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.build.configure:
+              boundBranch: codex/stabilize-incremental-workflow-recovery
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+          ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+        plan: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+        planEvidence:
+          contentHash: 04f4c50a73de5faf34f1ae3e3c12825803adfefee18311f82ad770a4aacf9df7
+          ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+        taskRevision: a4f63e4aff6b23be2c03ceb83bd4d6598f71e23ba74d80f1e428c94137f0966b
+      - contentHash: 04f4c50a73de5faf34f1ae3e3c12825803adfefee18311f82ad770a4aacf9df7
+        ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+      - designEvidence:
+          contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+          ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+        plan: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+        planEvidence:
+          contentHash: 371dfda0699af2b2cb5007c63d4d8f71c6d0521033f4d1e806f3152ee8acebb0
+          ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+        taskRevision: a4f63e4aff6b23be2c03ceb83bd4d6598f71e23ba74d80f1e428c94137f0966b
+      - contentHash: 371dfda0699af2b2cb5007c63d4d8f71c6d0521033f4d1e806f3152ee8acebb0
+        ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: a0e0a5f467e4ee2665da76b029f20bb538a7c018350e4f64f5e4f5a865424c0e
+              proposal: 以当前已完成并验证的 OpenSpec 产物为唯一设计权威：Runtime 按 Requirements/Design、Plan、当前
+                Work、Evidence 的固定优先级分类事实，原子选择
+                revise-design、revise-plan、continue-build、invalidate-evidence、retry-infrastructure、reconcile-external
+                或 halt；Host 只能提交有界事实，不能选择阶段。规划语义、实现内容、执行控制、可选 Git identity 与
+                publication provenance 分区；任务复选框和证据提交不使获批 Build Protocol
+                失效。Evidence 按声明依赖图精确失效，基础设施不可用不回退 Build 或 Design。Specification
+                Provider 在 Open/Design 前置解析 Requirement identities 与 closure
+                feasibility；Plan Validator 前置验证 TDD Package 闭包和授权包络。保留
+                Repoctopus 的 OpenSpec、多仓 Binding、外部 Host、Cordis 与 OTLP 架构，只借鉴
+                Comet 0.5.1 的 Runtime 权威、恢复顺序、checkpoint 延续和增量失效，不引入 Comet
+                SDK。当前 Spec Patch 即 change 内已严格校验的 delta；不新增第二套规格或兼容旧
+                lifecycle。主要风险为 authority 输入漏分区、错误失效扩散和重复恢复，已由 118 项聚焦测试、6
+                个真实多仓场景及 189 文件完整矩阵覆盖。
+              requirementsEvidence:
+                contentHash: e7908a3fb39ba3b6fb2926472e0914f6cd509eaa7680463729e75fa90ccc0195
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: 79a7ad0e052593375f888881bece500a2dfc1434639fab9123eadb92c1d0dd48
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+        handoffHash: a0e0a5f467e4ee2665da76b029f20bb538a7c018350e4f64f5e4f5a865424c0e
+        proposal: 以当前已完成并验证的 OpenSpec 产物为唯一设计权威：Runtime 按 Requirements/Design、Plan、当前
+          Work、Evidence 的固定优先级分类事实，原子选择
+          revise-design、revise-plan、continue-build、invalidate-evidence、retry-infrastructure、reconcile-external
+          或 halt；Host 只能提交有界事实，不能选择阶段。规划语义、实现内容、执行控制、可选 Git identity 与
+          publication provenance 分区；任务复选框和证据提交不使获批 Build Protocol 失效。Evidence
+          按声明依赖图精确失效，基础设施不可用不回退 Build 或 Design。Specification Provider 在
+          Open/Design 前置解析 Requirement identities 与 closure feasibility；Plan
+          Validator 前置验证 TDD Package 闭包和授权包络。保留 Repoctopus 的 OpenSpec、多仓
+          Binding、外部 Host、Cordis 与 OTLP 架构，只借鉴 Comet 0.5.1 的 Runtime
+          权威、恢复顺序、checkpoint 延续和增量失效，不引入 Comet SDK。当前 Spec Patch 即 change
+          内已严格校验的 delta；不新增第二套规格或兼容旧 lifecycle。主要风险为 authority
+          输入漏分区、错误失效扩散和重复恢复，已由 118 项聚焦测试、6 个真实多仓场景及 189 文件完整矩阵覆盖。
+        requirementsEvidence:
+          contentHash: e7908a3fb39ba3b6fb2926472e0914f6cd509eaa7680463729e75fa90ccc0195
+          ref: openspec/changes/stabilize-incremental-workflow-recovery
+        sourceEvidence:
+          contentHash: 79a7ad0e052593375f888881bece500a2dfc1434639fab9123eadb92c1d0dd48
+          ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - designEvidence:
+          contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+          ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+        plan: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+        planEvidence:
+          contentHash: 6d1eef69d2efae1862c5148b2cb40b6bacd479f5085c9fe3f75cf56602c9b310
+          ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+        taskRevision: b2f153fe6f50b735c49d7eaca7ae2abfca2852b85b626dd67d7ec70b2b6e9d23
+      - contentHash: 6d1eef69d2efae1862c5148b2cb40b6bacd479f5085c9fe3f75cf56602c9b310
+        ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: cd8a0a1bf456b28c7dcc5d062b6abd410a33ef01242268c6d193e93bd7716d9e
+        cwd: .
+        environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+        exitCode: 0
+        inputAfter: 89568e373c98cde3365df2befb38039924058e22534ba39958f86099cbe1f087
+        inputBefore: 89568e373c98cde3365df2befb38039924058e22534ba39958f86099cbe1f087
+        manifestHash: decce4f3bb6c52121f49ede0a0e5ebab73c504e32ae3a7f2bbf3b66a44a2a88d
+        manifestRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/ac15977e-498e-45eb-94d2-4f6a10a8bb21.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/368f383f-78dd-44d3-88cf-331519c7420a.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: cd8a0a1bf456b28c7dcc5d062b6abd410a33ef01242268c6d193e93bd7716d9e
+        ref: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/368f383f-78dd-44d3-88cf-331519c7420a.log
+      - contentHash: 5e4bbebf1dd92cfa51e8d70f91259f3b4fae022b4e9109ca4889671219de9998
+        ref: docs/superpowers/reports/stabilize-incremental-workflow-recovery.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/stabilize-incremental-workflow-recovery.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 9db41f820446e76fdcfbb2fbd16f8ba6fe9d2f0392e610b185508722c967c5a6
+        cwd: .
+        deliveryInputs: {}
+        environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+        exitCode: 0
+        inputAfter: 6f9a43df36eb99f1616ea64c3a8e359989878d513b229d9491c3ee5b26f99ad0
+        inputBefore: 6f9a43df36eb99f1616ea64c3a8e359989878d513b229d9491c3ee5b26f99ad0
+        manifestHash: 981af5d97255c7e090cbb4500053a20e83ccc4deea8440f71137d2aac920274b
+        manifestRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/d5db7af6-b21d-43dd-a524-3e3759a32b28.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/5be04080-89a2-4cb6-9fe9-67d2862e6887.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 9db41f820446e76fdcfbb2fbd16f8ba6fe9d2f0392e610b185508722c967c5a6
+        ref: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/5be04080-89a2-4cb6-9fe9-67d2862e6887.log
+      - choice: push
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.archive.prepare:
+              remote: origin
+              summary: 完成增量工作流恢复稳定化：统一 Runtime 恢复权威与 CAS 应用，新增
+                revise-design、revise-plan、continue-build 和精确 Evidence
+                invalidation，前置 Requirement 与 closure 校验，补齐低基数 OTLP 轨迹；29/29
+                OpenSpec 任务、六个真实多仓场景和 189 文件完整验证全部通过。Archive 将正式同步四个 delta
+                capability 到主规格并把 change 移入历史；交付仅推送当前公开分支到 origin，不创建或合入 MR。
+              targetBranch: codex/stabilize-incremental-workflow-recovery
+      - remote: origin
+        summary: 完成增量工作流恢复稳定化：统一 Runtime 恢复权威与 CAS 应用，新增
+          revise-design、revise-plan、continue-build 和精确 Evidence invalidation，前置
+          Requirement 与 closure 校验，补齐低基数 OTLP 轨迹；29/29 OpenSpec 任务、六个真实多仓场景和 189
+          文件完整验证全部通过。Archive 将正式同步四个 delta capability 到主规格并把 change
+          移入历史；交付仅推送当前公开分支到 origin，不创建或合入 MR。
+        targetBranch: codex/stabilize-incremental-workflow-recovery
+      - baseCommit: b39be5eeb7d4bec2f55d2efeae0944a1ebe79a17
+        deliveryAction: push
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/stabilize-incremental-workflow-recovery
+        verifiedBranch: codex/stabilize-incremental-workflow-recovery
+      - archiveDirectory: openspec/changes/archive/2026-11-05-stabilize-incremental-workflow-recovery
+      - sequence: 8
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-incremental-workflow-recovery
+              changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+              workspaceBaseline:
+                ref: 23af2b75-8232-4850-83c2-57806b1476e2
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+                proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                  Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                  revision、稳定decision identity并由Runtime
+                  CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                  Evidence前置验证TDD Package闭包与授权包络，Specification
+                  Provider前置验证Requirement映射和Capability
+                  Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                  SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                  tracked产品路径保持产品输入；注册Specification
+                  Authority中的官方规划工件即使tracked也属于planning
+                  semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+                requirementsEvidence:
+                  contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                  ref: openspec/changes/stabilize-incremental-workflow-recovery
+                sourceEvidence:
+                  contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                  ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - sequence: 9
+        value:
+          designDoc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+      - sequence: 10
+        value:
+          contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+          ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+      - sequence: 7
+        value:
+          handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+          handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+          proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+            Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+            revision、稳定decision identity并由Runtime
+            CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+            Evidence前置验证TDD Package闭包与授权包络，Specification
+            Provider前置验证Requirement映射和Capability
+            Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+            SDK。已批准的Spec Patch明确三类输入边界：普通Git tracked产品路径保持产品输入；注册Specification
+            Authority中的官方规划工件即使tracked也属于planning
+            semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+          requirementsEvidence:
+            contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+            ref: openspec/changes/stabilize-incremental-workflow-recovery
+          sourceEvidence:
+            contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+            ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-incremental-workflow-recovery
+              changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+              workspaceBaseline:
+                ref: 23af2b75-8232-4850-83c2-57806b1476e2
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - sequence: 2
+        value:
+          contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+          ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - sequence: 4
+        value:
+          contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+      - sequence: 11
+        value:
+          boundBranch: codex/stabilize-incremental-workflow-recovery
+          buildMode: autonomous
+          directOverride: false
+          isolation: current
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 12
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-incremental-workflow-recovery
+              changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+              workspaceBaseline:
+                ref: 23af2b75-8232-4850-83c2-57806b1476e2
+            outputs:
+              full.build.configure:
+                boundBranch: codex/stabilize-incremental-workflow-recovery
+                buildMode: autonomous
+                directOverride: false
+                isolation: current
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 13
+        value:
+          designEvidence:
+            contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+            ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+          planEvidence:
+            contentHash: 04f4c50a73de5faf34f1ae3e3c12825803adfefee18311f82ad770a4aacf9df7
+            ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+          taskRevision: a4f63e4aff6b23be2c03ceb83bd4d6598f71e23ba74d80f1e428c94137f0966b
+      - sequence: 14
+        value:
+          contentHash: 04f4c50a73de5faf34f1ae3e3c12825803adfefee18311f82ad770a4aacf9df7
+          ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+      - sequence: 16
+        value:
+          designEvidence:
+            contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+            ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+          planEvidence:
+            contentHash: 371dfda0699af2b2cb5007c63d4d8f71c6d0521033f4d1e806f3152ee8acebb0
+            ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+          taskRevision: a4f63e4aff6b23be2c03ceb83bd4d6598f71e23ba74d80f1e428c94137f0966b
+      - sequence: 17
+        value:
+          contentHash: 371dfda0699af2b2cb5007c63d4d8f71c6d0521033f4d1e806f3152ee8acebb0
+          ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+      - sequence: 20
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-incremental-workflow-recovery
+              changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+              workspaceBaseline:
+                ref: 23af2b75-8232-4850-83c2-57806b1476e2
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                handoffHash: a0e0a5f467e4ee2665da76b029f20bb538a7c018350e4f64f5e4f5a865424c0e
+                proposal: 以当前已完成并验证的 OpenSpec 产物为唯一设计权威：Runtime 按 Requirements/Design、Plan、当前
+                  Work、Evidence 的固定优先级分类事实，原子选择
+                  revise-design、revise-plan、continue-build、invalidate-evidence、retry-infrastructure、reconcile-external
+                  或 halt；Host 只能提交有界事实，不能选择阶段。规划语义、实现内容、执行控制、可选 Git identity 与
+                  publication provenance 分区；任务复选框和证据提交不使获批 Build Protocol
+                  失效。Evidence 按声明依赖图精确失效，基础设施不可用不回退 Build 或 Design。Specification
+                  Provider 在 Open/Design 前置解析 Requirement identities 与 closure
+                  feasibility；Plan Validator 前置验证 TDD Package 闭包和授权包络。保留
+                  Repoctopus 的 OpenSpec、多仓 Binding、外部 Host、Cordis 与 OTLP 架构，只借鉴
+                  Comet 0.5.1 的 Runtime 权威、恢复顺序、checkpoint 延续和增量失效，不引入 Comet
+                  SDK。当前 Spec Patch 即 change 内已严格校验的 delta；不新增第二套规格或兼容旧
+                  lifecycle。主要风险为 authority 输入漏分区、错误失效扩散和重复恢复，已由 118 项聚焦测试、6
+                  个真实多仓场景及 189 文件完整矩阵覆盖。
+                requirementsEvidence:
+                  contentHash: e7908a3fb39ba3b6fb2926472e0914f6cd509eaa7680463729e75fa90ccc0195
+                  ref: openspec/changes/stabilize-incremental-workflow-recovery
+                sourceEvidence:
+                  contentHash: 79a7ad0e052593375f888881bece500a2dfc1434639fab9123eadb92c1d0dd48
+                  ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - sequence: 19
+        value:
+          handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+          handoffHash: a0e0a5f467e4ee2665da76b029f20bb538a7c018350e4f64f5e4f5a865424c0e
+          proposal: 以当前已完成并验证的 OpenSpec 产物为唯一设计权威：Runtime 按 Requirements/Design、Plan、当前
+            Work、Evidence 的固定优先级分类事实，原子选择
+            revise-design、revise-plan、continue-build、invalidate-evidence、retry-infrastructure、reconcile-external
+            或 halt；Host 只能提交有界事实，不能选择阶段。规划语义、实现内容、执行控制、可选 Git identity 与
+            publication provenance 分区；任务复选框和证据提交不使获批 Build Protocol 失效。Evidence
+            按声明依赖图精确失效，基础设施不可用不回退 Build 或 Design。Specification Provider 在
+            Open/Design 前置解析 Requirement identities 与 closure feasibility；Plan
+            Validator 前置验证 TDD Package 闭包和授权包络。保留 Repoctopus 的 OpenSpec、多仓
+            Binding、外部 Host、Cordis 与 OTLP 架构，只借鉴 Comet 0.5.1 的 Runtime
+            权威、恢复顺序、checkpoint 延续和增量失效，不引入 Comet SDK。当前 Spec Patch 即 change
+            内已严格校验的 delta；不新增第二套规格或兼容旧 lifecycle。主要风险为 authority
+            输入漏分区、错误失效扩散和重复恢复，已由 118 项聚焦测试、6 个真实多仓场景及 189 文件完整矩阵覆盖。
+          requirementsEvidence:
+            contentHash: e7908a3fb39ba3b6fb2926472e0914f6cd509eaa7680463729e75fa90ccc0195
+            ref: openspec/changes/stabilize-incremental-workflow-recovery
+          sourceEvidence:
+            contentHash: 79a7ad0e052593375f888881bece500a2dfc1434639fab9123eadb92c1d0dd48
+            ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - sequence: 21
+        value:
+          designDoc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+      - sequence: 22
+        value:
+          contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+          ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+      - sequence: 23
+        value:
+          designEvidence:
+            contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+            ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+          planEvidence:
+            contentHash: 6d1eef69d2efae1862c5148b2cb40b6bacd479f5085c9fe3f75cf56602c9b310
+            ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+          taskRevision: b2f153fe6f50b735c49d7eaca7ae2abfca2852b85b626dd67d7ec70b2b6e9d23
+      - sequence: 24
+        value:
+          contentHash: 6d1eef69d2efae1862c5148b2cb40b6bacd479f5085c9fe3f75cf56602c9b310
+          ref: docs/superpowers/plans/2026-11-05-stabilize-incremental-workflow-recovery.md
+      - sequence: 25
+        value:
+          event: build-complete
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: cd8a0a1bf456b28c7dcc5d062b6abd410a33ef01242268c6d193e93bd7716d9e
+          cwd: .
+          environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+          exitCode: 0
+          inputAfter: 89568e373c98cde3365df2befb38039924058e22534ba39958f86099cbe1f087
+          inputBefore: 89568e373c98cde3365df2befb38039924058e22534ba39958f86099cbe1f087
+          manifestHash: decce4f3bb6c52121f49ede0a0e5ebab73c504e32ae3a7f2bbf3b66a44a2a88d
+          manifestRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/ac15977e-498e-45eb-94d2-4f6a10a8bb21.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/368f383f-78dd-44d3-88cf-331519c7420a.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 27
+        value:
+          contentHash: cd8a0a1bf456b28c7dcc5d062b6abd410a33ef01242268c6d193e93bd7716d9e
+          ref: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/368f383f-78dd-44d3-88cf-331519c7420a.log
+      - sequence: 29
+        value:
+          contentHash: 5e4bbebf1dd92cfa51e8d70f91259f3b4fae022b4e9109ca4889671219de9998
+          ref: docs/superpowers/reports/stabilize-incremental-workflow-recovery.md
+      - sequence: 28
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-incremental-workflow-recovery.md
+      - sequence: 30
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 9db41f820446e76fdcfbb2fbd16f8ba6fe9d2f0392e610b185508722c967c5a6
+          cwd: .
+          deliveryInputs: {}
+          environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+          exitCode: 0
+          inputAfter: 6f9a43df36eb99f1616ea64c3a8e359989878d513b229d9491c3ee5b26f99ad0
+          inputBefore: 6f9a43df36eb99f1616ea64c3a8e359989878d513b229d9491c3ee5b26f99ad0
+          manifestHash: 981af5d97255c7e090cbb4500053a20e83ccc4deea8440f71137d2aac920274b
+          manifestRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/d5db7af6-b21d-43dd-a524-3e3759a32b28.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/5be04080-89a2-4cb6-9fe9-67d2862e6887.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 31
+        value:
+          contentHash: 9db41f820446e76fdcfbb2fbd16f8ba6fe9d2f0392e610b185508722c967c5a6
+          ref: .comet/runtime/classic-sdk-checks/5ca2803a4b834203a4086115801f5cec571445b874c5c0186b29858160c03416/5be04080-89a2-4cb6-9fe9-67d2862e6887.log
+      - sequence: 33
+        value:
+          choice: push
+          proposal:
+            input:
+              change: stabilize-incremental-workflow-recovery
+              changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+              workspaceBaseline:
+                ref: 23af2b75-8232-4850-83c2-57806b1476e2
+            outputs:
+              full.archive.prepare:
+                remote: origin
+                summary: 完成增量工作流恢复稳定化：统一 Runtime 恢复权威与 CAS 应用，新增
+                  revise-design、revise-plan、continue-build 和精确 Evidence
+                  invalidation，前置 Requirement 与 closure 校验，补齐低基数 OTLP 轨迹；29/29
+                  OpenSpec 任务、六个真实多仓场景和 189 文件完整验证全部通过。Archive 将正式同步四个 delta
+                  capability 到主规格并把 change 移入历史；交付仅推送当前公开分支到 origin，不创建或合入 MR。
+                targetBranch: codex/stabilize-incremental-workflow-recovery
+      - sequence: 32
+        value:
+          remote: origin
+          summary: 完成增量工作流恢复稳定化：统一 Runtime 恢复权威与 CAS 应用，新增
+            revise-design、revise-plan、continue-build 和精确 Evidence
+            invalidation，前置 Requirement 与 closure 校验，补齐低基数 OTLP 轨迹；29/29
+            OpenSpec 任务、六个真实多仓场景和 189 文件完整验证全部通过。Archive 将正式同步四个 delta
+            capability 到主规格并把 change 移入历史；交付仅推送当前公开分支到 origin，不创建或合入 MR。
+          targetBranch: codex/stabilize-incremental-workflow-recovery
+      - sequence: 34
+        value:
+          baseCommit: b39be5eeb7d4bec2f55d2efeae0944a1ebe79a17
+          deliveryAction: push
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/stabilize-incremental-workflow-recovery
+          verifiedBranch: codex/stabilize-incremental-workflow-recovery
+      - sequence: 35
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-05-stabilize-incremental-workflow-recovery
+      - sequence: 6
+        value:
+          choice: rejected
+          proposal:
+            input:
+              change: stabilize-incremental-workflow-recovery
+              changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+              workspaceBaseline:
+                ref: 23af2b75-8232-4850-83c2-57806b1476e2
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+                proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                  Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                  revision、稳定decision identity并由Runtime
+                  CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                  Evidence前置验证TDD Package闭包与授权包络，Specification
+                  Provider前置验证Requirement映射和Capability
+                  Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                  SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec
+                  Patch。
+                requirementsEvidence:
+                  contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+                  ref: openspec/changes/stabilize-incremental-workflow-recovery
+                sourceEvidence:
+                  contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+                  ref: openspec/changes/stabilize-incremental-workflow-recovery
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+          handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+          proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+            Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+            revision、稳定decision identity并由Runtime
+            CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+            Evidence前置验证TDD Package闭包与授权包络，Specification
+            Provider前置验证Requirement映射和Capability
+            Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+            SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+          requirementsEvidence:
+            contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+            ref: openspec/changes/stabilize-incremental-workflow-recovery
+          sourceEvidence:
+            contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+            ref: openspec/changes/stabilize-incremental-workflow-recovery
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 6
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 7
+        left: 10
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 11
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 6
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 9
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 8
+        left: 13
+        right: 14
+        height: 2
+      - key: full.design.handoff
+        value: 7
+        left: 15
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 16
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 6
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 11
+        left: 18
+        right: 19
+        height: 2
+      - key: full.design.handoff
+        value: 7
+        left: 14
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 8
+        left: 20
+        right: 21
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 22
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 6
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 13
+        left: 24
+        right: 25
+        height: 2
+      - key: full.build.confirm
+        value: 11
+        left: 18
+        right: 26
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 21
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 8
+        left: 27
+        right: 28
+        height: 4
+      - key: full.build.plan.evidence
+        value: 15
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 14
+        left: null
+        right: 30
+        height: 2
+      - key: full.design.handoff
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 16
+        left: null
+        right: 32
+        height: 2
+      - key: full.design.confirm
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 9
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 17
+        left: 35
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 8
+        left: 34
+        right: 36
+        height: 3
+      - key: full.build.plan
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 19
+        left: 38
+        right: 39
+        height: 2
+      - key: full.design.document
+        value: 8
+        left: 40
+        right: 36
+        height: 3
+      - key: full.build.execute
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 18
+        left: 42
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 19
+        left: 43
+        right: 39
+        height: 3
+      - key: full.design.document
+        value: 8
+        left: 44
+        right: 36
+        height: 4
+      - key: full.build.check.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 21
+        left: null
+        right: 46
+        height: 2
+      - key: full.build.plan
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 19
+        left: 48
+        right: 39
+        height: 2
+      - key: full.build.execute
+        value: 20
+        left: 47
+        right: 49
+        height: 3
+      - key: full.design.document
+        value: 8
+        left: 50
+        right: 36
+        height: 4
+      - key: full.verify.run
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 23
+        left: null
+        right: 52
+        height: 2
+      - key: full.design.handoff
+        value: 17
+        left: 35
+        right: 53
+        height: 3
+      - key: full.design.document
+        value: 8
+        left: 50
+        right: 54
+        height: 4
+      - key: full.design.handoff
+        value: 17
+        left: 35
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 23
+        left: 57
+        right: 52
+        height: 2
+      - key: full.verify.check
+        value: 25
+        left: 56
+        right: 58
+        height: 3
+      - key: full.design.document
+        value: 8
+        left: 50
+        right: 59
+        height: 4
+      - key: full.archive.prepare
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: 61
+        height: 2
+      - key: full.build.check
+        value: 21
+        left: 62
+        right: 46
+        height: 3
+      - key: full.build.execute
+        value: 20
+        left: 63
+        right: 49
+        height: 4
+      - key: full.design.document
+        value: 8
+        left: 64
+        right: 59
+        height: 5
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 29
+        left: 66
+        right: 67
+        height: 2
+      - key: full.build.check
+        value: 21
+        left: 68
+        right: 46
+        height: 3
+      - key: full.build.execute
+        value: 20
+        left: 69
+        right: 49
+        height: 4
+      - key: full.design.document
+        value: 8
+        left: 70
+        right: 59
+        height: 5
+      - key: full.archive.execute
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: 72
+        height: 2
+      - key: full.build.check
+        value: 21
+        left: 67
+        right: 46
+        height: 2
+      - key: full.archive.preflight
+        value: 29
+        left: 73
+        right: 74
+        height: 3
+      - key: full.build.execute
+        value: 20
+        left: 75
+        right: 49
+        height: 4
+      - key: full.design.document
+        value: 8
+        left: 76
+        right: 59
+        height: 5
+      - key: full.design.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 32
+        left: 78
+        right: 79
+        height: 2
+      - key: full.open
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 37
+        left: null
+        right: 82
+        height: 2
+      - key: full.open.confirm
+        value: 36
+        left: 81
+        right: 83
+        height: 3
+      - key: full.design.handoff
+        value: 34
+        left: 80
+        right: 84
+        height: 4
+      - key: full.build.configure
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 40
+        left: 86
+        right: 87
+        height: 2
+      - key: full.design.document
+        value: 32
+        left: 88
+        right: 79
+        height: 3
+      - key: full.design.handoff
+        value: 34
+        left: 89
+        right: 84
+        height: 4
+      - key: full.build.plan.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 41
+        left: null
+        right: 91
+        height: 2
+      - key: full.build.confirm
+        value: 40
+        left: 86
+        right: 92
+        height: 3
+      - key: full.design.document
+        value: 32
+        left: null
+        right: 79
+        height: 2
+      - key: full.design.confirm
+        value: 31
+        left: 93
+        right: 94
+        height: 4
+      - key: full.design.handoff
+        value: 34
+        left: 95
+        right: 84
+        height: 5
+      - key: full.build.plan.evidence
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 43
+        left: null
+        right: 97
+        height: 2
+      - key: full.design.handoff
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 45
+        left: null
+        right: 99
+        height: 2
+      - key: full.design.confirm
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 46
+        left: 102
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 47
+        left: 101
+        right: 103
+        height: 3
+      - key: full.build.plan
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 50
+        left: 105
+        right: 106
+        height: 2
+      - key: full.design.document
+        value: 47
+        left: 107
+        right: 103
+        height: 3
+      - key: full.build.execute
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 49
+        left: 109
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 50
+        left: 110
+        right: 106
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 111
+        right: 103
+        height: 4
+      - key: full.build.check.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 52
+        left: null
+        right: 113
+        height: 2
+      - key: full.build.plan
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 50
+        left: 115
+        right: 106
+        height: 2
+      - key: full.build.execute
+        value: 51
+        left: 114
+        right: 116
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 117
+        right: 103
+        height: 4
+      - key: full.verify.run
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 54
+        left: null
+        right: 119
+        height: 2
+      - key: full.design.handoff
+        value: 46
+        left: 102
+        right: 120
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 117
+        right: 121
+        height: 4
+      - key: full.design.handoff
+        value: 46
+        left: 102
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 54
+        left: 124
+        right: 119
+        height: 2
+      - key: full.verify.check
+        value: 56
+        left: 123
+        right: 125
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 117
+        right: 126
+        height: 4
+      - key: full.archive.prepare
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 58
+        left: null
+        right: 128
+        height: 2
+      - key: full.build.check
+        value: 52
+        left: 129
+        right: 113
+        height: 3
+      - key: full.build.execute
+        value: 51
+        left: 130
+        right: 116
+        height: 4
+      - key: full.design.document
+        value: 47
+        left: 131
+        right: 126
+        height: 5
+      - key: full.archive.confirm
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 60
+        left: 133
+        right: 134
+        height: 2
+      - key: full.build.check
+        value: 52
+        left: 135
+        right: 113
+        height: 3
+      - key: full.build.execute
+        value: 51
+        left: 136
+        right: 116
+        height: 4
+      - key: full.design.document
+        value: 47
+        left: 137
+        right: 126
+        height: 5
+      - key: full.archive.execute
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 58
+        left: null
+        right: 139
+        height: 2
+      - key: full.build.check
+        value: 52
+        left: 134
+        right: 113
+        height: 2
+      - key: full.archive.preflight
+        value: 60
+        left: 140
+        right: 141
+        height: 3
+      - key: full.build.execute
+        value: 51
+        left: 142
+        right: 116
+        height: 4
+      - key: full.design.document
+        value: 47
+        left: 143
+        right: 126
+        height: 5
+      - key: full.open
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 36
+        left: 145
+        right: 146
+        height: 2
+      - key: full.open.revalidate
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 37
+        left: null
+        right: 148
+        height: 2
+      - key: full.open.confirm
+        value: 36
+        left: 145
+        right: 149
+        height: 3
+      - key: full.design.confirm
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 63
+        left: 151
+        right: 152
+        height: 2
+      - key: full.open.confirm
+        value: 36
+        left: 153
+        right: 149
+        height: 3
+      - key: full.design.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 34
+        left: 155
+        right: 152
+        height: 2
+      - key: full.open.confirm
+        value: 36
+        left: 156
+        right: 149
+        height: 3
+      - key: full.archive.confirm
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 61
+        left: 158
+        right: 159
+        height: 2
+      - key: full.build.check
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 53
+        left: 161
+        right: 162
+        height: 2
+      - key: full.build.execute
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 49
+        left: 164
+        right: 165
+        height: 2
+      - key: full.build.confirm
+        value: 40
+        left: 163
+        right: 166
+        height: 3
+      - key: full.archive.prepare
+        value: 59
+        left: 160
+        right: 167
+        height: 4
+      - key: full.design.evidence
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 47
+        left: null
+        right: 169
+        height: 2
+      - key: full.design.handoff
+        value: 46
+        left: 170
+        right: 152
+        height: 3
+      - key: full.open.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 38
+        left: 172
+        right: 173
+        height: 2
+      - key: full.verify.run
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 54
+        left: null
+        right: 175
+        height: 2
+      - key: full.verify.check.evidence
+        value: 57
+        left: 174
+        right: 176
+        height: 3
+      - key: full.open.confirm
+        value: 36
+        left: 171
+        right: 177
+        height: 4
+      - key: full.design.confirm
+        value: 45
+        left: 168
+        right: 178
+        height: 5
+      - key: full.open.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 35
+        left: null
+        right: 180
+        height: 2
+      - key: full.design.handoff
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 37
+        left: 183
+        right: 184
+        height: 2
+      - key: full.open
+        value: 35
+        left: 182
+        right: 185
+        height: 3
+      - key: full.design.confirm
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 34
+        left: 187
+        right: null
+        height: 2
+      - key: full.open
+        value: 35
+        left: 188
+        right: 185
+        height: 3
+      - key: full.build.configure
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 33
+        left: 191
+        right: 192
+        height: 2
+      - key: full.design.confirm
+        value: 31
+        left: 190
+        right: 193
+        height: 3
+      - key: full.open
+        value: 35
+        left: 194
+        right: 185
+        height: 4
+      - key: full.design.handoff
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 52
+        left: 197
+        right: 198
+        height: 2
+      - key: full.build.plan
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 50
+        left: 200
+        right: 201
+        height: 2
+      - key: full.build.execute
+        value: 51
+        left: 199
+        right: 202
+        height: 3
+      - key: full.design.evidence
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 46
+        left: 204
+        right: 205
+        height: 2
+      - key: full.verify.run
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 54
+        left: null
+        right: 207
+        height: 2
+      - key: full.verify.check.evidence
+        value: 57
+        left: 206
+        right: 208
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 203
+        right: 209
+        height: 4
+      - key: full.open
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 32
+        left: 212
+        right: 213
+        height: 2
+      - key: full.open.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 37
+        left: 215
+        right: 216
+        height: 2
+      - key: full.open
+        value: 35
+        left: 214
+        right: 217
+        height: 3
+      - key: full.build.configure
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 40
+        left: 219
+        right: 220
+        height: 2
+      - key: full.design.document
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 33
+        left: 222
+        right: 223
+        height: 2
+      - key: full.design.confirm
+        value: 31
+        left: 221
+        right: 224
+        height: 3
+      - key: full.open
+        value: 35
+        left: 225
+        right: 217
+        height: 4
+      - key: full.build.plan
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 47
+        left: 228
+        right: 229
+        height: 2
+      - key: full.build.plan
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 45
+        left: 231
+        right: null
+        height: 2
+      - key: full.design.evidence
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 46
+        left: 233
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 47
+        left: 232
+        right: 234
+        height: 3
+      - key: full.build.execute
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 52
+        left: null
+        right: 236
+        height: 2
+      - key: full.build.plan.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 45
+        left: 238
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 49
+        left: 237
+        right: 239
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 240
+        right: 234
+        height: 4
+      - key: full.build.check
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.execute
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 53
+        left: 242
+        right: 243
+        height: 2
+      - key: full.build.plan
+        value: 49
+        left: 244
+        right: 239
+        height: 3
+      - key: full.verify.run
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 46
+        left: 233
+        right: 246
+        height: 2
+      - key: full.design.document
+        value: 47
+        left: 245
+        right: 247
+        height: 4
+      - key: full.verify.check
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 54
+        left: 249
+        right: 250
+        height: 2
+      - key: full.design.handoff
+        value: 46
+        left: 233
+        right: 251
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 245
+        right: 252
+        height: 4
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 12
+      - 17
+      - 23
+      - 29
+      - 31
+      - 33
+      - 37
+      - 41
+      - 45
+      - 51
+      - 55
+      - 60
+      - 65
+      - 71
+      - 77
+      - 85
+      - 90
+      - 96
+      - 98
+      - 100
+      - 104
+      - 108
+      - 112
+      - 118
+      - 122
+      - 127
+      - 132
+      - 138
+      - 144
+      - 147
+      - 150
+      - 154
+      - 157
+      - 179
+      - 181
+      - 186
+      - 189
+      - 195
+      - 196
+      - 210
+      - 211
+      - 218
+      - 226
+      - 227
+      - 230
+      - 235
+      - 241
+      - 248
+      - 253
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 18
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:11
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:13
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:15
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:16
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:18
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:19
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:21
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:23
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:25
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:26
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:28
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:30
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:32
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:34
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:35
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:36
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:4
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:5
+          - results
+        map: 34
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:7
+          - results
+        map: 35
+      - path:
+          - actionContexts
+          - stabilize-incremental-workflow-recovery:9
+          - results
+        map: 36
+      - path:
+          - outputs
+        map: 37
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 38
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 39
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 40
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 41
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 42
+      - path:
+          - waits
+          - "5"
+          - results
+        map: 43
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 44
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 45
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 46
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 47
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 48
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 49
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 50
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 51
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 52
+  storageHash: 15f4635c462567c13496749088b0d0436f0a070a01f044ec6ef642f14eac2e3d
+check_epoch: 7
