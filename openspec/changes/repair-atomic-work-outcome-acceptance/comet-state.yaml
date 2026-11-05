@@ -39,7 +39,7 @@ run_checkpoint:
     revision: 1
     workflow:
       id: comet-classic-full
-      version: "1"
+      version: '1'
       hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
     definitionHashes:
       '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5

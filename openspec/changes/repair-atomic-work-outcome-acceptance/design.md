@@ -144,4 +144,3 @@ Build Execute 保留现有两阶段副作用协议：候选接受只证明 Host 
 4. 完成单元、集成、外部 CLI、冷启动、多仓与 OpenTelemetry 验证。
 5. 使用新 Run 重跑 Round 8 场景；旧卡住 Run 仅保留为 evidence，不迁移。
 6. 若发布前发现回归，整体回退该 change；由于没有 schema migration 或旧 Run 改写，回退不需要数据修复。
-

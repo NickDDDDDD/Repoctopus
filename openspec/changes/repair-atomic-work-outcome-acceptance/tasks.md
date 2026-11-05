@@ -52,4 +52,3 @@
 
 - 在正式验证和人工批准完成后归档该 change。
 - 合入并发布分支后，从干净 checkout 验证归档结果和新的多仓 acceptance Run。
-
