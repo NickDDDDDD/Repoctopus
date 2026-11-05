@@ -152,7 +152,7 @@
       **Acceptance:** 冷恢复、重复pull和进程中断收敛；伪造phase、action或旧candidate的请求被拒绝
       **Requirements:** Host 只能报告发现而不能选择阶段, Continue Build 保留当前执行身份
 
-- [ ] 9.3 在模拟团队协调仓与多个业务仓中运行完整小change验收，并核对阶段往返、Work、Skill、Evidence与OTLP轨迹 <!-- comet-task:56292f05-a314-41e2-8893-466f6f368330 -->
+- [x] 9.3 在模拟团队协调仓与多个业务仓中运行完整小change验收，并核对阶段往返、Work、Skill、Evidence与OTLP轨迹 <!-- comet-task:56292f05-a314-41e2-8893-466f6f368330 -->
       **Blocked by:** 8.2, 9.2
       **Acceptance:** 没有无依据的Build到Design或关闭前双回退；每次恢复与保留事实都能从trajectory和OTLP解释
       **Requirements:** 失败分类必须决定真实返工路径, Evidence 失效必须按声明输入面传播
