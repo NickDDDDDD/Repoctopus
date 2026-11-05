@@ -86,6 +86,10 @@ npm run verify
   generated, brand, architecture, provenance, and Dashboard salvage passed
   strict OpenSpec passed: 18 items, 0 failed
   managed execution report reproduced the package identity
+
+comet check run stabilize-cli-distribution-gate build -- npm.cmd run verify
+  exit 0; full tier; 2,293 final inputs remained stable during execution
+  receipt: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/f7609f1b-b040-474a-8768-aec8f34b9e75.log
 ```
 
 The pre-report pass reached the final freshness gate and correctly requested this report. After the
@@ -105,6 +109,20 @@ Design and existing task IDs were revised without changing the `product-distribu
 The repair added RED tests for all three executable gaps, observed their expected failures, applied
 the minimal implementation, and returned the focused suite to green before the package and static
 checks above.
+
+## OpenSpec verification scorecard
+
+| Dimension    | Status                                                                  |
+| ------------ | ----------------------------------------------------------------------- |
+| Completeness | 9/9 tasks complete; 5/5 added requirements mapped                       |
+| Correctness  | 5/5 requirements implemented; 14/14 scenarios covered by tests/evidence |
+| Coherence    | Approved Design followed; no scope or project-pattern divergence        |
+
+The independent delta review of the repaired inputs found 0 CRITICAL, 0 IMPORTANT, and 0 WARNING
+issues. It confirmed the standalone build lifecycle, task 3.1 baseline wording, job-level permission
+rejection, direct-source freshness wording, and absence of Runtime, Cordis, launcher, or protocol
+scope drift. The only suggestion was to refresh the lifecycle wording in this verdict; that evidence
+correction is included below.
 
 The first complete verification attempt ran from a new worktree whose local `node_modules` held
 only Vite caches while Node resolved most dependencies from the parent repository. The Desktop E2E
@@ -146,6 +164,7 @@ GitHub branch rules by a repository administrator.
 ## Verdict
 
 The packaged implementation establishes a clean-checkout CI contract and a deterministic CLI
-consumer boundary without changing Repoctopus Runtime semantics. The remaining lifecycle work is to
-reproduce this report's package identity, complete Comet Build Check and Verify, observe the first
-GitHub-hosted check, and archive the OpenSpec change.
+consumer boundary without changing Repoctopus Runtime semantics. Build Check and independent Verify
+review are complete with no unresolved issue. The remaining lifecycle work is to bind this report to
+the Runtime Verify Guard, observe the first GitHub-hosted check when a pull request runs, and archive
+the OpenSpec change after delivery confirmation.
