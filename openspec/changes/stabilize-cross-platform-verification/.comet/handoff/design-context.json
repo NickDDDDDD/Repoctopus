@@ -1,0 +1,15 @@
+{
+  "change": "stabilize-cross-platform-verification",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684",
+  "files": [
+    { "path": "openspec/changes/stabilize-cross-platform-verification/proposal.md", "sha256": "360f69c39cce56dede2abb60aefa90d2bb720034a7aa65c43ba95a8e7854eaec" },
+    { "path": "openspec/changes/stabilize-cross-platform-verification/design.md", "sha256": "f606f7699816345d2a3e9c4afd5e47af9d91915e887525edaa3b27f2667e4df7" },
+    { "path": "openspec/changes/stabilize-cross-platform-verification/tasks.md", "sha256": "f359d68dec121b0fcfd26507397427884a825e9fd50ca6ca2145d03246fbfff0" },
+    { "path": "openspec/changes/stabilize-cross-platform-verification/.openspec.yaml", "sha256": "33aa04d9a957ff55fa34f28d70076b6c9fe609779912961844af9ee5b854ea65" }
+  ]
+}

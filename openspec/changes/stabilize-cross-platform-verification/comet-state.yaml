@@ -1,0 +1,1892 @@
+# comet-execution: managed-run
+change_id: 6741acb1-98f0-4bb5-a825-6164b3b5cd32
+workflow: full
+language: zh-CN
+phase: build
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: 2c885b75b2edf76b64be86941acb594ed2a152b6
+design_doc: openspec/changes/stabilize-cross-platform-verification/design.md
+plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-05
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/stabilize-cli-distribution-gate
+direct_override: false
+handoff_context: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+handoff_hash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: f2527fb6e4f8094efba8dfe957f48c47f90be5a7716f93b067118299cc9edd71
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-cross-platform-verification
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: c4133e6f33c0977647a7d6551a8d0b47a3a1df490c9166682a164b3c00fa1ac3
+    input:
+      change: stabilize-cross-platform-verification
+      changeDir: openspec/changes/stabilize-cross-platform-verification
+      workspaceBaseline:
+        ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 2c885b75b2edf76b64be86941acb594ed2a152b6
+      boundBranch: comet/stabilize-cli-distribution-gate
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 2
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-05
+      designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+      directOverride: false
+      handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+      handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+      isolation: current
+      language: zh-CN
+      phase: build
+      plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 13
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-ededd5aae8153033095cb3313a51e806b26548ad6ff801f66daaf7b6440be136
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:1
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs: {}
+        inputHash: b7314ae20f815beab1f0591ea424523968f8ac3fb45e50d25d2c6442205c34d6
+        outcome:
+          actionId: stabilize-cross-platform-verification:1
+          attempt: 1
+          claimToken: portable-ededd5aae8153033095cb3313a51e806b26548ad6ff801f66daaf7b6440be136
+          inputHash: b7314ae20f815beab1f0591ea424523968f8ac3fb45e50d25d2c6442205c34d6
+          outcomeId: c42c866d-338f-4c93-adb1-042e7a6ed4ef
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7e00918da3a64a0a63a88bc6cfc27ed91bbf60147be91f2a45c204877073ef69
+            outcomeId: c42c866d-338f-4c93-adb1-042e7a6ed4ef
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-9b33c62be3b00302ba0b0645031d55eee52eabfc8f57664658d659cfa0ceb21d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:4
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+            full.open.evidence:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+        inputHash: 928efb65e39db14e1ed458ea2c1793f94840273a3d7e35edcb021f9cafbcbc9f
+        outcome:
+          actionId: stabilize-cross-platform-verification:4
+          attempt: 1
+          claimToken: portable-9b33c62be3b00302ba0b0645031d55eee52eabfc8f57664658d659cfa0ceb21d
+          inputHash: 928efb65e39db14e1ed458ea2c1793f94840273a3d7e35edcb021f9cafbcbc9f
+          outcomeId: stabilize-cross-platform-verification:4:1:executor-result
+          output:
+            contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: cf1627506ce300e614ec72d6314a3b6786d64558b97a03329ab5ff3ee3ed1026
+            outcomeId: stabilize-cross-platform-verification:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-7399b120cee15df5cd1caa4f816af8eb763eb488cb184a08dc30f587f2710f29
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:5
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+            full.open.evidence:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+            full.open.revalidate:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        inputHash: b92f7e514b7d30f8e07bb1d1d33da6f65ffeb7adf6e61e591ee7d0dce88b78e2
+        outcome:
+          actionId: stabilize-cross-platform-verification:5
+          attempt: 1
+          claimToken: portable-7399b120cee15df5cd1caa4f816af8eb763eb488cb184a08dc30f587f2710f29
+          inputHash: b92f7e514b7d30f8e07bb1d1d33da6f65ffeb7adf6e61e591ee7d0dce88b78e2
+          outcomeId: 19390298-b2af-4acf-a96a-6b041406b99d
+          output:
+            handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+            handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+            proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+              Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+              recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+              product-distribution、desktop-observability-dashboard、feedback-collection
+              与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+              Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存 TDD
+              证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+              共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+              时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+            requirementsEvidence:
+              contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+              ref: openspec/changes/stabilize-cross-platform-verification
+            sourceEvidence:
+              contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+              ref: openspec/changes/stabilize-cross-platform-verification
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a9ef195b30f87e28b9f5d127593b8db691798a9eeaa08a31dd1f9219f78ca97c
+            outcomeId: 19390298-b2af-4acf-a96a-6b041406b99d
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d10a093ab8cb3ccb9479ce6e5c0d8f38bd0baaabf89736b8d76958911c0ea32a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:7
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                    handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                    proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                      Windows checkout；Windows Desktop discovery 显式使用
+                      path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                      terminated，超时保持 unknown。既有
+                      product-distribution、desktop-observability-dashboard、feedback-collection
+                      与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改
+                      Engine、Cordis Service、Runtime 状态机、OTLP schema、公共 CLI
+                      或正式桌面平台范围。相关 Vitest 保存 TDD 证据，本地 Windows npm run verify 与
+                      GitHub Linux PR verify 共同构成最终验证；若远端仍失败则保留 change
+                      开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+                      时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                    requirementsEvidence:
+                      contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                      ref: openspec/changes/stabilize-cross-platform-verification
+                    sourceEvidence:
+                      contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                      ref: openspec/changes/stabilize-cross-platform-verification
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+            full.open.evidence:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+            full.open.revalidate:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        inputHash: 1610337e6c82bc3316e242ef01ce200e06bb7ff8fcf35002eac78fed7e0c80d0
+        outcome:
+          actionId: stabilize-cross-platform-verification:7
+          attempt: 1
+          claimToken: portable-d10a093ab8cb3ccb9479ce6e5c0d8f38bd0baaabf89736b8d76958911c0ea32a
+          inputHash: 1610337e6c82bc3316e242ef01ce200e06bb7ff8fcf35002eac78fed7e0c80d0
+          outcomeId: 75f8261e-17e6-4c69-a9ab-ea1ea3b67351
+          output:
+            designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e05802e399e971900fa027380fbdb32edc11bc6207a1933d5d4d02cd9a7481f4
+            outcomeId: 75f8261e-17e6-4c69-a9ab-ea1ea3b67351
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-7367ac8d6d66efad2dbe140aada2ba83dffb79fb48c566f14dc1eb6c46e7e6b2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:9
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                    handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                    proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                      Windows checkout；Windows Desktop discovery 显式使用
+                      path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                      terminated，超时保持 unknown。既有
+                      product-distribution、desktop-observability-dashboard、feedback-collection
+                      与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改
+                      Engine、Cordis Service、Runtime 状态机、OTLP schema、公共 CLI
+                      或正式桌面平台范围。相关 Vitest 保存 TDD 证据，本地 Windows npm run verify 与
+                      GitHub Linux PR verify 共同构成最终验证；若远端仍失败则保留 change
+                      开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+                      时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                    requirementsEvidence:
+                      contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                      ref: openspec/changes/stabilize-cross-platform-verification
+                    sourceEvidence:
+                      contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                      ref: openspec/changes/stabilize-cross-platform-verification
+            full.design.document:
+              designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+            full.design.evidence:
+              contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+              ref: openspec/changes/stabilize-cross-platform-verification/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+            full.open.evidence:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+            full.open.revalidate:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        inputHash: 6966ee1d6079935e9768b622ab0a1f10365799d005f57cfc6b08f4d6ce5ed516
+        outcome:
+          actionId: stabilize-cross-platform-verification:9
+          attempt: 1
+          claimToken: portable-7367ac8d6d66efad2dbe140aada2ba83dffb79fb48c566f14dc1eb6c46e7e6b2
+          inputHash: 6966ee1d6079935e9768b622ab0a1f10365799d005f57cfc6b08f4d6ce5ed516
+          outcomeId: cc547676-9ee7-498b-bb3c-86b0574ed03a
+          output:
+            boundBranch: comet/stabilize-cli-distribution-gate
+            buildMode: autonomous
+            directOverride: false
+            isolation: current
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: caee61a6fdd1f138eccf29fa11f3e1fb936ce7a35c4893a8c0bae6241ab382a3
+            outcomeId: cc547676-9ee7-498b-bb3c-86b0574ed03a
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-98e1df165cccbc4be57549c3c3103c912a7ff6b1f08994ed03d5f28811aa6df8
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-cross-platform-verification:11
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.build.configure:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/stabilize-cli-distribution-gate
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: current
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                    handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                    proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                      Windows checkout；Windows Desktop discovery 显式使用
+                      path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                      terminated，超时保持 unknown。既有
+                      product-distribution、desktop-observability-dashboard、feedback-collection
+                      与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改
+                      Engine、Cordis Service、Runtime 状态机、OTLP schema、公共 CLI
+                      或正式桌面平台范围。相关 Vitest 保存 TDD 证据，本地 Windows npm run verify 与
+                      GitHub Linux PR verify 共同构成最终验证；若远端仍失败则保留 change
+                      开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+                      时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                    requirementsEvidence:
+                      contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                      ref: openspec/changes/stabilize-cross-platform-verification
+                    sourceEvidence:
+                      contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                      ref: openspec/changes/stabilize-cross-platform-verification
+            full.design.document:
+              designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+            full.design.evidence:
+              contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+              ref: openspec/changes/stabilize-cross-platform-verification/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+            full.open.evidence:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+            full.open.revalidate:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        inputHash: c19903a3bec9093390c576e81576915b5f54afba86d52df30f11d8a40692ebaf
+        outcome:
+          actionId: stabilize-cross-platform-verification:11
+          attempt: 1
+          claimToken: portable-98e1df165cccbc4be57549c3c3103c912a7ff6b1f08994ed03d5f28811aa6df8
+          inputHash: c19903a3bec9093390c576e81576915b5f54afba86d52df30f11d8a40692ebaf
+          outcomeId: db54edbc-53c3-45ff-8571-bc26b9762e22
+          output:
+            designEvidence:
+              contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+              ref: openspec/changes/stabilize-cross-platform-verification/design.md
+            plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+            planEvidence:
+              contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+              ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+            taskRevision: f359d68dec121b0fcfd26507397427884a825e9fd50ca6ca2145d03246fbfff0
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: cbad8fc554bf316220fa77ff5bb9b935fdafa01d991f9b5d359ed37f3d38d958
+            outcomeId: db54edbc-53c3-45ff-8571-bc26b9762e22
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: stabilize-cross-platform-verification:13
+        input:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.build.configure:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/stabilize-cli-distribution-gate
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: current
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+                ref: openspec/changes/stabilize-cross-platform-verification/design.md
+              plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+              planEvidence:
+                contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+                ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+              taskRevision: f359d68dec121b0fcfd26507397427884a825e9fd50ca6ca2145d03246fbfff0
+            full.build.plan.evidence:
+              contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+              ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                    handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                    proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                      Windows checkout；Windows Desktop discovery 显式使用
+                      path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                      terminated，超时保持 unknown。既有
+                      product-distribution、desktop-observability-dashboard、feedback-collection
+                      与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改
+                      Engine、Cordis Service、Runtime 状态机、OTLP schema、公共 CLI
+                      或正式桌面平台范围。相关 Vitest 保存 TDD 证据，本地 Windows npm run verify 与
+                      GitHub Linux PR verify 共同构成最终验证；若远端仍失败则保留 change
+                      开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+                      时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                    requirementsEvidence:
+                      contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                      ref: openspec/changes/stabilize-cross-platform-verification
+                    sourceEvidence:
+                      contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                      ref: openspec/changes/stabilize-cross-platform-verification
+            full.design.document:
+              designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+            full.design.evidence:
+              contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+              ref: openspec/changes/stabilize-cross-platform-verification/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+            full.open.evidence:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+            full.open.revalidate:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        inputHash: 9e980a1118c1e298c5b77cd63d59e06337000fd019cdf77130176200762451d6
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-cross-platform-verification
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
+    actionContexts:
+      stabilize-cross-platform-verification:1:
+        results: {}
+        sequence: 1
+      stabilize-cross-platform-verification:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/stabilize-cli-distribution-gate
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: current
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                    handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                    proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                      Windows checkout；Windows Desktop discovery 显式使用
+                      path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                      terminated，超时保持 unknown。既有
+                      product-distribution、desktop-observability-dashboard、feedback-collection
+                      与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改
+                      Engine、Cordis Service、Runtime 状态机、OTLP schema、公共 CLI
+                      或正式桌面平台范围。相关 Vitest 保存 TDD 证据，本地 Windows npm run verify 与
+                      GitHub Linux PR verify 共同构成最终验证；若远端仍失败则保留 change
+                      开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+                      时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                    requirementsEvidence:
+                      contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                      ref: openspec/changes/stabilize-cross-platform-verification
+                    sourceEvidence:
+                      contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                      ref: openspec/changes/stabilize-cross-platform-verification
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+              ref: openspec/changes/stabilize-cross-platform-verification/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        sequence: 11
+      stabilize-cross-platform-verification:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/stabilize-cli-distribution-gate
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: current
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+                ref: openspec/changes/stabilize-cross-platform-verification/design.md
+              plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+              planEvidence:
+                contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+                ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+              taskRevision: f359d68dec121b0fcfd26507397427884a825e9fd50ca6ca2145d03246fbfff0
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+              ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                    handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                    proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                      Windows checkout；Windows Desktop discovery 显式使用
+                      path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                      terminated，超时保持 unknown。既有
+                      product-distribution、desktop-observability-dashboard、feedback-collection
+                      与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改
+                      Engine、Cordis Service、Runtime 状态机、OTLP schema、公共 CLI
+                      或正式桌面平台范围。相关 Vitest 保存 TDD 证据，本地 Windows npm run verify 与
+                      GitHub Linux PR verify 共同构成最终验证；若远端仍失败则保留 change
+                      开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+                      时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                    requirementsEvidence:
+                      contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                      ref: openspec/changes/stabilize-cross-platform-verification
+                    sourceEvidence:
+                      contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                      ref: openspec/changes/stabilize-cross-platform-verification
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+              ref: openspec/changes/stabilize-cross-platform-verification/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        sequence: 13
+      stabilize-cross-platform-verification:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+        sequence: 4
+      stabilize-cross-platform-verification:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        sequence: 5
+      stabilize-cross-platform-verification:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                    handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                    proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                      Windows checkout；Windows Desktop discovery 显式使用
+                      path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                      terminated，超时保持 unknown。既有
+                      product-distribution、desktop-observability-dashboard、feedback-collection
+                      与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改
+                      Engine、Cordis Service、Runtime 状态机、OTLP schema、公共 CLI
+                      或正式桌面平台范围。相关 Vitest 保存 TDD 证据，本地 Windows npm run verify 与
+                      GitHub Linux PR verify 共同构成最终验证；若远端仍失败则保留 change
+                      开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+                      时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                    requirementsEvidence:
+                      contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                      ref: openspec/changes/stabilize-cross-platform-verification
+                    sourceEvidence:
+                      contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                      ref: openspec/changes/stabilize-cross-platform-verification
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        sequence: 7
+      stabilize-cross-platform-verification:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                    handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                    proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                      Windows checkout；Windows Desktop discovery 显式使用
+                      path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                      terminated，超时保持 unknown。既有
+                      product-distribution、desktop-observability-dashboard、feedback-collection
+                      与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改
+                      Engine、Cordis Service、Runtime 状态机、OTLP schema、公共 CLI
+                      或正式桌面平台范围。相关 Vitest 保存 TDD 证据，本地 Windows npm run verify 与
+                      GitHub Linux PR verify 共同构成最终验证；若远端仍失败则保留 change
+                      开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+                      时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                    requirementsEvidence:
+                      contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                      ref: openspec/changes/stabilize-cross-platform-verification
+                    sourceEvidence:
+                      contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                      ref: openspec/changes/stabilize-cross-platform-verification
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+              ref: openspec/changes/stabilize-cross-platform-verification/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        sequence: 9
+    waits:
+      - id: stabilize-cross-platform-verification:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+        proposalHash: d2f4b8ab6673a107ac6c6b64cbfd3b702df646727cbbe15c2ee010bface150f2
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+        decision:
+          id: classic-open-c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+          choice: approved
+          proposalHash: d2f4b8ab6673a107ac6c6b64cbfd3b702df646727cbbe15c2ee010bface150f2
+      - id: stabilize-cross-platform-verification:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+        proposalHash: 59c15aecf3dac013985e431b4beea93b8493e65eb96857bad57d4b257739a2f0
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        decision:
+          id: classic-design-59c15aecf3dac013985e431b4beea93b8493e65eb96857bad57d4b257739a2f0-approved
+          choice: approved
+          proposalHash: 59c15aecf3dac013985e431b4beea93b8493e65eb96857bad57d4b257739a2f0
+      - id: stabilize-cross-platform-verification:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-cross-platform-verification
+            changeDir: openspec/changes/stabilize-cross-platform-verification
+            workspaceBaseline:
+              ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+          outputs:
+            full.build.configure:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 97144adae1ddbddf5cf8d7a802eaf89a64f1622a9602379ddfe496163d604542
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                    handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                    proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                      Windows checkout；Windows Desktop discovery 显式使用
+                      path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                      terminated，超时保持 unknown。既有
+                      product-distribution、desktop-observability-dashboard、feedback-collection
+                      与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改
+                      Engine、Cordis Service、Runtime 状态机、OTLP schema、公共 CLI
+                      或正式桌面平台范围。相关 Vitest 保存 TDD 证据，本地 Windows npm run verify 与
+                      GitHub Linux PR verify 共同构成最终验证；若远端仍失败则保留 change
+                      开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+                      时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                    requirementsEvidence:
+                      contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                      ref: openspec/changes/stabilize-cross-platform-verification
+                    sourceEvidence:
+                      contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                      ref: openspec/changes/stabilize-cross-platform-verification
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+              ref: openspec/changes/stabilize-cross-platform-verification/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        decision:
+          id: 5852122e-d009-4adc-a89a-1b9109b7e313
+          choice: approved
+          proposalHash: 97144adae1ddbddf5cf8d7a802eaf89a64f1622a9602379ddfe496163d604542
+    evidenceWaits:
+      - id: stabilize-cross-platform-verification:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/stabilize-cross-platform-verification
+          contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+          submissionId: d1960d6f-de2a-4ada-8a92-cbb8db943117
+      - id: stabilize-cross-platform-verification:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                    handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                    proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                      Windows checkout；Windows Desktop discovery 显式使用
+                      path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                      terminated，超时保持 unknown。既有
+                      product-distribution、desktop-observability-dashboard、feedback-collection
+                      与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改
+                      Engine、Cordis Service、Runtime 状态机、OTLP schema、公共 CLI
+                      或正式桌面平台范围。相关 Vitest 保存 TDD 证据，本地 Windows npm run verify 与
+                      GitHub Linux PR verify 共同构成最终验证；若远端仍失败则保留 change
+                      开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+                      时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                    requirementsEvidence:
+                      contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                      ref: openspec/changes/stabilize-cross-platform-verification
+                    sourceEvidence:
+                      contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                      ref: openspec/changes/stabilize-cross-platform-verification
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        receipt:
+          ref: openspec/changes/stabilize-cross-platform-verification/design.md
+          contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+          submissionId: c85ad1fa-993f-49f8-8060-7d6fe31b8c65
+      - id: stabilize-cross-platform-verification:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/stabilize-cli-distribution-gate
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/stabilize-cli-distribution-gate
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: current
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+                ref: openspec/changes/stabilize-cross-platform-verification/design.md
+              plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+              planEvidence:
+                contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+                ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+              taskRevision: f359d68dec121b0fcfd26507397427884a825e9fd50ca6ca2145d03246fbfff0
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                    handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                    proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                      Windows checkout；Windows Desktop discovery 显式使用
+                      path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                      terminated，超时保持 unknown。既有
+                      product-distribution、desktop-observability-dashboard、feedback-collection
+                      与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改
+                      Engine、Cordis Service、Runtime 状态机、OTLP schema、公共 CLI
+                      或正式桌面平台范围。相关 Vitest 保存 TDD 证据，本地 Windows npm run verify 与
+                      GitHub Linux PR verify 共同构成最终验证；若远端仍失败则保留 change
+                      开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+                      时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                    requirementsEvidence:
+                      contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                      ref: openspec/changes/stabilize-cross-platform-verification
+                    sourceEvidence:
+                      contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                      ref: openspec/changes/stabilize-cross-platform-verification
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+              ref: openspec/changes/stabilize-cross-platform-verification/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+              handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+              proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+                recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+                product-distribution、desktop-observability-dashboard、feedback-collection
+                与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+              requirementsEvidence:
+                contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                ref: openspec/changes/stabilize-cross-platform-verification
+              sourceEvidence:
+                contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                ref: openspec/changes/stabilize-cross-platform-verification
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-cross-platform-verification
+                  changeDir: openspec/changes/stabilize-cross-platform-verification
+                  workspaceBaseline:
+                    ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                    ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+              ref: openspec/changes/stabilize-cross-platform-verification
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+          contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+          submissionId: 78b4bec9-3aad-42e1-ae72-2e9e828c53d1
+    ready: []
+    joins: {}
+    outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: comet/stabilize-cli-distribution-gate
+          buildMode: autonomous
+          directOverride: false
+          isolation: current
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cross-platform-verification
+              changeDir: openspec/changes/stabilize-cross-platform-verification
+              workspaceBaseline:
+                ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+            outputs:
+              full.build.configure:
+                boundBranch: comet/stabilize-cli-distribution-gate
+                buildMode: autonomous
+                directOverride: false
+                isolation: current
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+            ref: openspec/changes/stabilize-cross-platform-verification/design.md
+          plan: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+          planEvidence:
+            contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+            ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+          taskRevision: f359d68dec121b0fcfd26507397427884a825e9fd50ca6ca2145d03246fbfff0
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: 2399bcd5ce4e3e52ef9d4070ed69a603d6e1433ec0ef55451f59885ecdda0011
+          ref: docs/superpowers/plans/2026-11-05-stabilize-cross-platform-verification.md
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cross-platform-verification
+              changeDir: openspec/changes/stabilize-cross-platform-verification
+              workspaceBaseline:
+                ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+                handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+                proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+                  Windows checkout；Windows Desktop discovery 显式使用
+                  path.win32；POSIX recovered termination 在有界条件轮询确认退出后才返回
+                  terminated，超时保持 unknown。既有
+                  product-distribution、desktop-observability-dashboard、feedback-collection
+                  与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+                  Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存
+                  TDD 证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+                  共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX
+                  zombie 时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+                requirementsEvidence:
+                  contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+                  ref: openspec/changes/stabilize-cross-platform-verification
+                sourceEvidence:
+                  contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+                  ref: openspec/changes/stabilize-cross-platform-verification
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/stabilize-cross-platform-verification/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: c88b954ad57f0fb0f96ee8f926caaab0ff18ca26340bb0d29c356fbef38d2a28
+          ref: openspec/changes/stabilize-cross-platform-verification/design.md
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/stabilize-cross-platform-verification/.comet/handoff/design-context.json
+          handoffHash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+          proposal: 采用已确认的跨平台验证修复：保持 ExecutionWorkspaceBinding 只接受当前宿主真实绝对路径，以统一测试路径工厂替换固定
+            Windows checkout；Windows Desktop discovery 显式使用 path.win32；POSIX
+            recovered termination 在有界条件轮询确认退出后才返回 terminated，超时保持 unknown。既有
+            product-distribution、desktop-observability-dashboard、feedback-collection
+            与 managed-work-execution 已覆盖行为，继续 skip_specs，不修改 Engine、Cordis
+            Service、Runtime 状态机、OTLP schema、公共 CLI 或正式桌面平台范围。相关 Vitest 保存 TDD
+            证据，本地 Windows npm run verify 与 GitHub Linux PR verify
+            共同构成最终验证；若远端仍失败则保留 change 开放，不绕过门禁合入。主要风险是批量夹具替换改变语义与 POSIX zombie
+            时序；分别通过统一工厂保持拓扑断言、基于状态的有界确认和保守超时结果控制。
+          requirementsEvidence:
+            contentHash: e51aaa924619a2beb1354ea0eb357398c921bee4285f6e73444ded85594df37b
+            ref: openspec/changes/stabilize-cross-platform-verification
+          sourceEvidence:
+            contentHash: 14bbed37a81586244725abd3ddf6cc1249478d09d2a01fe92a2058a83d302272
+            ref: openspec/changes/stabilize-cross-platform-verification
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-cross-platform-verification
+              changeDir: openspec/changes/stabilize-cross-platform-verification
+              workspaceBaseline:
+                ref: 24ae6cc5-3d6f-4111-8d94-b1accdf0f179
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+                ref: openspec/changes/stabilize-cross-platform-verification
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+          ref: openspec/changes/stabilize-cross-platform-verification
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: c286e79ffc71d002d36b75d0d12d104bb0d31afd225e7521ffaf9e35a5720317
+    children: []
+    lineage: []
+  sourceRevision: 19
+  sourceHash: 02d3c0ebcc091b1de09644df49225228d72820faf6d8989fadcbd998c6cf7395
+check_epoch: 2
