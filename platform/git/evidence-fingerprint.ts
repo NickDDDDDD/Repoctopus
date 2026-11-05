@@ -20,7 +20,7 @@ import { hashFileRaceSafe } from '../filesystem/race-safe-read.js';
 import { runExternalCommandAsync } from '../process/external-command.js';
 
 const MAX_CONTROL_PLANE_FILES = 4096;
-const MAX_CONTROL_PLANE_FILE_BYTES = 2 * 1024 * 1024;
+const MAX_CONTROL_PLANE_FILE_BYTES = 4 * 1024 * 1024;
 const MAX_CONTROL_PLANE_TOTAL_BYTES = 32 * 1024 * 1024;
 
 export class RepositoryFingerprintChangedError extends Error {

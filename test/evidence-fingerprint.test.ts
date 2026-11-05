@@ -168,7 +168,7 @@ describe('evidence fingerprint', () => {
     await mkdir(path.join(repository, '.codex'), { recursive: true });
     await writeFile(
       path.join(repository, '.codex', 'hooks.json'),
-      Buffer.alloc(2 * 1024 * 1024 + 1),
+      Buffer.alloc(4 * 1024 * 1024 + 1),
     );
     await expect(
       collectRepositoryFingerprint({

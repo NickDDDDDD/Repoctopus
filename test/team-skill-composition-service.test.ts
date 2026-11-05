@@ -126,7 +126,7 @@ describe('TeamSkillComposition service', () => {
     ]);
     expect(resolved.effectiveComposition.digest).toMatch(/^sha256:[a-f0-9]{64}$/u);
     expect(resolved.effectiveComposition.digest).toBe(
-      'sha256:40a57df941c5537194b2bd06f95d74f5cb987180aa2719908777c76afefe2bfe',
+      'sha256:04ad8f030094a3b744e3bc805cd2897b9b4fc4adb123f16aa2d166163062b6fb',
     );
   });
 

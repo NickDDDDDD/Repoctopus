@@ -148,7 +148,7 @@
       "source": "domains/comet-native/native-snapshot.ts",
       "sourceSha256": "865c7d16b87c6b04f96b404986b8c0bacdda6a4de5aa7e47224488b085a397bf",
       "target": "platform/git/evidence-fingerprint.ts",
-      "sha256": "71ddfac8f4340945debae9575a19ed3efd91ca20178f1a200aa706b6aaa60a58",
+      "sha256": "3028ce88b48ad3d5e618867c90a33409737d8867da74658e9b7a5b6d5bdf3e33",
       "adoption": "modified"
     },
     {
@@ -162,7 +162,7 @@
       "source": "domains/comet-classic/classic-guard.ts",
       "sourceSha256": "9d34982be2edce5a1ceb067310b4e82610beb6a874cd1ddbfa0fb5898ac36108",
       "target": "domains/runtime/workflow-runs.ts",
-      "sha256": "8ba0da7397f42c1189fa1ac1ef10df47aad9373276f0a9814dca40070dfbe8e9",
+      "sha256": "816a46775d86a3b136bc14069218f381f80313c7ad1f5729e20d64955a2ca37d",
       "adoption": "modified"
     },
     {
