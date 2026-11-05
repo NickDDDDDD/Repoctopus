@@ -767,6 +767,7 @@ export function applyChangeLifecycleTransition(options: {
     specificationClosure?: SpecificationClosureResult | null;
     publicationReceipt?: PublicationReceipt | null;
   };
+  preserveCheckEpoch?: boolean;
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
   if (
@@ -793,13 +794,15 @@ export function applyChangeLifecycleTransition(options: {
   if (!options.definition.phases.some((entry) => entry.phase === transition.to.phase)) {
     throw new Error(`Lifecycle transition ${transition.id} targets an undeclared phase`);
   }
-  if (options.current.checkEpoch === Number.MAX_SAFE_INTEGER) {
+  if (!options.preserveCheckEpoch && options.current.checkEpoch === Number.MAX_SAFE_INTEGER) {
     throw new Error('Change lifecycle checkEpoch cannot overflow');
   }
   const snapshot: ChangeLifecycleSnapshot = {
     ...structuredClone(options.current),
     revision: options.current.revision + 1,
-    checkEpoch: options.current.checkEpoch + 1,
+    checkEpoch: options.preserveCheckEpoch
+      ? options.current.checkEpoch
+      : options.current.checkEpoch + 1,
     phase: transition.to.phase,
     status: transition.to.status,
     currentWork: structuredClone(options.next.currentWork),

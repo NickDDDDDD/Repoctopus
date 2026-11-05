@@ -313,6 +313,101 @@ function verificationInput(checkEpoch: number, value: string): VerificationInput
   };
 }
 
+function recoveryExecutionFixture() {
+  const tasks = parseSpecificationTasks(
+    'continue-build',
+    '- [ ] 1.1 Implement retryable behavior.\n  **Acceptance:** Retryable behavior passes.\n',
+  );
+  const intent = createExecutionWorkspaceIntent({
+    workspaceId: initialSnapshot().identity.workspaceId,
+    changeId: initialSnapshot().identity.changeId,
+    isolation: 'current',
+  });
+  const workspaceBinding = createExecutionWorkspaceBinding({
+    intent,
+    repositories: [
+      {
+        repositoryId: 'workspace',
+        checkoutPath: 'C:\\workspace',
+        branch: 'main',
+        head: '1'.repeat(40),
+        worktreeId: null,
+        workspaceOwned: true,
+      },
+    ],
+  });
+  const strategy = createBuildStrategy({
+    runId: initialSnapshot().identity.runId,
+    revision: 1,
+    executionMode: 'autonomous',
+    tddMode: 'direct',
+    reviewMode: 'standard',
+    isolationIntent: intent.isolation,
+  });
+  const binding = createExecutionBinding({
+    strategy,
+    revision: 1,
+    coordinatorHostId: 'runtime-host',
+    workspaceBinding,
+    workspaceOwnerId: intent.workspaceId,
+    localOverlayRef: 'execution-workspace:continue',
+  });
+  const plan = createBuildPlan({
+    runId: initialSnapshot().identity.runId,
+    revision: 1,
+    strategy,
+    binding,
+    planningDigest: tasks.digest,
+    tasks,
+    candidate: {
+      packages: [
+        {
+          packageKey: 'retryable-package',
+          taskIds: ['1.1'],
+          repositoryIds: ['workspace'],
+          writeScopes: [{ repositoryId: 'workspace', paths: ['src/**'] }],
+          acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map(
+            (criterion) => criterion.acceptanceId,
+          ),
+          expectedOutcomes: ['retryable-behavior-passes'],
+          validatorProfile: 'build.package-valid',
+          dependsOn: [],
+        },
+      ],
+    },
+  });
+  let protocol = createBuildProtocolState({
+    runId: initialSnapshot().identity.runId,
+    planningDigest: tasks.digest,
+    strategy,
+  });
+  protocol = advanceBuildProtocol(protocol, { kind: 'binding-accepted', binding });
+  protocol = advanceBuildProtocol(protocol, {
+    kind: 'plan-accepted',
+    plan,
+    workspaceCheckpoint: nextWorkspaceCheckpoint(protocol),
+  });
+  protocol = advanceBuildProtocol(protocol, {
+    kind: 'plan-evidence-accepted',
+    evidence: createPlanEvidence({
+      plan,
+      strategy,
+      binding,
+      validation: validateBuildPlan({
+        plan,
+        strategy,
+        binding,
+        tasks,
+        protectedBranches: [],
+      }),
+      protectedBranches: [],
+      compositionCheckpointDigest: digest('composition'),
+      reportOwnerId: 'team-platform',
+    }),
+  });
+  return { tasks, intent, strategy, binding, plan, protocol };
+}
+
 describe('Change lifecycle domain', () => {
   it('atomically materializes revise-design from a Runtime recovery decision', () => {
     const intent = createExecutionWorkspaceIntent({
@@ -551,6 +646,164 @@ describe('Change lifecycle domain', () => {
     ]);
     expect(applied.fact).toMatchObject({
       recovery: { decisionId: decision.decisionId, action: 'revise-plan', authority: 'plan' },
+    });
+  });
+
+  it('continues the same Build Work and Plan at a new attempt checkpoint', () => {
+    const fixture = recoveryExecutionFixture();
+    const executeWork = phaseWork('build', 'build.execute', 6, digest('execute'));
+    const current = builtinSnapshot({
+      revision: 8,
+      checkEpoch: 6,
+      phase: 'build',
+      currentWork: executeWork,
+      tasks: fixture.tasks.tasks,
+      planningDigest: fixture.tasks.digest,
+      workspaceIntent: fixture.intent,
+      buildProtocol: fixture.protocol,
+    });
+    const decision = classifyRecoveryObservation({
+      schemaVersion: 1,
+      runId: current.identity.runId,
+      expectedRevision: current.revision,
+      checkEpoch: current.checkEpoch,
+      observationId: 'retry-observation-1',
+      planning: { status: 'current', changedIdentities: [] },
+      plan: { status: 'current', changedIdentities: [] },
+      work: {
+        status: 'retryable',
+        reasonCode: 'execution-interrupted',
+        changedIdentities: ['execution-checkpoint'],
+      },
+      evidence: { status: 'current', changedIdentities: [] },
+    });
+    if (!decision) throw new Error('expected continue-build decision');
+
+    const applied = applyLifecycleRecoveryDecision({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current,
+      decision,
+      materialization: { work: executeWork, evidenceIds: ['attempt:1'] },
+    });
+
+    expect(applied.snapshot).toMatchObject({
+      revision: 9,
+      checkEpoch: 6,
+      phase: 'build',
+      currentWork: { workId: executeWork.workId, checkEpoch: executeWork.checkEpoch },
+      buildProtocol: {
+        currentAction: 'execute',
+        actionAttempt: 2,
+        plan: { planId: fixture.plan.planId, revision: fixture.plan.revision },
+      },
+    });
+    expect(applied.fact).toMatchObject({
+      from: { checkEpoch: 6 },
+      to: { checkEpoch: 6 },
+      recovery: { action: 'continue-build', decisionId: decision.decisionId },
+    });
+  });
+
+  it('invalidates only Verify evidence and resumes the nearest legal producer', () => {
+    const fixture = recoveryExecutionFixture();
+    const checkpoint = advanceBuildWorkspaceCheckpoint({
+      current: fixture.protocol.workspaceCheckpoint!,
+      observed: fixture.protocol.workspaceCheckpoint!.repositories,
+      writableRepositoryIds: ['workspace'],
+      relations: { workspace: 'unchanged' },
+    });
+    let protocol = advanceBuildProtocol(fixture.protocol, {
+      kind: 'package-completed',
+      completion: createPackageCompletionEvidence({
+        workPackage: fixture.plan.packages[0]!,
+        executionId: 'execution-1',
+        acceptanceEvidenceIds: ['acceptance-1'],
+        testEvidenceIds: ['test-1'],
+        tddMode: 'direct',
+        workspaceCheckpointDigest: checkpoint.digest,
+        implementationDigest: digest('implementation'),
+      }),
+      workspaceCheckpoint: checkpoint,
+    });
+    protocol = advanceBuildProtocol(protocol, {
+      kind: 'check-accepted',
+      evidence: createBuildCheckEvidence({
+        strategyDigest: fixture.strategy.semanticDigest,
+        bindingStateDigest: fixture.binding.stateDigest,
+        planDigest: fixture.plan.digest,
+        workspaceCheckpointDigest: protocol.workspaceCheckpoint!.digest,
+        implementationDigest: digest('implementation'),
+        completedPackageIds: [fixture.plan.packages[0]!.packageId],
+        acceptedTaskIds: ['1.1'],
+        testEvidenceIds: ['build-check-test'],
+        review: {
+          mode: 'standard',
+          implementationExecutionId: 'execution-1',
+          reviewerExecutionId: 'reviewer-1',
+        },
+        findings: [],
+      }),
+    });
+    const priorInput = {
+      ...verificationInput(9, 'verify-prior'),
+      taskRevisions: fixture.tasks.tasks.map(({ taskId, taskRevision }) => ({ taskId, taskRevision })),
+    };
+    const current = builtinSnapshot({
+      revision: 12,
+      checkEpoch: 9,
+      phase: 'verify',
+      currentWork: phaseWork('verify', 'evidence.verify', 9, priorInput.digest),
+      tasks: fixture.tasks.tasks,
+      planningDigest: fixture.tasks.digest,
+      workspaceIntent: fixture.intent,
+      buildProtocol: protocol,
+      verificationInput: priorInput,
+    });
+    const decision = classifyRecoveryObservation({
+      schemaVersion: 1,
+      runId: current.identity.runId,
+      expectedRevision: current.revision,
+      checkEpoch: current.checkEpoch,
+      observationId: 'evidence-observation-1',
+      planning: { status: 'current', changedIdentities: [] },
+      plan: { status: 'current', changedIdentities: [] },
+      work: { status: 'current', changedIdentities: [] },
+      evidence: {
+        status: 'drift',
+        reasonCode: 'receipt-input-changed',
+        changedIdentities: ['verification-input'],
+      },
+    });
+    if (!decision) throw new Error('expected invalidate-evidence decision');
+    const nextInput = { ...priorInput, checkEpoch: 10, digest: digest('verify-next') };
+    const nextWork = phaseWork('verify', 'evidence.verify', 10, nextInput.digest);
+
+    const applied = applyLifecycleRecoveryDecision({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current,
+      decision,
+      materialization: {
+        work: nextWork,
+        verificationInput: nextInput,
+        evidenceIds: ['receipt:changed'],
+      },
+    });
+
+    expect(applied.snapshot).toMatchObject({
+      revision: 13,
+      checkEpoch: 10,
+      phase: 'verify',
+      currentWork: { workId: nextWork.workId, kind: 'evidence.verify' },
+      verificationInput: { digest: nextInput.digest },
+      buildProtocol: {
+        status: 'ready-for-verify',
+        plan: { planId: fixture.plan.planId },
+        packageCompletions: [{ packageId: fixture.plan.packages[0]!.packageId }],
+      },
+    });
+    expect(applied.fact).toMatchObject({
+      transitionId: 'verify.retry',
+      recovery: { action: 'invalidate-evidence', authority: 'evidence' },
     });
   });
 

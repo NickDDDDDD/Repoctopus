@@ -62,7 +62,7 @@
   **Acceptance:** revise-design一次提交phase、Work、epoch与失效闭包；revise-plan只递增Plan revision并保留合法completion
   **Requirements:** 失败分类必须决定真实返工路径, 恢复分类只选择最高受影响权威
 
-- [ ] 4.3 让Lifecycle原子物化continue-build与invalidate-evidence，并用领域测试验证最小checkpoint恢复 <!-- comet-task:e35dd6de-5101-4dd6-968e-94c84621368c -->
+- [x] 4.3 让Lifecycle原子物化continue-build与invalidate-evidence，并用领域测试验证最小checkpoint恢复 <!-- comet-task:e35dd6de-5101-4dd6-968e-94c84621368c -->
   **Blocked by:** 3.3, 4.1
   **Acceptance:** continue-build保留Work与Plan；invalidate-evidence只退役依赖变化输入的检查事实并返回最近合法节点
   **Requirements:** Continue Build 保留当前执行身份, Evidence 失效必须按声明输入面传播
