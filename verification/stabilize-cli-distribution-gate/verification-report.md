@@ -3,11 +3,11 @@
 ## Reproducible subject
 
 - Change: `stabilize-cli-distribution-gate`
-- Tested implementation commit: `7ea2519ecd953ad6c90437a4bcaa06d50f13d7b7`
+- Tested implementation commit: `37163b82be9b0d214d57f8f9ac2d3703bee4aa09`
 - Package: `repoctopus@0.1.0`
-- Package content SHA-256: `7d9d126f322dfb6393beaa568462a366538976561550866798516fdf5b809570`
+- Package content SHA-256: `d1fb98082adf33c2930be46023d4f123fe8343c697ee22d74740dff79b5b561e`
 - Package files: `456`
-- Package content bytes: `5538124`
+- Package content bytes: `5538199`
 - Controller: `@rpamis/comet@0.5.1`
 - Platform: Windows x64
 - Node.js: `24.21.0`
@@ -22,14 +22,17 @@ the npm archive and rejects later packaged-product changes or semantic package d
    with read-only repository permission and cancellation of obsolete runs for the same ref.
 2. The CI job establishes one clean Node 24 environment with npm cache, executes `npm ci`, and then
    delegates all repository verification to the single `npm run verify` authority.
-3. A structured workflow test rejects expanded permissions, a non-`main` push target, and copied
-   internal checks, so the contract is not a YAML text snapshot.
-4. Multi-repository acceptance defaults to a tarball installed in an isolated consumer directory
+3. A structured workflow test rejects expanded top-level permissions, job-level permission
+   overrides, a non-`main` push target, and copied internal checks, so the contract is not a YAML
+   text snapshot.
+4. The standalone `npm run test:package-e2e` entry point runs the standard build through npm
+   lifecycle before packing, so it cannot silently consume a historical local `dist`.
+5. Multi-repository acceptance defaults to a tarball installed in an isolated consumer directory
    and invoked through the installed public `bin`.
-5. Direct-source diagnostics are an explicit exception. Every checkout update requires a current
+6. Direct-source diagnostics are an explicit exception. Every checkout update requires a current
    build and `node scripts/build.mjs --check` before the source CLI is invoked; an existing historical
    `dist/` is not evidence.
-6. A GitHub check result and a required status check are separate authorities. Repository YAML can
+7. A GitHub check result and a required status check are separate authorities. Repository YAML can
    produce the stable check, while merge blocking remains an independently verified administrator
    configuration.
 
@@ -39,16 +42,17 @@ Executed on Windows with Node.js `24.21.0`:
 
 ```text
 npx vitest run test/repository-ci.test.ts
-  1 file passed; 2 tests passed
-  positive workflow contract and three in-memory mutation classes passed
+  1 file passed; 3 tests passed
+  positive workflow contract, four in-memory mutation classes, and package script contract passed
 
 npx vitest run test/self-hosting-docs.test.ts test/repository-ci.test.ts
-  2 files passed; 5 tests passed
+  2 files passed; 6 tests passed
   package-first and direct-source command ordering passed
 
 npm run test:package-e2e
   1 file passed; 1 test passed
-  current source was packed, installed in an isolated consumer, and invoked through public bin
+  pretest lifecycle built CLI and Desktop first; current source was then packed, installed in an
+  isolated consumer, and invoked through public bin
 
 npm run lint
   passed
@@ -56,9 +60,11 @@ npm run lint
 npm run typecheck
   passed
 
-npx prettier --check test/repository-ci.test.ts test/self-hosting-docs.test.ts \
-  .github/workflows/ci.yml docs/self-hosting.md \
-  openspec/changes/stabilize-cli-distribution-gate/tasks.md
+npx prettier --check .github/workflows/ci.yml test/repository-ci.test.ts \
+  test/self-hosting-docs.test.ts docs/self-hosting.md package.json \
+  openspec/changes/stabilize-cli-distribution-gate/{proposal.md,design.md,tasks.md} \
+  openspec/changes/stabilize-cli-distribution-gate/specs/product-distribution/spec.md \
+  docs/superpowers/plans/2026-11-05-stabilize-cli-distribution-gate.md
   all change-controlled files passed
 
 node scripts/build.mjs --check
@@ -76,15 +82,29 @@ git status --short
 npm run verify
   typecheck, Desktop typecheck, lint, and CLI/Desktop builds passed
   complete Vitest matrix passed: 190 files
-  941 tests passed; 2 explicitly skipped (943 total)
+  942 tests passed; 2 explicitly skipped (944 total)
   generated, brand, architecture, provenance, and Dashboard salvage passed
   strict OpenSpec passed: 18 items, 0 failed
   managed execution report reproduced the package identity
 ```
 
 The pre-report pass reached the final freshness gate and correctly requested this report. After the
-report was created outside the package boundary, the complete command was rerun and exited 0 with
-the same 190-file/943-test result and reproduced package identity.
+report was refreshed outside the package boundary, the complete command was rerun and reproduced
+the package identity shown above.
+
+## Verify repair and controlled re-entry
+
+The first independent Verify review found two IMPORTANT gaps and one WARNING: the standalone
+package command did not build current sources, the original task text contradicted the approved
+format-baseline exception, and a job-level permission override could bypass the workflow mutation
+test. A direct-source documentation paragraph also contradicted the required freshness preflight.
+
+Comet recorded the failed Verify and returned the same Run to Design. Proposal
+`abdeb49d1d6e32fb00fe46c570b06f4da9122f84023b21b3f7c039c3a4da988f` was approved; the canonical
+Design and existing task IDs were revised without changing the `product-distribution` delta spec.
+The repair added RED tests for all three executable gaps, observed their expected failures, applied
+the minimal implementation, and returned the focused suite to green before the package and static
+checks above.
 
 The first complete verification attempt ran from a new worktree whose local `node_modules` held
 only Vite caches while Node resolved most dependencies from the parent repository. The Desktop E2E
