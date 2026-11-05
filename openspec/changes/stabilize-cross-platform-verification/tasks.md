@@ -17,7 +17,7 @@
 
 ## 4. 集成验证与 PR 门禁
 
-- [ ] 4.1 运行受影响测试集合、`npm run typecheck`、`npm run lint` 与 `npm run spec:validate`，确认本 change 与既有规格一致 <!-- comet-task:96a93066-24e0-4c52-8e4b-4a945a89e407 -->
+- [x] 4.1 运行受影响测试集合、`npm run typecheck`、`npm run lint` 与 `npm run spec:validate`，确认本 change 与既有规格一致 <!-- comet-task:96a93066-24e0-4c52-8e4b-4a945a89e407 -->
 - [ ] 4.2 运行本地 Windows `npm run verify`，记录完整测试数量、跳过项与退出状态到正式验证报告 <!-- comet-task:2fe415c6-5063-430e-9cc6-6342dce705d2 -->
 - [ ] 4.3 推送当前公开分支并确认 PR #66 的 GitHub Linux `verify` 对精确新 HEAD 成功；检查仍失败时保留 change 开放并按失败证据修复，不绕过门禁合入 <!-- comet-task:48e16b0c-ae66-4764-a19d-1f0d2ebe95ec -->
 
