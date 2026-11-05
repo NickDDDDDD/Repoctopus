@@ -2,7 +2,7 @@
 
 ## 1. 锁定缺陷与接受边界
 
-- [ ] 1.1 在 `managed-change-execution.e2e` 增加 Round 8 回归：`build.configure` 返回正确 result kind 但错误 `strategyDigest`，并验证当前实现会错误终态化；运行 `npx vitest run test/managed-change-execution.e2e.test.ts` 可观察到新增断言先失败。 <!-- comet-task:f1487e82-4388-447a-8b35-6a00092072f8 -->
+- [x] 1.1 在 `managed-change-execution.e2e` 增加 Round 8 回归：`build.configure` 返回正确 result kind 但错误 `strategyDigest`，并验证当前实现会错误终态化；运行 `npx vitest run test/managed-change-execution.e2e.test.ts` 可观察到新增断言先失败。 <!-- comet-task:f1487e82-4388-447a-8b35-6a00092072f8 -->
 - [ ] 1.2 在 authority/executor 单元测试中固化 terminal acceptance 前不得出现 accepted submission、Host Outcome、Action Outcome 或 Receipt 的不变量；运行 `npx vitest run test/work-execution-submission.test.ts test/managed-work-executor.test.ts` 验证 RED 覆盖完整。 <!-- comet-task:52f937f1-5299-4c08-95a2-42177bb5f078 -->
 - [ ] 1.3 记录 Configure、Plan、Execute、Check 现有接受入口和旧特判清单到 `design.md`，并运行 `rg -n "acceptOutcome|rejectInvalidConfigureResult|build\.plan.*build\.check" services` 确认没有遗漏的生产入口。 <!-- comet-task:267276ab-5fb7-4dca-9a0e-cbea05bf669c -->
 

@@ -379,7 +379,10 @@ describe('managed Change execution production composition', () => {
                   !invalidConfigurationSubmitted
                 ) {
                   invalidConfigurationSubmitted = true;
-                  return undefined;
+                  return {
+                    ...candidate,
+                    strategyDigest: `sha256:${'0'.repeat(64)}` as `sha256:${string}`,
+                  };
                 }
                 return candidate;
               }
@@ -1094,12 +1097,25 @@ describe('managed Change execution production composition', () => {
           if (!configurationInvocation || !correctedConfigurationResult) {
             throw new Error('missing captured Build Configuration correction context');
           }
-          expect((await status()).state.workExecution).toMatchObject({
+          const rejectedConfiguration = (await status()).state.workExecution;
+          expect(rejectedConfiguration).toMatchObject({
             workId: configurationInvocation.packet.work.workId,
+            attempt: configurationInvocation.packet.claim.attempt,
+            checkEpoch: configurationInvocation.packet.claim.checkEpoch,
             status: 'invoking',
             continuation: 'awaiting-correction',
             pendingSubmission: null,
-            rejectedSubmissions: [{ rejection: { reasonCode: 'output-invalid' } }],
+            rejectedSubmissions: [{ rejection: { reasonCode: 'outcome-rejected' } }],
+          });
+          expect(rejectedConfiguration?.acceptedSubmission).toBeUndefined();
+          expect(rejectedConfiguration?.hostOutcome).toBeUndefined();
+          expect(rejectedConfiguration?.actionOutcome).toBeUndefined();
+          expect(rejectedConfiguration?.receiptId).toBeUndefined();
+          expect(rejectedConfiguration?.hostInvocation).toMatchObject({
+            invocationId: configurationInvocation.session.invocationId,
+            packet: {
+              packetDigest: configurationInvocation.session.packetDigest,
+            },
           });
           await application.context.managedWorkExecutor.acceptExternalOutcome({
             schemaVersion: 3,
