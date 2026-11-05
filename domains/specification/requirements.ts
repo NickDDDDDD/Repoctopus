@@ -40,7 +40,13 @@ export function parseRequirementIdentities(
     if (!heading) continue;
     const title = heading[1]!.trim();
     if (!title) throw new Error(`Capability ${capabilityId} contains an empty Requirement title`);
-    identities.push({ capabilityId, title, operation, identity: `${capabilityId}#${title}` });
+    const slug = title
+      .normalize('NFKC')
+      .toLowerCase()
+      .replace(/[^\p{Letter}\p{Number}]+/gu, '-')
+      .replace(/^-+|-+$/gu, '');
+    if (!slug) throw new Error(`Capability ${capabilityId} contains an invalid Requirement title`);
+    identities.push({ capabilityId, title, operation, identity: `${capabilityId}#${slug}` });
   }
   const duplicate = identities.find(
     (entry, index) => identities.findIndex((candidate) => candidate.identity === entry.identity) !== index,
@@ -59,7 +65,17 @@ export function resolveTaskRequirementIdentities(
     aliases.set(requirement.title, [...(aliases.get(requirement.title) ?? []), requirement.identity]);
   }
   const resolve = (reference: string): string => {
-    const canonical = exact.get(reference);
+    const separator = reference.indexOf('#');
+    const qualified =
+      separator > 0
+        ? `${reference.slice(0, separator)}#${reference
+            .slice(separator + 1)
+            .normalize('NFKC')
+            .toLowerCase()
+            .replace(/[^\p{Letter}\p{Number}]+/gu, '-')
+            .replace(/^-+|-+$/gu, '')}`
+        : reference;
+    const canonical = exact.get(qualified);
     if (canonical) return canonical;
     const candidates = aliases.get(reference) ?? [];
     if (candidates.length === 1) return candidates[0]!;

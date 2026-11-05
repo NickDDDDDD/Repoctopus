@@ -18,8 +18,8 @@ describe('Specification Requirement authority and closure preflight', () => {
       '- [ ] 1.1 Build.\n  **Requirements:** Safe execution; evidence#Trace\n',
     );
     expect(resolveTaskRequirementIdentities(tasks, requirements).tasks[0]?.requirementRefs).toEqual([
-      'evidence#Trace',
-      'runtime#Safe execution',
+      'evidence#trace',
+      'runtime#safe-execution',
     ]);
     expect(() =>
       resolveTaskRequirementIdentities(

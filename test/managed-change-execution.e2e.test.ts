@@ -1549,6 +1549,13 @@ describe('managed Change execution production composition', () => {
           await next();
           afterAllPackages = await next();
         }
+        for (
+          let step = 0;
+          step < 4 && afterAllPackages.value.changeLifecycle?.currentWork?.kind !== 'build.check';
+          step += 1
+        ) {
+          afterAllPackages = await next();
+        }
         expect(
           afterFirstPackage.changeLifecycle,
           JSON.stringify(afterFirstPackageDiagnostics),
@@ -1648,54 +1655,29 @@ describe('managed Change execution production composition', () => {
             gate: 'blocked',
             run: {
               changeLifecycle: {
-                phase: 'build',
-                currentWork: { kind: 'build.plan' },
-                verificationInvalidation: { kind: 'implementation-drift' },
+                phase: 'verify',
+                currentWork: { kind: 'evidence.verify' },
               },
             },
           });
-
-          const dispatchedPlan = await next();
-          expect(dispatchedPlan.value).toMatchObject({
-            changeLifecycle: { phase: 'build', currentWork: { kind: 'build.plan' } },
-            continuation: { reason: 'validator-pending' },
-          });
-          const acceptedPlan = await next();
-          expect(acceptedPlan.value.changeLifecycle).toMatchObject({
-            phase: 'build',
-            currentWork: { kind: 'build.execute' },
-          });
-          expect(
-            acceptedPlan.value.state.changeLifecycle?.verificationInvalidation,
-          ).toBeUndefined();
-
-          const repairWorkId = acceptedPlan.value.changeLifecycle?.currentWork?.workId;
-          const repairEpoch = acceptedPlan.value.changeLifecycle?.checkEpoch;
+          const retryWorkId = failedVerify.value.run.changeLifecycle?.currentWork?.workId;
+          const retryEpoch = failedVerify.value.run.changeLifecycle?.checkEpoch;
           const invocationCount = capture.invocations.length;
           const resumed = await application.context.workflowRuns.resume({
             runId,
             currentProjectSnapshot: await application.context.runStore.loadProjectSnapshot(runId),
           });
           expect(resumed.value.changeLifecycle).toMatchObject({
-            currentWork: { workId: repairWorkId },
-            checkEpoch: repairEpoch,
+            currentWork: { workId: retryWorkId },
+            checkEpoch: retryEpoch,
           });
           expect(capture.invocations).toHaveLength(invocationCount);
-
-          let repairedBuild = await next();
-          for (
-            let transition = 0;
-            transition < 7 && repairedBuild.value.changeLifecycle?.phase !== 'verify';
-            transition += 1
-          ) {
-            repairedBuild = await next();
-          }
-          expect(repairedBuild.value.changeLifecycle).toMatchObject({
+          const retriedEvidence = await next();
+          expect(retriedEvidence.value.changeLifecycle).toMatchObject({
             phase: 'verify',
             currentWork: { kind: 'evidence.verify' },
           });
           await restartApplication();
-          await next();
         }
         const originalRunOrResume = application.context.evidenceCoordinator.runOrResume.bind(
           application.context.evidenceCoordinator,
@@ -1725,7 +1707,7 @@ describe('managed Change execution production composition', () => {
               phase: 'verify',
               status: 'running',
               currentWork: { kind: 'evidence.verify' },
-              evidence: { gateStatus: 'failed' },
+              evidence: { gateStatus: 'pending' },
             },
           },
         });
@@ -2030,7 +2012,7 @@ describe('managed Change execution production composition', () => {
           'build.check',
           'evidence.verify',
           ...(!multiRepository && executionMode === 'autonomous'
-            ? ['build.plan', 'build.execute', 'build.execute', 'build.check', 'evidence.verify']
+            ? ['evidence.verify']
             : []),
           'evidence.verify',
           'specification.close',

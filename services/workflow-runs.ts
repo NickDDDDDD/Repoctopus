@@ -2239,7 +2239,8 @@ export class WorkflowRuns extends Service {
             if (
               lifecycle.phase === 'build' &&
               (classifiedContinuation.reason === 'host-not-executed' ||
-                classifiedContinuation.reason === 'work-failed')
+                classifiedContinuation.reason === 'work-failed') &&
+              (lifecycle.buildProtocol?.actionAttempt ?? 1) <= (execution?.attempt ?? 0)
             ) {
               const recovered = await this.classifyAndApplyRecovery({
                 state,
@@ -4143,7 +4144,7 @@ export class WorkflowRuns extends Service {
 
   private async createVerifyFailureContinuation(
     state: RunState,
-    result: 'implementation-failure' | 'evidence-unavailable',
+    result: 'implementation-failure' | 'evidence-drift' | 'evidence-unavailable',
     signal?: AbortSignal,
   ): Promise<{
     tasks?: SpecificationTask[];
@@ -4167,7 +4168,7 @@ export class WorkflowRuns extends Service {
     ) {
       throw new Error('Verify failure continuation trigger identities are missing');
     }
-    if (result === 'evidence-unavailable') {
+    if (result !== 'implementation-failure') {
       const skills = await this.resolveLifecycleWorkSkills(
         'evidence.verify',
         signal,
@@ -4255,7 +4256,7 @@ export class WorkflowRuns extends Service {
   private async applyVerifyRecovery(
     state: RunState,
     lifecycle: ChangeLifecycleState,
-    result: 'implementation-failure' | 'evidence-unavailable',
+    result: 'implementation-failure' | 'evidence-drift' | 'evidence-unavailable',
     attemptId: string,
     bundleId: string | null,
     reason: string,
@@ -4301,9 +4302,13 @@ export class WorkflowRuns extends Service {
       }),
       layers: {
         evidence: {
-          status: 'unavailable',
-          reasonCode: 'evidence-provider-unavailable',
-          changedIdentities: [],
+          status: result === 'evidence-drift' ? 'drift' : 'unavailable',
+          reasonCode:
+            result === 'evidence-drift'
+              ? 'declared-input-changed'
+              : 'evidence-provider-unavailable',
+          changedIdentities:
+            result === 'evidence-drift' ? ['evidence-dependency'] : [],
         },
       },
       materialization: {
@@ -4386,7 +4391,7 @@ export class WorkflowRuns extends Service {
         const classification = reason.includes(
           'input fingerprint changed before Evidence execution',
         )
-          ? ('implementation-failure' as const)
+          ? ('evidence-drift' as const)
           : ('evidence-unavailable' as const);
         const continuation = await this.createVerifyFailureContinuation(
           state,

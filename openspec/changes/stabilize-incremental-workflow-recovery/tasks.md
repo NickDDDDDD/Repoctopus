@@ -142,7 +142,7 @@
 
 ## 9. 集成与真实轨迹重放
 
-- [ ] 9.1 建立脱敏多仓轨迹fixture并用确定性重放测试覆盖错误TDD拆包、测试切面、checkbox收尾、真实规划变化和Evidence漂移 <!-- comet-task:7fc72b11-661d-44d5-ac6b-e5ab9b9f9d4e -->
+- [x] 9.1 建立脱敏多仓轨迹fixture并用确定性重放测试覆盖错误TDD拆包、测试切面、checkbox收尾、真实规划变化和Evidence漂移 <!-- comet-task:7fc72b11-661d-44d5-ac6b-e5ab9b9f9d4e -->
       **Blocked by:** 5.3, 6.4, 7.3, 8.1
       **Acceptance:** 错误拆包与测试切面只产生revise-plan；checkbox收尾不回退；真实规划变化只产生一次revise-design；Evidence漂移只失效相关节点
       **Requirements:** 恢复分类只选择最高受影响权威, 恢复重放必须收敛到同一 checkpoint
