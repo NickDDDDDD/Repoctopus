@@ -8,14 +8,14 @@
 
 ## 2. 源码与安装包身份边界
 
-- [ ] 2.1 扩展 `test/self-hosting-docs.test.ts`，先证明文档必须要求源码更新后从当前 checkout 构建、再启动 CLI，且不得把历史 `dist` 当作验证证据，并以 `npx vitest run test/self-hosting-docs.test.ts` 验证新增断言在文档修改前按预期失败
-- [ ] 2.2 更新 `docs/self-hosting.md` 的源码准备与验收顺序，明确 `npm ci` 的适用时机、每次 checkout 更新后的 `npm run build`、旧/缺失 `dist` 的含义以及 CI 检查与 GitHub required check 的管理边界，并以 `npx vitest run test/self-hosting-docs.test.ts test/repository-ci.test.ts` 验证文档和 workflow 契约一致
-- [ ] 2.3 复验安装包独立消费边界，确认测试从当前源码生成 tarball 并通过隔离安装后的公共 `bin` 验证必要资源；如发现缺口就在 `test/e2e/package.e2e.test.ts` 补齐，并以 `npm run test:package-e2e` 验证，不用源码目录中的本地 `dist` 代替包验收
+- [ ] 2.1 扩展 `test/self-hosting-docs.test.ts`，先证明文档必须把隔离安装的 package-first 路径作为多仓验收默认值，并要求源码例外在每次更新后从当前 checkout 构建、通过 freshness preflight 再启动 CLI，且不得把历史 `dist` 当作验证证据；以 `npx vitest run test/self-hosting-docs.test.ts` 验证新增断言在文档修改前按预期失败
+- [ ] 2.2 更新 `docs/self-hosting.md` 的源码准备与验收顺序，明确 package-first 默认值、直接源码例外、`npm ci` 的适用时机、每次 checkout 更新后的 `npm run build` 与 `node scripts/build.mjs --check`、旧/缺失 `dist` 的含义以及 CI 检查与 GitHub required check 的管理边界，并以 `npx vitest run test/self-hosting-docs.test.ts test/repository-ci.test.ts` 验证文档和 workflow 契约一致
+- [ ] 2.3 复验安装包独立消费边界，确认测试从当前源码生成 tarball 并通过隔离安装后的公共 `bin` 验证必要资源；如发现缺口就在 `test/e2e/package.e2e.test.ts` 补齐，并以 `npm run test:package-e2e` 验证 package-first 默认路径，不用长期源码 checkout 的本地 `dist` 代替包验收
 
 ## 3. 集成验证与交付证据
 
 - [ ] 3.1 对本 change 的 workflow、测试与文档执行 `npm run format:check`、`npm run lint` 和 `npm run typecheck`，修复所有失败并以三个命令均退出 0 验证静态质量
-- [ ] 3.2 在当前源码 worktree 执行 `npm run verify`，验证 CLI/Desktop 构建、完整 Vitest、生成物、品牌、架构、来源、Dashboard、OpenSpec 和 managed execution report 全部通过
+- [ ] 3.2 在当前源码 worktree 执行 `npm run verify` 和 `node scripts/build.mjs --check`，验证 CLI/Desktop 构建、完整 Vitest、生成物、品牌、架构、来源、Dashboard、OpenSpec、managed execution report 与源码 freshness preflight 全部通过
 - [ ] 3.3 执行 `comet classic openspec -- validate stabilize-cli-distribution-gate --strict`、`git diff --check` 与工作区状态检查，确认四份 OpenSpec 产物严格有效、只包含预期改动，并把最终命令和结果记录到正式 Verification Evidence
 
 ## Workflow follow-up

@@ -41,17 +41,17 @@ Repoctopus MUST 让 CI 调用仓库声明的标准完整验证命令，而不是
 
 ### Requirement: 源码运行绑定当前构建产物
 
-Repoctopus MUST 把 `dist` 视为源码 checkout 的可重建本地产物；源码自举或验收在启动 CLI 前必须用当前 checkout 的标准构建命令生成所需 artifact，历史、缺失或来自另一提交的本地 `dist` 不得作为当前源码通过验证的证据。
+Repoctopus MUST 把 `dist` 视为源码 checkout 的可重建本地产物；直接从源码自举或验收时，在启动 CLI 前必须用当前 checkout 的标准构建命令生成所需 artifact，并立即通过生成物 freshness preflight。历史、缺失或来自另一提交的本地 `dist` 不得作为当前源码通过验证的证据。
 
 #### Scenario: 更新源码后开始自举
 
 - **WHEN** 维护者切换、拉取或合入新的源码提交并准备从源码入口启动 Repoctopus
-- **THEN** 自举顺序先从当前 checkout 生成 CLI 与所需桌面 artifact，再启动源码入口
+- **THEN** 自举顺序先从当前 checkout 生成 CLI 与所需桌面 artifact、通过 freshness preflight，再启动源码入口
 
 #### Scenario: 工作目录残留历史 dist
 
 - **WHEN** 当前 checkout 中存在 Git 未跟踪且由较早源码生成的 `dist`
-- **THEN** 验收不得仅凭该目录存在就认定当前源码已构建，必须重新执行标准构建或使用由当前提交生成并验证的安装包
+- **THEN** 验收不得仅凭该目录存在就认定当前源码已构建，必须重新执行标准构建与 freshness preflight，或使用由当前提交生成并验证的安装包
 
 #### Scenario: 干净 clone 没有 dist
 
@@ -60,7 +60,7 @@ Repoctopus MUST 把 `dist` 视为源码 checkout 的可重建本地产物；源�
 
 ### Requirement: 安装包经过独立消费验证
 
-Repoctopus MUST 从当前源码构建发布候选包，在临时消费者环境安装其生产依赖并通过打包后的公共 CLI 执行协议级验收；源码目录中的本地 `dist` 成功不能替代安装包验收。
+Repoctopus MUST 从当前源码构建发布候选包，在临时消费者环境安装其生产依赖并通过打包后的公共 CLI 执行协议级验收；多仓工作流验收默认使用这条 package-first 路径，源码目录中的本地 `dist` 成功不能替代安装包验收。
 
 #### Scenario: 构建 npm 发布候选
 
@@ -71,6 +71,16 @@ Repoctopus MUST 从当前源码构建发布候选包，在临时消费者环境�
 
 - **WHEN** 发布候选未包含 CLI artifact、Schema、工作流、许可证或运行所需资源
 - **THEN** 安装包端到端验证失败，即使源码目录中的测试或本地 CLI 已通过
+
+#### Scenario: 开始新一轮多仓工作流验收
+
+- **WHEN** 维护者准备在隔离的多仓测试项目中验证 Repoctopus 生命周期
+- **THEN** 验收默认从目标产品提交构建 tarball、安装到独立消费者环境并通过安装后的公共 CLI 启动，不复用长期源码 checkout 的本地 `dist`
+
+#### Scenario: 验收必须观察未打包的源码改动
+
+- **WHEN** 诊断目标要求直接运行尚未形成安装包的源码 checkout
+- **THEN** 维护者显式记录该例外，并在每次源码更新后执行标准构建和 freshness preflight，确认通过后才调用源码入口
 
 ### Requirement: CI 状态不伪装成服务端合入保护
 

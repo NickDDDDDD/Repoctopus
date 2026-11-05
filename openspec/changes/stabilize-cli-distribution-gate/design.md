@@ -14,7 +14,8 @@ Comet 0.5.1 采用相同的基本边界：忽略 `dist`，源码消费前显式�
 
 - 让每个 pull request、`main` push 和人工触发都在干净 checkout 中执行同一份完整仓库验证。
 - 让本地和 CI 共同以 `npm run verify` 为唯一完整验证命令权威，避免 workflow 复制检查清单后漂移。
-- 明确源码 checkout 的 `dist` 是临时派生产物；切换或更新源码后必须从当前 checkout 重新构建，不能把目录存在当成新源码已验证。
+- 明确源码 checkout 的 `dist` 是临时派生产物；切换或更新源码后必须从当前 checkout 重新构建并通过 freshness preflight，不能把目录存在当成新源码已验证。
+- 把隔离安装的 package-first 路径恢复为多仓验收默认值，同时保留直接源码诊断的显式例外。
 - 保留并证明安装包 E2E 与源码构建是两个不同消费边界。
 - 用仓库测试保护 CI 触发器、只读权限、Node 版本、锁定安装和标准验证命令，避免门禁被静默削弱。
 
@@ -29,9 +30,9 @@ Comet 0.5.1 采用相同的基本边界：忽略 `dist`，源码消费前显式�
 
 ### 1. 将源码、生成物和安装包视为三个独立身份边界
 
-源码 checkout 的权威输入是 Git 跟踪源码和 `package-lock.json`；`dist/` 只是由该输入生成的本地产物。源码自举或验收在每次切换、拉取或合入源码后先执行 `npm ci`（依赖尚未安装时）和 `npm run build`，再调用 `node bin/repoctopus.js`。即使 `dist/` 已存在，也不能跳过当前 checkout 的构建。
+源码 checkout 的权威输入是 Git 跟踪源码和 `package-lock.json`；`dist/` 只是由该输入生成的本地产物。直接源码自举或验收在每次切换、拉取或合入源码后先执行 `npm ci`（依赖尚未安装时）、`npm run build` 和 `node scripts/build.mjs --check`，再调用 `node bin/repoctopus.js`。即使 `dist/` 已存在，也不能跳过当前 checkout 的构建和 freshness preflight。
 
-安装包则由当前源码生成 tarball，并在隔离消费者目录中通过包内 `bin` 验证。`npm run verify` 中的完整 Vitest 已包含 `test/e2e/package.e2e.test.ts`，所以 CI 不再重复调用第二份 package 命令；该测试仍保持独立的消费环境和断言。
+安装包则由当前源码生成 tarball，并在隔离消费者目录中通过包内 `bin` 验证。多仓生命周期验收默认采用这条 package-first 路径，避免长期产品 checkout 中的忽略产物泄漏到验收结果；只有诊断未打包源码改动时才使用上述直接源码例外。`npm run verify` 中的完整 Vitest 已包含 `test/e2e/package.e2e.test.ts`，所以 CI 不再重复调用第二份 package 命令；该测试仍保持独立的消费环境和断言。
 
 没有采用“提交 `dist`”，因为这会建立源码和生成物两份评审权威并制造合并噪声；也没有采用 launcher 自动重编译，因为公共 CLI 启动不应隐式修改工作树、延长启动或在生产安装包中要求开发工具链。
 
@@ -56,7 +57,7 @@ Node 24 同时满足 `package.json` 的 Engine 声明和现有上游检查做法
 - job 只通过 `npm run verify` 消费完整检查权威，不复制内部检查清单；
 - workflow/job 名称保持稳定，供管理员后续选择 required check。
 
-同一测试读取 `docs/self-hosting.md`，保护“更新源码后重新构建再启动”的顺序，并明确旧 `dist` 不构成证据。结构化测试只验证仓库可以控制的 workflow 内容，不声称已观察到 GitHub branch protection。
+同一测试读取 `docs/self-hosting.md`，保护“多仓验收默认 package-first”和“源码例外在更新后重新构建、通过 freshness preflight 再启动”的顺序，并明确旧 `dist` 不构成证据。结构化测试只验证仓库可以控制的 workflow 与文档契约，不声称已观察到操作者实际执行或 GitHub branch protection。
 
 没有引入 Action 专用 Linter 依赖：本次 workflow 很小，YAML 结构测试、完整 `npm run verify` 与 GitHub 首次执行已覆盖当前风险；未来 workflow 复杂化时可独立评估 actionlint。
 
@@ -80,10 +81,10 @@ Node 24 同时满足 `package.json` 的 Engine 声明和现有上游检查做法
 
 ## Migration Plan
 
-1. 先提交仓库契约测试，使缺失 CI 或文档边界时失败。
+1. 先提交仓库契约测试，使缺失 CI、package-first 默认值或源码 freshness preflight 时失败。
 2. 新增 `.github/workflows/ci.yml`，更新 `docs/self-hosting.md`，让聚焦测试通过。
-3. 在当前 worktree 执行 `npm run verify`、package E2E、严格 OpenSpec 校验和工作区卫生检查。
+3. 在当前 worktree 执行 `npm run verify`、package E2E、源码 build/freshness preflight、严格 OpenSpec 校验和工作区卫生检查。
 4. 推送分支后观察 pull request 的 `Continuous integration / verify` 实际结果；只有该外部结果存在时才宣称托管 CI 已运行。
 5. 如团队需要强制预合入门禁，由仓库管理员在 GitHub 规则中把稳定检查设为 required，并单独保存平台配置证据。
 
-回滚只需移除 workflow 与对应仓库契约；没有数据、Run Store、协议或配置迁移。即使回滚 CI，源码运行前显式构建仍是正确的本地使用方式。
+回滚只需移除 workflow 与对应仓库契约；没有数据、Run Store、协议或配置迁移。即使回滚 CI，package-first 多仓验收以及源码运行前显式构建和 freshness preflight 仍是正确的使用方式。

@@ -9,8 +9,8 @@ Repoctopus 的源码 checkout 会把 `dist/` 作为本地构建产物忽略，�
 - 建立 `product-distribution` 能力，明确源码 checkout、生成产物和安装包之间的权威边界。
 - 增加面向 pull request、`main` push 和人工触发的 GitHub CI，在干净 checkout 中使用受支持的 Node 版本安装固定依赖并运行仓库完整验证。
 - 让 CI 直接复用仓库已有的 `npm run verify`，保持本地与托管验证只有一套命令权威，并通过失败状态阻止把未验证源码描述为可交付。
-- 固化源码自举与多仓验收的前置条件：先从当前 checkout 生成 CLI/Desktop artifact，再启动源码入口；历史或缺失的本地 `dist` 不构成当前源码的验证证据。
-- 增加对 CI 工作流和源码构建边界的自动化回归检查，并更新自举文档中的验收顺序。
+- 固化源码自举与多仓验收的执行来源：多仓验收默认从当前源码构建 tarball 并在隔离消费者环境安装后运行；只有明确需要源码入口时，才先从当前 checkout 重新构建并通过 freshness preflight，再启动源码 CLI。历史或缺失的本地 `dist` 不构成当前源码的验证证据。
+- 增加对 CI 工作流、package-first 验收和源码构建边界的自动化回归检查，并更新自举文档中的验收顺序。
 - 不提交 `dist/`，不让 launcher 隐式重编译源码，不改变 npm 安装包的公共 CLI 参数或 Runtime 协议。
 
 ## Capabilities
