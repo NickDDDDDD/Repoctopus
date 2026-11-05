@@ -49,6 +49,8 @@ function workflowProblems(workflow: unknown): string[] {
   }
   if (verify['runs-on'] !== 'ubuntu-latest') problems.push('ubuntu-runner');
   if (!checkout) problems.push('checkout-step');
+  const checkoutOptions = record(checkout?.with);
+  if (checkoutOptions['fetch-depth'] !== 0) problems.push('full-history-checkout');
   const nodeOptions = record(setupNode?.with);
   if (nodeOptions['node-version'] !== 24 || nodeOptions.cache !== 'npm') {
     problems.push('node-toolchain');
@@ -77,7 +79,7 @@ function validWorkflowFixture(): JsonRecord {
       verify: {
         'runs-on': 'ubuntu-latest',
         steps: [
-          { uses: 'actions/checkout@v4' },
+          { uses: 'actions/checkout@v4', with: { 'fetch-depth': 0 } },
           {
             uses: 'actions/setup-node@v4',
             with: { 'node-version': 24, cache: 'npm' },
@@ -115,6 +117,12 @@ describe('repository continuous integration contract', () => {
     const verify = record(record(duplicatedChecks.jobs).verify);
     (verify.steps as JsonRecord[]).splice(3, 0, { run: 'npm run lint' });
     expect(workflowProblems(duplicatedChecks)).toContain('canonical-verify-commands');
+
+    const shallowCheckout = validWorkflowFixture();
+    const shallowVerify = record(record(shallowCheckout.jobs).verify);
+    const shallowStep = (shallowVerify.steps as JsonRecord[])[0]!;
+    shallowStep.with = { 'fetch-depth': 1 };
+    expect(workflowProblems(shallowCheckout)).toContain('full-history-checkout');
   });
 
   it('builds current sources before the standalone package acceptance command', async () => {
