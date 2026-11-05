@@ -104,7 +104,15 @@ export function resolveTaskRequirementIdentities(
     digest: sha256({
       schemaVersion: tasks.schemaVersion,
       changeId: tasks.changeId,
-      tasks: projected.map(({ completion: _completion, status: _status, ...task }) => task),
+      tasks: projected.map((task) => ({
+        taskId: task.taskId,
+        taskRevision: task.taskRevision,
+        title: task.title,
+        level: task.level,
+        blockedBy: task.blockedBy,
+        acceptanceCriteria: task.acceptanceCriteria,
+        requirementRefs: task.requirementRefs,
+      })),
     }),
   };
 }
