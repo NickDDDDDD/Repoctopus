@@ -91,7 +91,7 @@ function validWorkflowFixture(): JsonRecord {
 describe('repository continuous integration contract', () => {
   it('runs the canonical repository verification in a clean, read-only job', async () => {
     const source = await readFile(workflowPath, 'utf8').catch(() => null);
-    const workflow = source === null ? {} : parse(source);
+    const workflow: unknown = source === null ? {} : (parse(source) as unknown);
 
     expect(workflowProblems(workflow)).toEqual([]);
   });
