@@ -26,6 +26,7 @@ import type {
   WorkClaimResult,
   WorkExecutionPacket,
   WorkExecutionRecovery,
+  WorkExecutionSubmission,
   WorkOutcomeValidationRecord,
 } from '../domains/work-execution/types.js';
 import {
@@ -987,7 +988,11 @@ export class WorkExecutionAuthority extends Service {
     return result;
   }
 
-  async markHostUnknown(intent: ActionIntent, summary: string): Promise<WorkExecutionCheckpoint> {
+  async markHostUnknown(
+    intent: ActionIntent,
+    summary: string,
+    expectedPending?: Pick<WorkExecutionSubmission, 'submissionId' | 'payloadDigest'>,
+  ): Promise<WorkExecutionCheckpoint> {
     return this.transition(
       intent.runId,
       intent.intentId,
@@ -997,6 +1002,17 @@ export class WorkExecutionAuthority extends Service {
       'reconcile',
       { workId: intent.workId, attempt: intent.attempt, reason: summary },
       { unknownKind: 'host-result' },
+      (current) => {
+        if (current.continuation === 'awaiting-correction') return false;
+        if (current.status === 'invoking') return true;
+        const pending = current.pendingSubmission;
+        return Boolean(
+          expectedPending &&
+          pending?.outcome.status === 'unknown' &&
+          pending.submissionId === expectedPending.submissionId &&
+          pending.payloadDigest === expectedPending.payloadDigest,
+        );
+      },
     );
   }
 
@@ -1274,6 +1290,7 @@ export class WorkExecutionAuthority extends Service {
     intent: ActionIntent;
     reasonCode: WorkExecutionSubmissionRejectionCode;
     diagnostic: string;
+    expectedPending?: Pick<WorkExecutionSubmission, 'submissionId' | 'payloadDigest'>;
   }): Promise<WorkExecutionCheckpoint> {
     const result = await this.ctx.runStore.commitGuarded(
       input.intent.runId,
@@ -1296,6 +1313,15 @@ export class WorkExecutionAuthority extends Service {
           throw new Error(`Work submission cannot be rejected from ${current.status}`);
         }
         const submission = current.pendingSubmission;
+        if (
+          input.expectedPending &&
+          (submission.submissionId !== input.expectedPending.submissionId ||
+            submission.payloadDigest !== input.expectedPending.payloadDigest)
+        ) {
+          throw new Error(
+            'Work rejection cannot proceed because the pending Host submission changed',
+          );
+        }
         const processingError = input.reasonCode === 'outcome-processing-error';
         const eventType = processingError
           ? 'work.outcome-processing-error'
@@ -2076,7 +2102,7 @@ export class WorkExecutionAuthority extends Service {
     continuation: WorkContinuationKind,
     data: Record<string, unknown>,
     additions: Partial<WorkExecutionCheckpoint> = {},
-    guard?: (current: WorkExecutionCheckpoint) => void,
+    guard?: (current: WorkExecutionCheckpoint) => boolean | void,
   ): Promise<WorkExecutionCheckpoint> {
     const result = await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
       const current = state.workExecution;
@@ -2094,7 +2120,7 @@ export class WorkExecutionAuthority extends Service {
         if (current.status === status) return { value: structuredClone(current) };
         throw new Error(`Work execution cannot move from ${current.status} to ${status}`);
       }
-      guard?.(current);
+      if (guard?.(current) === false) return { value: structuredClone(current) };
       const timestamp = new Date().toISOString();
       const checkpoint: WorkExecutionCheckpoint = {
         ...current,

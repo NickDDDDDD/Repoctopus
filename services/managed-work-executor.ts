@@ -483,7 +483,11 @@ export class ManagedWorkExecutor extends Service {
       hostOutcome.invocationId,
     );
     if (hostOutcome.status === 'unknown') {
-      await this.ctx.workExecutionAuthority.markHostUnknown(intent, hostOutcome.summary);
+      await this.ctx.workExecutionAuthority.markHostUnknown(
+        intent,
+        hostOutcome.summary,
+        submission.pendingSubmission ?? undefined,
+      );
       return incomplete;
     }
     if (
@@ -669,8 +673,11 @@ export class ManagedWorkExecutor extends Service {
     }
     const host = this.ctx.workExecutionHosts.get(invocation.host.id);
     if (!host?.reconcile || !invocation.host.reconcile) return null;
-    const resolution = await host.reconcile(invocation);
     const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+    if (intent.intentId !== checkpoint.intentId) {
+      throw new Error('Host invocation changed before reconciliation');
+    }
+    const resolution = await host.reconcile(invocation);
     if (resolution.status === 'unknown') {
       await this.ctx.workExecutionAuthority.markHostUnknown(intent, resolution.reason);
       return null;

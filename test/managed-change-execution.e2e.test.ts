@@ -14,6 +14,7 @@ import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types
 import type { RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
 import type { RunStoreInspection } from '../domains/runtime/types.js';
 import type { SpecificationApprovalState } from '../domains/specification/types.js';
+import { createWorkExecutionSubmission } from '../domains/work-execution/submission.js';
 import type { WorkExecutionResult } from '../domains/work-execution/types.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import type {
@@ -1188,12 +1189,65 @@ describe('managed Change execution production composition', () => {
           expect((await status()).state.workExecution?.rejectedSubmissions).toEqual(
             recovered?.rejectedSubmissions,
           );
-          await executor.acceptExternalOutcome(correction);
-          await executor.acceptExternalOutcome(correction);
+          const persisted = createWorkExecutionSubmission(
+            'persisted-invalid-envelope',
+            replayed.hostOutcome!,
+            { ...malformed, submissionId: 'persisted-invalid-envelope' },
+          );
+          await application.context.runStore.commitGuarded(runId, ({ state, trajectory }) => {
+            if (!state.workExecution) throw new Error('missing persisted Host invocation');
+            const timestamp = new Date().toISOString();
+            const stateVersion = state.stateVersion + 1;
+            return {
+              state: {
+                ...state,
+                stateVersion,
+                updatedAt: timestamp,
+                workExecution: {
+                  ...state.workExecution,
+                  status: 'submitted',
+                  continuation: 'execute',
+                  pendingSubmission: persisted,
+                  updatedAt: timestamp,
+                },
+              },
+              event: {
+                schemaVersion: 1,
+                sequence: trajectory.length + 1,
+                eventId: 'fixture:persisted-invalid-envelope',
+                timestamp,
+                type: 'work.host-completed',
+                runId,
+                stateVersion,
+                compositionDigest: state.composition.compositionDigest,
+                data: { submissionId: persisted.submissionId },
+              },
+              value: undefined,
+            };
+          });
+          await application.close();
+          application = await bootProjectComposition(productRoot, workspace);
+          await next();
+          const repaired = (await status()).state.workExecution;
+          expect(repaired).toMatchObject({
+            hostInvocation: recovered?.hostInvocation,
+            status: 'invoking',
+            continuation: 'awaiting-correction',
+            pendingSubmission: null,
+          });
+          expect(repaired?.rejectedSubmissions?.at(-1)).toMatchObject({
+            ...persisted,
+            rejection: { reasonCode: 'output-invalid' },
+          });
+          expect(repaired?.receiptId).toBeUndefined();
+
+          const restartedExecutor = application.context.managedWorkExecutor;
+          await restartedExecutor.acceptExternalOutcome(correction);
+          await restartedExecutor.acceptExternalOutcome(correction);
           const pending = (await status()).state.workExecution?.pendingSubmission;
           expect(pending?.submissionId).toBe(correction.submissionId);
           await expect(
-            executor.acceptExternalOutcome({
+            restartedExecutor.acceptExternalOutcome({
               ...malformed,
               submissionId: 'other-malformed-envelope',
             }),

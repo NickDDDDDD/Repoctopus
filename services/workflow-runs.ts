@@ -2193,19 +2193,32 @@ export class WorkflowRuns extends Service {
         if (state.changeLifecycle) {
           const work = state.changeLifecycle.currentWork;
           const execution = state.workExecution;
-          if (
-            work &&
-            execution?.workId === work.workId &&
-            execution.status === 'submitted' &&
-            execution.pendingSubmission?.outcome.status === 'failed'
-          ) {
+          const submission =
+            work && execution?.workId === work.workId && execution.status === 'submitted'
+              ? execution.pendingSubmission
+              : null;
+          if (submission?.rawPayload !== undefined) {
+            await this.ctx.workExecutionAuthority.rejectHostSubmission({
+              intent: await this.ctx.workExecutionAuthority.loadIntent(runId),
+              expectedPending: submission,
+              reasonCode: 'output-invalid',
+              diagnostic: 'Persisted Host submission contains an invalid outcome envelope',
+            });
+            return {
+              value: await this.coordinator.status(runId),
+              diagnostics: [
+                {
+                  level: 'warning',
+                  code: 'change.invalid-host-submission-rejected',
+                  message: 'Rejected the persisted invalid Host envelope; correction is required',
+                },
+              ],
+            };
+          }
+          if (work && submission?.outcome.status === 'failed') {
             const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
             await this.ctx.workDispatcher.acceptOutcome(
-              this.ctx.workDispatcher.outcome(
-                intent,
-                'failed',
-                execution.pendingSubmission.outcome.summary,
-              ),
+              this.ctx.workDispatcher.outcome(intent, 'failed', submission.outcome.summary),
             );
             return {
               value: await this.coordinator.status(runId),
