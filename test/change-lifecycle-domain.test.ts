@@ -35,7 +35,7 @@ import {
   validateBuildPlan,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
-import { applyLifecycleRecoveryDecision } from '../domains/change-lifecycle/recovery.js';
+import { applyLifecycleRecoveryDecision } from '../domains/change-lifecycle/transition.js';
 import { classifyRecoveryObservation } from '../domains/runtime/recovery.js';
 
 const digest = (value: string): `sha256:${string}` => {

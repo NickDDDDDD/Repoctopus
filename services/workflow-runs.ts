@@ -15,7 +15,7 @@ import {
   classifyRecoveryObservation,
   type RecoveryObservation,
 } from '../domains/runtime/recovery.js';
-import type { LifecycleRecoveryMaterialization } from '../domains/change-lifecycle/recovery.js';
+import type { LifecycleRecoveryMaterialization } from '../domains/change-lifecycle/transition.js';
 import type {
   ResumeView,
   RunStatusView,

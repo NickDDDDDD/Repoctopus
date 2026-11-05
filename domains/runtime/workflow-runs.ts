@@ -31,16 +31,14 @@ import {
   recoverChangeLifecycleSnapshot,
 } from '../change-lifecycle/definition.js';
 import {
+  applyLifecycleRecoveryDecision,
   evolveChangeLifecycle,
   projectChangeRun,
+  type LifecycleRecoveryMaterialization,
   type ChangeLifecycleObservation,
   type ChangeLifecycleSnapshot,
   type ChangeLifecycleState,
 } from '../change-lifecycle/transition.js';
-import {
-  applyLifecycleRecoveryDecision,
-  type LifecycleRecoveryMaterialization,
-} from '../change-lifecycle/recovery.js';
 import type { RecoveryDecision } from './recovery.js';
 import {
   projectCommittedContinuation,
