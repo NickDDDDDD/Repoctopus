@@ -2,7 +2,7 @@
 
 ## 状态
 
-已由用户批准，Design proposal hash 为 `e0a699f473ed6da443c3155cab970dc77dec126425175a9b7835d3b2be55f17a`。本文只用于 Comet 中断恢复，不是第五份规格或正式 Design Doc。
+原 Design proposal hash `e0a699f473ed6da443c3155cab970dc77dec126425175a9b7835d3b2be55f17a` 已获批准。首次 Verify 发现实现证据与 Tasks 表述不完全一致，Runtime 已正式返回 Design；下述修订候选已作为 proposal hash `abdeb49d1d6e32fb00fe46c570b06f4da9122f84023b21b3f7c039c3a4da988f` 提交，等待新的 Human Decision。本文只用于 Comet 中断恢复，不是第五份规格或正式 Design Doc。
 
 ## 已确认事实
 
@@ -57,6 +57,16 @@
 
 用户批准的 package-first 与源码 freshness 场景已经写入当前 `product-distribution` delta spec；本 Design 候选不再提出新的行为范围或额外 Spec Patch。
 
+## Verify 修订候选
+
+- standalone `npm run test:package-e2e` 通过 npm lifecycle 先执行标准 `npm run build`，再由现有测试打包和隔离安装；仓库测试结构化绑定这两个脚本，防止未来再次打包历史 `dist`。
+- CI 契约除顶层 `contents: read` 外，拒绝 `verify` job 自行声明权限覆盖；内存负例证明 job 级写权限不能绕过测试。
+- 自举文档保留唯一一致的源码例外：每次更新后执行 build、freshness preflight、源码 CLI；删除后文“只要求 build”的冲突表述，并增加负例保护。
+- Tasks 3.1 与已批准 Build Plan 的既有基线例外对齐：全量 `npm run format:check` 继续暴露并记录历史差异，本 change 精确格式检查、全量 lint 和全量 typecheck 必须退出 0；不机械改写归档规格或 Comet 机器状态。
+- 修订不改变 `product-distribution` delta spec，不引入 launcher 自动构建、跟踪 `dist`、依赖升级、Runtime/Cordis/OTLP 或协议改动。
+
+取舍：为 package E2E 增加一次显式 build 会增加 standalone 命令耗时，但使该公共验证入口自身闭合；job 级权限禁止覆盖牺牲少量局部配置灵活性，换取单一最小权限权威；格式基线仍作为明确的非绿色历史事实保留，不用大范围机械 diff 掩盖本 change。
+
 ## 待确认项
 
-无。方案 C 已批准，正式技术设计保存在同一 change 的 `design.md`。
+是否批准上述同范围 Verify 修订候选。批准后更新同一 `design.md`，重新提交 Build Plan 并执行四项已重新打开的任务；拒绝则停止，不沿用旧 Design approval。
