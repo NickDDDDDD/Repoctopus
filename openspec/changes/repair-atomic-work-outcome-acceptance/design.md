@@ -1,3 +1,9 @@
+---
+comet_change: repair-atomic-work-outcome-acceptance
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
