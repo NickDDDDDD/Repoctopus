@@ -18,7 +18,7 @@ Build 使用 `autonomous + tdd + thorough`。测试路径夹具、Windows 路径
 
 - 路径工厂必须产生当前宿主的绝对路径，但不得访问真实 checkout 或改变 repository identity、相对拓扑、branch、HEAD 与摘要脱敏断言。
 - Windows override 中的 `.`、`..` 和混合分隔符必须由 `path.win32` 规范化；相对 override 和相对 `LOCALAPPDATA` 必须继续 fail closed。
-- POSIX `SIGKILL` 成功发送不等于进程已退出；确认超时、权限错误或 identity 仍匹配时不得返回 `terminated`。
+- POSIX `SIGKILL` 成功发送或 leader PID 消失都不等于进程组已退出；确认超时、权限错误或 descendant 仍使 group 存在时不得返回 `terminated`。
 - Windows `taskkill.exe /t /f` 路径及其结果分类不得被 POSIX 轮询改动。
 - 本地绿色不得替代远端干净 checkout；PR 检查必须绑定精确推送 HEAD，失败时不得合入。
 
@@ -94,6 +94,34 @@ RED：现有固定 Windows 路径在非 Windows 宿主被生产校验拒绝。GR
 
 接受：本地与远端 `verify` 都绑定同一提交并退出成功，PR 才具备后续 Archive 与合入条件；branch protection 配置状态与 workflow 成功分别报告。
 
+## 10. 保存 leader 消失但 process group 存活的 RED
+
+<!-- comet-task-ref:5edabe42-b883-4815-8bbd-828163024c6b -->
+
+扩展 `test/terminate-process-tree.test.ts`，让前置 ownership 匹配、发送 group `SIGKILL` 成功，随后 leader ownership 已是 `not_running`，但 `kill(-pgid, 0)` 在整个截止期仍证明 process group 存在。旧实现必须错误返回 `terminated`，形成针对独立审查 finding 的真实 RED。
+
+测试用 fake timers 和按 signal 分类的 `process.kill` stub，不创建真实残留进程；同时保留 group 最终返回 `ESRCH` 的成功分支。
+
+## 11. 统一 recovered 与普通 POSIX group 退出确认
+
+<!-- comet-task-ref:37bfa264-8dc2-4395-8cac-e809ebb5338e -->
+
+删除 recovered 路径按 leader ownership 判断终止成功的并行算法，复用模块已有 `waitForPosixGroupExit(pid)`。creation identity 继续只在破坏性信号之前授权；发送后以 group probe 的 `ESRCH` 作为唯一 `terminated` 证明，超时和 `EPERM` 保持 `unknown`。
+
+运行 `npx vitest run test/terminate-process-tree.test.ts test/service-recovery.test.ts`，并核对 Windows `taskkill` 分支未改变。
+
+## 12. 收敛 canonical Design 与 package identity 契约
+
+<!-- comet-task-ref:5e7b7c57-9a0a-4c6f-b79b-c3f0abcbc0e1 -->
+
+在唯一 `design.md` 中记录两项已经由 Linux 失败证据证实的决定：CI ancestry 门禁需要完整 Git 历史；package-content v2 排除 host-derived tar mode，但继续绑定 path、entry type、file size/content digest 与 link target。运行 package digest 与 workflow contract 测试，确保文档没有变成第二套实现权威。
+
+## 13. 重建最终验证证据
+
+<!-- comet-task-ref:61a2e937-51f7-45fa-b16c-2f764af14f92 -->
+
+更新正式验证报告中的测试总数、精确 HEAD、GitHub run 和第一次独立审查 finding。重新执行 Windows `npm run verify`，推送后等待 GitHub Linux 对新 HEAD 成功，再让独立 reviewer 只补审受影响的 process-group 与 canonical 文档部分；CRITICAL/IMPORTANT 未清零前不得进入 Archive。
+
 ## 完成顺序
 
-任务 1-2 先消除测试夹具的宿主耦合；任务 3-4 与 5-6 各自保持真实 TDD 循环；任务 7-9 依次收敛本地、完整 Windows 和 GitHub Linux 证据。全部 9 项只在实际证据成立后勾选同一 `tasks.md`，Verify 负责唯一最终集成审查与正式报告。
+任务 1-2 先消除测试夹具的宿主耦合；任务 3-4 与 5-6 各自保持真实 TDD 循环；任务 7-9 依次收敛本地、完整 Windows 和 GitHub Linux 证据。Verify finding 由任务 10-13 追加真实 RED/GREEN、canonical 决定与重新验证证据。全部任务只在实际证据成立后勾选同一 `tasks.md`，Verify 负责唯一最终集成审查与正式报告。

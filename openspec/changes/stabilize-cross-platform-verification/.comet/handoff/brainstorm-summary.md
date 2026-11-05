@@ -32,6 +32,35 @@ Linux Runner 会接受实际不可访问的 Windows checkout，削弱本地 Bind
 - POSIX 终止超时必须返回保守状态，不能通过固定 sleep 或测试等待伪造成功。
 - 相关 Vitest 提供快速证据；完整 `npm run verify` 与 GitHub PR `verify` 作为最终集成证据。
 
+## Verify finding 后的候选修订
+
+### 新事实
+
+- 独立最终审查证明 recovered 路径当前只轮询 leader PID ownership；leader 先退出、descendant 仍存活时会把整棵树误报为 `terminated`。
+- 同一模块已经有 `waitForPosixGroupExit()`，普通 child 路径使用 `kill(-pgid, 0)` 判断整个 group 是否消失；问题来自 recovered 路径维护了第二套成功定义。
+- GitHub Linux 还先后证明浅克隆无法做 tested commit ancestry 校验、npm tar mode 会随宿主变化。这两项实现已经转绿，但尚未进入 canonical Design。
+
+### 采用：统一复用 process-group probe
+
+- 发送信号前继续以 leader creation identity 授权破坏性操作。
+- 发送信号后复用 `waitForPosixGroupExit()`；只有 group probe 返回 `ESRCH` 才报告 `terminated`，超时或权限不确定保持 `unknown`。
+- 增加 leader 已消失但 group 仍存在的 RED，避免 future regression 再把 PID liveness 当作 tree liveness。
+
+该方案改动最小，并把同一平台适配器的终止成功语义统一到一个 helper。
+
+### 不采用：在 recovered ownership 轮询上叠加 group probe
+
+仍会保留两份截止时间、轮询和错误分类代码；即使本次转绿，未来仍可能再次分叉。
+
+### 不采用：枚举 `/proc` 或调用 `ps`
+
+平台依赖和竞态更多，且没有比内核 process-group probe 更强的退出证明。
+
+### 门禁身份修订
+
+- CI 使用完整 Git 历史完成报告 commit ancestry 校验。
+- package-content v2 排除 host-derived tar mode，但继续绑定 path、type、file size/content digest 与 link target；不新增公共 API 或规格能力。
+
 ## 当前状态
 
-方案已由用户确认；Design Wait 仍需绑定 Runtime 生成的精确 proposal hash。没有待决的规格或架构问题。
+原方案已由用户确认；上述 Verify finding 修订是当前候选，仍需新的 Design Wait 绑定精确 proposal hash。没有待决的 Spec Patch。

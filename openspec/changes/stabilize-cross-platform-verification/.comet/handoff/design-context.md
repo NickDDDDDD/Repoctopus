@@ -3,7 +3,7 @@
 - Change: stabilize-cross-platform-verification
 - Phase: design
 - Mode: compact
-- Context hash: e0528c19ba08f2aab10458b3bd1d67e72a9194486d40e1628751a5afef24e684
+- Context hash: b32b914fd864f9ae5667803680d51be2c125f3c7148b07c9a11cee38f6659d4b
 
 Generated-by: comet-handoff.sh
 Task hash policy: task-content-v1. Read tasks.md for live completion; excerpts are design-time context.
@@ -53,10 +53,16 @@ PR #66 首次在 GitHub Linux 干净 checkout 中执行完整验证时暴露 39 
 ## openspec/changes/stabilize-cross-platform-verification/design.md
 
 - Source: openspec/changes/stabilize-cross-platform-verification/design.md
-- Lines: 1-66
-- SHA256: f606f7699816345d2a3e9c4afd5e47af9d91915e887525edaa3b27f2667e4df7
+- Lines: 1-80
+- SHA256: 73b325edc58df9596436e89c576a4d5059ec3a4edee1d5cc78f7f5c35432bd8f
 
 ```md
+---
+comet_change: stabilize-cross-platform-verification
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
@@ -95,7 +101,7 @@ PR #66 首次在 GitHub Linux 干净 checkout 中执行完整验证时暴露 39 
 
 ### 3. POSIX 终止结果必须经过有界确认
 
-平台进程适配器在向已核验 identity 的 POSIX 进程组发送 `SIGKILL` 后，轮询进程组/进程所有权直到确认退出或达到固定上限。确认退出返回 `terminated`；超时、权限不足或仍匹配时返回保守的 `unknown`，调用方不得提前释放以该进程为所有者的恢复语义。
+平台进程适配器在向已核验 identity 的 POSIX 进程组发送 `SIGKILL` 后，以 `kill(-pgid, 0)` 轮询整个进程组直到确认 `ESRCH` 或达到固定上限。leader PID 的 creation identity 只用于发送破坏性信号前的授权，不能在发送后代替 process-group liveness；即使 leader 已退出，只要 descendant 仍使进程组存在就返回保守的 `unknown`。只有整个进程组确认不存在才返回 `terminated`，调用方不得提前释放以该进程树为所有者的恢复语义。
 
 该逻辑留在 `platform/process` 适配器中，领域和 Cordis Service 只消费稳定结果，不感知信号、PID 或轮询。备选方案是仅让测试等待；这会掩盖产品 API “已终止”的虚假确定性，因此不采用。
 
@@ -108,10 +114,18 @@ PR #66 首次在 GitHub Linux 干净 checkout 中执行完整验证时暴露 39 
 
 本 change 不增加遥测字段；现有验证报告记录命令、退出状态和外部 GitHub 检查链接，不把绝对路径、进程 identity 或日志正文写入 OpenTelemetry。
 
+### 5. 验证报告身份排除宿主传输元数据
+
+托管执行报告需要在 Windows 与 Linux 对同一 npm 包复现相同内容身份。CI 使用 `actions/checkout` 的完整历史，使报告中的 tested implementation commit 可以通过 ancestry 校验；浅克隆不能被解释为报告过期。
+
+包内容身份绑定条目路径、类型、文件字节长度与 SHA-256，以及链接目标，但排除 npm 从宿主文件系统派生的 tar mode、mtime、uid/gid、header 顺序和压缩器细节。tar mode 仍需被解析并校验格式，只是不进入跨平台内容摘要。内容身份 domain 升级为 v2，避免 v1 与新规则产生歧义。
+
 ## Risks / Trade-offs
 
 - [风险] 批量替换路径夹具时改变测试所表达的仓库拓扑 → 使用统一路径工厂只替换根路径表示，保留 repository ID、branch、HEAD 和相对层级断言。
 - [风险] POSIX zombie/reap 时序使单次 `kill(pid, 0)` 仍报告存在 → 使用条件轮询和固定截止时间，不使用任意长 sleep，也不把超时解释为成功。
+- [风险] leader 比 descendant 更早退出造成虚假成功 → 终止前用 leader identity 授权，终止后只用 process-group absence 证明整棵树退出。
+- [风险] npm archive mode 随宿主变化导致报告摘要漂移 → mode 只作格式校验，内容身份保留路径、类型、字节和链接目标约束。
 - [风险] `path.win32` 修复被误解为跨平台 Desktop 支持 → 测试和文档明确这是从任意 CI 宿主验证 Windows 路径契约，正式支持范围保持 Windows x64。
 - [取舍] 完整 GitHub 验证耗时约数分钟 → 相关测试先快速运行，只有本地全量转绿后才推送触发远端权威检查。
 
@@ -129,32 +143,39 @@ PR #66 首次在 GitHub Linux 干净 checkout 中执行完整验证时暴露 39 
 ## openspec/changes/stabilize-cross-platform-verification/tasks.md
 
 - Source: openspec/changes/stabilize-cross-platform-verification/tasks.md
-- Lines: 1-27
-- SHA256: f359d68dec121b0fcfd26507397427884a825e9fd50ca6ca2145d03246fbfff0
+- Lines: 1-34
+- SHA256: f9443a751e16bd8a97e3cfc4cdeb58d169f0da64d2a02fcfd7c50bc73073a575
 
 ```md
 # Tasks
 
 ## 1. 平台中立的 Execution Binding 测试夹具
 
-- [ ] 1.1 增加统一的宿主绝对路径测试工厂，并用 `vitest run test/build-protocol-domain.test.ts test/build-strategy-binding-domain.test.ts` 验证其在当前宿主生成 `path.isAbsolute() === true` 的路径且不改变语义摘要断言 <!-- comet-task:ea6fec2c-a4f3-4707-ab89-769878a746d9 -->
-- [ ] 1.2 将 lifecycle、runtime、workspace、protected-branch 与 orchestration 测试中的固定 Windows checkout 替换为同一工厂，并用对应 Vitest 文件验证 repository ID、拓扑、branch、HEAD 与漂移分类断言保持不变 <!-- comet-task:66fdae3e-2cc7-44d8-a711-f692b979aa81 -->
+- [x] 1.1 增加统一的宿主绝对路径测试工厂，并用 `vitest run test/build-protocol-domain.test.ts test/build-strategy-binding-domain.test.ts` 验证其在当前宿主生成 `path.isAbsolute() === true` 的路径且不改变语义摘要断言 <!-- comet-task:ea6fec2c-a4f3-4707-ab89-769878a746d9 -->
+- [x] 1.2 将 lifecycle、runtime、workspace、protected-branch 与 orchestration 测试中的固定 Windows checkout 替换为同一工厂，并用对应 Vitest 文件验证 repository ID、拓扑、branch、HEAD 与漂移分类断言保持不变 <!-- comet-task:66fdae3e-2cc7-44d8-a711-f692b979aa81 -->
 
 ## 2. Windows Desktop discovery 路径语义
 
-- [ ] 2.1 以现有 Windows 路径用例作为回归基线，补充 override 规范化与非绝对路径拒绝断言，并确认未修实现会在非 Windows `node:path` 语义下失败 <!-- comet-task:c500e361-c794-462a-a256-7d0fd42c8d1b -->
-- [ ] 2.2 将 discovery root 计算限定为 `path.win32`，并用 `vitest run test/desktop-receiver-discovery.test.ts` 验证 `LOCALAPPDATA`、override 和拒绝分支 <!-- comet-task:85e0f1e4-0652-4e4b-b325-47d193164c56 -->
+- [x] 2.1 以现有 Windows 路径用例作为回归基线，补充 override 规范化与非绝对路径拒绝断言，并确认未修实现会在非 Windows `node:path` 语义下失败 <!-- comet-task:c500e361-c794-462a-a256-7d0fd42c8d1b -->
+- [x] 2.2 将 discovery root 计算限定为 `path.win32`，并用 `vitest run test/desktop-receiver-discovery.test.ts` 验证 `LOCALAPPDATA`、override 和拒绝分支 <!-- comet-task:85e0f1e4-0652-4e4b-b325-47d193164c56 -->
 
 ## 3. POSIX recovered termination 确认
 
-- [ ] 3.1 为 POSIX 终止增加有界确认测试，覆盖确认退出与截止时间内仍存活两种结果，并用相关 Vitest 用例保存 RED 证据 <!-- comet-task:66d6b6dc-2cc1-4008-a1c1-c22dd67bf0ef -->
-- [ ] 3.2 在 `platform/process` 实现条件轮询，使 `terminated` 只在确认退出后返回，超时保持保守结果；用进程树与 managed service recovery 测试验证 GREEN 且不改变 Windows `taskkill` 路径 <!-- comet-task:8ed392c6-4553-4232-8041-a50ba47d8892 -->
+- [x] 3.1 为 POSIX 终止增加有界确认测试，覆盖确认退出与截止时间内仍存活两种结果，并用相关 Vitest 用例保存 RED 证据 <!-- comet-task:66d6b6dc-2cc1-4008-a1c1-c22dd67bf0ef -->
+- [x] 3.2 在 `platform/process` 实现条件轮询，使 `terminated` 只在确认退出后返回，超时保持保守结果；用进程树与 managed service recovery 测试验证 GREEN 且不改变 Windows `taskkill` 路径 <!-- comet-task:8ed392c6-4553-4232-8041-a50ba47d8892 -->
 
 ## 4. 集成验证与 PR 门禁
 
-- [ ] 4.1 运行受影响测试集合、`npm run typecheck`、`npm run lint` 与 `npm run spec:validate`，确认本 change 与既有规格一致 <!-- comet-task:96a93066-24e0-4c52-8e4b-4a945a89e407 -->
-- [ ] 4.2 运行本地 Windows `npm run verify`，记录完整测试数量、跳过项与退出状态到正式验证报告 <!-- comet-task:2fe415c6-5063-430e-9cc6-6342dce705d2 -->
-- [ ] 4.3 推送当前公开分支并确认 PR #66 的 GitHub Linux `verify` 对精确新 HEAD 成功；检查仍失败时保留 change 开放并按失败证据修复，不绕过门禁合入 <!-- comet-task:48e16b0c-ae66-4764-a19d-1f0d2ebe95ec -->
+- [x] 4.1 运行受影响测试集合、`npm run typecheck`、`npm run lint` 与 `npm run spec:validate`，确认本 change 与既有规格一致 <!-- comet-task:96a93066-24e0-4c52-8e4b-4a945a89e407 -->
+- [x] 4.2 运行本地 Windows `npm run verify`，记录完整测试数量、跳过项与退出状态到正式验证报告 <!-- comet-task:2fe415c6-5063-430e-9cc6-6342dce705d2 -->
+- [x] 4.3 推送当前公开分支并确认 PR #66 的 GitHub Linux `verify` 对精确新 HEAD 成功；检查仍失败时保留 change 开放并按失败证据修复，不绕过门禁合入 <!-- comet-task:48e16b0c-ae66-4764-a19d-1f0d2ebe95ec -->
+
+## 5. Verify 返工：完整进程组确认与门禁身份
+
+- [ ] 5.1 增加“leader PID 已消失但 process group 仍存在”的 recovered termination 回归测试，确认旧实现会错误返回 `terminated` <!-- comet-task:5edabe42-b883-4815-8bbd-828163024c6b -->
+- [ ] 5.2 让 POSIX recovered termination 复用完整 process-group 退出确认，只有 `kill(-pgid, 0)` 返回 `ESRCH` 才返回 `terminated`，并运行相关进程恢复测试 <!-- comet-task:37bfa264-8dc2-4395-8cac-e809ebb5338e -->
+- [ ] 5.3 将 CI full-history ancestry 与 package-content v2 的跨宿主身份决定写入 canonical Design，并核对 package digest 测试仍绑定路径、类型、字节与链接目标 <!-- comet-task:5e7b7c57-9a0a-4c6f-b79b-c3f0abcbc0e1 -->
+- [ ] 5.4 更新正式验证报告，重新执行 Windows 全量验证、GitHub Linux 精确 HEAD 验证与独立最终集成审查 <!-- comet-task:61a2e937-51f7-45fa-b16c-2f764af14f92 -->
 
 ## Workflow follow-up
 
