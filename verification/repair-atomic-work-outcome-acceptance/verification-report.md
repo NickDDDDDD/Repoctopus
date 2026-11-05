@@ -79,11 +79,19 @@ npm run verify (package-boundary run)
   generated, brand, architecture, provenance and Dashboard salvage passed
   strict OpenSpec passed: 19 items, 0 failed
   final report gate correctly required rebinding after the composition identity fixture changed
+
+npm run verify (final bound-report run)
+  all commands and gates passed
+  report package identity reproduced: 458 files, 5584114 bytes
+
+npm run check:upstream
+  fixed Comet 0.5.1 and adopted-source integrity passed
+  remote Comet and DSH branches have advanced and require a separate baseline-alignment change
 ```
 
 The composition fixture is part of the npm package, so its corrected digest changed the semantic
-package identity. This report binds the resulting package boundary; a final complete repository
-verification is executed against this binding before Verify and Archive complete.
+package identity. This report binds the resulting package boundary. The final complete repository
+verification reproduced that binding and passed every gate.
 
 ## Protocol documentation
 
@@ -114,6 +122,6 @@ verification is executed against this binding before Verify and Archive complete
 
 The implementation establishes atomic Build Work Outcome acceptance: candidate validation and
 transition feasibility precede terminal binding, rejected and processing-error paths preserve the
-correct audit identities, and all Build Work kinds share one fail-closed protocol. Final delivery
-requires the complete repository verification, fixed-upstream check and independent thorough
+correct audit identities, and all Build Work kinds share one fail-closed protocol. Automated and
+fixed-upstream verification are complete. Final delivery requires only the independent thorough
 review recorded below.

@@ -41,11 +41,11 @@
 
 ## 6. 综合验收
 
-- [ ] 6.1 运行定向回归 `npx vitest run test/work-execution-submission.test.ts test/managed-work-executor.test.ts test/work-execution-recovery.test.ts test/managed-change-execution.e2e.test.ts test/telemetry-mapping.test.ts` 并记录 Evidence。 <!-- comet-task:c351caf8-aefe-468a-8c3d-eeefd7e36e93 -->
-- [ ] 6.2 运行 `npm run typecheck && npm run lint && npm run check:architecture && npm run check:provenance`，确认领域、Service、Engine 与平台适配器边界无违规。 <!-- comet-task:2763104c-fc1d-4ee9-b831-8f54e69496f7 -->
-- [ ] 6.3 运行 `npm run verify`，确认全量测试、生成物、品牌、架构、来源、OpenSpec 与报告检查全部通过。 <!-- comet-task:657897f5-6ef0-47f0-9d71-764748fc6679 -->
-- [ ] 6.4 使用新的多仓 acceptance Run 重放 Round 8 场景，验证错误 Configure candidate 可在同一 invocation 纠正并继续至 Archive；保存 Run/Work/submission/Evidence/phase 遥测，旧卡住 Run 保持未修改。 <!-- comet-task:4fa9a8d2-91fc-44cf-a0c9-a1de20ecb525 -->
-- [ ] 6.5 对照 Comet 0.5.1 固定源码复核 Outcome identity、拒绝与恢复语义，并运行 `npm run check:upstream`；若权威资料冲突则停止交付并回到 Design。 <!-- comet-task:ef8a4b65-0a61-47c4-8253-f17a83b3ed61 -->
+- [x] 6.1 运行定向回归 `npx vitest run test/work-execution-submission.test.ts test/managed-work-executor.test.ts test/work-execution-recovery.test.ts test/managed-change-execution.e2e.test.ts test/telemetry-mapping.test.ts` 并记录 Evidence。 <!-- comet-task:c351caf8-aefe-468a-8c3d-eeefd7e36e93 -->
+- [x] 6.2 运行 `npm run typecheck && npm run lint && npm run check:architecture && npm run check:provenance`，确认领域、Service、Engine 与平台适配器边界无违规。 <!-- comet-task:2763104c-fc1d-4ee9-b831-8f54e69496f7 -->
+- [x] 6.3 运行 `npm run verify`，确认全量测试、生成物、品牌、架构、来源、OpenSpec 与报告检查全部通过。 <!-- comet-task:657897f5-6ef0-47f0-9d71-764748fc6679 -->
+- [x] 6.4 使用新的多仓 acceptance Run 重放 Round 8 场景，验证错误 Configure candidate 可在同一 invocation 纠正并继续至 Archive；保存 Run/Work/submission/Evidence/phase 遥测，旧卡住 Run 保持未修改。 <!-- comet-task:4fa9a8d2-91fc-44cf-a0c9-a1de20ecb525 -->
+- [x] 6.5 对照 Comet 0.5.1 固定源码复核 Outcome identity、拒绝与恢复语义，并运行 `npm run check:upstream`；若权威资料冲突则停止交付并回到 Design。 <!-- comet-task:ef8a4b65-0a61-47c4-8253-f17a83b3ed61 -->
 - [ ] 6.6 完成独立 thorough review，修复高优先级 finding 后重新运行受影响测试，并将最终结论写入正式验证报告。 <!-- comet-task:2d22d4cc-6da9-45d6-9c03-127b3df9a852 -->
 
 ## Workflow follow-up
