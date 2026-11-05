@@ -5,6 +5,7 @@ import { parse } from 'yaml';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '..');
 const workflowPath = path.join(repositoryRoot, '.github', 'workflows', 'ci.yml');
+const packageJsonPath = path.join(repositoryRoot, 'package.json');
 
 type JsonRecord = Record<string, unknown>;
 
@@ -39,6 +40,7 @@ function workflowProblems(workflow: unknown): string[] {
   if (Object.keys(permissions).length !== 1 || permissions.contents !== 'read') {
     problems.push('read-only-permissions');
   }
+  if (Object.hasOwn(verify, 'permissions')) problems.push('job-permission-override');
   if (
     concurrency.group !== '${{ github.workflow }}-${{ github.ref }}' ||
     concurrency['cancel-in-progress'] !== true
@@ -101,6 +103,10 @@ describe('repository continuous integration contract', () => {
     record(writable.permissions).actions = 'write';
     expect(workflowProblems(writable)).toContain('read-only-permissions');
 
+    const jobPermissionOverride = validWorkflowFixture();
+    record(record(jobPermissionOverride.jobs).verify).permissions = { contents: 'write' };
+    expect(workflowProblems(jobPermissionOverride)).toContain('job-permission-override');
+
     const wrongBranch = validWorkflowFixture();
     record(record(wrongBranch.on).push).branches = ['develop'];
     expect(workflowProblems(wrongBranch)).toContain('main-push-trigger');
@@ -109,5 +115,13 @@ describe('repository continuous integration contract', () => {
     const verify = record(record(duplicatedChecks.jobs).verify);
     (verify.steps as JsonRecord[]).splice(3, 0, { run: 'npm run lint' });
     expect(workflowProblems(duplicatedChecks)).toContain('canonical-verify-commands');
+  });
+
+  it('builds current sources before the standalone package acceptance command', async () => {
+    const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8')) as unknown;
+    const scripts = record(record(packageJson).scripts);
+
+    expect(scripts['pretest:package-e2e']).toBe('npm run build');
+    expect(scripts['test:package-e2e']).toBe('vitest run test/e2e/package.e2e.test.ts');
   });
 });

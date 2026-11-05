@@ -100,6 +100,7 @@ describe('self-hosting documentation', () => {
     expect(directSource).toContain('每次切换、拉取或合入源码后');
     expect(directSource).toContain('历史 `dist/`');
     expect(directSource).toContain('不能作为验证证据');
+    expect(directSource).not.toContain('只要求先运行标准 `npm run build`');
     expect(documentation).toContain('Continuous integration / verify');
     expect(documentation).toContain('required check');
   });

@@ -94,7 +94,7 @@ node bin/repoctopus.js run next --workspace . --run <run-id> --json
 
 `run start` 在创建新 Run 前执行一次有界 consistency reconcile。平台暂时不可用只产生警告，不阻断新任务；命令不会启动 listener 或 Timer。
 
-在 Windows x64 上，成功创建或恢复 Change Run 后，Runtime 会自动启动或激活 Desktop Dashboard 并转交当前 Run 上下文。源码正常路径只要求先运行标准 `npm run build`；不需要配置 Desktop executable。`unavailable` 或 `unsupported` 诊断不回滚 Run，也不停止远端 OTLP。完整步骤见[启动或恢复 Desktop Dashboard](desktop-activation.md)。
+在 Windows x64 上，成功创建或恢复 Change Run 后，Runtime 会自动启动或激活 Desktop Dashboard 并转交当前 Run 上下文。直接运行源码时仍须遵循本节统一的 build、freshness preflight、CLI 顺序；不需要配置 Desktop executable。`unavailable` 或 `unsupported` 诊断不回滚 Run，也不停止远端 OTLP。完整步骤见[启动或恢复 Desktop Dashboard](desktop-activation.md)。
 
 同一 Workspace/change 的 `run start` 总是创建或恢复同一个稳定 runId，不接受 mode 或代次参数。Runner 必须先建立并公开 source branch 或 worktree；Runtime 在任何 Run/Skill/Work/Desktop 成功写入前校验 attached source、target、remote 与多仓 topology，并冻结不含 path、HEAD、dirty 状态和时间的 `ChangeStartBinding`。等价重放直接采用 Store 中的 current Work，不重建候选 Work；绑定漂移返回公共 conflict code，且不修改 checkpoint。Runtime 本版只观察和校验，不创建或切换 checkout。
 
