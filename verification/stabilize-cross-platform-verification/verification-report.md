@@ -3,7 +3,7 @@
 ## Reproducible subject
 
 - Change: `stabilize-cross-platform-verification`
-- Tested implementation commit: `53bf2083c190503dfc19baf1f20b0880a8a1b6d6`
+- Tested implementation commit: `5e51cdf63bfbc9c6d09e28d52416cdb08739f8d3`
 - Package: `repoctopus@0.1.0`
 - Package content SHA-256: `727874ddb198dee2c35f3cd7fbcc92b6a5e7f8ad176a2248e4aab32544e92c06`
 - Package files: `456`
@@ -89,11 +89,19 @@ manifest digest and exact composition identity were refreshed, while the upstrea
 remained fixed; the three affected files then passed 14/14 and the independent provenance command
 passed.
 
+The first GitHub Linux pass then executed the full matrix successfully (190 passed files, one
+platform-skipped file; 943 passed tests and 4 Windows-only skips) but the final report checker could
+not prove this report's implementation commit was an ancestor in `actions/checkout`'s default
+depth-one clone. A workflow contract test first failed with `full-history-checkout`; setting
+`fetch-depth: 0` made the contract pass 3/3. The npm package digest did not change because workflow
+and test sources are outside the published package, but this report advances the tested commit to
+the new CI/test authority boundary.
+
 ## External Linux evidence boundary
 
 The branch is public and every implementation commit was pushed immediately. GitHub Linux `verify`
-for PR #66 must succeed against the exact final implementation/report HEAD before task 4.3 or this
-change can be considered complete. A local Windows result does not substitute for that clean
+for PR #66 must now succeed against the exact full-history workflow/report HEAD before task 4.3 or
+this change can be considered complete. A local Windows result does not substitute for that clean
 checkout, and a successful workflow is reported separately from repository required-check policy.
 
 ## Cleanup
