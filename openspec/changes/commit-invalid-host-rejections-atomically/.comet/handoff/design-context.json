@@ -1,0 +1,15 @@
+{
+  "change": "commit-invalid-host-rejections-atomically",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "55b1ac737cefb8c8411084644b7bc8e0e781e741632fd6895334feea305db583",
+  "files": [
+    { "path": "openspec/changes/commit-invalid-host-rejections-atomically/proposal.md", "sha256": "709328da988303f5e39e04012875f12ab97b352b907b18450af9199b6f0799e5" },
+    { "path": "openspec/changes/commit-invalid-host-rejections-atomically/design.md", "sha256": "6fdfc794ad1e624706b9368cf381d9c75f212adf2707f205a3d84a62602dbdd9" },
+    { "path": "openspec/changes/commit-invalid-host-rejections-atomically/tasks.md", "sha256": "dc397d398bb79d859f25364478e79b52cc87b1c2c3e2b9148e808cec7920735e" },
+    { "path": "openspec/changes/commit-invalid-host-rejections-atomically/.openspec.yaml", "sha256": "12f3bb1c9fc7f0fc79e906b3ac658f23fecd3fce89b581ead10be2029295a381" }
+  ]
+}
