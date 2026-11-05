@@ -61,14 +61,30 @@ npx prettier --check test/repository-ci.test.ts test/self-hosting-docs.test.ts \
   openspec/changes/stabilize-cli-distribution-gate/tasks.md
   all change-controlled files passed
 
+node scripts/build.mjs --check
+  passed; the source CLI bundle matches the current checkout
+
+comet classic openspec -- validate stabilize-cli-distribution-gate --strict
+  passed; the change is strictly valid
+
+git diff --check
+  passed
+
+git status --short
+  contained only the expected verification-report update before final evidence commit
+
 npm run verify
   typecheck, Desktop typecheck, lint, and CLI/Desktop builds passed
   complete Vitest matrix passed: 190 files
   941 tests passed; 2 explicitly skipped (943 total)
   generated, brand, architecture, provenance, and Dashboard salvage passed
   strict OpenSpec passed: 18 items, 0 failed
-  the pre-report freshness gate correctly requested this report
+  managed execution report reproduced the package identity
 ```
+
+The pre-report pass reached the final freshness gate and correctly requested this report. After the
+report was created outside the package boundary, the complete command was rerun and exited 0 with
+the same 190-file/943-test result and reproduced package identity.
 
 The first complete verification attempt ran from a new worktree whose local `node_modules` held
 only Vite caches while Node resolved most dependencies from the parent repository. The Desktop E2E
@@ -89,6 +105,8 @@ sources, archived OpenSpec documents, and Comet-generated state/handoff files. T
 base already contains those differences, and this change does not rewrite immutable archives or
 machine-owned lifecycle state. Every file controlled by this change passes the exact Prettier check;
 the full baseline failure remains visible rather than being silently ignored or misreported as green.
+This is the pre-existing-baseline exception already declared in the approved Build plan for task 3.1;
+`npm run lint` and `npm run typecheck` both exit 0.
 
 ## External evidence boundary
 

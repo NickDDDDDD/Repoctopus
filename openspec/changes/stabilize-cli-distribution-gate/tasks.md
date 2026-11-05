@@ -14,9 +14,9 @@
 
 ## 3. 集成验证与交付证据
 
-- [ ] 3.1 对本 change 的 workflow、测试与文档执行 `npm run format:check`、`npm run lint` 和 `npm run typecheck`，修复所有失败并以三个命令均退出 0 验证静态质量 <!-- comet-task:1abe637a-4d0b-481e-8d84-91b9febf9891 -->
-- [ ] 3.2 在当前源码 worktree 执行 `npm run verify` 和 `node scripts/build.mjs --check`，验证 CLI/Desktop 构建、完整 Vitest、生成物、品牌、架构、来源、Dashboard、OpenSpec、managed execution report 与源码 freshness preflight 全部通过 <!-- comet-task:e7a6d83e-55fe-472d-93c2-767238d7220b -->
-- [ ] 3.3 执行 `comet classic openspec -- validate stabilize-cli-distribution-gate --strict`、`git diff --check` 与工作区状态检查，确认四份 OpenSpec 产物严格有效、只包含预期改动，并把最终命令和结果记录到正式 Verification Evidence <!-- comet-task:345389b1-84af-4148-9a0c-1a3e8c9149a2 -->
+- [x] 3.1 对本 change 的 workflow、测试与文档执行 `npm run format:check`、`npm run lint` 和 `npm run typecheck`，修复所有失败并以三个命令均退出 0 验证静态质量 <!-- comet-task:1abe637a-4d0b-481e-8d84-91b9febf9891 -->
+- [x] 3.2 在当前源码 worktree 执行 `npm run verify` 和 `node scripts/build.mjs --check`，验证 CLI/Desktop 构建、完整 Vitest、生成物、品牌、架构、来源、Dashboard、OpenSpec、managed execution report 与源码 freshness preflight 全部通过 <!-- comet-task:e7a6d83e-55fe-472d-93c2-767238d7220b -->
+- [x] 3.3 执行 `comet classic openspec -- validate stabilize-cli-distribution-gate --strict`、`git diff --check` 与工作区状态检查，确认四份 OpenSpec 产物严格有效、只包含预期改动，并把最终命令和结果记录到正式 Verification Evidence <!-- comet-task:345389b1-84af-4148-9a0c-1a3e8c9149a2 -->
 
 ## Workflow follow-up
 
