@@ -34,7 +34,7 @@ Build 使用 `autonomous + tdd + thorough`。每个行为先由聚焦测试暴�
 
 <!-- comet-task-ref:7b1d9b66-0e90-4039-a549-e0ec5424bf12 -->
 
-用内存复制并变异解析后的 workflow：分别扩大写权限、移除 `main` push 或加入重复的内部检查命令，确认契约函数给出定向问题；原 workflow 仍通过。避免依赖键顺序、缩进或无关显示文本。
+用内存复制并变异解析后的 workflow：分别扩大顶层权限、用 job 级权限覆盖、移除 `main` push 或加入重复的内部检查命令，确认契约函数给出定向问题；原 workflow 仍通过。避免依赖键顺序、缩进或无关显示文本。
 
 依赖：任务 1-2。接受：聚焦测试同时覆盖正例和三个负例。
 
@@ -50,7 +50,7 @@ Build 使用 `autonomous + tdd + thorough`。每个行为先由聚焦测试暴�
 
 <!-- comet-task-ref:bf72fbec-0e6f-45f8-9408-daf5305215ef -->
 
-更新 `docs/self-hosting.md`：区分安装包验收和源码诊断；给出可执行顺序；说明 `npm ci` 只在依赖需要恢复时运行；说明 CI 状态与平台 required check 是不同证据。联合运行 self-hosting 与 CI 聚焦测试，确认文档、workflow 与测试使用同一术语和命令。
+更新 `docs/self-hosting.md`：区分安装包验收和源码诊断；给出可执行顺序；说明 `npm ci` 只在依赖需要恢复时运行；说明 CI 状态与平台 required check 是不同证据；拒绝同一文档后文再次把源码路径简化为 build-only。联合运行 self-hosting 与 CI 聚焦测试，确认文档、workflow 与测试使用同一术语和命令。
 
 依赖：任务 2、4。接受：两个聚焦测试文件共同通过，文档不声称仓库 YAML 已启用 branch protection。
 
@@ -58,7 +58,7 @@ Build 使用 `autonomous + tdd + thorough`。每个行为先由聚焦测试暴�
 
 <!-- comet-task-ref:0a8cc5f2-46ca-40a7-a41a-6246cee81bd1 -->
 
-核对现有 package E2E 是否确实执行 `npm pack`、隔离 `npm install --omit=dev`，并从安装目录调用公共 CLI 验证必要资源和 JSON 协议。只有发现规格场景没有证据时才补测试；运行 `npm run test:package-e2e`。不创建第二套打包脚本，也不把源码目录 `dist` 当成消费者环境。
+核对现有 package E2E 是否确实执行 `npm pack`、隔离 `npm install --omit=dev`，并从安装目录调用公共 CLI 验证必要资源和 JSON 协议。standalone `npm run test:package-e2e` 必须通过 npm lifecycle 先运行标准 build，并由脚本契约测试保护该前置；随后执行真实 package E2E。不创建第二套打包脚本，也不把源码目录的历史 `dist` 当成当前源码消费者环境。
 
 依赖：任务 5 的术语稳定。接受：package E2E 通过，测试证据指向安装后的包路径。
 
@@ -66,9 +66,9 @@ Build 使用 `autonomous + tdd + thorough`。每个行为先由聚焦测试暴�
 
 <!-- comet-task-ref:1abe637a-4d0b-481e-8d84-91b9febf9891 -->
 
-对最终 workflow、测试、文档和规格运行 `npm run format:check`、`npm run lint`、`npm run typecheck`。格式工具不得改写 Comet 机器生成的 handoff/state 语义；若仓库全量格式检查暴露既有生成文件差异，先区分既有事实与本 change 引入问题。
+运行 `npm run format:check` 暴露并记录全仓既有格式基线，再对最终 workflow、测试、文档和规格执行精确 Prettier 检查，并运行 `npm run lint` 和 `npm run typecheck`。格式工具不得改写 Comet 机器生成的 handoff/state 语义；若仓库全量格式检查暴露既有生成文件差异，先区分既有事实与本 change 引入问题。
 
-依赖：任务 1-6。接受：本 change 可控输入的三个命令均退出 0，或对既有非本 change 阻塞提供可复现证据并在 Verify 明示；不得静默忽略失败。
+依赖：任务 1-6。接受：精确格式检查、`npm run lint` 和 `npm run typecheck` 均退出 0；全量格式基线若仍失败，必须提供可复现证据并在 Verify 明示，不得静默忽略或把它描述为绿色。
 
 ## 8. 完整构建与 freshness 验证
 
