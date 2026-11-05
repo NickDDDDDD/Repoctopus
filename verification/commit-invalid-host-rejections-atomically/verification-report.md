@@ -27,6 +27,9 @@
 
 - `npm.cmd run typecheck`、`npm.cmd run lint`、`npm.cmd run build` 通过。
 - Managed Work Executor、Work Submission、Work Recovery 和 Composition 定向检查共 83 项通过。
+- Windows `npm.cmd run verify` 退出码为 0。193 个测试文件通过、1 个跳过，990 项测试
+  通过、3 项跳过。生成产物、品牌、架构、上游来源和 Dashboard 校验通过，OpenSpec
+  strict 19 项通过，包内容校验复算得到上列摘要。
 - 独立审查发现的并发覆盖风险由当前 checkpoint guard 拦截。测试覆盖已保留另一份待处理
   候选和外部副作用仍在核对的两种 `unknown` 状态，以及接受补交后对历史拒绝 ID 的重放。
 - 验收另从已持久化的半截非法 `submitted` checkpoint 冷启动。Runtime 在生成 Receipt
