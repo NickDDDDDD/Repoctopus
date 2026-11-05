@@ -19,7 +19,7 @@ describe('recovered POSIX process-tree termination', () => {
   it('does not report terminated when the leader exited but the process group is still alive', async () => {
     vi.useFakeTimers();
     vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
-    vi.spyOn(process, 'kill').mockReturnValue(true);
+    const kill = vi.spyOn(process, 'kill').mockReturnValue(true);
     inspectOwnership
       .mockResolvedValueOnce('matched')
       .mockResolvedValueOnce('not_running');
@@ -28,8 +28,8 @@ describe('recovered POSIX process-tree termination', () => {
     await vi.advanceTimersByTimeAsync(1_000);
 
     await expect(result).resolves.toBe('unknown');
-    expect(process.kill).toHaveBeenCalledWith(-4_242, 'SIGKILL');
-    expect(process.kill).toHaveBeenCalledWith(-4_242, 0);
+    expect(kill).toHaveBeenCalledWith(-4_242, 'SIGKILL');
+    expect(kill).toHaveBeenCalledWith(-4_242, 0);
   });
 
   it('reports terminated only after the complete process group disappears', async () => {
