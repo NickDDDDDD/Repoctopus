@@ -99,20 +99,6 @@ export async function terminateProcessTreeConfirmed(child: ChildProcess): Promis
 
 export type RecoveredTermination = 'terminated' | 'not_running' | 'identity_mismatch' | 'unknown';
 
-async function confirmRecoveredPosixTermination(
-  pid: number,
-  expectedIdentity: string,
-): Promise<RecoveredTermination> {
-  const deadline = Date.now() + POSIX_GROUP_EXIT_WAIT_MS;
-  for (;;) {
-    const ownership = await inspectProcessOwnership(pid, expectedIdentity);
-    if (ownership === 'not_running') return 'terminated';
-    if (ownership !== 'matched') return ownership;
-    if (Date.now() >= deadline) return 'unknown';
-    await new Promise((resolve) => setTimeout(resolve, POSIX_EXIT_POLL_MS));
-  }
-}
-
 async function taskkillProcessTree(pid: number): Promise<boolean> {
   const configuredSystemRoot = process.env.SystemRoot ?? process.env.WINDIR;
   const systemRoot =
@@ -168,5 +154,5 @@ export async function terminateRecoveredProcessTree(
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ESRCH') return 'unknown';
   }
-  return confirmRecoveredPosixTermination(pid, expectedIdentity);
+  return (await waitForPosixGroupExit(pid)) ? 'terminated' : 'unknown';
 }

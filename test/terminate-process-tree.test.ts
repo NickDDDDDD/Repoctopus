@@ -16,30 +16,38 @@ afterEach(() => {
 });
 
 describe('recovered POSIX process-tree termination', () => {
-  it('reports terminated only after ownership confirms the process exited', async () => {
+  it('does not report terminated when the leader exited but the process group is still alive', async () => {
     vi.useFakeTimers();
     vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
     vi.spyOn(process, 'kill').mockReturnValue(true);
     inspectOwnership
       .mockResolvedValueOnce('matched')
-      .mockResolvedValueOnce('matched')
       .mockResolvedValueOnce('not_running');
-
-    const result = terminateRecoveredProcessTree(4_242, 'linux:boot:started');
-    await vi.advanceTimersByTimeAsync(20);
-
-    await expect(result).resolves.toBe('terminated');
-  });
-
-  it('stays conservative when ownership remains matched through the deadline', async () => {
-    vi.useFakeTimers();
-    vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
-    vi.spyOn(process, 'kill').mockReturnValue(true);
-    inspectOwnership.mockResolvedValue('matched');
 
     const result = terminateRecoveredProcessTree(4_242, 'linux:boot:started');
     await vi.advanceTimersByTimeAsync(1_000);
 
     await expect(result).resolves.toBe('unknown');
+    expect(process.kill).toHaveBeenCalledWith(-4_242, 'SIGKILL');
+    expect(process.kill).toHaveBeenCalledWith(-4_242, 0);
+  });
+
+  it('reports terminated only after the complete process group disappears', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
+    let groupProbes = 0;
+    vi.spyOn(process, 'kill').mockImplementation((_pid, signal) => {
+      if (signal !== 0) return true;
+      groupProbes += 1;
+      if (groupProbes < 3) return true;
+      throw Object.assign(new Error('process group is gone'), { code: 'ESRCH' });
+    });
+    inspectOwnership.mockResolvedValueOnce('matched');
+
+    const result = terminateRecoveredProcessTree(4_242, 'linux:boot:started');
+    await vi.advanceTimersByTimeAsync(40);
+
+    await expect(result).resolves.toBe('terminated');
+    expect(inspectOwnership).toHaveBeenCalledTimes(1);
   });
 });
