@@ -91,22 +91,22 @@
 
 ## 6. Specification 前置校验
 
-- [ ] 6.1 扩展Tasks Requirement metadata语法并用解析测试覆盖半角与全角逗号、分号、空token和歧义标记 <!-- comet-task:1e5dead0-2795-4512-9b9d-8302a7d97132 -->
+- [x] 6.1 扩展Tasks Requirement metadata语法并用解析测试覆盖半角与全角逗号、分号、空token和歧义标记 <!-- comet-task:1e5dead0-2795-4512-9b9d-8302a7d97132 -->
   **Blocked by:** 1.2
   **Acceptance:** 受支持分隔形式规范化为相同有序引用；空或歧义token在规划校验中定位失败
   **Requirements:** Task Requirement 映射必须在规划批准前解析
 
-- [ ] 6.2 由Specification Provider解析当前主规格与delta的稳定Requirement identities，并用集成测试拒绝未知映射且不让Build重新解析文本 <!-- comet-task:dd268ca7-883c-415c-9ea5-59d2d3b3203f -->
+- [x] 6.2 由Specification Provider解析当前主规格与delta的稳定Requirement identities，并用集成测试拒绝未知映射且不让Build重新解析文本 <!-- comet-task:dd268ca7-883c-415c-9ea5-59d2d3b3203f -->
   **Blocked by:** 6.1
   **Acceptance:** 未知Requirement在Open或Design严格校验失败；合法映射以结构化identity交付Build Plan
   **Requirements:** Task Requirement 映射必须在规划批准前解析
 
-- [ ] 6.3 抽取纯领域closure analyzer并用测试验证新增capability Purpose、delta操作和退役关系的静态可关闭性 <!-- comet-task:c524e3c7-c2a9-44f7-b5d9-467f31922879 -->
+- [x] 6.3 抽取纯领域closure analyzer并用测试验证新增capability Purpose、delta操作和退役关系的静态可关闭性 <!-- comet-task:c524e3c7-c2a9-44f7-b5d9-467f31922879 -->
   **Blocked by:** 1.2
   **Acceptance:** 缺少或无效Purpose在规划边界失败；相同输入的preflight与关闭候选得到相同静态结论
   **Requirements:** 新 Capability 的关闭前置条件必须早期验证
 
-- [ ] 6.4 将closure preflight接入Open与Design严格校验，并用Provider测试证明后续阶段只重新观察身份和checkout事实 <!-- comet-task:4c099978-2eba-4ab4-9cf2-976a0031c712 -->
+- [x] 6.4 将closure preflight接入Open与Design严格校验，并用Provider测试证明后续阶段只重新观察身份和checkout事实 <!-- comet-task:4c099978-2eba-4ab4-9cf2-976a0031c712 -->
   **Blocked by:** 6.2, 6.3
   **Acceptance:** 规划批准绑定closure preflight identity；规划未变时不会更晚首次发现同一Purpose错误
   **Requirements:** 新 Capability 的关闭前置条件必须早期验证, 规划语义与发布身份必须分别参与恢复分类

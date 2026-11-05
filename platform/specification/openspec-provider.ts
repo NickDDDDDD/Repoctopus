@@ -30,6 +30,13 @@ import {
   completeSpecificationTaskDocument,
   parseSpecificationTasks,
 } from '../../domains/specification/tasks.js';
+import {
+  analyzeSpecificationClosure,
+  parseRequirementIdentities,
+  resolveTaskRequirementIdentities,
+  type CapabilityPlanningInput,
+  type RequirementIdentity,
+} from '../../domains/specification/requirements.js';
 import { createSpecificationPlanningManifest } from '../../domains/specification/planning-manifest.js';
 import { createSpecificationPlanningGuidance } from '../../domains/specification/planning-guidance.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
@@ -466,7 +473,9 @@ export class OpenSpecProvider extends Specification {
     ) {
       throw new Error('OpenSpec Tasks path escapes the workspace');
     }
-    const tasks = parseSpecificationTasks(changeId, await readFile(absolute, 'utf8'));
+    const parsedTasks = parseSpecificationTasks(changeId, await readFile(absolute, 'utf8'));
+    const requirements = await this.requirementAuthorityAt(workspace, changeId);
+    const tasks = resolveTaskRequirementIdentities(parsedTasks, requirements);
     const receiptFile = this.taskReceiptFile(workspace, changeId);
     if (!(await exists(receiptFile))) return tasks;
     const saved = await readJsonFile<{
@@ -492,6 +501,61 @@ export class OpenSpecProvider extends Specification {
           : task;
       }),
     };
+  }
+
+  private async requirementAuthorityAt(
+    workspace: string,
+    changeId: string,
+  ): Promise<RequirementIdentity[]> {
+    const byIdentity = new Map<string, RequirementIdentity>();
+    const roots = [
+      { root: path.join(workspace, 'openspec', 'specs'), operation: 'CURRENT' as const },
+      {
+        root: path.join(workspace, 'openspec', 'changes', changeId, 'specs'),
+        operation: 'CURRENT' as const,
+      },
+    ];
+    for (const { root, operation } of roots) {
+      if (!(await exists(root))) continue;
+      for (const entry of await readdir(root, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const file = path.join(root, entry.name, 'spec.md');
+        if (!(await exists(file))) continue;
+        for (const requirement of parseRequirementIdentities(
+          entry.name,
+          await readFile(file, 'utf8'),
+          operation,
+        )) {
+          byIdentity.set(requirement.identity, requirement);
+        }
+      }
+    }
+    return [...byIdentity.values()].sort((left, right) =>
+      left.identity.localeCompare(right.identity),
+    );
+  }
+
+  private async closurePreflightAt(workspace: string, changeId: string) {
+    const changeRoot = path.join(workspace, 'openspec', 'changes', changeId);
+    const deltaRoot = path.join(changeRoot, 'specs');
+    const proposal = await readFile(path.join(changeRoot, 'proposal.md'), 'utf8');
+    const descriptions = proposalCapabilityDescriptions(proposal);
+    const capabilities: CapabilityPlanningInput[] = [];
+    if (await exists(deltaRoot)) {
+      for (const entry of await readdir(deltaRoot, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const deltaFile = path.join(deltaRoot, entry.name, 'spec.md');
+        if (!(await exists(deltaFile))) continue;
+        const source = await readFile(deltaFile, 'utf8');
+        capabilities.push({
+          capabilityId: entry.name,
+          existed: await exists(path.join(workspace, 'openspec', 'specs', entry.name, 'spec.md')),
+          purpose: specificationPurpose(source) ?? descriptions.get(entry.name)?.trim() ?? null,
+          requirements: parseRequirementIdentities(entry.name, source),
+        });
+      }
+    }
+    return analyzeSpecificationClosure(capabilities);
   }
 
   private taskReceiptFile(workspace: string, changeId: string): string {
@@ -793,6 +857,7 @@ export class OpenSpecProvider extends Specification {
     const item = parsed.items?.find((candidate) => candidate.id === changeId) ?? parsed.items?.[0];
     const findings = diagnostics(item?.issues);
     let valid = result.exitCode === 0 && item?.valid === true;
+    let closurePreflightDigest: `sha256:${string}` | null = null;
     if (valid && findings.some(({ severity }) => severity === 'error')) {
       valid = false;
       findings.push({
@@ -814,6 +879,29 @@ export class OpenSpecProvider extends Specification {
           artifactId: 'tasks',
         });
       }
+      try {
+        const preflight = await this.closurePreflightAt(workspace, changeId);
+        closurePreflightDigest = preflight.digest;
+        if (!preflight.valid) {
+          valid = false;
+          findings.push(
+            ...preflight.diagnostics.map((message) => ({
+              code: 'repoctopus.closure-preflight-invalid',
+              severity: 'error' as const,
+              message,
+              artifactId: 'specs',
+            })),
+          );
+        }
+      } catch (error) {
+        valid = false;
+        findings.push({
+          code: 'repoctopus.planning-authority-invalid',
+          severity: 'error',
+          message: error instanceof Error ? error.message : String(error),
+          artifactId: 'tasks',
+        });
+      }
     }
     if (!valid && findings.length === 0) {
       findings.push({
@@ -822,7 +910,13 @@ export class OpenSpecProvider extends Specification {
         message: result.stderr.trim() || 'OpenSpec strict validation failed',
       });
     }
-    const semantic = { changeId, strict: options.strict !== false, valid, diagnostics: findings };
+    const semantic = {
+      changeId,
+      strict: options.strict !== false,
+      valid,
+      diagnostics: findings,
+      closurePreflightDigest,
+    };
     return {
       apiVersion: SPECIFICATION_API_VERSION,
       kind: 'SpecificationValidation',

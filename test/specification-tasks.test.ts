@@ -176,6 +176,34 @@ describe('Specification Tasks', () => {
     ).toThrow(/duplicate Acceptance/u);
   });
 
+  it('normalizes supported Requirement separators and rejects empty or ambiguous references', () => {
+    const variants = [
+      'runtime#safe, evidence#trace',
+      'runtime#safe， evidence#trace',
+      'runtime#safe; evidence#trace',
+      'runtime#safe； evidence#trace',
+    ];
+    for (const value of variants) {
+      const parsed = parseSpecificationTasks(
+        'requirement-separators',
+        `- [ ] 1.1 Build it.\n  **Requirements:** ${value}\n`,
+      );
+      expect(parsed.tasks[0]?.requirementRefs).toEqual(['evidence#trace', 'runtime#safe']);
+    }
+    expect(() =>
+      parseSpecificationTasks(
+        'empty-requirement',
+        '- [ ] 1.1 Build it.\n  **Requirements:** runtime#safe, , evidence#trace\n',
+      ),
+    ).toThrow(/empty reference/u);
+    expect(() =>
+      parseSpecificationTasks(
+        'ambiguous-requirement',
+        '- [ ] 1.1 Build it.\n  **Requirements:** runtime#safe, or, evidence#trace\n',
+      ),
+    ).toThrow(/ambiguous reference/u);
+  });
+
   it('uses explicit Blocked by metadata and rejects ambiguous identities', () => {
     const tasks = parseSpecificationTasks(
       'task-plan',

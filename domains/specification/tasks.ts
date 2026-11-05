@@ -51,7 +51,15 @@ function normalizeText(value: string): string {
 }
 
 function semanticList(value: string, separator: RegExp): string[] {
-  return [...new Set(value.split(separator).map(normalizeText).filter(Boolean))].sort();
+  const raw = value.split(separator);
+  if (raw.some((entry) => normalizeText(entry).length === 0)) {
+    throw new Error('Task Requirements metadata contains an empty reference');
+  }
+  const normalized = raw.map(normalizeText);
+  if (normalized.some((entry) => /^(?:and|or|以及|或者)$/iu.test(entry))) {
+    throw new Error('Task Requirements metadata contains an ambiguous reference');
+  }
+  return [...new Set(normalized)].sort();
 }
 
 export function assertBuildScopedTask(
@@ -129,7 +137,7 @@ export function parseSpecificationTasks(changeId: string, document: string): Spe
     }
     const requirements = line.match(REQUIREMENTS);
     if (requirements && parsed.length > 0) {
-      parsed.at(-1)!.requirementRefs.push(...semanticList(requirements[1]!, /,/u));
+      parsed.at(-1)!.requirementRefs.push(...semanticList(requirements[1]!, /[,，;；]/u));
     }
   }
   if (parsed.length === 0) throw new Error('Tasks document contains no official checkbox tasks');
