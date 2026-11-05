@@ -87,9 +87,6 @@ npm run verify
   strict OpenSpec passed: 19 items, 0 failed
   managed execution report reproduced the package identity
 
-comet check run stabilize-cli-distribution-gate build -- npm.cmd run verify
-  exit 0; full tier; 2,293 final inputs remained stable during execution
-  receipt: .comet/runtime/classic-sdk-checks/2e43293c85e34cf0045274c7b506ab8a2ceeb27210cc7d187d0cc1b5296f98e4/f7609f1b-b040-474a-8768-aec8f34b9e75.log
 ```
 
 The pre-report pass reached the final freshness gate and correctly requested this report. After the
@@ -114,7 +111,7 @@ checks above.
 
 | Dimension    | Status                                                                                                  |
 | ------------ | ------------------------------------------------------------------------------------------------------- |
-| Completeness | Distribution 9/9 complete; cross-platform repair 12/13 pending external evidence                        |
+| Completeness | Distribution 9/9 complete; cross-platform repair 13/13 with external evidence                           |
 | Correctness  | Distribution 5/5 requirements implemented; repair declares `skip_specs` and preserves behavior contract |
 | Coherence    | Approved revised Design followed; no new Runtime protocol or second recovery algorithm                  |
 
@@ -169,10 +166,19 @@ This is the pre-existing-baseline exception already declared in the approved Bui
 
 ## External evidence boundary
 
-The branch is public and the workflow contract is locally validated. The final GitHub-hosted Linux
-result and independent post-repair review are recorded only after they complete for the exact report
-commit; a previous successful run is not reused as proof for this repaired input. Whether the stable
-check is configured as required remains an independently administered repository-rule fact.
+The branch is public and the workflow contract is locally validated. The GitHub-hosted Linux run
+`42007557281` passed on exact report commit `5eba86870ba11d68773bc171d1cb2698466ca1f1` in 8m3s. Its
+complete matrix passed 191 test files with 1 platform-skipped file: 945 tests passed and 4 were
+explicitly skipped (949 total). The real `terminate-recovered-process-tree.integration.test.ts`
+parent/descendant fixture ran on Linux and passed in 85ms. All 19 strict OpenSpec items and the
+managed report identity also passed.
+
+The independent post-repair review found 0 CRITICAL and no product-code issue. Its sole IMPORTANT
+finding was that this report still listed a pre-repair Comet Build Check receipt as current evidence;
+that stale command and receipt have been removed. The Runtime-owned Build Check is executed only
+after the legal `build.execute` completion transition and is recorded in Comet state, so this report
+does not predeclare or self-reference its future receipt. Whether the stable GitHub check is
+configured as required remains an independently administered repository-rule fact.
 
 ## Cleanup
 
@@ -186,6 +192,6 @@ check is configured as required remains an independently administered repository
 
 The packaged implementation establishes a clean-checkout CI contract and a deterministic CLI
 consumer boundary. The cross-platform repair removes the known false-success path without changing
-the Repoctopus Runtime protocol. Local Windows verification is complete; the current report commit
-still requires an exact-HEAD GitHub Linux result and independent post-repair review before the change
-can claim final Verify success or enter Archive.
+the Repoctopus Runtime protocol. Local Windows verification, exact-report-commit GitHub Linux
+verification, and independent post-repair review are complete. The Runtime may now leave Build
+Execute, run its own input-bound Build Check, and continue to the formal Verify Guard.

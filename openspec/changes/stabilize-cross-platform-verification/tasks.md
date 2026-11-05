@@ -26,7 +26,7 @@
 - [x] 5.1 增加“leader PID 已消失但 process group 仍存在”的确定性回归测试，并借鉴 Comet owned-command termination fixture 增加真实 POSIX parent/descendant 集成验收；确认旧实现会错误返回 `terminated` 或无法证明后代已停止 <!-- comet-task:5edabe42-b883-4815-8bbd-828163024c6b -->
 - [x] 5.2 让 POSIX recovered termination 复用完整 process-group 退出确认，只有 `kill(-pgid, 0)` 返回 `ESRCH` 才返回 `terminated`，并运行相关进程恢复测试 <!-- comet-task:37bfa264-8dc2-4395-8cac-e809ebb5338e -->
 - [x] 5.3 将 CI full-history ancestry 与 package-content v2 的跨宿主身份决定写入 canonical Design，并核对 package digest 测试仍绑定路径、类型、字节与链接目标 <!-- comet-task:5e7b7c57-9a0a-4c6f-b79b-c3f0abcbc0e1 -->
-- [ ] 5.4 更新正式验证报告，重新执行 Windows 全量验证、GitHub Linux 精确 HEAD 验证与独立最终集成审查 <!-- comet-task:61a2e937-51f7-45fa-b16c-2f764af14f92 -->
+- [x] 5.4 更新正式验证报告，重新执行 Windows 全量验证、GitHub Linux 精确 HEAD 验证与独立最终集成审查 <!-- comet-task:61a2e937-51f7-45fa-b16c-2f764af14f92 -->
 
 ## Workflow follow-up
 
