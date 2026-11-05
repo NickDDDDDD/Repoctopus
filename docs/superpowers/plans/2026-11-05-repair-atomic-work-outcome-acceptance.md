@@ -2,6 +2,7 @@
 change: repair-atomic-work-outcome-acceptance
 design-doc: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
 base-ref: eafdd756a9a1d2cbb68c559a5ed57d331c552910
+archived-with: 2026-11-06-repair-atomic-work-outcome-acceptance
 ---
 
 # Repair atomic Work Outcome acceptance implementation plan

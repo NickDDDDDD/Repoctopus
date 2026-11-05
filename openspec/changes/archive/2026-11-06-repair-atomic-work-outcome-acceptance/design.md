@@ -2,6 +2,8 @@
 comet_change: repair-atomic-work-outcome-acceptance
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-06-repair-atomic-work-outcome-acceptance
+status: final
 ---
 
 # Design
