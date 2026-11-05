@@ -133,6 +133,18 @@ Build Execute 保留现有两阶段副作用协议：候选接受只证明 Host 
 
 若实现期间发现当前项目规格、已批准 Design、Comet 固定版本语义、外部 `work-outcome` 协议或 Run Store 不变量互相冲突，立即停止 Build 并回到 Design/Specification change，不通过兼容分支自行选择。普通实现取舍直接更新本 `design.md`，测试结果进入 Evidence 和验证报告，不新增 implementation notes 或 ADR。
 
+### 9. 迁移前接受入口清单
+
+实现前的生产入口核对如下；本清单是删除旧分支时的穷尽检查，不是保留兼容路径的理由：
+
+- `ManagedWorkExecutor.execute()`、`acceptExternalOutcome()` 与 `reconcile()` 都会在记录 Host submission 后自行调用 `WorkDispatcher.acceptOutcome()`；三处均以 `build.plan` / `build.check` 延迟名单决定成功结果是否立即终态化。
+- `ManagedWorkExecutor.rejectInvalidConfigureResult()` 只拒绝 Configure 的错误 result kind；正确 kind 但错误 Strategy digest 会绕过该特判并提前终态化。
+- `WorkflowRuns.next()` 的通用失败分支接受 failed submission；Build 成功分支分别在 Configure、Plan、Execute、Check 做领域校验。
+- Configure 旧分支只消费已经终态化的 Outcome，再校验 Strategy、Binding 与 Validator；Plan 和 Check 在校验后调用 `acceptOutcome()` 与 `markValidated()`；Execute 兼容 submitted、validated 和旧 outcome 三种输入，并在校验后调用同一对方法。
+- `WorkDispatcher.acceptOutcome()` 先生成 Action Receipt，再调用 `WorkExecutionAuthority.bindOutcome()`；`bindOutcome()` 与 `markValidated()` 是两个独立 Store transition，因此旧实现不存在“校验记录与终态绑定”的单一 guarded commit。
+
+迁移完成条件是：Executor 三个 Host 入口只留下 submission 记录；四种 Build Work 只通过统一候选处理入口接受；`bindOutcome()` 的 Build 成功路径不再先于 validation record；上述 Work-kind 延迟名单和 Configure 特判全部消失。
+
 ## Risks / Trade-offs
 
 - [统一管线触及多个成熟路径，可能扩大回归面] → 先建立 Round 8 RED，再逐 Work 迁移；每迁移一个处理器就删除对应旧分支并跑定向及全量测试。

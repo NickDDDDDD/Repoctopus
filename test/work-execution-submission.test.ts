@@ -159,7 +159,10 @@ describe('Work execution Host submission identity', () => {
       status: 'submitted',
       pendingSubmission: { submissionId: 'submission-1' },
     });
+    expect(submitted.acceptedSubmission).toBeUndefined();
+    expect(submitted.hostOutcome).toBeUndefined();
     expect(submitted.actionOutcome).toBeUndefined();
+    expect(submitted.receiptId).toBeUndefined();
 
     const rejected = await authority.rejectHostSubmission({
       intent: intent as never,

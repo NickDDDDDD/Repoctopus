@@ -623,11 +623,11 @@ describe('Managed Work Executor Build contract', () => {
     expect(claim).not.toHaveBeenCalled();
   });
 
-  it('accepts attested subagent delegation only after Skill consumption and durable Host completion', async () => {
-    const { service, authority } = executor();
+  it('records attested Build Execute completion without terminal acceptance', async () => {
+    const { service, authority, workDispatcher } = executor();
     await expect(service.execute({} as never)).resolves.toMatchObject({
       hostOutcome: { status: 'succeeded' },
-      acceptance: { accepted: true },
+      acceptance: null,
     });
     expect(authority.markHostCompleted).toHaveBeenCalledOnce();
     expect(authority.recordDelegationFacts).toHaveBeenCalledOnce();
@@ -638,6 +638,7 @@ describe('Managed Work Executor Build contract', () => {
       expect.stringMatching(/^sha256:[a-f0-9]{64}$/u),
     );
     expect(authority.markHostUnknown).not.toHaveBeenCalled();
+    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -662,24 +663,18 @@ describe('Managed Work Executor Build contract', () => {
     );
   });
 
-  it('records a Build Plan submission without accepting a terminal Action Outcome', async () => {
-    const { service, authority, workDispatcher } = executor(
-      { schemaVersion: 1, kind: 'build-plan-candidate', packages: [] },
-      undefined,
-      undefined,
-      'build.plan',
-    );
-
-    await expect(service.execute({} as never)).resolves.toMatchObject({
-      hostOutcome: { status: 'succeeded' },
-      acceptance: null,
-    });
-    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
-    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
-  });
-
-  it('records a Build Check submission without accepting a terminal Action Outcome', async () => {
-    const { service, authority, workDispatcher } = executor(
+  it.each([
+    [
+      'build.configure',
+      {
+        schemaVersion: 1,
+        kind: 'execution-binding-candidate',
+        strategyDigest: digest('5'),
+      },
+    ],
+    ['build.plan', { schemaVersion: 1, kind: 'build-plan-candidate', packages: [] }],
+    [
+      'build.check',
       {
         schemaVersion: 1,
         kind: 'build-check-candidate',
@@ -689,18 +684,25 @@ describe('Managed Work Executor Build contract', () => {
         implementationDigest: digest('6'),
         reviewerExecutionId: 'reviewer-1',
       },
-      undefined,
-      undefined,
-      'build.check',
-    );
+    ],
+  ] as const)(
+    'records a %s submission without accepting a terminal Action Outcome',
+    async (workKind, result) => {
+      const { service, authority, workDispatcher } = executor(
+        result,
+        undefined,
+        undefined,
+        workKind,
+      );
 
-    await expect(service.execute({} as never)).resolves.toMatchObject({
-      hostOutcome: { status: 'succeeded' },
-      acceptance: null,
-    });
-    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
-    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
-  });
+      await expect(service.execute({} as never)).resolves.toMatchObject({
+        hostOutcome: { status: 'succeeded' },
+        acceptance: null,
+      });
+      expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+      expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
+    },
+  );
 
   it('rejects a Host-selected next Action as an unsupported result field', async () => {
     const { service, authority } = executor({
