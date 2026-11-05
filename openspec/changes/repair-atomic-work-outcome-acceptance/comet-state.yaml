@@ -4,17 +4,17 @@ workflow: full
 language: zh-CN
 phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: 6006b298ccdac43b7e5b138c31336a08691ab6e7
 design_doc: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
-plan: null
+plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: comet/repair-atomic-work-outcome-acceptance
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
 handoff_hash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 688ed5dca75ce40295c1f274326523c59e6f11036083590d87f2b29f44b6afd6
+  hash: 43405b77abec70e6a5ad24884e96009371708a87fbe019b966029716dce9546b
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -39,10 +39,10 @@ run_checkpoint:
     revision: 1
     workflow:
       id: comet-classic-full
-      version: '1'
-      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+      version: "1"
+      hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
     definitionHashes:
-      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+      '["comet-classic-full","1"]': 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
     initialStateHash: 753973d0a7ead88eb3477d2da0b551ea29f01ceee568c37f85686f811c99cec9
     input:
       change: repair-atomic-work-outcome-acceptance
@@ -56,7 +56,7 @@ run_checkpoint:
       baseRef: 6006b298ccdac43b7e5b138c31336a08691ab6e7
       boundBranch: comet/repair-atomic-work-outcome-acceptance
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
       checkEpoch: 2
       classicMigration: null
@@ -64,16 +64,16 @@ run_checkpoint:
       contextCompression: off
       createdAt: 2026-11-05
       designDoc: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
-      directOverride: null
+      directOverride: false
       handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
       handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
       isolation: worktree
       language: zh-CN
       phase: build
-      plan: null
+      plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 9
+    sequence: 16
     actions:
       - attempt: 1
         claim:
@@ -91,7 +91,7 @@ run_checkpoint:
           workflow:
             hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
             id: comet-classic-full
-            version: '1'
+            version: "1"
         id: repair-atomic-work-outcome-acceptance:1
         input:
           input:
@@ -130,7 +130,7 @@ run_checkpoint:
           workflow:
             hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
             id: comet-classic-full
-            version: '1'
+            version: "1"
         id: repair-atomic-work-outcome-acceptance:4
         input:
           input:
@@ -188,7 +188,7 @@ run_checkpoint:
           workflow:
             hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
             id: comet-classic-full
-            version: '1'
+            version: "1"
         id: repair-atomic-work-outcome-acceptance:5
         input:
           input:
@@ -292,7 +292,7 @@ run_checkpoint:
           workflow:
             hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
             id: comet-classic-full
-            version: '1'
+            version: "1"
         id: repair-atomic-work-outcome-acceptance:7
         input:
           input:
@@ -446,6 +446,14 @@ run_checkpoint:
         stepId: full.design.document
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-2adfb9f89c1a120f19b3c1c94e4cfacd35eb108a82b5cd60290330b449a37ec0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: repair-atomic-work-outcome-acceptance:9
         input:
           input:
@@ -582,6 +590,487 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
         inputHash: 193f14691bdccdf00b28f30ddfb7aa6e9ec3218f494be12ca35daa292d198bf8
+        outcome:
+          actionId: repair-atomic-work-outcome-acceptance:9
+          attempt: 1
+          claimToken: portable-2adfb9f89c1a120f19b3c1c94e4cfacd35eb108a82b5cd60290330b449a37ec0
+          inputHash: 193f14691bdccdf00b28f30ddfb7aa6e9ec3218f494be12ca35daa292d198bf8
+          outcomeId: 591ae219-ec6d-42d3-9ea3-ebebb2cd923f
+          output:
+            boundBranch: comet/repair-atomic-work-outcome-acceptance
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3badea26a68c54ce18c4e5c33d6af05b7a16b78b7b139c9245776b4f6217448c
+            outcomeId: 591ae219-ec6d-42d3-9ea3-ebebb2cd923f
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-atomic-work-outcome-acceptance
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-4a65e7b9375b8d323031095e39c382f27d1d23b20e5c9d55ad2989b9d75c058d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-atomic-work-outcome-acceptance:11
+        input:
+          input:
+            change: repair-atomic-work-outcome-acceptance
+            changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+            workspaceBaseline:
+              ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+          outputs:
+            full.build.configure:
+              boundBranch: comet/repair-atomic-work-outcome-acceptance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/repair-atomic-work-outcome-acceptance
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+                    handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+                    proposal: |-
+                      # Brainstorm Summary
+
+                      ## 已确认
+
+                      - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                      - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                      - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                      - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                      ## 候选设计（等待 Design 决定）
+
+                      1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                      2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                      3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                      4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                      5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                      6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                      ## 已比较方案
+
+                      - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                      - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                      - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                      - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                      ## 主要风险与验证
+
+                      - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                      - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                      - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                      - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                      - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                      ## Spec Patch
+
+                      - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+                    requirementsEvidence:
+                      contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+                    sourceEvidence:
+                      contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+            full.design.document:
+              designDoc: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+            full.design.evidence:
+              contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+              handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+              proposal: |-
+                # Brainstorm Summary
+
+                ## 已确认
+
+                - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                ## 候选设计（等待 Design 决定）
+
+                1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                ## 已比较方案
+
+                - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                ## 主要风险与验证
+
+                - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                ## Spec Patch
+
+                - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+              requirementsEvidence:
+                contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+              sourceEvidence:
+                contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+                    ref: openspec/changes/repair-atomic-work-outcome-acceptance
+            full.open.evidence:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance
+            full.open.revalidate:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+        inputHash: 5d7ec34408b31d0463b2ffb09bd2f74bbc3cf68780be705a7b68924dc6f18fd8
+        outcome:
+          actionId: repair-atomic-work-outcome-acceptance:11
+          attempt: 1
+          claimToken: portable-4a65e7b9375b8d323031095e39c382f27d1d23b20e5c9d55ad2989b9d75c058d
+          inputHash: 5d7ec34408b31d0463b2ffb09bd2f74bbc3cf68780be705a7b68924dc6f18fd8
+          outcomeId: 0368daed-3a70-4ad7-a24b-5f147915667c
+          output:
+            designEvidence:
+              contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+            plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+            planEvidence:
+              contentHash: 59e2bfca21046d53339de9440e4ff2f845c54f9d676f6b83598a8d12df628f53
+              ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+            taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2e9059cd592a1acc658ec877cccc7eb8b3ea381df7c5a41ca716ba79ee163a4b
+            outcomeId: 0368daed-3a70-4ad7-a24b-5f147915667c
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-atomic-work-outcome-acceptance
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: repair-atomic-work-outcome-acceptance:13
+        input:
+          input:
+            change: repair-atomic-work-outcome-acceptance
+            changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+            workspaceBaseline:
+              ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+          outputs:
+            full.build.configure:
+              boundBranch: comet/repair-atomic-work-outcome-acceptance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/repair-atomic-work-outcome-acceptance
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+              plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              planEvidence:
+                contentHash: 59e2bfca21046d53339de9440e4ff2f845c54f9d676f6b83598a8d12df628f53
+                ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+            full.build.plan.evidence:
+              contentHash: 59e2bfca21046d53339de9440e4ff2f845c54f9d676f6b83598a8d12df628f53
+              ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+                    handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+                    proposal: |-
+                      # Brainstorm Summary
+
+                      ## 已确认
+
+                      - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                      - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                      - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                      - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                      ## 候选设计（等待 Design 决定）
+
+                      1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                      2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                      3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                      4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                      5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                      6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                      ## 已比较方案
+
+                      - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                      - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                      - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                      - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                      ## 主要风险与验证
+
+                      - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                      - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                      - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                      - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                      - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                      ## Spec Patch
+
+                      - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+                    requirementsEvidence:
+                      contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+                    sourceEvidence:
+                      contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+            full.design.document:
+              designDoc: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+            full.design.evidence:
+              contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+              handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+              proposal: |-
+                # Brainstorm Summary
+
+                ## 已确认
+
+                - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                ## 候选设计（等待 Design 决定）
+
+                1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                ## 已比较方案
+
+                - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                ## 主要风险与验证
+
+                - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                ## Spec Patch
+
+                - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+              requirementsEvidence:
+                contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+              sourceEvidence:
+                contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+                    ref: openspec/changes/repair-atomic-work-outcome-acceptance
+            full.open.evidence:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance
+            full.open.revalidate:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+        inputHash: e76a8ba84f9bfabbb70964d38b279b40ca54f9fdc1e1d387a7973ff62009725f
+        protocolVersion: 1
+        reason: 命令 revise-plan 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-atomic-work-outcome-acceptance
+        status: cancelled
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-6c5ea34bfb091e77a580eeef833337222de59eb0676bd23d23c37f2c48a3ccd6
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: repair-atomic-work-outcome-acceptance:14
+        input:
+          activation:
+            expectedRevision: 19
+            fromPhase: build
+          input:
+            change: repair-atomic-work-outcome-acceptance
+            changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+            workspaceBaseline:
+              ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+          outputs: {}
+        inputHash: cac75d400f8ad0ca9a816c0416b74148070ca5483968958acc7fa2d3c37091db
+        outcome:
+          actionId: repair-atomic-work-outcome-acceptance:14
+          attempt: 1
+          claimToken: portable-6c5ea34bfb091e77a580eeef833337222de59eb0676bd23d23c37f2c48a3ccd6
+          inputHash: cac75d400f8ad0ca9a816c0416b74148070ca5483968958acc7fa2d3c37091db
+          outcomeId: 5ccd2591-a446-45bc-b61d-b0e9ac432153
+          output:
+            designEvidence:
+              contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+            plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+            planEvidence:
+              contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+              ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+            taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9e0b5065c611c94857ed8a474a5b32cb34df3f71d8f9121d7c5539b6b9ae60b1
+            outcomeId: 5ccd2591-a446-45bc-b61d-b0e9ac432153
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-atomic-work-outcome-acceptance
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: repair-atomic-work-outcome-acceptance:16
+        input:
+          input:
+            change: repair-atomic-work-outcome-acceptance
+            changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+            workspaceBaseline:
+              ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+          outputs:
+            full.build.plan:
+              designEvidence:
+                contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+              plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              planEvidence:
+                contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+                ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+            full.build.plan.evidence:
+              contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+              ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+        inputHash: 393b9c5954dcb55f122b442af3298a7d7ece1bb78f5cded18e1f5710e3e51552
         protocolVersion: 1
         receipts: []
         reconciliations: []
@@ -590,12 +1079,405 @@ run_checkpoint:
         retry: manual
         runId: repair-atomic-work-outcome-acceptance
         status: pending
-        stepId: full.build.configure
+        stepId: full.build.execute
         type: invoke_skill
+    commands:
+      - id: 9f8f97738f12da741c7a32fa47968d48e4160da187f38e555534ba4d7ac3934d
+        name: revise-plan
+        inputHash: ed99e8b6701dcdfa2c40efa491ca6d0bbfa20eb28942fae559abfefdd83169a1
+        actionId: repair-atomic-work-outcome-acceptance:14
     actionContexts:
       repair-atomic-work-outcome-acceptance:1:
         results: {}
         sequence: 1
+      repair-atomic-work-outcome-acceptance:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/repair-atomic-work-outcome-acceptance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/repair-atomic-work-outcome-acceptance
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+                    handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+                    proposal: |-
+                      # Brainstorm Summary
+
+                      ## 已确认
+
+                      - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                      - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                      - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                      - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                      ## 候选设计（等待 Design 决定）
+
+                      1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                      2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                      3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                      4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                      5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                      6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                      ## 已比较方案
+
+                      - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                      - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                      - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                      - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                      ## 主要风险与验证
+
+                      - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                      - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                      - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                      - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                      - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                      ## Spec Patch
+
+                      - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+                    requirementsEvidence:
+                      contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+                    sourceEvidence:
+                      contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+              handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+              proposal: |-
+                # Brainstorm Summary
+
+                ## 已确认
+
+                - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                ## 候选设计（等待 Design 决定）
+
+                1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                ## 已比较方案
+
+                - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                ## 主要风险与验证
+
+                - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                ## Spec Patch
+
+                - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+              requirementsEvidence:
+                contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+              sourceEvidence:
+                contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+                    ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+        sequence: 11
+      repair-atomic-work-outcome-acceptance:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/repair-atomic-work-outcome-acceptance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/repair-atomic-work-outcome-acceptance
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+              plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              planEvidence:
+                contentHash: 59e2bfca21046d53339de9440e4ff2f845c54f9d676f6b83598a8d12df628f53
+                ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 59e2bfca21046d53339de9440e4ff2f845c54f9d676f6b83598a8d12df628f53
+              ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+                    handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+                    proposal: |-
+                      # Brainstorm Summary
+
+                      ## 已确认
+
+                      - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                      - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                      - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                      - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                      ## 候选设计（等待 Design 决定）
+
+                      1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                      2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                      3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                      4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                      5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                      6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                      ## 已比较方案
+
+                      - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                      - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                      - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                      - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                      ## 主要风险与验证
+
+                      - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                      - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                      - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                      - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                      - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                      ## Spec Patch
+
+                      - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+                    requirementsEvidence:
+                      contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+                    sourceEvidence:
+                      contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+              handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+              proposal: |-
+                # Brainstorm Summary
+
+                ## 已确认
+
+                - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                ## 候选设计（等待 Design 决定）
+
+                1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                ## 已比较方案
+
+                - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                ## 主要风险与验证
+
+                - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                ## Spec Patch
+
+                - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+              requirementsEvidence:
+                contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+              sourceEvidence:
+                contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+                    ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+        sequence: 13
+      repair-atomic-work-outcome-acceptance:14:
+        results: {}
+        sequence: 14
+      repair-atomic-work-outcome-acceptance:16:
+        results:
+          full.build.plan:
+            sequence: 14
+            value:
+              designEvidence:
+                contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+              plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              planEvidence:
+                contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+                ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+          full.build.plan.evidence:
+            sequence: 15
+            value:
+              contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+              ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+        sequence: 16
       repair-atomic-work-outcome-acceptance:4:
         results:
           full.open:
@@ -1117,6 +1999,187 @@ run_checkpoint:
           id: classic-design-6e7ecf0db6c7dcf0181f5a5edbb619575f41250f3f4ebce67eddcb4016887bd8-approved
           choice: approved
           proposalHash: 6e7ecf0db6c7dcf0181f5a5edbb619575f41250f3f4ebce67eddcb4016887bd8
+      - id: repair-atomic-work-outcome-acceptance:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: repair-atomic-work-outcome-acceptance
+            changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+            workspaceBaseline:
+              ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+          outputs:
+            full.build.configure:
+              boundBranch: comet/repair-atomic-work-outcome-acceptance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: b9e0430817d6b053f66dcf0a84484fb894af551edad88affb445071109dc5569
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/repair-atomic-work-outcome-acceptance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+                    handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+                    proposal: |-
+                      # Brainstorm Summary
+
+                      ## 已确认
+
+                      - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                      - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                      - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                      - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                      ## 候选设计（等待 Design 决定）
+
+                      1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                      2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                      3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                      4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                      5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                      6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                      ## 已比较方案
+
+                      - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                      - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                      - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                      - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                      ## 主要风险与验证
+
+                      - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                      - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                      - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                      - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                      - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                      ## Spec Patch
+
+                      - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+                    requirementsEvidence:
+                      contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+                    sourceEvidence:
+                      contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+              handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+              proposal: |-
+                # Brainstorm Summary
+
+                ## 已确认
+
+                - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                ## 候选设计（等待 Design 决定）
+
+                1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                ## 已比较方案
+
+                - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                ## 主要风险与验证
+
+                - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                ## Spec Patch
+
+                - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+              requirementsEvidence:
+                contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+              sourceEvidence:
+                contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+                    ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+        decision:
+          id: 6f793873-aa39-4036-ab97-0a03f6827c73
+          choice: approved
+          proposalHash: b9e0430817d6b053f66dcf0a84484fb894af551edad88affb445071109dc5569
     evidenceWaits:
       - id: repair-atomic-work-outcome-acceptance:2
         stepId: full.open.evidence
@@ -1280,9 +2343,268 @@ run_checkpoint:
           ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
           contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
           submissionId: 106aebd9-714e-4548-b29e-8c851a972b9e
+      - id: repair-atomic-work-outcome-acceptance:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/repair-atomic-work-outcome-acceptance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/repair-atomic-work-outcome-acceptance
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+              plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              planEvidence:
+                contentHash: 59e2bfca21046d53339de9440e4ff2f845c54f9d676f6b83598a8d12df628f53
+                ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+                    handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+                    proposal: |-
+                      # Brainstorm Summary
+
+                      ## 已确认
+
+                      - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                      - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                      - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                      - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                      ## 候选设计（等待 Design 决定）
+
+                      1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                      2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                      3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                      4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                      5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                      6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                      ## 已比较方案
+
+                      - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                      - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                      - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                      - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                      ## 主要风险与验证
+
+                      - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                      - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                      - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                      - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                      - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                      ## Spec Patch
+
+                      - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+                    requirementsEvidence:
+                      contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+                    sourceEvidence:
+                      contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                      ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-atomic-work-outcome-acceptance/.comet/handoff/design-context.json
+              handoffHash: 9f0e16da1b2b23ab53ffb8191effd23862ccc7f792471817680ef95074e04cfe
+              proposal: |-
+                # Brainstorm Summary
+
+                ## 已确认
+
+                - 目标：完整修复受管 Build Work 在领域校验前过早绑定 terminal Outcome、导致原 invocation 无法纠正的问题。
+                - 方法：优先参考固定 Comet 0.5.1 的成熟 Runtime 语义，但实现服从 Repoctopus 的 Cordis、多仓、外部 Host、Evidence 与两阶段副作用边界。
+                - 范围：统一处理 `build.configure`、`build.plan`、`build.execute`、`build.check`；不迁移旧预发布 Run，不修改 Store 绕过保护。
+                - 规格：现有 `managed-work-execution` 已声明本次行为，Open 已批准 `skip_specs`，不建立重复 delta spec。
+
+                ## 候选设计（等待 Design 决定）
+
+                1. 所有成功的 Build Host submission 先停在 `submitted`，由唯一 acceptance coordinator 按身份/协议、schema、Work 领域语义、lifecycle validator、transition feasibility 顺序处理。
+                2. `ManagedWorkExecutor` 只执行或接收 Host payload、记录 submission 和执行事实；删除 Configure 特判及 Plan/Check 延迟名单。
+                3. 使用封闭 disposition：`accepted`、`correctable-rejection`、`processing-error`。候选错误进入同一 claim/invocation 的 `awaiting-correction`；处理错误保留 pending；只有未知执行结果进入 reconciliation。
+                4. 采用 Comet 的原子接受不变量，不照搬单事务实现：Repoctopus 在锁外读取 Provider/Project Snapshot 并生成绑定稳定 digest 的 validation record，再由 Run Store guarded commit 重新核对身份并一次性写 terminal facts。
+                5. Configure、Plan、Execute、Check 各自拥有完整处理器。Execute 保留现有 workspace checkpoint 与副作用 journal，不把外部副作用塞入 Run Store 事务。
+                6. accepted fact 到 lifecycle observation 之间通过现有 checkpoint 幂等恢复；恢复不重调 Host、不创建新 Work/attempt。
+
+                ## 已比较方案
+
+                - 推荐：统一 acceptance coordinator + Work 处理器注册表。它消除分散接受边界，并让新增 Work fail closed。
+                - 拒绝：只增加 Configure digest 特判。它仍会让后续新字段/Work 重复同类缺陷。
+                - 拒绝：把完整 Build 校验下沉到 `WorkExecutionAuthority`。它会让 Store authority 依赖 Provider、Project Snapshot 与 Build orchestration，破坏领域边界。
+                - 拒绝：直接引入 Comet Runtime SDK。它会与 Repoctopus 多仓 Runtime 和 Cordis Service 形成双权威。
+
+                ## 主要风险与验证
+
+                - 锁外校验期间输入漂移：validation record 绑定稳定 digest，guarded commit 内重核，漂移就重新观察。
+                - Execute 副作用重复：保持两阶段 journal，并增加每个中断点的恢复测试。
+                - processing error 被当成 Host 错误：typed disposition 与独立遥测 reason code，禁止从异常文本推断。
+                - 回归面较大：先以 Round 8 的 Configure wrong-digest 场景做 RED/GREEN 垂直切片，再逐个迁移其余 Work。
+                - 最终验证：单元/集成/外部 CLI/冷启动/遥测/全量 `npm run verify`，并用新的多仓 Run 重放 Round 8；旧 Run 只保留证据。
+
+                ## Spec Patch
+
+                - 无。若实现中发现当前规格与固定 Comet 语义或 Run Store 不变量冲突，停止 Build 并返回 Design，不在实现中自行增加兼容分支。
+              requirementsEvidence:
+                contentHash: af645f5702f53a4a636c4a8031e2110f8394dfc43f7e4e3af1682213df10c32c
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+              sourceEvidence:
+                contentHash: ae6554d15b29e15a74d1308385dc56c4b4f73df94c23ebdcc19a37f72d21e7a4
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-atomic-work-outcome-acceptance
+                  changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+                  workspaceBaseline:
+                    ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+                    ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+              ref: openspec/changes/repair-atomic-work-outcome-acceptance
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+          contentHash: 59e2bfca21046d53339de9440e4ff2f845c54f9d676f6b83598a8d12df628f53
+          submissionId: cdde511b-f060-409c-9464-891cd042d52e
+      - id: repair-atomic-work-outcome-acceptance:15
+        stepId: full.build.plan.evidence
+        sequence: 15
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.plan:
+            sequence: 14
+            value:
+              designEvidence:
+                contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+                ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+              plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              planEvidence:
+                contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+                ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+              taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+        receipt:
+          ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+          contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+          submissionId: b945e1c6-656e-4006-acad-33a23528cead
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: comet/repair-atomic-work-outcome-acceptance
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: repair-atomic-work-outcome-acceptance
+              changeDir: openspec/changes/repair-atomic-work-outcome-acceptance
+              workspaceBaseline:
+                ref: c28f793e-f0a5-49e8-8fd8-a3125320990f
+            outputs:
+              full.build.configure:
+                boundBranch: comet/repair-atomic-work-outcome-acceptance
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 14
+        value:
+          designEvidence:
+            contentHash: e09c5938bfa98a2a98d470f4300ba8d32415784b8900bfe93d1968d82999f2a1
+            ref: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
+          plan: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+          planEvidence:
+            contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+            ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
+          taskRevision: f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691
+      full.build.plan.evidence:
+        sequence: 15
+        value:
+          contentHash: 02ff0f1d016d53f48253395e08e122ba5ea9d9ddcc70d5e314c8f7733f927173
+          ref: docs/superpowers/plans/2026-11-05-repair-atomic-work-outcome-acceptance.md
       full.design.confirm:
         sequence: 6
         value:
@@ -1428,6 +2750,6 @@ run_checkpoint:
           contentHash: 8dcc63fe2c5a7c892e2aea180a4035db92ce537bd26349b19acd330818f5c396
     children: []
     lineage: []
-  sourceRevision: 13
-  sourceHash: a76d6977af4c9b0cab75d686a932d52b3bac42e9fb71cc66ac9a85014a837038
+  sourceRevision: 23
+  sourceHash: e659937ba65851133902abc799b542916c17e86e4c2e8eda03359c6603d397ef
 check_epoch: 2
