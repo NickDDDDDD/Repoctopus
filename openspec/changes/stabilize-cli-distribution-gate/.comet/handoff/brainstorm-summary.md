@@ -2,7 +2,7 @@
 
 ## 状态
 
-候选，等待 Design Human Decision。本文只用于 Comet 中断恢复，不是第五份规格或正式 Design Doc。
+已由用户批准，Design proposal hash 为 `e0a699f473ed6da443c3155cab970dc77dec126425175a9b7835d3b2be55f17a`。本文只用于 Comet 中断恢复，不是第五份规格或正式 Design Doc。
 
 ## 已确认事实
 
@@ -13,7 +13,7 @@
 - `test/e2e/package.e2e.test.ts` 已从当前仓库执行 `npm pack`，安装到临时消费者环境，并通过安装后的公共 `bin` 验证协议和运行资源。
 - 用户已批准：多仓验收默认恢复 package-first；直接源码仅作为显式例外，并在每次源码更新后执行 build 与 freshness preflight。
 
-## 候选方案比较
+## 已批准的方案比较
 
 ### A. 提交 `dist`
 
@@ -29,7 +29,7 @@
 
 该方案复用现有构建、package E2E 和验证命令，不引入生产代码或依赖；它与 Comet 的“忽略 dist、显式构建、CI 校验”边界一致，并针对 Repoctopus 的多仓验收补上 package-first 默认路径。
 
-## 候选技术设计
+## 已批准的技术设计
 
 1. 新增 `.github/workflows/ci.yml`：workflow 名固定为 `Continuous integration`，job id 固定为 `verify`；触发 `pull_request`、`main` push、`workflow_dispatch`；只授予 `contents: read`；使用并发取消、Ubuntu、Node 24、npm cache；仅执行 `npm ci` 和 `npm run verify`。
 2. 新增 `test/repository-ci.test.ts`：使用现有 `yaml` 包结构化解析 workflow；以小型契约校验函数检查触发器、权限、环境和命令，并用变异后的内存对象证明写权限、错误默认分支和复制检查清单会被拒绝，而不是只比较当前 YAML 文本快照。
@@ -59,4 +59,4 @@
 
 ## 待确认项
 
-无。当前需要确认的是是否采用候选方案 C 作为正式技术设计。
+无。方案 C 已批准，正式技术设计保存在同一 change 的 `design.md`。
