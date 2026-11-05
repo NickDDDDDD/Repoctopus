@@ -147,7 +147,7 @@
       **Acceptance:** 错误拆包与测试切面只产生revise-plan；checkbox收尾不回退；真实规划变化只产生一次revise-design；Evidence漂移只失效相关节点
       **Requirements:** 恢复分类只选择最高受影响权威, 恢复重放必须收敛到同一 checkpoint
 
-- [ ] 9.2 运行Runtime Service与CLI集成测试，并验证Runner只能执行Runtime返回的精确Action而不能手写等价transition <!-- comet-task:0dc08d73-6a68-487e-9b58-7985d04f1500 -->
+- [x] 9.2 运行Runtime Service与CLI集成测试，并验证Runner只能执行Runtime返回的精确Action而不能手写等价transition <!-- comet-task:0dc08d73-6a68-487e-9b58-7985d04f1500 -->
       **Blocked by:** 4.4, 9.1
       **Acceptance:** 冷恢复、重复pull和进程中断收敛；伪造phase、action或旧candidate的请求被拒绝
       **Requirements:** Host 只能报告发现而不能选择阶段, Continue Build 保留当前执行身份
