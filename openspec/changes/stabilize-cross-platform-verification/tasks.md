@@ -2,8 +2,8 @@
 
 ## 1. 平台中立的 Execution Binding 测试夹具
 
-- [ ] 1.1 增加统一的宿主绝对路径测试工厂，并用 `vitest run test/build-protocol-domain.test.ts test/build-strategy-binding-domain.test.ts` 验证其在当前宿主生成 `path.isAbsolute() === true` 的路径且不改变语义摘要断言 <!-- comet-task:ea6fec2c-a4f3-4707-ab89-769878a746d9 -->
-- [ ] 1.2 将 lifecycle、runtime、workspace、protected-branch 与 orchestration 测试中的固定 Windows checkout 替换为同一工厂，并用对应 Vitest 文件验证 repository ID、拓扑、branch、HEAD 与漂移分类断言保持不变 <!-- comet-task:66fdae3e-2cc7-44d8-a711-f692b979aa81 -->
+- [x] 1.1 增加统一的宿主绝对路径测试工厂，并用 `vitest run test/build-protocol-domain.test.ts test/build-strategy-binding-domain.test.ts` 验证其在当前宿主生成 `path.isAbsolute() === true` 的路径且不改变语义摘要断言 <!-- comet-task:ea6fec2c-a4f3-4707-ab89-769878a746d9 -->
+- [x] 1.2 将 lifecycle、runtime、workspace、protected-branch 与 orchestration 测试中的固定 Windows checkout 替换为同一工厂，并用对应 Vitest 文件验证 repository ID、拓扑、branch、HEAD 与漂移分类断言保持不变 <!-- comet-task:66fdae3e-2cc7-44d8-a711-f692b979aa81 -->
 
 ## 2. Windows Desktop discovery 路径语义
 

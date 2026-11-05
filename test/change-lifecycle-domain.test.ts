@@ -37,6 +37,7 @@ import {
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
 import { applyLifecycleRecoveryDecision } from '../domains/change-lifecycle/transition.js';
 import { classifyRecoveryObservation } from '../domains/runtime/recovery.js';
+import { hostAbsolutePath } from './helpers/host-path.js';
 
 const digest = (value: string): `sha256:${string}` => {
   const hex = Buffer.from(value).toString('hex') || '0';
@@ -328,7 +329,7 @@ function recoveryExecutionFixture() {
     repositories: [
       {
         repositoryId: 'workspace',
-        checkoutPath: 'C:\\workspace',
+        checkoutPath: hostAbsolutePath('workspace'),
         branch: 'main',
         head: '1'.repeat(40),
         worktreeId: null,
@@ -505,7 +506,7 @@ describe('Change lifecycle domain', () => {
       repositories: [
         {
           repositoryId: 'workspace',
-          checkoutPath: 'C:\\workspace',
+          checkoutPath: hostAbsolutePath('workspace'),
           branch: 'main',
           head: '1'.repeat(40),
           worktreeId: null,
@@ -1524,7 +1525,7 @@ describe('Change lifecycle domain', () => {
       repositories: [
         {
           repositoryId: 'workspace',
-          checkoutPath: 'C:\\workspace',
+          checkoutPath: hostAbsolutePath('workspace'),
           branch: 'main',
           head: '1'.repeat(40),
           worktreeId: 'dashboard-worktree',
@@ -1626,7 +1627,7 @@ describe('Change lifecycle domain', () => {
       repositories: [
         {
           repositoryId: 'workspace',
-          checkoutPath: 'C:\\workspace',
+          checkoutPath: hostAbsolutePath('workspace'),
           branch: 'main',
           head: '1'.repeat(40),
           worktreeId: null,

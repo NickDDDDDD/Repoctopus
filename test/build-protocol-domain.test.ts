@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -23,8 +25,13 @@ import {
   type WorkPackageCandidate,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
+import { hostAbsolutePath } from './helpers/host-path.js';
 
 describe('Build workspace checkpoint', () => {
+  it('uses host-native absolute checkout fixtures', () => {
+    expect(path.isAbsolute(hostAbsolutePath('workspace'))).toBe(true);
+  });
+
   it('separates immutable Binding identity from authorized repository progress', () => {
     const configuration = approvedConfiguration({ repositoryIds: ['app', 'worker'] });
     const state = advanceBuildProtocol(
@@ -127,7 +134,7 @@ function approvedConfiguration(
       (repositoryId, index) =>
         ({
           repositoryId,
-          checkoutPath: `C:\\work\\repoctopus-managed-build-${repositoryId}`,
+          checkoutPath: hostAbsolutePath(`repoctopus-managed-build-${repositoryId}`),
           branch: 'codex/managed-build',
           head: `${index}`.padEnd(40, 'a'),
           worktreeId: `wt-managed-build-${repositoryId}`,
@@ -470,7 +477,7 @@ describe('Build protocol domain', () => {
       repositories: [
         {
           repositoryId: 'backend',
-          checkoutPath: 'C:\\work\\backend',
+          checkoutPath: hostAbsolutePath('backend'),
           branch: 'main',
           head: '1'.repeat(40),
           worktreeId: null,
@@ -478,7 +485,7 @@ describe('Build protocol domain', () => {
         },
         {
           repositoryId: 'web-design',
-          checkoutPath: 'C:\\work\\web-design',
+          checkoutPath: hostAbsolutePath('web-design'),
           branch: 'main',
           head: '2'.repeat(40),
           worktreeId: null,
@@ -885,7 +892,7 @@ describe('Build protocol domain', () => {
     });
     const repository = {
       repositoryId: 'workspace',
-      checkoutPath: 'C:\\work\\repoctopus-managed-build-workspace',
+      checkoutPath: hostAbsolutePath('repoctopus-managed-build-workspace'),
       branch: 'codex/managed-build',
       head: '0'.padEnd(40, 'a'),
       worktreeId: 'wt-managed-build-workspace',
@@ -912,7 +919,7 @@ describe('Build protocol domain', () => {
       repositories: [
         {
           repositoryId: 'workspace',
-          checkoutPath: 'C:\\work\\repoctopus',
+          checkoutPath: hostAbsolutePath('repoctopus'),
           branch: 'main',
           head: '0123456789abcdef0123456789abcdef01234567',
           worktreeId: null,
