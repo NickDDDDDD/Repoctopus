@@ -20,7 +20,10 @@ function boundedText(value: string, label: string, maximum: number): string {
   return normalized;
 }
 
-function payloadDigest(outcome: WorkExecutionHostOutcome): `sha256:${string}` {
+function payloadDigest(outcome: WorkExecutionHostOutcome, rawPayload?: unknown): `sha256:${string}` {
+  if (rawPayload !== undefined) {
+    return `sha256:${createHash('sha256').update(canonicalJson(rawPayload)).digest('hex')}`;
+  }
   const { completedAt, ...payload } = outcome;
   void completedAt;
   return `sha256:${createHash('sha256').update(canonicalJson(payload)).digest('hex')}`;
@@ -29,6 +32,7 @@ function payloadDigest(outcome: WorkExecutionHostOutcome): `sha256:${string}` {
 export function createWorkExecutionSubmission(
   submissionId: string,
   outcome: WorkExecutionHostOutcome,
+  rawPayload?: unknown,
 ): WorkExecutionSubmission {
   const submittedAt = new Date(outcome.completedAt);
   if (Number.isNaN(submittedAt.valueOf())) {
@@ -37,8 +41,9 @@ export function createWorkExecutionSubmission(
   return {
     schemaVersion: 1,
     submissionId: boundedText(submissionId, 'Work submission identity', MAX_SUBMISSION_ID_LENGTH),
-    payloadDigest: payloadDigest(outcome),
+    payloadDigest: payloadDigest(outcome, rawPayload),
     outcome: structuredClone(outcome),
+    ...(rawPayload === undefined ? {} : { rawPayload: structuredClone(rawPayload) }),
     submittedAt: submittedAt.toISOString(),
   };
 }

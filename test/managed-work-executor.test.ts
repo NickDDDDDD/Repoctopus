@@ -37,6 +37,7 @@ function frozenPacket(kind = 'build.execute'): WorkExecutionPacket {
       compositionDigest: digest('f'),
     },
     work: {
+      phase: 'build',
       kind,
       packageId: 'package-1',
     },
@@ -75,6 +76,7 @@ function executor(
   invokeError?: Error,
   workKind = 'build.execute',
   consumedLayerDigests: readonly `sha256:${string}`[] = [digest('1'), digest('2')],
+  hostOutcomeOverride?: (outcome: WorkExecutionHostOutcome) => unknown,
 ) {
   const packet = frozenPacket(workKind);
   const intent = {
@@ -94,13 +96,14 @@ function executor(
       ),
     markHostUnknown: vi.fn(),
     markHostCompleted: vi.fn().mockResolvedValue({ status: 'submitted' }),
+    rejectHostSubmission: vi.fn().mockResolvedValue({ status: 'rejected' }),
     recordDelegationFacts: vi.fn(),
     recordSkillFacts: vi.fn(),
     recordSkillConsumptionRejected: vi.fn(),
   };
   const invoke = vi.fn((_packet: WorkExecutionPacket, session: WorkExecutionSessionIdentity) => {
     if (invokeError) return Promise.reject(invokeError);
-    return Promise.resolve({
+    const outcome = {
       schemaVersion: 1 as const,
       invocationId: session.invocationId,
       hostId: 'coordinator-1',
@@ -135,7 +138,10 @@ function executor(
         },
       ],
       completedAt: '2026-10-28T00:00:00.000Z',
-    } satisfies WorkExecutionHostOutcome);
+    } satisfies WorkExecutionHostOutcome;
+    return Promise.resolve(
+      (hostOutcomeOverride ? hostOutcomeOverride(outcome) : outcome) as WorkExecutionHostOutcome,
+    );
   });
   const host: WorkExecutionHost = {
     identity: {
@@ -174,7 +180,7 @@ function executor(
   return { service, authority, host, invoke, workDispatcher };
 }
 
-function externalReplayHarness() {
+function externalReplayHarness(persisted = true) {
   const packet = frozenPacket();
   const persistedOutcome: WorkExecutionHostOutcome = {
     schemaVersion: 1,
@@ -215,7 +221,8 @@ function externalReplayHarness() {
     ],
     completedAt: '2026-10-28T00:00:00.000Z',
   };
-  const markHostCompleted = vi.fn();
+  const markHostCompleted = vi.fn().mockResolvedValue({ status: 'submitted' });
+  const rejectHostSubmission = vi.fn().mockResolvedValue({ status: 'invoking' });
   const acceptOutcome = vi.fn().mockResolvedValue({ accepted: true });
   const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
   Object.defineProperty(service, 'ctx', {
@@ -237,13 +244,14 @@ function externalReplayHarness() {
               packet: { packetDigest: persistedOutcome.packetDigest },
             },
             packet: { packetDigest: persistedOutcome.packetDigest },
-            hostOutcome: persistedOutcome,
+            ...(persisted ? { hostOutcome: persistedOutcome } : {}),
           },
         }),
       },
       workExecutionAuthority: {
         loadIntent: vi.fn().mockResolvedValue({}),
         markHostCompleted,
+        rejectHostSubmission,
         recordDelegationFacts: vi.fn(),
         recordSkillFacts: vi.fn(),
       },
@@ -268,7 +276,14 @@ function externalReplayHarness() {
     result: persistedOutcome.result!,
     delegationReceipts: persistedOutcome.delegationReceipts!,
   };
-  return { acceptOutcome, input, markHostCompleted, persistedOutcome, service };
+  return {
+    acceptOutcome,
+    input,
+    markHostCompleted,
+    persistedOutcome,
+    rejectHostSubmission,
+    service,
+  };
 }
 
 describe('Managed Work Executor Build contract', () => {
@@ -344,8 +359,34 @@ describe('Managed Work Executor Build contract', () => {
     expect(result.hostOutcome).toBe(persistedOutcome);
     expect(result.hostOutcome.completedAt).toBe('2026-10-28T00:00:00.000Z');
     expect(markHostCompleted).not.toHaveBeenCalled();
-    expect(acceptOutcome).toHaveBeenCalledOnce();
+    expect(acceptOutcome).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ['null consumed layers', { consumedLayerDigests: null }, /bounded digest array/u],
+    ['coercible non-string status', { status: ['succeeded'] }, /status is invalid/u],
+  ] as const)(
+    'audits an external Host envelope with %s before rejecting it',
+    async (_label, mutation, diagnostic) => {
+      const { input, markHostCompleted, rejectHostSubmission, service } =
+        externalReplayHarness(false);
+      const malformed = { ...input, ...mutation } as unknown as ExternalWorkExecutionOutcome;
+
+      await expect(service.acceptExternalOutcome(malformed)).resolves.toMatchObject({
+        hostOutcome: { status: 'failed' },
+        acceptance: null,
+      });
+      expect(markHostCompleted).toHaveBeenCalledOnce();
+      const completion = markHostCompleted.mock.calls[0] as unknown as readonly unknown[];
+      expect(completion[3]).toEqual(malformed);
+      const rejection = rejectHostSubmission.mock.calls[0]?.[0] as unknown as {
+        reasonCode: string;
+        diagnostic: string;
+      };
+      expect(rejection.reasonCode).toBe('output-invalid');
+      expect(rejection.diagnostic).toMatch(diagnostic);
+    },
+  );
 
   it('persists exactly the external Runner capabilities declared independently of one Work', async () => {
     const packet = frozenPacket();
@@ -623,11 +664,11 @@ describe('Managed Work Executor Build contract', () => {
     expect(claim).not.toHaveBeenCalled();
   });
 
-  it('accepts attested subagent delegation only after Skill consumption and durable Host completion', async () => {
-    const { service, authority } = executor();
+  it('records attested Build Execute completion without terminal acceptance', async () => {
+    const { service, authority, workDispatcher } = executor();
     await expect(service.execute({} as never)).resolves.toMatchObject({
       hostOutcome: { status: 'succeeded' },
-      acceptance: { accepted: true },
+      acceptance: null,
     });
     expect(authority.markHostCompleted).toHaveBeenCalledOnce();
     expect(authority.recordDelegationFacts).toHaveBeenCalledOnce();
@@ -638,6 +679,7 @@ describe('Managed Work Executor Build contract', () => {
       expect.stringMatching(/^sha256:[a-f0-9]{64}$/u),
     );
     expect(authority.markHostUnknown).not.toHaveBeenCalled();
+    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -652,8 +694,14 @@ describe('Managed Work Executor Build contract', () => {
       consumed,
     );
 
-    await expect(service.execute({} as never)).rejects.toThrow(/consumption of every delivered/u);
-    expect(authority.markHostCompleted).not.toHaveBeenCalled();
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+    expect(authority.rejectHostSubmission).toHaveBeenCalledWith(
+      expect.objectContaining({ reasonCode: 'output-invalid' }),
+    );
     expect(authority.recordSkillConsumptionRejected).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -662,24 +710,18 @@ describe('Managed Work Executor Build contract', () => {
     );
   });
 
-  it('records a Build Plan submission without accepting a terminal Action Outcome', async () => {
-    const { service, authority, workDispatcher } = executor(
-      { schemaVersion: 1, kind: 'build-plan-candidate', packages: [] },
-      undefined,
-      undefined,
-      'build.plan',
-    );
-
-    await expect(service.execute({} as never)).resolves.toMatchObject({
-      hostOutcome: { status: 'succeeded' },
-      acceptance: null,
-    });
-    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
-    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
-  });
-
-  it('records a Build Check submission without accepting a terminal Action Outcome', async () => {
-    const { service, authority, workDispatcher } = executor(
+  it.each([
+    [
+      'build.configure',
+      {
+        schemaVersion: 1,
+        kind: 'execution-binding-candidate',
+        strategyDigest: digest('5'),
+      },
+    ],
+    ['build.plan', { schemaVersion: 1, kind: 'build-plan-candidate', packages: [] }],
+    [
+      'build.check',
       {
         schemaVersion: 1,
         kind: 'build-check-candidate',
@@ -689,18 +731,25 @@ describe('Managed Work Executor Build contract', () => {
         implementationDigest: digest('6'),
         reviewerExecutionId: 'reviewer-1',
       },
-      undefined,
-      undefined,
-      'build.check',
-    );
+    ],
+  ] as const)(
+    'records a %s submission without accepting a terminal Action Outcome',
+    async (workKind, result) => {
+      const { service, authority, workDispatcher } = executor(
+        result,
+        undefined,
+        undefined,
+        workKind,
+      );
 
-    await expect(service.execute({} as never)).resolves.toMatchObject({
-      hostOutcome: { status: 'succeeded' },
-      acceptance: null,
-    });
-    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
-    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
-  });
+      await expect(service.execute({} as never)).resolves.toMatchObject({
+        hostOutcome: { status: 'succeeded' },
+        acceptance: null,
+      });
+      expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+      expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
+    },
+  );
 
   it('rejects a Host-selected next Action as an unsupported result field', async () => {
     const { service, authority } = executor({
@@ -712,16 +761,102 @@ describe('Managed Work Executor Build contract', () => {
       implementationDigest: digest('6'),
       requestedNextAction: 'check',
     });
-    await expect(service.execute({} as never)).rejects.toThrow(/managed Build result schema/u);
-    expect(authority.markHostCompleted).not.toHaveBeenCalled();
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+    const rejection = authority.rejectHostSubmission.mock.calls[0]?.[0] as unknown as {
+      reasonCode: string;
+      diagnostic: string;
+    };
+    expect(rejection.reasonCode).toBe('output-invalid');
+    expect(rejection.diagnostic).toMatch(/managed Build result schema/u);
   });
+
+  it('fails closed when a successful Build Work has no registered Outcome processor', async () => {
+    const { service, authority, workDispatcher } = executor(
+      {
+        schemaVersion: 1,
+        kind: 'future-build-candidate',
+      },
+      undefined,
+      undefined,
+      'build.future',
+    );
+
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+    const rejection = authority.rejectHostSubmission.mock.calls[0]?.[0] as unknown as {
+      reasonCode: string;
+      diagnostic: string;
+    };
+    expect(rejection.reasonCode).toBe('outcome-processing-error');
+    expect(rejection.diagnostic).toMatch(/no Build Work Outcome processor is registered/iu);
+    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [
+      'status',
+      (outcome: WorkExecutionHostOutcome) => ({ ...outcome, status: 'pending' }),
+      /status is invalid/u,
+    ],
+    [
+      'coercible non-string status',
+      (outcome: WorkExecutionHostOutcome) => ({ ...outcome, status: ['succeeded'] }),
+      /status is invalid/u,
+    ],
+    [
+      'consumedLayerDigests',
+      (outcome: WorkExecutionHostOutcome) => ({ ...outcome, consumedLayerDigests: null }),
+      /bounded digest array/u,
+    ],
+  ] as const)(
+    'persists and rejects a bounded Host Outcome with an invalid outer %s',
+    async (_field, mutate, diagnostic) => {
+      const { service, authority, workDispatcher } = executor(
+        undefined,
+        undefined,
+        undefined,
+        'build.execute',
+        [digest('1'), digest('2')],
+        mutate,
+      );
+
+      await expect(service.execute({} as never)).resolves.toMatchObject({
+        hostOutcome: { status: 'failed' },
+        acceptance: null,
+      });
+      expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+      const completion = authority.markHostCompleted.mock.calls[0] as unknown as readonly unknown[];
+      expect(completion[3]).toBeDefined();
+      const rejection = authority.rejectHostSubmission.mock.calls[0]?.[0] as unknown as {
+        reasonCode: string;
+        diagnostic: string;
+      };
+      expect(rejection.reasonCode).toBe('output-invalid');
+      expect(rejection.diagnostic).toMatch(diagnostic);
+      expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
+    },
+  );
 
   it('fails closed when a subagent response is lost before an attested receipt exists', async () => {
     const missingReceipt = executor(undefined, []);
-    await expect(missingReceipt.service.execute({} as never)).rejects.toThrow(
-      /bounded delegation receipts/u,
-    );
-    expect(missingReceipt.authority.markHostCompleted).not.toHaveBeenCalled();
+    await expect(missingReceipt.service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(missingReceipt.authority.markHostCompleted).toHaveBeenCalledOnce();
+    const rejection = missingReceipt.authority.rejectHostSubmission.mock.calls[0]?.[0] as unknown as {
+      reasonCode: string;
+      diagnostic: string;
+    };
+    expect(rejection.reasonCode).toBe('output-invalid');
+    expect(rejection.diagnostic).toMatch(/bounded delegation receipts/u);
 
     const lostResponse = executor(
       undefined,

@@ -162,6 +162,7 @@ export interface WorkExecutionSubmission {
   submissionId: string;
   payloadDigest: `sha256:${string}`;
   outcome: WorkExecutionHostOutcome;
+  rawPayload?: unknown;
   submittedAt: string;
 }
 
@@ -171,6 +172,24 @@ export interface RejectedWorkExecutionSubmission extends WorkExecutionSubmission
     diagnostic: string;
     rejectedAt: string;
   };
+}
+
+export interface WorkOutcomeValidationRecord {
+  schemaVersion: 2;
+  workKind: 'build.configure' | 'build.plan' | 'build.execute' | 'build.check';
+  validatorId: string;
+  submissionId: string;
+  submissionDigest: `sha256:${string}`;
+  candidateDigest: `sha256:${string}`;
+  stableInputDigest: `sha256:${string}`;
+  validationInputDigest: `sha256:${string}`;
+  transitionDigest: `sha256:${string}`;
+  lifecycleDigest: `sha256:${string}`;
+  projectSnapshotDigest: string;
+  expectedStateVersion: number;
+  decision: 'accepted';
+  validationDigest: `sha256:${string}`;
+  outcomeId: `sha256:${string}`;
 }
 
 export type WorkExecutionResult =
@@ -286,6 +305,7 @@ export interface WorkExecutionAttemptSnapshot {
   actionOutcome?: ClaimedActionOutcome;
   receiptId?: string;
   validatorId?: string;
+  validationRecord?: WorkOutcomeValidationRecord;
   continuation: WorkContinuationKind;
   updatedAt: string;
 }

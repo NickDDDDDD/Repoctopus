@@ -379,7 +379,10 @@ describe('managed Change execution production composition', () => {
                   !invalidConfigurationSubmitted
                 ) {
                   invalidConfigurationSubmitted = true;
-                  return undefined;
+                  return {
+                    ...candidate,
+                    strategyDigest: `sha256:${'0'.repeat(64)}`,
+                  };
                 }
                 return candidate;
               }
@@ -1094,12 +1097,25 @@ describe('managed Change execution production composition', () => {
           if (!configurationInvocation || !correctedConfigurationResult) {
             throw new Error('missing captured Build Configuration correction context');
           }
-          expect((await status()).state.workExecution).toMatchObject({
+          const rejectedConfiguration = (await status()).state.workExecution;
+          expect(rejectedConfiguration).toMatchObject({
             workId: configurationInvocation.packet.work.workId,
+            attempt: configurationInvocation.packet.claim.attempt,
+            checkEpoch: configurationInvocation.packet.claim.checkEpoch,
             status: 'invoking',
             continuation: 'awaiting-correction',
             pendingSubmission: null,
-            rejectedSubmissions: [{ rejection: { reasonCode: 'output-invalid' } }],
+            rejectedSubmissions: [{ rejection: { reasonCode: 'outcome-rejected' } }],
+          });
+          expect(rejectedConfiguration?.acceptedSubmission).toBeUndefined();
+          expect(rejectedConfiguration?.hostOutcome).toBeUndefined();
+          expect(rejectedConfiguration?.actionOutcome).toBeUndefined();
+          expect(rejectedConfiguration?.receiptId).toBeUndefined();
+          expect(rejectedConfiguration?.hostInvocation).toMatchObject({
+            invocationId: configurationInvocation.session.invocationId,
+            packet: {
+              packetDigest: configurationInvocation.session.packetDigest,
+            },
           });
           await application.context.managedWorkExecutor.acceptExternalOutcome({
             schemaVersion: 3,
@@ -1166,18 +1182,24 @@ describe('managed Change execution production composition', () => {
         }
         await restartApplication();
         let planInvocation: (typeof capture.invocations)[number] | undefined;
+        let planDispatchResult: RuntimeResult<RunStatusView> | undefined;
         for (let step = 0; step < 6 && !planInvocation; step += 1) {
           const advanced = await next();
-          expect(advanced.value.changeLifecycle?.waitCondition).toBeNull();
           planInvocation = capture.invocations.findLast(
             (entry) => entry.packet.work.kind === 'build.plan',
           );
+          if (planInvocation) {
+            planDispatchResult = advanced;
+          } else {
+            expect(advanced.value.changeLifecycle?.waitCondition).toBeNull();
+          }
         }
+        if (!planDispatchResult) throw new Error('Build Plan was not dispatched');
         invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
         capture.dispose();
         await application.close();
         application = await bootProjectComposition(productRoot, workspace);
-        let afterPlanValidation = await next();
+        let afterPlanValidation = planDispatchResult;
         if (protectedWriteRepositories) {
           const rejected = await status();
           expect(rejected.state.workExecution).toMatchObject({
@@ -1434,7 +1456,7 @@ describe('managed Change execution production composition', () => {
         let afterAllPackages: RuntimeResult<RunStatusView>;
         if (!multiRepository && executionMode === 'autonomous') {
           const successAcceptanceInterruption = vi
-            .spyOn(application.context.workDispatcher, 'acceptOutcome')
+            .spyOn(application.context.workDispatcher, 'acceptValidatedOutcome')
             .mockRejectedValueOnce(
               new Error('simulated interruption after external package submission'),
             );
@@ -1547,12 +1569,10 @@ describe('managed Change execution production composition', () => {
           await next();
           afterAllPackages = await next();
         } else {
-          await next();
           const firstPackageResult = await next();
           afterFirstPackage = firstPackageResult.value;
           afterFirstPackageDiagnostics = firstPackageResult.diagnostics;
           await restartApplication();
-          await next();
           afterAllPackages = await next();
         }
         for (
@@ -1580,14 +1600,17 @@ describe('managed Change execution production composition', () => {
         });
         await restartApplication();
         let checkInvocation: (typeof capture.invocations)[number] | undefined;
+        let checkDispatchResult: RuntimeResult<RunStatusView> | undefined;
         for (let step = 0; step < 8 && !checkInvocation; step += 1) {
           const advanced = await next();
           expect(advanced.value.changeLifecycle?.waitCondition).toBeNull();
           checkInvocation = capture.invocations.findLast(
             (entry) => entry.packet.work.kind === 'build.check',
           );
+          if (checkInvocation) checkDispatchResult = advanced;
         }
-        let afterCheck = await next();
+        if (!checkDispatchResult) throw new Error('Build Check was not dispatched');
+        let afterCheck = checkDispatchResult;
         if (!multiRepository && executionMode === 'autonomous') {
           if (!checkInvocation || !correctedCheckResult) {
             throw new Error('missing captured Build Check correction context');
@@ -2285,11 +2308,19 @@ describe('managed Change execution production composition', () => {
         (view) => view.changeLifecycle?.currentWork?.kind === 'build.configure',
       );
       const configureWorkId = configure.changeLifecycle!.currentWork!.workId;
+      expect(configureWorkId).toMatch(/^build\.configure:/u);
       await next();
-      expect((await status()).state.workExecution).toMatchObject({
-        workId: configureWorkId,
-        status: 'outcome',
+      const intentRevision = await status();
+      expect(intentRevision.changeLifecycle).toMatchObject({
+        phase: 'open',
+        status: 'waiting',
+        currentWork: null,
+        waitCondition: {
+          kind: 'human-decision',
+          workspaceIntentRevision: { errorCode: 'current-linked-worktree' },
+        },
       });
+      expect(intentRevision.state.workExecution).toBeUndefined();
       capture.dispose();
       await application.close();
 

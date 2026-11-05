@@ -12,6 +12,7 @@ import type {
 import {
   createWorkExecutionPacket,
   type WorkClaimResult,
+  type WorkOutcomeValidationRecord,
 } from '../domains/work-execution/types.js';
 import type {
   ChangeLifecycleState,
@@ -299,14 +300,52 @@ export class WorkDispatcher extends Service {
     };
   }
 
+  async acceptValidatedOutcome(input: {
+    outcome: ClaimedActionOutcome;
+    validation: WorkOutcomeValidationRecord;
+  }): Promise<WorkOutcomeAcceptance> {
+    const state = await this.ctx.runStore.loadRun(input.outcome.runId);
+    const work = state.changeLifecycle?.currentWork;
+    if (
+      state.status !== 'running' ||
+      !work ||
+      work.workId !== input.outcome.workId ||
+      work.inputDigest !== input.outcome.inputDigest ||
+      work.kind !== input.validation.workKind ||
+      work.inputDigest !== input.validation.stableInputDigest ||
+      work.validatorProfile.id !== input.validation.validatorId
+    ) {
+      throw new Error('Validated Work Outcome does not belong to the active lifecycle Work');
+    }
+    const intent = await this.ctx.workExecutionAuthority.loadIntent(input.outcome.runId);
+    if (!this.contributors.has(intent.adapter)) {
+      throw new Error(`Work Contributor is no longer active: ${intent.adapter}`);
+    }
+    const receipt = await this.ctx.actionDispatcher.complete(input.outcome);
+    await this.ctx.workExecutionAuthority.bindValidatedOutcome({
+      intent,
+      outcome: input.outcome,
+      receipt,
+      validation: input.validation,
+    });
+    return {
+      intent,
+      outcome: structuredClone(input.outcome),
+      receipt,
+      validation: 'accepted',
+      lifecycleAdvanced: false,
+    };
+  }
+
   outcome(
     intent: ActionIntent,
     status: 'succeeded' | 'failed',
     summary: string,
+    outcomeId: string = randomUUID(),
   ): ClaimedActionOutcome {
     return {
       schemaVersion: 2,
-      outcomeId: randomUUID(),
+      outcomeId,
       runId: intent.runId,
       workId: intent.workId,
       attempt: intent.attempt,

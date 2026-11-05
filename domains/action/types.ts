@@ -104,6 +104,6 @@ export interface WorkOutcomeAcceptance {
   intent: ActionIntent;
   outcome: ClaimedActionOutcome;
   receipt: ActionReceipt;
-  validation: 'pending';
+  validation: 'pending' | 'accepted';
   lifecycleAdvanced: false;
 }

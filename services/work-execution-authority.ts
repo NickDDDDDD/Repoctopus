@@ -26,6 +26,7 @@ import type {
   WorkClaimResult,
   WorkExecutionPacket,
   WorkExecutionRecovery,
+  WorkOutcomeValidationRecord,
 } from '../domains/work-execution/types.js';
 import {
   appendRejectedWorkExecutionSubmission,
@@ -38,6 +39,12 @@ import {
   workExecutionChainIdentity,
   workExecutionRetryPolicy,
 } from '../domains/work-execution/retry-policy.js';
+import {
+  buildWorkCandidateDigest,
+  buildValidatedOutcomeId,
+  buildWorkValidationDigest,
+  StaleWorkOutcomeValidationError,
+} from '../domains/work-execution/acceptance.js';
 
 export type SkillHumanCorrectionKind =
   | 'changes-requested'
@@ -1098,8 +1105,9 @@ export class WorkExecutionAuthority extends Service {
     intent: ActionIntent,
     outcome: WorkExecutionHostOutcome,
     submissionId: string,
+    rawPayload?: unknown,
   ): Promise<WorkExecutionCheckpoint> {
-    const candidate = createWorkExecutionSubmission(submissionId, outcome);
+    const candidate = createWorkExecutionSubmission(submissionId, outcome, rawPayload);
     const result = await this.ctx.runStore.commitGuarded(intent.runId, ({ state, trajectory }) => {
       const current = state.workExecution;
       if (!current || current.intentId !== intent.intentId) {
@@ -1223,9 +1231,26 @@ export class WorkExecutionAuthority extends Service {
         if (current.status !== 'submitted') {
           throw new Error(`Work submission cannot be rejected from ${current.status}`);
         }
-        const timestamp = new Date().toISOString();
         const submission = current.pendingSubmission;
         const processingError = input.reasonCode === 'outcome-processing-error';
+        const eventType = processingError
+          ? 'work.outcome-processing-error'
+          : 'work.outcome-rejected';
+        const eventIdentity = [
+          current.workId,
+          String(current.attempt),
+          submission.submissionId,
+        ];
+        if (
+          processingError &&
+          trajectory.some(
+            (event) =>
+              event.eventId === digest(state.runId, eventType, ...eventIdentity),
+          )
+        ) {
+          return { value: structuredClone(current) };
+        }
+        const timestamp = new Date().toISOString();
         const rejectedSubmissions = processingError
           ? (current.rejectedSubmissions ?? [])
           : appendRejectedWorkExecutionSubmission(current.rejectedSubmissions ?? [], submission, {
@@ -1254,11 +1279,8 @@ export class WorkExecutionAuthority extends Service {
             state: nextState,
             sequence: trajectory.length + 1,
             timestamp,
-            type:
-              input.reasonCode === 'outcome-processing-error'
-                ? 'work.outcome-processing-error'
-                : 'work.outcome-rejected',
-            identity: [current.workId, String(current.attempt), submission.submissionId],
+            type: eventType,
+            identity: eventIdentity,
             data: {
               workId: current.workId,
               workKind: state.changeLifecycle?.currentWork?.kind ?? 'unknown',
@@ -1300,6 +1322,24 @@ export class WorkExecutionAuthority extends Service {
           throw new Error('Work acceptance does not match the authoritative Run claim');
         }
         assertSameClaim(current, input.intent);
+        if (
+          input.outcome.runId !== input.intent.runId ||
+          input.outcome.workId !== input.intent.workId ||
+          input.outcome.attempt !== input.intent.attempt ||
+          input.outcome.checkEpoch !== input.intent.checkEpoch ||
+          input.outcome.claimToken !== input.intent.claimToken ||
+          input.outcome.inputDigest !== input.intent.inputDigest ||
+          input.receipt.intentId !== input.intent.intentId ||
+          input.receipt.runId !== input.outcome.runId ||
+          input.receipt.workId !== input.outcome.workId ||
+          input.receipt.attempt !== input.outcome.attempt ||
+          input.receipt.checkEpoch !== input.outcome.checkEpoch ||
+          input.receipt.claimToken !== input.outcome.claimToken ||
+          input.receipt.inputDigest !== input.outcome.inputDigest ||
+          input.receipt.outcomeId !== input.outcome.outcomeId
+        ) {
+          throw new Error('Validated Work Outcome or Receipt identity changed before commit');
+        }
         if (
           current.status === 'outcome' &&
           current.actionOutcome?.outcomeId === input.outcome.outcomeId
@@ -1361,6 +1401,194 @@ export class WorkExecutionAuthority extends Service {
         result: input.outcome.status,
       },
       [input.outcome.outcomeId],
+    );
+    const packet = await this.loadAuthoritativePacket(input.intent.runId);
+    if (result.hostOutcome) {
+      await this.recordSkillOutcomeFacts(
+        packet.packet,
+        result.hostOutcome,
+        input.outcome.status === 'succeeded' ? 'completed' : 'error',
+        input.outcome.outcomeId,
+      );
+    }
+    await this.flushTelemetry(input.intent.runId);
+    return result;
+  }
+
+  async bindValidatedOutcome(input: {
+    intent: ActionIntent;
+    outcome: ClaimedActionOutcome;
+    receipt: ActionReceipt;
+    validation: WorkOutcomeValidationRecord;
+  }): Promise<WorkExecutionCheckpoint> {
+    const result = await this.ctx.runStore.commitGuarded(
+      input.intent.runId,
+      ({ state, trajectory }) => {
+        const current = state.workExecution;
+        const work = state.changeLifecycle?.currentWork;
+        const { validationDigest, outcomeId, ...validationIdentity } = input.validation;
+        if (buildWorkValidationDigest(validationIdentity) !== validationDigest) {
+          throw new Error('Validated Work acceptance validation record is corrupt');
+        }
+        if (!current || current.intentId !== input.intent.intentId) {
+          throw new Error('Validated Work acceptance does not match the authoritative Run claim');
+        }
+        assertSameClaim(current, input.intent);
+        if (
+          current.status === 'validated' &&
+          current.actionOutcome?.outcomeId === input.outcome.outcomeId &&
+          current.validationRecord?.validationDigest === input.validation.validationDigest
+        ) {
+          return { value: structuredClone(current) };
+        }
+        if (current.status !== 'submitted' || !current.pendingSubmission) {
+          throw new Error('Validated Work acceptance requires a pending Host submission');
+        }
+        if (
+          state.stateVersion !== input.validation.expectedStateVersion ||
+          digest(canonicalJson(state.changeLifecycle ?? null)) !==
+            input.validation.lifecycleDigest ||
+          state.projectSnapshotDigest !== input.validation.projectSnapshotDigest
+        ) {
+          throw new StaleWorkOutcomeValidationError();
+        }
+        if (
+          !work ||
+          work.workId !== current.workId ||
+          work.checkEpoch !== current.checkEpoch ||
+          work.inputDigest !== current.inputDigest ||
+          work.kind !== input.validation.workKind ||
+          work.inputDigest !== input.validation.stableInputDigest ||
+          work.validatorProfile.id !== input.validation.validatorId
+        ) {
+          throw new StaleWorkOutcomeValidationError();
+        }
+        const acceptedSubmission = current.pendingSubmission;
+        if (
+          !work ||
+          buildValidatedOutcomeId({
+            work,
+            submission: acceptedSubmission,
+            candidateDigest: input.validation.candidateDigest,
+          }) !== outcomeId
+        ) {
+          throw new Error('Validated Work acceptance Outcome identity is corrupt');
+        }
+        if (
+          acceptedSubmission.submissionId !== input.validation.submissionId ||
+          acceptedSubmission.payloadDigest !== input.validation.submissionDigest ||
+          buildWorkCandidateDigest(acceptedSubmission.outcome.result) !==
+            input.validation.candidateDigest ||
+          current.hostInvocation?.invocationId !== acceptedSubmission.outcome.invocationId ||
+          current.hostInvocation.host.id !== acceptedSubmission.outcome.hostId ||
+          current.packet.packetDigest !== acceptedSubmission.outcome.packetDigest
+        ) {
+          throw new StaleWorkOutcomeValidationError(
+            'Validated Work acceptance candidate identity changed before terminal commit',
+          );
+        }
+        if (
+          input.outcome.outcomeId !== input.validation.outcomeId ||
+          input.outcome.runId !== input.intent.runId ||
+          input.outcome.workId !== input.intent.workId ||
+          input.outcome.attempt !== input.intent.attempt ||
+          input.outcome.checkEpoch !== input.intent.checkEpoch ||
+          input.outcome.claimToken !== input.intent.claimToken ||
+          input.outcome.inputDigest !== input.intent.inputDigest ||
+          input.outcome.status !== 'succeeded' ||
+          input.receipt.receiptId !==
+            rawDigest('receipt', input.intent.intentId, input.outcome.outcomeId) ||
+          input.receipt.intentId !== input.intent.intentId ||
+          input.receipt.idempotencyKey !== input.intent.idempotencyKey ||
+          input.receipt.runId !== input.outcome.runId ||
+          input.receipt.workId !== input.outcome.workId ||
+          input.receipt.attempt !== input.outcome.attempt ||
+          input.receipt.checkEpoch !== input.outcome.checkEpoch ||
+          input.receipt.claimToken !== input.outcome.claimToken ||
+          input.receipt.inputDigest !== input.outcome.inputDigest ||
+          input.receipt.outcomeId !== input.outcome.outcomeId ||
+          input.receipt.actionId !== input.intent.action.id ||
+          input.receipt.adapter !== input.intent.adapter ||
+          input.receipt.outcome !== input.outcome.status ||
+          input.receipt.summary !== input.outcome.summary
+        ) {
+          throw new Error('Validated Work Outcome or Receipt identity changed before commit');
+        }
+        const timestamp = new Date().toISOString();
+        const checkpoint: WorkExecutionCheckpoint = {
+          ...current,
+          status: 'validated',
+          continuation: 'execute',
+          pendingSubmission: null,
+          acceptedSubmission,
+          hostOutcome: structuredClone(acceptedSubmission.outcome),
+          actionOutcome: structuredClone(input.outcome),
+          receiptId: input.receipt.receiptId,
+          validatorId: input.validation.validatorId,
+          validationRecord: structuredClone(input.validation),
+          updatedAt: timestamp,
+        };
+        const nextState: RunState = {
+          ...state,
+          workExecution: checkpoint,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: executionEvent({
+            state: nextState,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: 'work.completed',
+            identity: [current.workId, String(current.attempt), input.outcome.outcomeId],
+            data: {
+              workId: input.intent.workId,
+              workKind: input.validation.workKind,
+              attempt: input.intent.attempt,
+              checkEpoch: input.intent.checkEpoch,
+              outcomeId: input.outcome.outcomeId,
+              receiptId: input.receipt.receiptId,
+              submissionId: acceptedSubmission.submissionId,
+              validationDigest: input.validation.validationDigest,
+              validatorId: input.validation.validatorId,
+              result: input.outcome.status,
+            },
+          }),
+          value: structuredClone(checkpoint),
+        };
+      },
+    );
+    await this.recordEvent(
+      input.intent.runId,
+      input.intent.intentId,
+      'work.outcome-accepted',
+      {
+        workId: input.intent.workId,
+        workKind: input.validation.workKind,
+        attempt: input.intent.attempt,
+        checkEpoch: input.intent.checkEpoch,
+        submissionId: result.acceptedSubmission?.submissionId,
+        validatorId: input.validation.validatorId,
+        validationDigest: input.validation.validationDigest,
+        result: input.outcome.status,
+      },
+      [input.outcome.outcomeId, input.validation.validationDigest],
+    );
+    await this.recordEvent(
+      input.intent.runId,
+      input.intent.intentId,
+      'validator.completed',
+      {
+        workId: input.intent.workId,
+        workKind: input.validation.workKind,
+        attempt: input.intent.attempt,
+        checkEpoch: input.intent.checkEpoch,
+        validatorId: input.validation.validatorId,
+        result: 'accepted',
+        continuation: 'execute',
+      },
+      [input.validation.validatorId, input.validation.validationDigest],
     );
     const packet = await this.loadAuthoritativePacket(input.intent.runId);
     if (result.hostOutcome) {

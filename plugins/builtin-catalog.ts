@@ -705,6 +705,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: WorkExecutionAuthority,
     sourceFiles: [
+      'domains/work-execution/acceptance.ts',
       'domains/work-execution/types.ts',
       'domains/telemetry/rule-evaluation.ts',
       'services/work-execution-authority.ts',
@@ -799,6 +800,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: ManagedWorkExecutor,
     sourceFiles: [
+      'domains/work-execution/acceptance.ts',
       'domains/work-execution/types.ts',
       'services/managed-work-executor.ts',
       'services/work-execution-authority.ts',
@@ -1242,7 +1244,9 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: WorkflowRuns,
     sourceFiles: [
+      'services/build-work-outcome-acceptance.ts',
       'services/workflow-runs.ts',
+      'domains/work-execution/acceptance.ts',
       'services/operation-ownership.ts',
       'domains/runtime/workflow-runs.ts',
       'domains/runtime/evidence-guard.ts',

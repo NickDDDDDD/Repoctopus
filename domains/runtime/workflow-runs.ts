@@ -178,14 +178,18 @@ function retireMismatchedExecution(
     return { state, fact: null };
   }
   const rejectedCorrectionCanBeRetired =
-    options.authorizedRejectedCorrection === true &&
     execution.status === 'invoking' &&
     execution.continuation === 'awaiting-correction' &&
     execution.pendingSubmission === null &&
     execution.rejectedSubmissions?.some(
       (submission) =>
         submission.rejection.reasonCode === 'outcome-rejected' &&
-        submission.outcome.result?.kind === 'build-plan-candidate',
+        ((options.authorizedRejectedCorrection === true &&
+          submission.outcome.result?.kind === 'build-plan-candidate') ||
+          (['workspace-intent-revision-required', 'workspace-intent-revised'].includes(
+            observationKind,
+          ) &&
+            submission.outcome.result?.kind === 'execution-binding-candidate')),
     ) === true;
   if (
     ['invoking', 'submitted', 'unknown'].includes(execution.status) &&
@@ -607,6 +611,46 @@ export class WorkflowRunCoordinator {
     });
     const diagnostics = await this.flushTelemetry(runId);
     return { value: await this.status(runId), diagnostics };
+  }
+
+  assertChangeObservationFeasible(
+    state: RunState,
+    observation: ChangeLifecycleObservation,
+  ): void {
+    if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${state.runId}`);
+    const current: ChangeLifecycleSnapshot = {
+      ...structuredClone(state.changeLifecycle),
+      status: state.status,
+    };
+    const reduced = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current,
+      observation,
+    });
+    if (!reduced.fact) {
+      throw new Error(`Change lifecycle transition is infeasible for ${observation.kind}`);
+    }
+  }
+
+  assertRecoveryDecisionFeasible(
+    state: RunState,
+    decision: RecoveryDecision,
+    materialization: LifecycleRecoveryMaterialization,
+  ): void {
+    if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${state.runId}`);
+    const current: ChangeLifecycleSnapshot = {
+      ...structuredClone(state.changeLifecycle),
+      status: state.status,
+    };
+    const reduced = applyLifecycleRecoveryDecision({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current,
+      decision,
+      materialization,
+    });
+    if (!reduced.fact) {
+      throw new Error('Change lifecycle recovery transition is infeasible');
+    }
   }
 
   async acceptRecoveryDecision(
