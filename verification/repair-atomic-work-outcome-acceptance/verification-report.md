@@ -3,11 +3,11 @@
 ## Reproducible subject
 
 - Change: `repair-atomic-work-outcome-acceptance`
-- Tested implementation commit: `8a121d968af43146f9513e7ec0947e5fd6bcab61`
+- Tested implementation commit: `778962bd6c4aa8edf02931cd218607aee8649460`
 - Package: `repoctopus@0.1.0`
-- Package content SHA-256: `c4c74826fef0e928e4e3125e74c00b4f39f3a3c4f491a36a6eafe89b3bf4aba8`
+- Package content SHA-256: `3688022ca91551e6864655bb2791cd107f01e2e942c13b0dfcc68286b667336e`
 - Package files: `458`
-- Package content bytes: `5584114`
+- Package content bytes: `5642223`
 - Controller: `@rpamis/comet@0.5.1`
 - Platform: Windows x64
 - Node.js: `24.21.0`
@@ -26,15 +26,23 @@ the npm package and rejects packaged-product changes or semantic package drift.
    rejected submission. A corrected candidate requires a new submission identity.
 4. A processing error remains pending. It is not reclassified as a Host correction and does not
    enter unknown-result reconciliation.
-5. The guarded terminal commit rechecks every stable identity and the validation-record digest.
-   A stale or forged validation record cannot bind an Outcome.
+5. Validation starts from a pre-domain-check Run/lifecycle/Project Snapshot base. Before terminal
+   binding, Runtime re-observes Specification Tasks, workspace heads and Evidence fingerprints;
+   the guarded commit then rechecks the base and every stable validation identity. A stale or
+   forged validation record cannot bind an Outcome.
 6. Transition feasibility is preflighted by the canonical pure lifecycle reducers before terminal
    acceptance. No Build path may first bind an Outcome and discover afterwards that the required
    lifecycle observation or recovery decision is illegal.
 7. Execute retains its external-effect journal and workspace checkpoint. Acceptance does not
    duplicate Host effects, repository commits or specification task projection after interruption.
-8. Inline Host execution, external `work-outcome` submission and cold recovery share one
-   acceptance coordinator and one disposition model.
+8. Outcome and Receipt identities derive only from invariant Work, submission and candidate
+   identities. A stale CAS retry therefore reuses the original Receipt rather than creating an
+   orphan chain.
+9. Bounded malformed Host envelopes are stored exactly before correctable rejection. Inline Host
+   execution, external `work-outcome` submission and reconciliation share the same strict parser;
+   oversized or unattributable payloads alone fail before audit persistence.
+10. Next-Work Skill resolution and transition preflight are observational. Specification Task
+    completion, Skill binding and correction facts occur only after terminal acceptance.
 
 ## Acceptance evidence
 
@@ -56,7 +64,8 @@ Executed on Windows with Node.js `24.21.0`:
 
 ```text
 focused Build outcome acceptance and lifecycle matrix
-  134 tests passed
+  109 tests passed in the expanded authority/recovery matrix
+  67 tests passed in the final parser and Skill-preflight regression matrix
   Configure, Plan, Execute and Check pre-acceptance boundaries passed
 
 external Host, recovery and telemetry matrix
@@ -75,14 +84,14 @@ npm run check:provenance
 
 npm run verify (package-boundary run)
   complete Vitest matrix passed: 193 test files; 1 skipped
-  971 tests passed; 3 explicitly skipped (974 total)
+  988 tests passed; 3 explicitly skipped (991 total)
   generated, brand, architecture, provenance and Dashboard salvage passed
   strict OpenSpec passed: 19 items, 0 failed
   final report gate correctly required rebinding after the composition identity fixture changed
 
 npm run verify (final bound-report run)
   all commands and gates passed
-  report package identity reproduced: 458 files, 5584114 bytes
+  report package identity reproduced: 458 files, 5642223 bytes
 
 npm run check:upstream
   fixed Comet 0.5.1 and adopted-source integrity passed
@@ -122,6 +131,6 @@ verification reproduced that binding and passed every gate.
 
 The implementation establishes atomic Build Work Outcome acceptance: candidate validation and
 transition feasibility precede terminal binding, rejected and processing-error paths preserve the
-correct audit identities, and all Build Work kinds share one fail-closed protocol. Automated and
-fixed-upstream verification are complete. Final delivery requires only the independent thorough
-review recorded below.
+correct audit identities, and all Build Work kinds share one fail-closed protocol. The independent
+thorough review completed with zero Critical, Important or Minor findings and returned
+`Ready to merge: Yes`. Automated, fixed-upstream and package-boundary verification are complete.
