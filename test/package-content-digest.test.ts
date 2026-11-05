@@ -11,13 +11,16 @@ function octal(value: number, width: number): Buffer {
   return Buffer.from(`${value.toString(8).padStart(width - 1, '0')}\0`, 'ascii');
 }
 
-function tarArchive(files: ReadonlyArray<{ path: string; contents: string }>, mtime: number): Buffer {
+function tarArchive(
+  files: ReadonlyArray<{ path: string; contents: string; mode?: number }>,
+  mtime: number,
+): Buffer {
   const blocks: Buffer[] = [];
   for (const file of files) {
     const contents = Buffer.from(file.contents, 'utf8');
     const header = Buffer.alloc(BLOCK_SIZE);
     header.write(`package/${file.path}`, 0, 100, 'utf8');
-    octal(0o644, 8).copy(header, 100);
+    octal(file.mode ?? 0o644, 8).copy(header, 100);
     octal(0, 8).copy(header, 108);
     octal(0, 8).copy(header, 116);
     octal(contents.length, 12).copy(header, 124);
@@ -67,5 +70,18 @@ describe('packageContentDigest', () => {
       2,
     );
     expect(packageContentDigest(changed).sha256).not.toBe(firstDigest.sha256);
+  });
+
+  it('ignores host-derived file modes while binding the same npm package contents', () => {
+    const windowsArchive = tarArchive(
+      [{ path: 'bin/repoctopus.js', contents: '#!/usr/bin/env node\n' }],
+      1,
+    );
+    const posixArchive = tarArchive(
+      [{ path: 'bin/repoctopus.js', contents: '#!/usr/bin/env node\n', mode: 0o755 }],
+      1,
+    );
+
+    expect(packageContentDigest(posixArchive)).toEqual(packageContentDigest(windowsArchive));
   });
 });

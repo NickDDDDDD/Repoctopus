@@ -82,8 +82,10 @@ function canonicalEntry(entry) {
 
 /**
  * Computes a package identity from semantic tar entries rather than gzip/tar
- * transport metadata. Paths are sorted; mtimes, uid/gid, header order and
- * compressor details are intentionally excluded.
+ * transport metadata. Paths are sorted; modes, mtimes, uid/gid, header order
+ * and compressor details are intentionally excluded. npm derives archive
+ * modes from the host filesystem, so they cannot identify cross-platform
+ * package contents.
  */
 export function packageContentDigest(archive) {
   if (!Buffer.isBuffer(archive)) throw new Error('Package archive must be a Buffer');
@@ -134,12 +136,11 @@ export function packageContentDigest(archive) {
     const relative = packagePath(rawName);
     if (seen.has(relative)) throw new Error(`Package tar contains duplicate entry: ${relative}`);
     seen.add(relative);
-    const mode = tarNumber(header, 100, 8, 'entry mode') & 0o777;
+    tarNumber(header, 100, 8, 'entry mode');
     if (type === '\0' || type === '0' || type === '7') {
       entries.push({
         path: relative,
         type: 'file',
-        mode,
         size,
         sha256: createHash('sha256').update(contents).digest('hex'),
       });
@@ -149,7 +150,6 @@ export function packageContentDigest(archive) {
       entries.push({
         path: relative,
         type: type === '1' ? 'hardlink' : 'symlink',
-        mode,
         target: rawLink,
       });
       continue;
@@ -159,7 +159,7 @@ export function packageContentDigest(archive) {
 
   entries.sort((left, right) => left.path.localeCompare(right.path, 'en'));
   const hash = createHash('sha256');
-  hash.update('repoctopus.package-content.v1\0');
+  hash.update('repoctopus.package-content.v2\0');
   for (const entry of entries) {
     const encoded = Buffer.from(canonicalEntry(entry), 'utf8');
     const length = Buffer.alloc(8);
