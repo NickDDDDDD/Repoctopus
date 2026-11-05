@@ -1553,8 +1553,7 @@ export function evolveChangeLifecycle(options: {
         ? {
             kind: 'plan-evidence-accepted',
             evidence: observation.evidence,
-            approvedAuthorizationEnvelopeDigest:
-              observation.evidence.authorizationEnvelope.digest,
+            approvedAuthorizationEnvelopeDigest: observation.evidence.authorizationEnvelope.digest,
           }
         : { kind: 'plan-rejected' },
     );

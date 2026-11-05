@@ -3,7 +3,11 @@
     "name": "tdd-slice-split",
     "expected": "revise-plan",
     "planning": { "status": "current", "changedIdentities": [] },
-    "plan": { "status": "drift", "reasonCode": "package-not-completable", "changedIdentities": ["build-plan"] },
+    "plan": {
+      "status": "drift",
+      "reasonCode": "package-not-completable",
+      "changedIdentities": ["build-plan"]
+    },
     "work": { "status": "current", "changedIdentities": [] },
     "evidence": { "status": "current", "changedIdentities": [] }
   },
@@ -11,7 +15,11 @@
     "name": "test-scope-incomplete",
     "expected": "revise-plan",
     "planning": { "status": "current", "changedIdentities": [] },
-    "plan": { "status": "drift", "reasonCode": "package-not-completable", "changedIdentities": ["build-plan"] },
+    "plan": {
+      "status": "drift",
+      "reasonCode": "package-not-completable",
+      "changedIdentities": ["build-plan"]
+    },
     "work": { "status": "current", "changedIdentities": [] },
     "evidence": { "status": "current", "changedIdentities": [] }
   },
@@ -26,10 +34,22 @@
   {
     "name": "planning-change",
     "expected": "revise-design",
-    "planning": { "status": "drift", "reasonCode": "design-changed", "changedIdentities": ["planning-semantic"] },
-    "plan": { "status": "drift", "reasonCode": "plan-constraint-changed", "changedIdentities": ["build-plan"] },
+    "planning": {
+      "status": "drift",
+      "reasonCode": "design-changed",
+      "changedIdentities": ["planning-semantic"]
+    },
+    "plan": {
+      "status": "drift",
+      "reasonCode": "plan-constraint-changed",
+      "changedIdentities": ["build-plan"]
+    },
     "work": { "status": "current", "changedIdentities": [] },
-    "evidence": { "status": "drift", "reasonCode": "declared-input-changed", "changedIdentities": ["evidence-dependency"] }
+    "evidence": {
+      "status": "drift",
+      "reasonCode": "declared-input-changed",
+      "changedIdentities": ["evidence-dependency"]
+    }
   },
   {
     "name": "evidence-drift",
@@ -37,6 +57,10 @@
     "planning": { "status": "current", "changedIdentities": [] },
     "plan": { "status": "current", "changedIdentities": [] },
     "work": { "status": "current", "changedIdentities": [] },
-    "evidence": { "status": "drift", "reasonCode": "declared-input-changed", "changedIdentities": ["evidence-dependency"] }
+    "evidence": {
+      "status": "drift",
+      "reasonCode": "declared-input-changed",
+      "changedIdentities": ["evidence-dependency"]
+    }
   }
 ]

@@ -7,7 +7,10 @@ import {
   type RecoveryObservation,
 } from '../domains/runtime/recovery.js';
 
-interface Fixture extends Omit<RecoveryObservation, 'schemaVersion' | 'runId' | 'expectedRevision' | 'checkEpoch' | 'observationId'> {
+interface Fixture extends Omit<
+  RecoveryObservation,
+  'schemaVersion' | 'runId' | 'expectedRevision' | 'checkEpoch' | 'observationId'
+> {
   name: string;
   expected: string | null;
 }

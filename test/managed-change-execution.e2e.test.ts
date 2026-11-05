@@ -404,7 +404,13 @@ describe('managed Change execution production composition', () => {
                         behaviorSlice: task.taskId,
                         requiredEvidence:
                           inputs.build!.strategy.tddMode === 'tdd'
-                            ? (['acceptance', 'implementation', 'red', 'green', 'regression'] as const)
+                            ? ([
+                                'acceptance',
+                                'implementation',
+                                'red',
+                                'green',
+                                'regression',
+                              ] as const)
                             : (['acceptance', 'implementation', 'test', 'regression'] as const),
                       },
                     };
@@ -2011,9 +2017,7 @@ describe('managed Change execution production composition', () => {
           'build.execute',
           'build.check',
           'evidence.verify',
-          ...(!multiRepository && executionMode === 'autonomous'
-            ? ['evidence.verify']
-            : []),
+          ...(!multiRepository && executionMode === 'autonomous' ? ['evidence.verify'] : []),
           'evidence.verify',
           'specification.close',
           'delivery.publish',

@@ -581,7 +581,10 @@ describe('Change lifecycle domain', () => {
       compositionCheckpointDigest: digest('composition'),
       reportOwnerId: 'team-platform',
     });
-    protocol = advanceBuildProtocol(protocol, { kind: 'plan-evidence-accepted', evidence: planEvidence });
+    protocol = advanceBuildProtocol(protocol, {
+      kind: 'plan-evidence-accepted',
+      evidence: planEvidence,
+    });
     for (const [index, workPackage] of plan.packages.entries()) {
       const checkpoint = advanceBuildWorkspaceCheckpoint({
         current: protocol.workspaceCheckpoint!,
@@ -653,9 +656,9 @@ describe('Change lifecycle domain', () => {
       currentWork: { workId: planWork.workId, kind: 'build.plan' },
       buildProtocol: { currentAction: 'plan', status: 'active', plan: { planId: plan.planId } },
     });
-    expect(applied.snapshot.buildProtocol?.packageCompletions.map((entry) => entry.packageId)).toEqual([
-      plan.packages[1]!.packageId,
-    ]);
+    expect(
+      applied.snapshot.buildProtocol?.packageCompletions.map((entry) => entry.packageId),
+    ).toEqual([plan.packages[1]!.packageId]);
     expect(applied.fact).toMatchObject({
       recovery: { decisionId: decision.decisionId, action: 'revise-plan', authority: 'plan' },
     });
@@ -758,7 +761,10 @@ describe('Change lifecycle domain', () => {
     });
     const priorInput = {
       ...verificationInput(9, 'verify-prior'),
-      taskRevisions: fixture.tasks.tasks.map(({ taskId, taskRevision }) => ({ taskId, taskRevision })),
+      taskRevisions: fixture.tasks.tasks.map(({ taskId, taskRevision }) => ({
+        taskId,
+        taskRevision,
+      })),
     };
     const current = builtinSnapshot({
       revision: 12,

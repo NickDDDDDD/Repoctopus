@@ -1,7 +1,4 @@
-import {
-  assertRecoveryDecision,
-  type RecoveryDecision,
-} from '../runtime/recovery.js';
+import { assertRecoveryDecision, type RecoveryDecision } from '../runtime/recovery.js';
 import { advanceBuildProtocol, type BuildInvalidation } from './build-protocol.js';
 import type { VerificationInput } from './verification-input.js';
 import {

@@ -49,7 +49,8 @@ export function parseRequirementIdentities(
     identities.push({ capabilityId, title, operation, identity: `${capabilityId}#${slug}` });
   }
   const duplicate = identities.find(
-    (entry, index) => identities.findIndex((candidate) => candidate.identity === entry.identity) !== index,
+    (entry, index) =>
+      identities.findIndex((candidate) => candidate.identity === entry.identity) !== index,
   );
   if (duplicate) throw new Error(`Requirement identity is duplicated: ${duplicate.identity}`);
   return identities.sort((left, right) => left.identity.localeCompare(right.identity));
@@ -62,7 +63,10 @@ export function resolveTaskRequirementIdentities(
   const exact = new Map(requirements.map((entry) => [entry.identity, entry.identity] as const));
   const aliases = new Map<string, string[]>();
   for (const requirement of requirements) {
-    aliases.set(requirement.title, [...(aliases.get(requirement.title) ?? []), requirement.identity]);
+    aliases.set(requirement.title, [
+      ...(aliases.get(requirement.title) ?? []),
+      requirement.identity,
+    ]);
   }
   const resolve = (reference: string): string => {
     const separator = reference.indexOf('#');
@@ -79,7 +83,8 @@ export function resolveTaskRequirementIdentities(
     if (canonical) return canonical;
     const candidates = aliases.get(reference) ?? [];
     if (candidates.length === 1) return candidates[0]!;
-    if (candidates.length > 1) throw new Error(`Task Requirement reference is ambiguous: ${reference}`);
+    if (candidates.length > 1)
+      throw new Error(`Task Requirement reference is ambiguous: ${reference}`);
     throw new Error(`Task Requirement reference is unknown: ${reference}`);
   };
   const projected = tasks.tasks.map((task) => {
@@ -119,7 +124,9 @@ export function analyzeSpecificationClosure(
   const diagnostics: string[] = [];
   const purposes: Record<string, string> = {};
   const retired: string[] = [];
-  for (const capability of [...capabilities].sort((a, b) => a.capabilityId.localeCompare(b.capabilityId))) {
+  for (const capability of [...capabilities].sort((a, b) =>
+    a.capabilityId.localeCompare(b.capabilityId),
+  )) {
     const operations = new Set(capability.requirements.map((entry) => entry.operation));
     if (!capability.existed) {
       const purpose = capability.purpose?.trim();
@@ -135,7 +142,9 @@ export function analyzeSpecificationClosure(
   }
   const stable = {
     valid: diagnostics.length === 0,
-    requirementIdentities: capabilities.flatMap((entry) => entry.requirements.map((item) => item.identity)).sort(),
+    requirementIdentities: capabilities
+      .flatMap((entry) => entry.requirements.map((item) => item.identity))
+      .sort(),
     newCapabilityPurposes: purposes,
     retiredCapabilities: retired.sort(),
     diagnostics: diagnostics.sort(),

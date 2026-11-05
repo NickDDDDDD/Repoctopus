@@ -279,7 +279,10 @@ describe('Build protocol domain', () => {
 
     expect(validation.accepted).toBe(false);
     expect(validation.findings).toContainEqual(
-      expect.objectContaining({ code: 'package-evidence-incomplete', packageIds: [plan.packages[0]!.packageId] }),
+      expect.objectContaining({
+        code: 'package-evidence-incomplete',
+        packageIds: [plan.packages[0]!.packageId],
+      }),
     );
   });
 
@@ -360,9 +363,7 @@ describe('Build protocol domain', () => {
               taskIds: ['1.1'],
               repositoryIds: ['workspace'],
               writeScopes: [{ repositoryId: 'workspace', paths: ['src/**'] }],
-              acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map(
-                (item) => item.acceptanceId,
-              ),
+              acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId),
               expectedOutcomes: ['slice-passes'],
               validatorProfile: 'build.package-valid',
               dependsOn: [],
@@ -444,9 +445,7 @@ describe('Build protocol domain', () => {
         writeScopes: [{ repositoryId: 'workspace', paths: ['src/**', 'infra/**'] }],
       }),
     ]);
-    const expandedSideEffect = create(2, [
-      packageCandidate({ sideEffectClass: 'git-publish' }),
-    ]);
+    const expandedSideEffect = create(2, [packageCandidate({ sideEffectClass: 'git-publish' })]);
     const envelope = createBuildPlanAuthorizationEnvelope(approved);
 
     expect(compareBuildPlanAuthorizationEnvelope(envelope, equivalent)).toMatchObject({

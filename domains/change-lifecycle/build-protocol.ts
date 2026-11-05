@@ -594,10 +594,7 @@ export function createBuildPlan(input: {
       sideEffectClass: candidate.sideEffectClass,
       completionContract: {
         schemaVersion: 1 as const,
-        behaviorSlice: text(
-          candidate.completionContract.behaviorSlice,
-          'Package behavior slice',
-        ),
+        behaviorSlice: text(candidate.completionContract.behaviorSlice, 'Package behavior slice'),
         requiredEvidence,
       },
     };
@@ -769,10 +766,10 @@ export function validateBuildPlan(input: {
       : ['acceptance', 'implementation', 'test', 'regression'],
   );
   const taskAcceptance = new Map(
-    input.tasks.tasks.map((task) => [
-      task.taskId,
-      task.acceptanceCriteria.map((criterion) => criterion.acceptanceId),
-    ] as const),
+    input.tasks.tasks.map(
+      (task) =>
+        [task.taskId, task.acceptanceCriteria.map((criterion) => criterion.acceptanceId)] as const,
+    ),
   );
   for (const workPackage of input.plan.packages) {
     const addFinding = (code: BuildPlanFindingCode, message: string) => {
@@ -929,11 +926,7 @@ export interface BuildPlanAuthorizationEnvelope {
   digest: Digest;
 }
 
-export type BuildPlanAuthorizationExpansion =
-  | 'repository'
-  | 'write-scope'
-  | 'risk'
-  | 'side-effect';
+export type BuildPlanAuthorizationExpansion = 'repository' | 'write-scope' | 'risk' | 'side-effect';
 
 export function createBuildPlanAuthorizationEnvelope(
   plan: BuildPlan,
@@ -1299,7 +1292,9 @@ export function advanceBuildProtocol(
       observation.approvedAuthorizationEnvelopeDigest !==
         observation.evidence.authorizationEnvelope.digest
     ) {
-      throw new Error('Plan authorization approval does not bind the current authorization envelope');
+      throw new Error(
+        'Plan authorization approval does not bind the current authorization envelope',
+      );
     }
     if (requiresApproval && observation.approvedAuthorizationEnvelopeDigest === undefined) {
       throw new Error('Build Plan expands authorization without a Human Decision');

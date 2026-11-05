@@ -1294,9 +1294,7 @@ export class WorkflowRuns extends Service {
     state: RunState;
     lifecycle: ChangeLifecycleState;
     observationId: string;
-    layers: Partial<
-      Pick<RecoveryObservation, 'planning' | 'plan' | 'work' | 'evidence'>
-    >;
+    layers: Partial<Pick<RecoveryObservation, 'planning' | 'plan' | 'work' | 'evidence'>>;
     materialization: LifecycleRecoveryMaterialization;
   }): Promise<RuntimeResult<RunStatusView>> {
     const observation: RecoveryObservation = {
@@ -4307,8 +4305,7 @@ export class WorkflowRuns extends Service {
             result === 'evidence-drift'
               ? 'declared-input-changed'
               : 'evidence-provider-unavailable',
-          changedIdentities:
-            result === 'evidence-drift' ? ['evidence-dependency'] : [],
+          changedIdentities: result === 'evidence-drift' ? ['evidence-dependency'] : [],
         },
       },
       materialization: {
