@@ -32,8 +32,19 @@ import {
   type OpenSpecStoreRegistrationPort,
 } from '../platform/specification/openspec-store-registration.js';
 
-const registration = {
-  inspect: () => Promise.reject(new Error('inspect is not used by this onboarding test double')),
+const registration: OpenSpecStoreRegistrationPort = {
+  inspect: ({ storeId, workspace }) =>
+    Promise.resolve({
+      disposition: 'registered-exact',
+      workspaceRoot: workspace,
+      storeId,
+      registeredStoreId: storeId,
+      registeredRoot: workspace,
+      rootManifestDigest: null,
+      diagnosticCode: null,
+      providerVersion: '1.14.3',
+      digest: `sha256:${'a'.repeat(64)}`,
+    }),
   prepareRoot: ({
     expected,
   }: {

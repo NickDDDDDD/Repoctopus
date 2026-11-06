@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, realpath, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -210,10 +210,23 @@ describe('published package', () => {
       changeId: specificationFixtureId,
       provider: { id: 'openspec', version: '1.14.3' },
     });
+    const workspaceAlias = path.join(root, 'workspace-alias');
+    await symlink(workspace, workspaceAlias, process.platform === 'win32' ? 'junction' : 'dir');
+    expect(await realpath(workspaceAlias)).toBe(await realpath(workspace));
+    const inspectedThroughAlias = await runCli({
+      packageRoot: installedPackage,
+      cwd: workspaceAlias,
+      args: ['spec', 'inspect', '--workspace', workspaceAlias, '--change', specificationFixtureId],
+      environment,
+    });
+    expect(inspectedThroughAlias.result).toMatchObject({
+      changeId: specificationFixtureId,
+      provider: { id: 'openspec', version: '1.14.3' },
+    });
     const validatedSpecification = await runCli<{ valid: boolean; strict: boolean }>({
       packageRoot: installedPackage,
       cwd: workspace,
-      args: ['spec', 'validate', '--workspace', workspace, '--change', specificationFixtureId],
+      args: ['spec', 'validate', '--workspace', workspaceAlias, '--change', specificationFixtureId],
       environment,
     });
     expect(validatedSpecification.result).toMatchObject({ valid: true, strict: true });
@@ -328,5 +341,29 @@ describe('published package', () => {
     expect(await readdir(path.join(installedPackage, 'docs', 'schemas'))).toContain(
       'project-config.schema.json',
     );
+    await writeFile(
+      path.join(environment.XDG_DATA_HOME!, 'openspec', 'stores', 'registry.yaml'),
+      JSON.stringify({
+        version: 1,
+        stores: {
+          'package-e2e': { backend: { type: 'git', local_path: path.join(root, 'missing-store') } },
+        },
+      }),
+    );
+    await expect(
+      runCli({
+        packageRoot: installedPackage,
+        cwd: workspaceAlias,
+        args: [
+          'spec',
+          'inspect',
+          '--workspace',
+          workspaceAlias,
+          '--change',
+          specificationFixtureId,
+        ],
+        environment,
+      }),
+    ).rejects.toThrow(/OpenSpec Store package-e2e is unavailable/u);
   }, 120_000);
 });

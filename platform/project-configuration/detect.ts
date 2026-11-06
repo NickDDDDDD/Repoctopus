@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { access, constants, lstat, readFile } from 'node:fs/promises';
+import { access, constants, lstat, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'yaml';
 
@@ -441,10 +441,9 @@ export async function detectProjectConfiguration(input: {
   now?: () => Date;
   specificationAuthority?: OpenSpecStoreRegistrationPort;
 }): Promise<{ draft: ProjectDetectionDraft; file: string }> {
-  const workspace = path.resolve(input.workspace);
-  const scanRoot = path.resolve(input.scanRoot);
+  const workspace = await realpath(input.workspace);
   const snapshot = await probeProject({
-    root: scanRoot,
+    root: input.scanRoot,
     duplicateIdentity: 'omit-ambiguous',
     ...(input.now ? { now: input.now } : {}),
   });
@@ -467,7 +466,7 @@ export async function detectProjectConfiguration(input: {
     return { repository, id: count === 1 ? base : `${base}-${count}` };
   });
   const workspaceRepositoryId =
-    identified.find(({ repository }) => path.resolve(repository.path) === workspace)?.id ?? null;
+    identified.find(({ repository }) => repository.path === workspace)?.id ?? null;
   const inspected = await Promise.all(
     identified.map(async ({ repository, id }) => {
       const openSpec = await inspectOpenSpecBinding({
@@ -571,11 +570,11 @@ export async function detectProjectConfiguration(input: {
     draftId,
     status: 'candidate',
     capturedAt,
-    scanRoot,
+    scanRoot: snapshot.root,
     workspace,
     ...content,
   };
   const file = path.join(workspace, '.repoctopus', 'drafts', `project-detect-${draftId}.json`);
-  await atomicWriteJson(file, draft);
+  await atomicWriteJson(file, draft, { containedRoot: workspace });
   return { draft, file };
 }

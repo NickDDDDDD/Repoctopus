@@ -159,6 +159,7 @@ export async function probeProject(options: {
   const entries = await readdir(resolvedRoot, { withFileTypes: true });
   const repositories: RepositorySnapshot[] = [];
   const diagnostics: ProjectSnapshot['diagnostics'] = [];
+  const scannedPaths = new Set<string>();
 
   for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
     if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
@@ -184,6 +185,8 @@ export async function probeProject(options: {
       });
       continue;
     }
+    if (scannedPaths.has(resolved)) continue;
+    scannedPaths.add(resolved);
     const repository = await inspectRepository(resolved);
     if (repository) repositories.push(repository);
   }

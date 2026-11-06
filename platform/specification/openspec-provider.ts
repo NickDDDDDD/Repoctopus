@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { access, readFile, readdir } from 'node:fs/promises';
+import { realpathSync } from 'node:fs';
+import { access, readFile, readdir, realpath } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { Context } from '@deepseek-ai/cordis';
@@ -287,7 +288,7 @@ export class OpenSpecProvider extends Specification {
 
   constructor(context: Context, config: OpenSpecProviderConfig) {
     super(context);
-    this.workspace = path.resolve(config.workspaceRoot);
+    this.workspace = realpathSync.native(config.workspaceRoot);
     this.specificationRoot = structuredClone(config.specificationRoot);
     this.process = config.process ?? new OpenSpecProcess();
   }
@@ -337,7 +338,10 @@ export class OpenSpecProvider extends Specification {
     if (typeof parsed.root.path !== 'string') {
       throw new Error(`OpenSpec Store ${this.specificationRoot.storeId} returned no root path`);
     }
-    if (path.resolve(parsed.root.path) !== path.resolve(workspace)) {
+    const registeredRoot = path.isAbsolute(parsed.root.path)
+      ? await realpath(parsed.root.path).catch(() => null)
+      : null;
+    if (registeredRoot !== workspace) {
       throw new Error(
         `OpenSpec Store ${this.specificationRoot.storeId} is registered to a different checkout`,
       );
@@ -345,7 +349,7 @@ export class OpenSpecProvider extends Specification {
   }
 
   private async json<T>(workspace: string, args: string[], signal?: AbortSignal): Promise<T> {
-    const primaryRoot = path.resolve(workspace) === this.workspace;
+    const primaryRoot = workspace === this.workspace;
     if (primaryRoot) await this.assertRoot(workspace, signal);
     const result = await this.process.execute(
       [...args, ...(primaryRoot ? ['--store', this.specificationRoot.storeId] : []), '--json'],
@@ -844,7 +848,7 @@ export class OpenSpecProvider extends Specification {
   ): Promise<SpecificationValidation> {
     const args = ['validate', changeId, '--type', 'change', '--no-interactive'];
     if (options.strict !== false) args.push('--strict');
-    const primaryRoot = path.resolve(workspace) === this.workspace;
+    const primaryRoot = workspace === this.workspace;
     if (primaryRoot) await this.assertRoot(workspace, options.signal);
     const result = await this.process.execute(
       [...args, ...(primaryRoot ? ['--store', this.specificationRoot.storeId] : []), '--json'],
@@ -1038,7 +1042,7 @@ export class OpenSpecProvider extends Specification {
     signal?: AbortSignal,
   ): Promise<void> {
     const storeArgs =
-      path.resolve(workspace) === this.workspace ? ['--store', this.specificationRoot.storeId] : [];
+      workspace === this.workspace ? ['--store', this.specificationRoot.storeId] : [];
     for (const capability of capabilities) {
       const args = [
         'validate',
@@ -1074,9 +1078,7 @@ export class OpenSpecProvider extends Specification {
       '--all',
       '--strict',
       '--no-interactive',
-      ...(path.resolve(workspace) === this.workspace
-        ? ['--store', this.specificationRoot.storeId]
-        : []),
+      ...(workspace === this.workspace ? ['--store', this.specificationRoot.storeId] : []),
       '--json',
     ];
     const result = await this.process.execute(args, {
@@ -1391,7 +1393,7 @@ ${references}
   }
 
   override atWorkspace(workspaceRoot: string): SpecificationWorkspace {
-    const workspace = path.resolve(workspaceRoot);
+    const workspace = realpathSync.native(workspaceRoot);
     return {
       identity: () => this.identity(),
       root: () => this.root(),
@@ -1412,7 +1414,7 @@ ${references}
         const [change, specificationRoot, schema] = await Promise.all([
           this.inspectAt(workspace, changeId, signal),
           (async () => {
-            if (path.resolve(workspace) === this.workspace) {
+            if (workspace === this.workspace) {
               await this.assertRoot(workspace, signal);
             }
             return this.root();
