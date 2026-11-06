@@ -56,6 +56,19 @@
         }
       }
     },
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endpoint"],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^[hH][tT][tT][pP][sS]?://[^@/?#\\\\\\s]+(?:/[^?#\\\\\\s]*)?$",
+          "description": "OTLP/HTTP base URL for the workspace Collector, without credentials, query, fragment, or signal-specific path."
+        }
+      }
+    },
     "composition": {
       "type": "object",
       "additionalProperties": false,

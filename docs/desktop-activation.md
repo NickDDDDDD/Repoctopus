@@ -33,7 +33,7 @@
 
 ## 使用已安装应用
 
-Windows 安装器同时登记 `repoctopus://` 用户级协议和标准 `App Paths\\Repoctopus.exe`。安装完成后，在没有源码 Electron artifact 的 CLI Product Root 运行同一条 `run start` 命令；Runtime 通过绝对 `SystemRoot\\System32\\reg.exe` 读取 App Paths，校验产品 executable 和协议 handler，再直接以独立 URI 参数启动应用或把上下文转交给现有实例。
+Windows 安装器同时登记 `repoctopus://` 用户级协议和标准 `App Paths\\Repoctopus.exe`。安装完成后，在已接入的 Workspace 中使用已安装的 CLI 运行 `repoctopus run start` 或续接已有 Run。Runtime 通过绝对 `SystemRoot\\System32\\reg.exe` 读取 App Paths，校验产品 executable 和协议 handler，再直接以独立 URI 参数启动应用或把上下文转交给现有实例。
 
 若要在发布前验证安装路径：
 
