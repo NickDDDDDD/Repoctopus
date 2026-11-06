@@ -811,13 +811,13 @@ Repoctopus MUST 将可信用户批准的 `current|branch|worktree` 隔离意图�
 
 #### Scenario: 多仓 branch 隔离不要求同名分支
 
-- **WHEN** 协调仓位于冻结的 Change source branch，若干业务仓仍位于 `main`，另一个业务仓位于不同名称的功能分支，且所有 checkout 的 topology、remote identity 与 branch facts 合法
-- **THEN** Open 的 branch isolation 预检成功，Runtime 持久化隔离 Intent并让逐仓 Binding保留各自 branch，不把 delivery target branch 或协调仓 source branch应用到其他仓
+- **WHEN** Workspace 位于冻结的 Change source branch，若干业务仓仍位于 `main`，另一个业务仓位于不同名称的功能分支，且所有 checkout 的 topology、remote identity 与 branch facts 合法
+- **THEN** Open 的 branch isolation 预检成功，Runtime 持久化隔离 Intent并让逐仓 Binding保留各自 branch，不把 delivery target branch 或 Workspace 的 source branch 应用到其他仓
 
 #### Scenario: Delivery target 不参与执行 branch 比较
 
 - **WHEN** ChangeStartBinding 冻结 `sourceBranch=codex/change` 与 `targetBranch=main`，用户批准 branch isolation
-- **THEN** Runtime 使用 `main` 作为启动、protected policy 与 Delivery target 事实，但不得要求协调仓或任一业务仓的执行 checkout 位于 `main`
+- **THEN** Runtime 使用 `main` 作为启动、protected policy 与 Delivery target 事实，但不得要求 Workspace 或任一业务仓的执行 checkout 位于 `main`
 
 #### Scenario: 只读仓在 Open 保持 target branch
 

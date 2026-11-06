@@ -4,10 +4,11 @@
 
 ## 选择 Workspace
 
-- **单仓**。以业务仓根目录作为 Workspace，审核接入后由 Repoctopus 写入共享配置并准备 `openspec/`。业务 MR 和 Change MR 可以在同一仓库，使用各自的分支和 MR。
-- **多仓**。把协调仓和业务仓检出到同一个父目录，例如 `team-platform/` 下的 `workspace/`、`web/` 和 `backend/`。协调仓保存共享配置、OpenSpec 和 Change MR，业务仓保存实现和业务 MR。
+**多仓项目**使用独立的 Git 仓库作为 Workspace。可以复用已有仓库，也可以新建一个有初始提交的仓库。把 Workspace 和要接入的业务仓检出到同一个专用父目录，例如 `team-platform/` 下的 `workspace/`、`web/` 和 `backend/`。在 `workspace/` 根目录执行接入命令。团队配置和 OpenSpec 保存在 Workspace，Change MR 也在这里发起。业务代码和业务 MR 留在各自的业务仓。[多仓快速开始](../README.md#接入多仓项目)
 
-OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个 ID，例如 `team-platform`。每台机器把该 ID 登记到自己的 Workspace 路径。详见 [Workspace、Store 与实现仓](specification.md#workspacestore-与实现仓)。
+**单仓项目**以业务仓根目录作为 Workspace。该仓保存实现、团队配置和 OpenSpec。业务 MR 和 Change MR 可以在同一个仓库，使用各自的分支和 MR。[单仓快速开始](../README.md#接入单仓项目)
+
+OpenSpec Store 是 Workspace 内规格树的逻辑身份。团队共用同一个 ID，例如 `team-platform`。每台机器把该 ID 登记到自己的 Workspace 路径。[Workspace、Store 与实现仓](specification.md#workspacestore-与实现仓)
 
 ## 配置放在哪里
 
@@ -27,7 +28,7 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个
 | `apiVersion`、`kind`                                               | 使用示例中的版本和类型。                                                                                                                                 |
 | `workspace`、`repositories`                                        | 为 Workspace 和各仓设置稳定 ID。`workspace.repositoryId` 指向路径为 `.` 的登记仓库，其他仓填写相对路径。                                                 |
 | `profiles`、`evidence.retention`                                   | 用 `verify` Profile 指定各仓的构建、测试和验收命令。按真实验证范围填写 `covers`，按团队要求设置本地 Evidence 的保留规则。详见 [Evidence](evidence.md)。  |
-| `specificationProvider.store`                                      | 使用探测和审批确认的 Store ID，`repositoryId` 指向规格所在的 Workspace 仓库。                                                                            |
+| `specificationProvider.store`                                      | 使用探测和审批确认的 Store ID，`repositoryId` 指向规格所在的 Workspace。                                                                                 |
 | `delivery.checkpoint`、`delivery.publication`                      | 配置受保护分支、检查命令、远端和 GitHub API。凭据位置填环境变量名，例如 `REPOCTOPUS_GITHUB_TOKEN`，由开发环境或 CI 注入值。详见[交付治理](delivery.md)。 |
 | `skillProviders`、`lifecycle.skillBindings`、`composition.plugins` | 按需添加团队 Skill 来源、阶段绑定或经过审核的扩展。详见 [Skills](skills.md)和[插件](plugins.md)。                                                        |
 | `telemetry.endpoint`                                               | 可选。填写团队的 OTLP/HTTP Collector 基础 URL，详见 [SigNoz 接入](telemetry.md)。                                                                        |

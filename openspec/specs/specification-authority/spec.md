@@ -566,7 +566,7 @@ Specification Provider MUST 在规划批准前计算当前change可静态确定�
 
 ### Requirement: 规划语义与发布身份必须分别参与恢复分类
 
-Specification Provider MUST分别公开规划语义identity、完成状态投影和publication provenance。Runtime MUST只用规划语义identity与trusted approval判定`revise-design`；checkbox、协调仓commit、分支发布OID和实现报告不得被折叠进该identity，除非它们改变Provider声明的规划语义字段。
+Specification Provider MUST分别公开规划语义identity、完成状态投影和publication provenance。Runtime MUST只用规划语义identity与trusted approval判定`revise-design`；checkbox、Workspace 的 Git commit、分支发布OID和实现报告不得被折叠进该identity，除非它们改变Provider声明的规划语义字段。
 
 #### Scenario: 实现提交推进 source OID
 

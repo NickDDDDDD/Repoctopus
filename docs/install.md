@@ -2,7 +2,11 @@
 
 准备 Git 和 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。团队指定版本后，请在各次 Change 中使用同一份 CLI。
 
-## 从 Releases 运行 CLI
+从发布地址安装和手动下载 `.tgz` 安装都可以按 README 操作。安装后直接运行 `repoctopus`。[PowerShell 安装步骤](../README.md#获取-cli)
+
+如果全局安装成功但 PowerShell 找不到 `repoctopus.cmd`，运行 `npm.cmd prefix --global`，把输出目录加到 Windows 用户环境变量 `Path`，再打开新终端。没有全局安装权限时，可以改用下方的临时运行或用户目录安装。
+
+## 用 npx 临时运行 CLI
 
 在 [GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases) 找到该版本的 `repoctopus-<版本>.tgz`。以下以 `v0.1.0` 为例。
 
@@ -10,9 +14,9 @@
 npx --yes --ignore-scripts --legacy-peer-deps --package=https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz repoctopus --help
 ```
 
-确认输出 `Usage: repoctopus ...` 后，进入准备接入的 Git 项目或已有团队 Workspace。把上面的 `npx` 前缀加到文档里的 `repoctopus` 命令前，其余参数原样传入。让 Agent 执行时也提供这个固定版本命令。Windows PowerShell 若阻止 `.ps1` 启动器，使用 `npx.cmd`。示例带上 `--legacy-peer-deps`，以避开 Windows npm 11 在同一项目连续运行本地 tarball 时的缓存解析错误。
+确认输出 `Usage: repoctopus ...` 后，进入准备接入的 Git 项目或已有团队 Workspace。每次运行时保留上面命令中直到 `repoctopus` 的部分，再把 `--help` 换成所需的子命令和参数。让 Agent 执行时也提供这个固定版本命令。Windows PowerShell 若阻止 `.ps1` 启动器，使用 `npx.cmd`。示例带上 `--legacy-peer-deps`，以避开 Windows npm 11 在同一项目连续运行本地 tarball 时的缓存解析错误。
 
-当指定版本仍是草稿、尚无公开资产或网络无法访问 Releases 时，使用团队分发的 tarball。把 `--package` 的值换成该文件的绝对路径，切换到项目目录后仍可使用同一个路径。
+也可以用手动下载或团队提供的 tarball。把 `--package` 的值换成该文件的绝对路径，切换到项目目录后仍可使用同一个路径。安装本地 tarball 时，npm 仍会按需从配置的 registry 获取依赖。
 
 ## 安装到用户目录
 

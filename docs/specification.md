@@ -4,7 +4,7 @@ Repoctopus 通过唯一的 Cordis `specification` Service 读取、校验和关�
 
 ## Workspace、Store 与实现仓
 
-- **Workspace Repository** 是 Repoctopus 的团队入口，保存 `repoctopus.yaml`、四类 change 产物、工作流文档和最终 Change MR。单仓项目可以把它嵌入实现仓；多仓项目通常把它作为与实现仓同级的独立仓库。
+- **Workspace** 是团队使用 Repoctopus 的入口，保存 `repoctopus.yaml`、四类 Change 产物和工作流文档，团队也在这里发起最终 Change MR。单仓项目以业务仓作为 Workspace。多仓项目使用与业务仓同级的独立 Git 仓库作为 Workspace。
 - **OpenSpec Store** 是 Workspace 中规格树的逻辑身份，不要求再建立第二个 Git 仓。`store: team-platform` 这类 ID 由团队自定义，但必须是 lowercase kebab-case。
 - **实现仓** 保存产品代码并产生 Business MR。它们的 `openspec/config.yaml` 只是可选 pointer，方便人在该目录直接运行 OpenSpec；Repoctopus Runtime 始终使用 Workspace 配置中的显式 Store identity，不依赖 pointer 猜测权威根。
 
@@ -42,7 +42,7 @@ Open 与 Design gate 不直接拼接 `inspect`、目录或 CLI 输出，而只�
 
 ## 公开 Change 分支与规划批准
 
-规划完成后，先把 Change 分支普通 push 到 Workspace Repository，不创建 MR。公开分支提供团队可见、可恢复的协作边界；它不是批准，也不授权实施、发布或合入。准备批准时，工作区必须正检出该分支、没有未提交文件，并且本地 HEAD 精确等于远端 OID：
+规划完成后，先把 Change 分支普通 push 到 Workspace，不创建 MR。公开分支提供团队可见、可恢复的协作边界；它不是批准，也不授权实施、发布或合入。准备批准时，工作区必须正检出该分支、没有未提交文件，并且本地 HEAD 精确等于远端 OID：
 
 ```powershell
 git push -u origin spec/<change-id>
