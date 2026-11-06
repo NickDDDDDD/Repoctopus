@@ -2,19 +2,19 @@
 change_id: bc71fa2c-3a67-4520-9bcc-a592a2c65308
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: d0ab8d9fdff3cf25fbda71984be49af157a8d0d0
-design_doc: null
-plan: null
+design_doc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+plan: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: comet/fix-openspec-checkout-path-identity
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
 handoff_hash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 77ace3b6627f01b06883bcbabe2d88b3433b516be65a352bd1766cd9d80075c5
+  hash: 235a59f22882a75fb82fbf76e321e29c5caa4786affb579db307f49b8696dc96
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,32 +56,32 @@ run_checkpoint:
       baseRef: d0ab8d9fdff3cf25fbda71984be49af157a8d0d0
       boundBranch: comet/fix-openspec-checkout-path-identity
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-06
-      designDoc: null
-      directOverride: null
+      designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+      directOverride: false
       handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
       handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
       isolation: worktree
       language: zh-CN
-      phase: design
-      plan: null
+      phase: build
+      plan: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 8
+    status: running
+    sequence: 18
     actions:
       - attempt: 1
         claim:
@@ -316,15 +316,920 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-f4f47760fa8fa7098cde9e52c8885858be6b4e8c4d7be05717a9e85a3acf74b2
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: fix-openspec-checkout-path-identity:9
+        input:
+          input:
+            change: fix-openspec-checkout-path-identity
+            changeDir: openspec/changes/fix-openspec-checkout-path-identity
+            workspaceBaseline:
+              ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                    handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                    proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                      阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                      平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                      realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store
+                      路径不能作为同一 checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际
+                      Workspace 后再核对显式 Store context，统一其内部 primary Workspace
+                      判断。保持 Archive 隔离 checkout 的独立路径和授权，不将其命令路由到主 Store。 3.
+                      项目探测基于实际 Workspace
+                      和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout
+                      仍按既有 Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。
+                      4. 新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                      Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                      Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理
+                      Windows 短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和
+                      Comet 的 Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec
+                      registry 做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                      checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实
+                      Windows tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main
+                      SHA 执行 Prepare 和 Publish。
+                    requirementsEvidence:
+                      contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+                    sourceEvidence:
+                      contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+              handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+              proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace 后再核对显式
+                Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离 checkout
+                的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有 Git
+                身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4. 新接入审批绑定已解析的
+                Workspace，并按现有格式持久化到草稿和
+                Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行 Prepare
+                和 Publish。
+              requirementsEvidence:
+                contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+              sourceEvidence:
+                contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+        inputHash: 12c3705067c6930d375359f256c76ffb68e300e64db71469b0f68f4a98e736ca
+        outcome:
+          actionId: fix-openspec-checkout-path-identity:9
+          attempt: 1
+          claimToken: portable-f4f47760fa8fa7098cde9e52c8885858be6b4e8c4d7be05717a9e85a3acf74b2
+          inputHash: 12c3705067c6930d375359f256c76ffb68e300e64db71469b0f68f4a98e736ca
+          outcomeId: 72bef6e2-256c-4930-b27b-d5357b188d85
+          output:
+            designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ef7e1155fc25624921f895078566c00fceff307ca25bb7e12cf0da0914885f0d
+            outcomeId: 72bef6e2-256c-4930-b27b-d5357b188d85
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-openspec-checkout-path-identity
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-36a3c95fd3b91c30e7ec88e86055d8c6cc2e5b77d3f3e427c6c48b9f8b14fb5f
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: fix-openspec-checkout-path-identity:11
+        input:
+          input:
+            change: fix-openspec-checkout-path-identity
+            changeDir: openspec/changes/fix-openspec-checkout-path-identity
+            workspaceBaseline:
+              ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                    handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                    proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                      阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                      平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                      realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store
+                      路径不能作为同一 checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际
+                      Workspace 后再核对显式 Store context，统一其内部 primary Workspace
+                      判断。保持 Archive 隔离 checkout 的独立路径和授权，不将其命令路由到主 Store。 3.
+                      项目探测基于实际 Workspace
+                      和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout
+                      仍按既有 Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。
+                      4. 新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                      Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                      Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理
+                      Windows 短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和
+                      Comet 的 Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec
+                      registry 做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                      checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实
+                      Windows tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main
+                      SHA 执行 Prepare 和 Publish。
+                    requirementsEvidence:
+                      contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+                    sourceEvidence:
+                      contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+            full.design.document:
+              designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+            full.design.evidence:
+              contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+              ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+              handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+              proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace 后再核对显式
+                Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离 checkout
+                的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有 Git
+                身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4. 新接入审批绑定已解析的
+                Workspace，并按现有格式持久化到草稿和
+                Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行 Prepare
+                和 Publish。
+              requirementsEvidence:
+                contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+              sourceEvidence:
+                contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+        inputHash: fc31311bde8d4c10d7b03c5088ba249399885641e4ead8c0f9a62173b9be7b77
+        outcome:
+          actionId: fix-openspec-checkout-path-identity:11
+          attempt: 1
+          claimToken: portable-36a3c95fd3b91c30e7ec88e86055d8c6cc2e5b77d3f3e427c6c48b9f8b14fb5f
+          inputHash: fc31311bde8d4c10d7b03c5088ba249399885641e4ead8c0f9a62173b9be7b77
+          outcomeId: bb24416c-4c21-42a9-b94a-80d9e1c0dea0
+          output:
+            boundBranch: comet/fix-openspec-checkout-path-identity
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 4caf87dc6c88d55e6037954dd234d21f1e5536e6d7ec2c02484bc6a6266b4361
+            outcomeId: bb24416c-4c21-42a9-b94a-80d9e1c0dea0
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-openspec-checkout-path-identity
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-68a8c0cd5ac5e0f963c546cb0031e81fe6604d5efdc86ce6c5fa3ef43fc35dc0
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: fix-openspec-checkout-path-identity:13
+        input:
+          input:
+            change: fix-openspec-checkout-path-identity
+            changeDir: openspec/changes/fix-openspec-checkout-path-identity
+            workspaceBaseline:
+              ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+          outputs:
+            full.build.configure:
+              boundBranch: comet/fix-openspec-checkout-path-identity
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/fix-openspec-checkout-path-identity
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                    handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                    proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                      阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                      平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                      realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store
+                      路径不能作为同一 checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际
+                      Workspace 后再核对显式 Store context，统一其内部 primary Workspace
+                      判断。保持 Archive 隔离 checkout 的独立路径和授权，不将其命令路由到主 Store。 3.
+                      项目探测基于实际 Workspace
+                      和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout
+                      仍按既有 Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。
+                      4. 新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                      Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                      Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理
+                      Windows 短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和
+                      Comet 的 Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec
+                      registry 做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                      checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实
+                      Windows tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main
+                      SHA 执行 Prepare 和 Publish。
+                    requirementsEvidence:
+                      contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+                    sourceEvidence:
+                      contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+            full.design.document:
+              designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+            full.design.evidence:
+              contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+              ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+              handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+              proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace 后再核对显式
+                Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离 checkout
+                的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有 Git
+                身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4. 新接入审批绑定已解析的
+                Workspace，并按现有格式持久化到草稿和
+                Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行 Prepare
+                和 Publish。
+              requirementsEvidence:
+                contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+              sourceEvidence:
+                contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+        inputHash: 48a3d97553d7d94367f082ed45ae7ce087166cf0c7479354366e60239e5a9f6d
+        outcome:
+          actionId: fix-openspec-checkout-path-identity:13
+          attempt: 1
+          claimToken: portable-68a8c0cd5ac5e0f963c546cb0031e81fe6604d5efdc86ce6c5fa3ef43fc35dc0
+          inputHash: 48a3d97553d7d94367f082ed45ae7ce087166cf0c7479354366e60239e5a9f6d
+          outcomeId: df5f33ab-a7aa-4e0c-a337-9225e69b9ac1
+          output:
+            designEvidence:
+              contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+              ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+            plan: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+            planEvidence:
+              contentHash: 0de0e11bb7f0b01f87ec7e347886ef4244fca0bcc7a6a64fbea356382832b6e2
+              ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+            taskRevision: 916ca2430e824cdcc4b59f82b6bccb24f0da0608c84b7edb84ac81b34f785429
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ade359e6fe2272d42839dad08c7c170c71c3707df3b8673a98d11ed45912eb69
+            outcomeId: df5f33ab-a7aa-4e0c-a337-9225e69b9ac1
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-openspec-checkout-path-identity
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: fix-openspec-checkout-path-identity:15
+        input:
+          input:
+            change: fix-openspec-checkout-path-identity
+            changeDir: openspec/changes/fix-openspec-checkout-path-identity
+            workspaceBaseline:
+              ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+          outputs:
+            full.build.configure:
+              boundBranch: comet/fix-openspec-checkout-path-identity
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/fix-openspec-checkout-path-identity
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+                ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+              plan: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              planEvidence:
+                contentHash: 0de0e11bb7f0b01f87ec7e347886ef4244fca0bcc7a6a64fbea356382832b6e2
+                ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              taskRevision: 916ca2430e824cdcc4b59f82b6bccb24f0da0608c84b7edb84ac81b34f785429
+            full.build.plan.evidence:
+              contentHash: 0de0e11bb7f0b01f87ec7e347886ef4244fca0bcc7a6a64fbea356382832b6e2
+              ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                    handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                    proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                      阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                      平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                      realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store
+                      路径不能作为同一 checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际
+                      Workspace 后再核对显式 Store context，统一其内部 primary Workspace
+                      判断。保持 Archive 隔离 checkout 的独立路径和授权，不将其命令路由到主 Store。 3.
+                      项目探测基于实际 Workspace
+                      和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout
+                      仍按既有 Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。
+                      4. 新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                      Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                      Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理
+                      Windows 短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和
+                      Comet 的 Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec
+                      registry 做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                      checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实
+                      Windows tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main
+                      SHA 执行 Prepare 和 Publish。
+                    requirementsEvidence:
+                      contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+                    sourceEvidence:
+                      contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+            full.design.document:
+              designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+            full.design.evidence:
+              contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+              ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+              handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+              proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace 后再核对显式
+                Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离 checkout
+                的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有 Git
+                身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4. 新接入审批绑定已解析的
+                Workspace，并按现有格式持久化到草稿和
+                Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行 Prepare
+                和 Publish。
+              requirementsEvidence:
+                contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+              sourceEvidence:
+                contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+        inputHash: 247c35eda7a0d7d668865402b8f3c2893d4b24bb65df4a0c805d5f8701fda9b5
+        protocolVersion: 1
+        reason: 命令 revise-plan 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-openspec-checkout-path-identity
+        status: cancelled
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-10241b42b145bca0cacb6a9ac7601ade932167cc48bf2f20a7e4e91d57abad4f
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: fix-openspec-checkout-path-identity:16
+        input:
+          activation:
+            expectedRevision: 22
+            fromPhase: build
+          input:
+            change: fix-openspec-checkout-path-identity
+            changeDir: openspec/changes/fix-openspec-checkout-path-identity
+            workspaceBaseline:
+              ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+          outputs: {}
+        inputHash: b771dc0d467e464fcd9a9429f671b9dfda9af4ffe5ec440aa71e66999dc76138
+        outcome:
+          actionId: fix-openspec-checkout-path-identity:16
+          attempt: 1
+          claimToken: portable-10241b42b145bca0cacb6a9ac7601ade932167cc48bf2f20a7e4e91d57abad4f
+          inputHash: b771dc0d467e464fcd9a9429f671b9dfda9af4ffe5ec440aa71e66999dc76138
+          outcomeId: aa34e4fb-6aac-4c1e-80e4-636d21afc2ba
+          output:
+            designEvidence:
+              contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+              ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+            plan: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+            planEvidence:
+              contentHash: 35a96c7c5bd838fa6c7b70ec697fc791c39241da3d02f6de9e0edea7b4ee3387
+              ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+            taskRevision: 916ca2430e824cdcc4b59f82b6bccb24f0da0608c84b7edb84ac81b34f785429
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 85e5da68ce0d1b078612d6725c45fdc7d7b4a20802fcd216723c2e0814e24fb3
+            outcomeId: aa34e4fb-6aac-4c1e-80e4-636d21afc2ba
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-openspec-checkout-path-identity
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: fix-openspec-checkout-path-identity:18
+        input:
+          input:
+            change: fix-openspec-checkout-path-identity
+            changeDir: openspec/changes/fix-openspec-checkout-path-identity
+            workspaceBaseline:
+              ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+          outputs:
+            full.build.plan:
+              designEvidence:
+                contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+                ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+              plan: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              planEvidence:
+                contentHash: 35a96c7c5bd838fa6c7b70ec697fc791c39241da3d02f6de9e0edea7b4ee3387
+                ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              taskRevision: 916ca2430e824cdcc4b59f82b6bccb24f0da0608c84b7edb84ac81b34f785429
+            full.build.plan.evidence:
+              contentHash: 35a96c7c5bd838fa6c7b70ec697fc791c39241da3d02f6de9e0edea7b4ee3387
+              ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+        inputHash: 0d48f884625aed528d9f3d6583e9ee223906de40314811cf0a0c9c95d761440f
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-openspec-checkout-path-identity
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
     commands:
       - id: f57182f657da64baef1fc5f799c62fcb1d0f1a260fe166e4cb7c6bb01014453b
         name: revise-design
         inputHash: c3b91935be5cf817dafb5e13ded49b476e69f3c4767d873003c7f4a031d1d22d
         actionId: fix-openspec-checkout-path-identity:7
+      - id: 0e08616f90dfd096efacf90eac5dcbcc28723c8c0d433c122f8dba3671d08f1b
+        name: revise-plan
+        inputHash: 416877678b8ce14a589fcc5b6a6cc30f689bfd69ed0326d11d70ee3cc5ede124
+        actionId: fix-openspec-checkout-path-identity:16
     actionContexts:
       fix-openspec-checkout-path-identity:1:
         results: {}
         sequence: 1
+      fix-openspec-checkout-path-identity:11:
+        results:
+          full.design.confirm:
+            sequence: 8
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                    handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                    proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                      阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                      平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                      realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store
+                      路径不能作为同一 checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际
+                      Workspace 后再核对显式 Store context，统一其内部 primary Workspace
+                      判断。保持 Archive 隔离 checkout 的独立路径和授权，不将其命令路由到主 Store。 3.
+                      项目探测基于实际 Workspace
+                      和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout
+                      仍按既有 Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。
+                      4. 新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                      Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                      Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理
+                      Windows 短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和
+                      Comet 的 Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec
+                      registry 做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                      checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实
+                      Windows tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main
+                      SHA 执行 Prepare 和 Publish。
+                    requirementsEvidence:
+                      contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+                    sourceEvidence:
+                      contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+          full.design.document:
+            sequence: 9
+            value:
+              designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          full.design.evidence:
+            sequence: 10
+            value:
+              contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+              ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+              handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+              proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace 后再核对显式
+                Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离 checkout
+                的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有 Git
+                身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4. 新接入审批绑定已解析的
+                Workspace，并按现有格式持久化到草稿和
+                Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行 Prepare
+                和 Publish。
+              requirementsEvidence:
+                contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+              sourceEvidence:
+                contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+        sequence: 11
+      fix-openspec-checkout-path-identity:13:
+        results:
+          full.build.configure:
+            sequence: 11
+            value:
+              boundBranch: comet/fix-openspec-checkout-path-identity
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 12
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/fix-openspec-checkout-path-identity
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 8
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                    handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                    proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                      阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                      平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                      realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store
+                      路径不能作为同一 checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际
+                      Workspace 后再核对显式 Store context，统一其内部 primary Workspace
+                      判断。保持 Archive 隔离 checkout 的独立路径和授权，不将其命令路由到主 Store。 3.
+                      项目探测基于实际 Workspace
+                      和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout
+                      仍按既有 Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。
+                      4. 新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                      Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                      Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理
+                      Windows 短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和
+                      Comet 的 Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec
+                      registry 做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                      checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实
+                      Windows tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main
+                      SHA 执行 Prepare 和 Publish。
+                    requirementsEvidence:
+                      contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+                    sourceEvidence:
+                      contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+          full.design.document:
+            sequence: 9
+            value:
+              designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          full.design.evidence:
+            sequence: 10
+            value:
+              contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+              ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+              handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+              proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace 后再核对显式
+                Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离 checkout
+                的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有 Git
+                身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4. 新接入审批绑定已解析的
+                Workspace，并按现有格式持久化到草稿和
+                Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行 Prepare
+                和 Publish。
+              requirementsEvidence:
+                contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+              sourceEvidence:
+                contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+        sequence: 13
+      fix-openspec-checkout-path-identity:15:
+        results:
+          full.build.configure:
+            sequence: 11
+            value:
+              boundBranch: comet/fix-openspec-checkout-path-identity
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 12
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/fix-openspec-checkout-path-identity
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 13
+            value:
+              designEvidence:
+                contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+                ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+              plan: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              planEvidence:
+                contentHash: 0de0e11bb7f0b01f87ec7e347886ef4244fca0bcc7a6a64fbea356382832b6e2
+                ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              taskRevision: 916ca2430e824cdcc4b59f82b6bccb24f0da0608c84b7edb84ac81b34f785429
+          full.build.plan.evidence:
+            sequence: 14
+            value:
+              contentHash: 0de0e11bb7f0b01f87ec7e347886ef4244fca0bcc7a6a64fbea356382832b6e2
+              ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+          full.design.confirm:
+            sequence: 8
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                    handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                    proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                      阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                      平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                      realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store
+                      路径不能作为同一 checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际
+                      Workspace 后再核对显式 Store context，统一其内部 primary Workspace
+                      判断。保持 Archive 隔离 checkout 的独立路径和授权，不将其命令路由到主 Store。 3.
+                      项目探测基于实际 Workspace
+                      和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout
+                      仍按既有 Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。
+                      4. 新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                      Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                      Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理
+                      Windows 短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和
+                      Comet 的 Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec
+                      registry 做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                      checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实
+                      Windows tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main
+                      SHA 执行 Prepare 和 Publish。
+                    requirementsEvidence:
+                      contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+                    sourceEvidence:
+                      contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+          full.design.document:
+            sequence: 9
+            value:
+              designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          full.design.evidence:
+            sequence: 10
+            value:
+              contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+              ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+              handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+              proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace 后再核对显式
+                Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离 checkout
+                的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有 Git
+                身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4. 新接入审批绑定已解析的
+                Workspace，并按现有格式持久化到草稿和
+                Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行 Prepare
+                和 Publish。
+              requirementsEvidence:
+                contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+              sourceEvidence:
+                contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+        sequence: 15
+      fix-openspec-checkout-path-identity:16:
+        results: {}
+        sequence: 16
+      fix-openspec-checkout-path-identity:18:
+        results:
+          full.build.plan:
+            sequence: 16
+            value:
+              designEvidence:
+                contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+                ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+              plan: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              planEvidence:
+                contentHash: 35a96c7c5bd838fa6c7b70ec697fc791c39241da3d02f6de9e0edea7b4ee3387
+                ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              taskRevision: 916ca2430e824cdcc4b59f82b6bccb24f0da0608c84b7edb84ac81b34f785429
+          full.build.plan.evidence:
+            sequence: 17
+            value:
+              contentHash: 35a96c7c5bd838fa6c7b70ec697fc791c39241da3d02f6de9e0edea7b4ee3387
+              ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+        sequence: 18
       fix-openspec-checkout-path-identity:4:
         results:
           full.open:
@@ -388,6 +1293,77 @@ run_checkpoint:
       fix-openspec-checkout-path-identity:7:
         results: {}
         sequence: 7
+      fix-openspec-checkout-path-identity:9:
+        results:
+          full.design.confirm:
+            sequence: 8
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                    handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                    proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                      阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                      平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                      realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store
+                      路径不能作为同一 checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际
+                      Workspace 后再核对显式 Store context，统一其内部 primary Workspace
+                      判断。保持 Archive 隔离 checkout 的独立路径和授权，不将其命令路由到主 Store。 3.
+                      项目探测基于实际 Workspace
+                      和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout
+                      仍按既有 Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。
+                      4. 新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                      Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                      Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理
+                      Windows 短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和
+                      Comet 的 Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec
+                      registry 做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                      checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实
+                      Windows tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main
+                      SHA 执行 Prepare 和 Publish。
+                    requirementsEvidence:
+                      contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+                    sourceEvidence:
+                      contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+              handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+              proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace 后再核对显式
+                Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离 checkout
+                的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有 Git
+                身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4. 新接入审批绑定已解析的
+                Workspace，并按现有格式持久化到草稿和
+                Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行 Prepare
+                和 Publish。
+              requirementsEvidence:
+                contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+              sourceEvidence:
+                contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+        sequence: 9
     waits:
       - id: fix-openspec-checkout-path-identity:3
         stepId: full.open.confirm
@@ -495,7 +1471,7 @@ run_checkpoint:
       - id: fix-openspec-checkout-path-identity:8
         stepId: full.design.confirm
         sequence: 8
-        status: pending
+        status: resolved
         proposal:
           input:
             change: fix-openspec-checkout-path-identity
@@ -564,6 +1540,125 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
                 ref: openspec/changes/fix-openspec-checkout-path-identity
+        decision:
+          id: classic-design-0f2a16001b673d3013004bb708a3a962c4ed15661f40d7071b210bae1be9c16c-approved
+          choice: approved
+          proposalHash: 0f2a16001b673d3013004bb708a3a962c4ed15661f40d7071b210bae1be9c16c
+      - id: fix-openspec-checkout-path-identity:12
+        stepId: full.build.confirm
+        sequence: 12
+        status: resolved
+        proposal:
+          input:
+            change: fix-openspec-checkout-path-identity
+            changeDir: openspec/changes/fix-openspec-checkout-path-identity
+            workspaceBaseline:
+              ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+          outputs:
+            full.build.configure:
+              boundBranch: comet/fix-openspec-checkout-path-identity
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 23cfed58038ed60cd8fe90fc5800c7ab3d486b14b986b04e946360672f777fe7
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 11
+            value:
+              boundBranch: comet/fix-openspec-checkout-path-identity
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 8
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                    handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                    proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                      阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                      平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                      realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store
+                      路径不能作为同一 checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际
+                      Workspace 后再核对显式 Store context，统一其内部 primary Workspace
+                      判断。保持 Archive 隔离 checkout 的独立路径和授权，不将其命令路由到主 Store。 3.
+                      项目探测基于实际 Workspace
+                      和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout
+                      仍按既有 Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。
+                      4. 新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                      Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                      Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理
+                      Windows 短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和
+                      Comet 的 Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec
+                      registry 做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                      checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实
+                      Windows tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main
+                      SHA 执行 Prepare 和 Publish。
+                    requirementsEvidence:
+                      contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+                    sourceEvidence:
+                      contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+          full.design.document:
+            sequence: 9
+            value:
+              designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          full.design.evidence:
+            sequence: 10
+            value:
+              contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+              ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+              handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+              proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace 后再核对显式
+                Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离 checkout
+                的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有 Git
+                身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4. 新接入审批绑定已解析的
+                Workspace，并按现有格式持久化到草稿和
+                Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行 Prepare
+                和 Publish。
+              requirementsEvidence:
+                contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+              sourceEvidence:
+                contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+        decision:
+          id: 72ba28ba-2788-457a-9256-cdfe148425dc
+          choice: approved
+          proposalHash: 23cfed58038ed60cd8fe90fc5800c7ab3d486b14b986b04e946360672f777fe7
     evidenceWaits:
       - id: fix-openspec-checkout-path-identity:2
         stepId: full.open.evidence
@@ -579,9 +1674,331 @@ run_checkpoint:
           ref: openspec/changes/fix-openspec-checkout-path-identity
           contentHash: aa07d469d2d82f27e64b9cbbea4f513589952e756c95580560b7f7bb94031fd1
           submissionId: 5594f6ca-092b-4209-84db-5bbf7e7d4f06
+      - id: fix-openspec-checkout-path-identity:10
+        stepId: full.design.evidence
+        sequence: 10
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 8
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                    handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                    proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                      阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                      平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                      realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store
+                      路径不能作为同一 checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际
+                      Workspace 后再核对显式 Store context，统一其内部 primary Workspace
+                      判断。保持 Archive 隔离 checkout 的独立路径和授权，不将其命令路由到主 Store。 3.
+                      项目探测基于实际 Workspace
+                      和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout
+                      仍按既有 Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。
+                      4. 新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                      Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                      Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理
+                      Windows 短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和
+                      Comet 的 Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec
+                      registry 做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                      checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实
+                      Windows tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main
+                      SHA 执行 Prepare 和 Publish。
+                    requirementsEvidence:
+                      contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+                    sourceEvidence:
+                      contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+          full.design.document:
+            sequence: 9
+            value:
+              designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+              handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+              proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace 后再核对显式
+                Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离 checkout
+                的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有 Git
+                身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4. 新接入审批绑定已解析的
+                Workspace，并按现有格式持久化到草稿和
+                Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行 Prepare
+                和 Publish。
+              requirementsEvidence:
+                contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+              sourceEvidence:
+                contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+        receipt:
+          ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+          submissionId: 51276336-cda7-425e-b715-c1af8fcffd74
+      - id: fix-openspec-checkout-path-identity:14
+        stepId: full.build.plan.evidence
+        sequence: 14
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 11
+            value:
+              boundBranch: comet/fix-openspec-checkout-path-identity
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 12
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/fix-openspec-checkout-path-identity
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 13
+            value:
+              designEvidence:
+                contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+                ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+              plan: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              planEvidence:
+                contentHash: 0de0e11bb7f0b01f87ec7e347886ef4244fca0bcc7a6a64fbea356382832b6e2
+                ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              taskRevision: 916ca2430e824cdcc4b59f82b6bccb24f0da0608c84b7edb84ac81b34f785429
+          full.design.confirm:
+            sequence: 8
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-openspec-checkout-path-identity
+                  changeDir: openspec/changes/fix-openspec-checkout-path-identity
+                  workspaceBaseline:
+                    ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                    handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                    proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                      阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                      平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                      realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store
+                      路径不能作为同一 checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际
+                      Workspace 后再核对显式 Store context，统一其内部 primary Workspace
+                      判断。保持 Archive 隔离 checkout 的独立路径和授权，不将其命令路由到主 Store。 3.
+                      项目探测基于实际 Workspace
+                      和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout
+                      仍按既有 Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。
+                      4. 新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                      Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                      Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理
+                      Windows 短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和
+                      Comet 的 Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec
+                      registry 做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                      checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实
+                      Windows tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main
+                      SHA 执行 Prepare 和 Publish。
+                    requirementsEvidence:
+                      contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+                    sourceEvidence:
+                      contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                      ref: openspec/changes/fix-openspec-checkout-path-identity
+          full.design.document:
+            sequence: 9
+            value:
+              designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          full.design.evidence:
+            sequence: 10
+            value:
+              contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+              ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+              handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+              proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace 后再核对显式
+                Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离 checkout
+                的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有 Git
+                身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4. 新接入审批绑定已解析的
+                Workspace，并按现有格式持久化到草稿和
+                Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行 Prepare
+                和 Publish。
+              requirementsEvidence:
+                contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+              sourceEvidence:
+                contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                ref: openspec/changes/fix-openspec-checkout-path-identity
+        receipt:
+          ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+          contentHash: 0de0e11bb7f0b01f87ec7e347886ef4244fca0bcc7a6a64fbea356382832b6e2
+          submissionId: 89aa8175-9f02-4f4d-ba88-b05afbc24d41
+      - id: fix-openspec-checkout-path-identity:17
+        stepId: full.build.plan.evidence
+        sequence: 17
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.plan:
+            sequence: 16
+            value:
+              designEvidence:
+                contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+                ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+              plan: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              planEvidence:
+                contentHash: 35a96c7c5bd838fa6c7b70ec697fc791c39241da3d02f6de9e0edea7b4ee3387
+                ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+              taskRevision: 916ca2430e824cdcc4b59f82b6bccb24f0da0608c84b7edb84ac81b34f785429
+        receipt:
+          ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+          contentHash: 35a96c7c5bd838fa6c7b70ec697fc791c39241da3d02f6de9e0edea7b4ee3387
+          submissionId: fc22eb5b-3658-4733-bdda-29856cc7fc5b
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 11
+        value:
+          boundBranch: comet/fix-openspec-checkout-path-identity
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 12
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-openspec-checkout-path-identity
+              changeDir: openspec/changes/fix-openspec-checkout-path-identity
+              workspaceBaseline:
+                ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+            outputs:
+              full.build.configure:
+                boundBranch: comet/fix-openspec-checkout-path-identity
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 16
+        value:
+          designEvidence:
+            contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+            ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
+          plan: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+          planEvidence:
+            contentHash: 35a96c7c5bd838fa6c7b70ec697fc791c39241da3d02f6de9e0edea7b4ee3387
+            ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+          taskRevision: 916ca2430e824cdcc4b59f82b6bccb24f0da0608c84b7edb84ac81b34f785429
+      full.build.plan.evidence:
+        sequence: 17
+        value:
+          contentHash: 35a96c7c5bd838fa6c7b70ec697fc791c39241da3d02f6de9e0edea7b4ee3387
+          ref: docs/superpowers/plans/2026-11-06-fix-openspec-checkout-path-identity.md
+      full.design.confirm:
+        sequence: 8
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-openspec-checkout-path-identity
+              changeDir: openspec/changes/fix-openspec-checkout-path-identity
+              workspaceBaseline:
+                ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/fix-openspec-checkout-path-identity/.comet/handoff/design-context.json
+                handoffHash: 9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f
+                proposal: 已确认的范围：修复 Windows 路径别名导致同一 OpenSpec Store checkout 被误拒。保持 Open
+                  阶段的规格、显式 Store ID、健康根、批准边界和现有发布门禁。本轮无 Spec Patch。 候选方案： 1.
+                  平台适配层复用一种实际目录解析方式，Windows 使用能展开短路径和 junction 的原生
+                  realpath。核对实际目录时使用解析后的绝对路径，原输入用于必要的错误定位。无法解析的 Store 路径不能作为同一
+                  checkout 的证明，保留旧登记及对应的冲突诊断。 2. 规格 Provider 绑定实际 Workspace
+                  后再核对显式 Store context，统一其内部 primary Workspace 判断。保持 Archive 隔离
+                  checkout 的独立路径和授权，不将其命令路由到主 Store。 3. 项目探测基于实际 Workspace
+                  和扫描到的实际目录生成仓库相对路径。若同一实际目录在合法扫描范围内出现多次，只计一次。不同 checkout 仍按既有
+                  Git 身份冲突规则处理，扫描边界继续有效。登记状态、Doctor 和 Context 使用同一目录身份。 4.
+                  新接入审批绑定已解析的 Workspace，并按现有格式持久化到草稿和
+                  Intent。审核重新核对该绑定，保留常规文件、目录边界和候选摘要校验。别名改指、登记冲突和无法核验路径保持失败。无需迁移注册表或已保存的
+                  Run。 取舍：CI 临时路径规范化只能避开本次 runner 的触发方式，单纯路径字符串折叠也无法处理 Windows
+                  短路径和 junction。选择修复产品适配边界，复用固定 OpenSpec 的实际路径判断思路和 Comet 的
+                  Windows 原生解析做法，无第三方源码复制。 验证：用真实 CLI 和隔离的 OpenSpec registry
+                  做先失败后通过的测试。覆盖同一实际 checkout 的别名、不同
+                  checkout、失效路径、扫描别名和批准边界。验证普通接入、Store 冲突、Archive 隔离、真实 Windows
+                  tarball 与 npx。合入后由现有发布 workflow 从同一个通过 CI 的 main SHA 执行
+                  Prepare 和 Publish。
+                requirementsEvidence:
+                  contentHash: 7813e903f8495f8a00e0bdf6aecfe659d507744fbe8eefcec0e6891658478679
+                  ref: openspec/changes/fix-openspec-checkout-path-identity
+                sourceEvidence:
+                  contentHash: 9763bf369492335839cb1d711810d832afd98ec883444198ea433b58a481461b
+                  ref: openspec/changes/fix-openspec-checkout-path-identity
+      full.design.document:
+        sequence: 9
+        value:
+          designDoc: openspec/changes/fix-openspec-checkout-path-identity/design.md
+      full.design.evidence:
+        sequence: 10
+        value:
+          contentHash: d5f1221de0b626b5b97e8d6ac35abef9307cb53b71a3d73cac854749df51d663
+          ref: openspec/changes/fix-openspec-checkout-path-identity/design.md
       full.design.handoff:
         sequence: 7
         value:
@@ -641,6 +2058,6 @@ run_checkpoint:
           contentHash: aa07d469d2d82f27e64b9cbbea4f513589952e756c95580560b7f7bb94031fd1
     children: []
     lineage: []
-  sourceRevision: 12
-  sourceHash: 714221d0201e029e48a8cc3be677b3f508feb4916c03571cd54aa5cdf9afa32d
-check_epoch: 1
+  sourceRevision: 26
+  sourceHash: c9e9a4929b5408cdd8a084ed5260721b95bd2076abeace87ce4237c9b19d5984
+check_epoch: 2

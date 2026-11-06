@@ -1,3 +1,9 @@
+---
+comet_change: fix-openspec-checkout-path-identity
+role: technical-design
+canonical_spec: openspec
+---
+
 # 设计
 
 ## Context
@@ -25,6 +31,16 @@ OpenSpec 在返回健康 Store 根前解析实际目录。Repoctopus 的规格�
 项目探测的 Workspace 匹配、Store 登记的身份核验、Specification Provider 的 Store 根检查使用同一种实际目录判断。Engine、Cordis Service 和领域规则仍通过现有接口工作。保留 Store ID、健康根、metadata 和已批准接入流程的核对。对失效登记保留诊断所需原路径，不能把无法解析的路径当作同一 checkout 的证明。
 
 备选做法是只修改 CI 临时路径。它能规避该测试目录的路径差异，但用户通过 Windows 短路径或目录别名访问时仍会遇到同样的问题。单纯折叠 Windows 大小写也无法处理这两种别名。
+
+### 路径身份的落点
+
+平台在已存在的 checkout 上解析实际绝对路径。Windows 使用原生真实路径解析以展开短名、junction 和实际大小写。找不到登记根时，保留旧路径用于诊断，且停止身份匹配。
+
+Specification Provider 在绑定 Workspace 时记录实际根。对该根的访问继续使用显式 Store ID，并核对 OpenSpec 返回的根。Archive 的隔离 checkout 使用自己的路径和既有访问分支。
+
+探测器按实际目录计算 Workspace 与业务仓的相对路径。扫描范围内多个目录项指向同一实际目录时，只计一次。不同 checkout 仍由现有 Git 身份冲突规则处理，越出扫描范围的目录仍被排除。
+
+新接入草稿和批准 Intent 保存实际根。审批重新验证该绑定，同时核对常规文件、目录边界与摘要。别名改指后仍以批准中保存的根为准，指向另一根的调用需要重新探测和确认。无需迁移注册表或 Run。
 
 ## Risks / Trade-offs
 
