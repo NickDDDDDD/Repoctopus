@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 68e84351-f2bf-4dd4-9f67-d95065c651f2
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: branch
+verify_mode: null
+auto_transition: true
+base_ref: 9da1d47b0dd5c43ab66fd3ee0ef42ecd61cac290
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-06
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/unify-build-workspace-recovery
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: b77b0f74b6610c4cca08a21921fc2d1e18f7fc38caa56f72a15892260d818801
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: unify-build-workspace-recovery
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 11593d4e4db8fffe1f1e8e9546e16e822196977e62c72778e94bc959a2fbb469
+    input:
+      change: unify-build-workspace-recovery
+      changeDir: openspec/changes/unify-build-workspace-recovery
+      workspaceBaseline:
+        ref: ed489e70-b325-4386-b548-351e1984b8af
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 9da1d47b0dd5c43ab66fd3ee0ef42ecd61cac290
+      boundBranch: comet/unify-build-workspace-recovery
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-06
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: branch
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: unify-build-workspace-recovery:1
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: e4f50f56254bbc5367fe86c4626b7dfe47142dff8c33ba7d0752d0cb1f286426
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      unify-build-workspace-recovery:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 96e1b847c71a83db51eadabd5ca87567ffc6b18b9b14ae7792ab6778535bc0a6
