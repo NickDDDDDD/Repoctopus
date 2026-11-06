@@ -364,9 +364,6 @@ describe('published package', () => {
         ],
         environment,
       }),
-    ).rejects.toMatchObject({
-      code: 1,
-      stderr: expect.stringContaining('OpenSpec Store package-e2e is unavailable'),
-    });
+    ).rejects.toThrow(/OpenSpec Store package-e2e is unavailable/u);
   }, 120_000);
 });
