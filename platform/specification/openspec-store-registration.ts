@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { lstat, readFile, readdir } from 'node:fs/promises';
+import { lstat, readFile, readdir, realpath } from 'node:fs/promises';
 import path from 'node:path';
 
 import { parse } from 'yaml';
@@ -57,13 +57,10 @@ function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
 }
 
-function comparablePath(value: string): string {
-  const resolved = path.resolve(value).replaceAll('\\', '/');
-  return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
-}
-
-function samePath(left: string, right: string): boolean {
-  return comparablePath(left) === comparablePath(right);
+async function resolveStorePath(value: string): Promise<string | null> {
+  if (!path.isAbsolute(value)) return null;
+  // A stale or inaccessible path is diagnostic evidence, never a checkout match.
+  return realpath(value).catch(() => null);
 }
 
 function parseJson<T>(value: string, label: string): T {
@@ -182,23 +179,30 @@ export class OpenSpecStoreRegistration implements OpenSpecStoreRegistrationPort 
   constructor(private readonly process: SpecificationProcessPort = new OpenSpecProcess()) {}
 
   async inspect(input: { storeId: string; workspace: string }): Promise<OpenSpecRootEvidence> {
-    const workspace = path.resolve(input.workspace);
+    const workspace = await realpath(input.workspace);
     const listed = await this.process.execute(['store', 'list', '--json'], { cwd: workspace });
     if (listed.exitCode !== 0) {
       throw new Error(`OpenSpec Store registry is unavailable: ${listed.stderr || listed.stdout}`);
     }
     const stores = parseJson<StoreListResult>(listed.stdout, 'OpenSpec Store list').stores ?? [];
-    const normalizedStores = stores.flatMap((store) =>
+    const listedStores = stores.flatMap((store) =>
       typeof store.id === 'string' && typeof store.root === 'string'
-        ? [{ id: store.id, root: path.resolve(store.root) }]
+        ? [{ id: store.id, root: store.root }]
         : [],
     );
-    const idRegistration = normalizedStores.find((store) => store.id === input.storeId) ?? null;
-    const pathRegistration =
-      normalizedStores.find((store) => samePath(store.root, workspace)) ?? null;
+    const registrations = await Promise.all(
+      listedStores.map(async (store) => ({
+        ...store,
+        actualRoot: await resolveStorePath(store.root),
+      })),
+    );
+    const idRegistration = registrations.find((store) => store.id === input.storeId);
     const conflict =
-      (idRegistration && !samePath(idRegistration.root, workspace) ? idRegistration : null) ??
-      (pathRegistration && pathRegistration.id !== input.storeId ? pathRegistration : null);
+      idRegistration && idRegistration.actualRoot !== workspace
+        ? idRegistration
+        : registrations.find(
+            (store) => store.actualRoot === workspace && store.id !== input.storeId,
+          );
 
     const openspecRoot = path.join(workspace, 'openspec');
     const kind = await pathKind(openspecRoot);
@@ -234,7 +238,7 @@ export class OpenSpecStoreRegistration implements OpenSpecStoreRegistrationPort 
     const healthy =
       doctorResult?.root?.healthy === true &&
       typeof doctorResult.root.path === 'string' &&
-      samePath(doctorResult.root.path, workspace);
+      (await resolveStorePath(doctorResult.root.path)) === workspace;
     if (!healthy) {
       const firstCode = doctorResult?.status?.find((item) => typeof item.code === 'string')?.code;
       return evidence({
@@ -261,7 +265,7 @@ export class OpenSpecStoreRegistration implements OpenSpecStoreRegistrationPort 
       });
     }
 
-    if (idRegistration && samePath(idRegistration.root, workspace)) {
+    if (idRegistration) {
       const context = await this.process.execute(['context', '--json', '--store', input.storeId], {
         cwd: workspace,
       });
@@ -283,7 +287,7 @@ export class OpenSpecStoreRegistration implements OpenSpecStoreRegistrationPort 
       if (
         parsed.root?.store_id !== input.storeId ||
         typeof parsed.root.path !== 'string' ||
-        !samePath(parsed.root.path, workspace)
+        (await resolveStorePath(parsed.root.path)) !== workspace
       ) {
         return evidence({
           disposition: 'conflicting-registration',
@@ -403,11 +407,12 @@ export class OpenSpecStoreRegistration implements OpenSpecStoreRegistrationPort 
         `OpenSpec Store registration requires a healthy root: ${before.diagnosticCode ?? before.disposition}`,
       );
     }
+    const workspace = before.workspaceRoot;
     const registered = await this.process.execute(
-      ['store', 'register', input.workspace, '--id', input.storeId, '--yes', '--json'],
-      { cwd: input.workspace },
+      ['store', 'register', workspace, '--id', input.storeId, '--yes', '--json'],
+      { cwd: workspace },
     );
-    const after = await this.inspect(input);
+    const after = await this.inspect({ storeId: input.storeId, workspace });
     if (after.disposition !== 'registered-exact') {
       throw new Error(
         `OpenSpec Store registration failed: ${registered.stderr.trim() || registered.stdout.trim() || after.diagnosticCode}`,

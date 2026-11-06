@@ -1,11 +1,23 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import {
+  access,
+  copyFile,
+  mkdir,
+  readFile,
+  realpath,
+  rename,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { ProjectDetectionDraft } from '../../domains/project-configuration/detection.js';
 import type { ProjectConfigurationDecisionRequest } from '../../domains/project-configuration/onboarding.js';
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
-import { applyProjectConfigurationDecision } from '../../platform/project-configuration/onboarding.js';
+import {
+  applyProjectConfigurationDecision,
+  prepareProjectConfigurationDecision,
+} from '../../platform/project-configuration/onboarding.js';
 import { OpenSpecProcess } from '../../platform/specification/openspec-process.js';
 import { OpenSpecStoreRegistration } from '../../platform/specification/openspec-store-registration.js';
 import {
@@ -29,7 +41,9 @@ describe('documented project onboarding flow', () => {
       path.join(app, 'package.json'),
       JSON.stringify({ scripts: { build: 'placeholder-build' } }),
     );
-    const workspace = await createGitRepository(root, 'workspace');
+    const workspace = await realpath(await createGitRepository(root, 'workspace'));
+    const workspaceAlias = path.join(root, 'workspace-alias');
+    await symlink(workspace, workspaceAlias, process.platform === 'win32' ? 'junction' : 'dir');
     const environment = {
       XDG_DATA_HOME: path.join(root, 'xdg-data'),
       XDG_CONFIG_HOME: path.join(root, 'xdg-config'),
@@ -49,7 +63,7 @@ describe('documented project onboarding flow', () => {
         '--scan-root',
         root,
         '--workspace',
-        workspace,
+        workspaceAlias,
         '--store',
         'onboarding-store',
       ],
@@ -58,6 +72,11 @@ describe('documented project onboarding flow', () => {
     const detected = detection.result as { draft: ProjectDetectionDraft; file: string };
     expect(detection).toMatchObject({ ok: true, command: 'project detect' });
     expect(detected.draft.status).toBe('candidate');
+    expect(detected.draft.workspace).toBe(workspace);
+    expect(detected.draft.candidateConfig?.repositories).toEqual([
+      { id: 'app', path: '../app' },
+      { id: 'workspace', path: '.' },
+    ]);
     expect(detected.draft.storeBinding).toMatchObject({
       storeId: 'onboarding-store',
       workspaceRepositoryId: 'workspace',
@@ -105,6 +124,28 @@ describe('documented project onboarding flow', () => {
     };
     const candidateFile = path.join(workspace, '.repoctopus', 'drafts', 'candidate.yaml');
     await writeFile(candidateFile, JSON.stringify(candidate));
+    const externalDecisions = path.join(root, 'external-decisions');
+    const localDecisions = path.join(workspace, '.repoctopus', 'decisions');
+    await mkdir(externalDecisions);
+    await symlink(
+      externalDecisions,
+      localDecisions,
+      process.platform === 'win32' ? 'junction' : 'dir',
+    );
+    await expect(
+      prepareProjectConfigurationDecision({
+        workspace: workspaceAlias,
+        draftFile: detected.file,
+        completedCandidate: candidate,
+        requestId: 'escaped-decision',
+      }),
+    ).rejects.toThrow(/Atomic write parent must be a real directory/u);
+    await expect(
+      access(path.join(externalDecisions, 'project-configuration-escaped-decision.json')),
+    ).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    await rename(localDecisions, path.join(root, 'external-decisions-alias'));
     const preparedEnvelope = await runCli({
       packageRoot,
       cwd: workspace,
@@ -112,7 +153,7 @@ describe('documented project onboarding flow', () => {
         'project',
         'prepare',
         '--workspace',
-        workspace,
+        workspaceAlias,
         '--draft',
         detected.file,
         '--candidate',
@@ -132,24 +173,71 @@ describe('documented project onboarding flow', () => {
       },
     });
 
-    await applyProjectConfigurationDecision(
-      {
-        workspace,
-        decisionFile: prepared.file,
-        response: {
-          apiVersion: 'repoctopus/v1alpha1',
-          kind: 'HumanDecisionResponse',
-          requestId: prepared.request.requestId,
-          snapshotDigest: prepared.request.snapshotDigest,
-          decision: 'approve',
-        },
-        actor: { actorId: 'fixture-user', source: 'ide', authenticated: true },
-        timestamp: '2026-01-01T00:00:00.000Z',
+    const approval = {
+      workspace: workspaceAlias,
+      decisionFile: prepared.file,
+      response: {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: prepared.request.requestId,
+        snapshotDigest: prepared.request.snapshotDigest,
+        decision: 'approve',
       },
-      registration,
-    );
+      actor: { actorId: 'fixture-user', source: 'ide', authenticated: true },
+      timestamp: '2026-01-01T00:00:00.000Z',
+    } as const;
 
-    expect(await registration.inspect({ storeId: 'onboarding-store', workspace })).toMatchObject({
+    const drafts = path.join(workspace, '.repoctopus', 'drafts');
+    const externalDrafts = path.join(root, 'external-drafts');
+    const savedDrafts = path.join(workspace, '.repoctopus', 'saved-drafts');
+    await mkdir(externalDrafts);
+    await copyFile(detected.file, path.join(externalDrafts, path.basename(detected.file)));
+    await rename(drafts, savedDrafts);
+    await symlink(externalDrafts, drafts, process.platform === 'win32' ? 'junction' : 'dir');
+    await expect(applyProjectConfigurationDecision(approval, registration)).rejects.toThrow(
+      /Resolved file is outside .repoctopus\/drafts/u,
+    );
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    await rename(drafts, path.join(root, 'external-drafts-alias'));
+    await rename(savedDrafts, drafts);
+    await expect(
+      applyProjectConfigurationDecision(
+        {
+          ...approval,
+          hooks: {
+            afterIntent(intent) {
+              if (intent.action === 'write-pointer') throw new Error('interrupted before pointer');
+            },
+          },
+        },
+        registration,
+      ),
+    ).rejects.toThrow('interrupted before pointer');
+    const registry = path.join(environment.XDG_DATA_HOME, 'openspec', 'stores', 'registry.yaml');
+    const registryBefore = await readFile(registry, 'utf8');
+    await writeFile(
+      registry,
+      JSON.stringify({
+        version: 1,
+        stores: { 'onboarding-store': { backend: { type: 'git', local_path: app } } },
+      }),
+    );
+    await expect(applyProjectConfigurationDecision(approval, registration)).rejects.toThrow(
+      /Store registration changed after approval/u,
+    );
+    await expect(access(path.join(app, 'openspec', 'config.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    await writeFile(registry, registryBefore);
+    await applyProjectConfigurationDecision(approval, registration);
+
+    const registered = await registration.inspect({ storeId: 'onboarding-store', workspace });
+    expect(
+      await registration.inspect({ storeId: 'onboarding-store', workspace: workspaceAlias }),
+    ).toEqual(registered);
+    expect(registered).toMatchObject({
       disposition: 'registered-exact',
       registeredRoot: workspace,
     });
@@ -222,6 +310,39 @@ describe('documented project onboarding flow', () => {
       ok: true,
       command: 'evidence run',
       result: { bundle: { outcome: 'passed' } },
+    });
+
+    const otherCheckout = await createGitRepository(root, 'other-checkout');
+    const decisions = path.join(otherCheckout, '.repoctopus', 'decisions');
+    await mkdir(decisions, { recursive: true });
+    await copyFile(prepared.file, path.join(decisions, path.basename(prepared.file)));
+    await rename(workspaceAlias, path.join(root, 'original-workspace-alias'));
+    await symlink(otherCheckout, workspaceAlias, process.platform === 'win32' ? 'junction' : 'dir');
+    await expect(
+      applyProjectConfigurationDecision(
+        {
+          ...approval,
+          decisionFile: path.join(
+            workspaceAlias,
+            '.repoctopus',
+            'decisions',
+            path.basename(prepared.file),
+          ),
+        },
+        registration,
+      ),
+    ).rejects.toThrow(/belongs to another Workspace checkout/u);
+    await expect(access(path.join(otherCheckout, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+
+    await rename(workspace, path.join(root, 'moved-workspace'));
+    expect(
+      await registration.inspect({ storeId: 'onboarding-store', workspace: workspaceAlias }),
+    ).toMatchObject({
+      disposition: 'conflicting-registration',
+      diagnosticCode: 'store-registration-conflict',
+      registeredRoot: workspace,
     });
   }, 30_000);
 });

@@ -48,19 +48,32 @@ export interface ProjectConfigurationApplyResult {
 
 function contained(root: string, candidate: string): boolean {
   const relative = path.relative(root, candidate);
-  return relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`);
+  return (
+    relative !== '' &&
+    relative !== '..' &&
+    !relative.startsWith(`..${path.sep}`) &&
+    !path.isAbsolute(relative)
+  );
 }
 
-async function safeInputFile(workspace: string, file: string, directory: string): Promise<string> {
-  const allowed = path.resolve(workspace, '.repoctopus', directory);
+async function safeInputFile(
+  workspace: string,
+  inputWorkspace: string,
+  file: string,
+  directory: string,
+): Promise<string> {
+  const allowed = path.join(workspace, '.repoctopus', directory);
+  const inputAllowed = path.resolve(inputWorkspace, '.repoctopus', directory);
   const resolved = path.resolve(file);
-  if (!contained(allowed, resolved)) throw new Error(`File is outside .repoctopus/${directory}`);
+  if (!contained(allowed, resolved) && !contained(inputAllowed, resolved)) {
+    throw new Error(`File is outside .repoctopus/${directory}`);
+  }
   const details = await lstat(resolved);
   if (!details.isFile() || details.isSymbolicLink()) {
     throw new Error(`Expected a regular local ${directory} file`);
   }
   const [realAllowed, realFile] = await Promise.all([realpath(allowed), realpath(resolved)]);
-  if (!contained(realAllowed, realFile)) {
+  if (!contained(workspace, realAllowed) || !contained(realAllowed, realFile)) {
     throw new Error(`Resolved file is outside .repoctopus/${directory}`);
   }
   return realFile;
@@ -257,6 +270,15 @@ async function applyStoreBinding(input: {
     if (previousRegistration.intentDigest !== registrationIntent.digest) {
       throw new Error('Store registration Receipt belongs to another Intent');
     }
+    const current = await input.registration.inspect({
+      storeId: input.proposal.storeId,
+      workspace: input.workspace,
+    });
+    if (current.disposition !== 'registered-exact' || current.workspaceRoot !== input.workspace) {
+      throw new Error(
+        `Store registration changed after approval: ${current.diagnosticCode ?? current.disposition}`,
+      );
+    }
     receiptFiles.push(registrationReceiptFile);
   } else {
     await input.hooks?.afterIntent?.(registrationIntent);
@@ -354,8 +376,8 @@ export async function prepareProjectConfigurationDecision(input: {
   completedCandidate: unknown;
   requestId?: string;
 }): Promise<{ request: ProjectConfigurationDecisionRequest; file: string }> {
-  const workspace = path.resolve(input.workspace);
-  const draftFile = await safeInputFile(workspace, input.draftFile, 'drafts');
+  const workspace = await realpath(input.workspace);
+  const draftFile = await safeInputFile(workspace, input.workspace, input.draftFile, 'drafts');
   const draft = asDraft(JSON.parse(await readFile(draftFile, 'utf8')) as unknown);
   const currentConfig = await optionalCurrentConfig(workspace);
   const request = createProjectConfigurationDecision({
@@ -371,13 +393,17 @@ export async function prepareProjectConfigurationDecision(input: {
     request,
   };
   const file = decisionFile(workspace, request.requestId);
-  await atomicWriteJson(file, state);
-  await atomicWriteJson(draftFile, {
-    ...draft,
-    status: 'awaiting_confirmation',
-    candidateConfig: request.candidateConfig,
-    reconcile: request.reconcile,
-  } satisfies ProjectDetectionDraft);
+  await atomicWriteJson(file, state, { containedRoot: workspace });
+  await atomicWriteJson(
+    draftFile,
+    {
+      ...draft,
+      status: 'awaiting_confirmation',
+      candidateConfig: request.candidateConfig,
+      reconcile: request.reconcile,
+    } satisfies ProjectDetectionDraft,
+    { containedRoot: workspace },
+  );
   return { request, file };
 }
 
@@ -385,8 +411,8 @@ export async function loadPendingProjectConfigurationDecision(
   workspace: string,
   file: string,
 ): Promise<ProjectConfigurationDecisionRequest> {
-  const resolvedWorkspace = path.resolve(workspace);
-  const stateFile = await safeInputFile(resolvedWorkspace, file, 'decisions');
+  const resolvedWorkspace = await realpath(workspace);
+  const stateFile = await safeInputFile(resolvedWorkspace, workspace, file, 'decisions');
   return asStoredDecision(JSON.parse(await readFile(stateFile, 'utf8')) as unknown).request;
 }
 
@@ -404,8 +430,13 @@ export async function applyProjectConfigurationDecision(
   },
   registration: OpenSpecStoreRegistrationPort = new OpenSpecStoreRegistration(),
 ): Promise<ProjectConfigurationApplyResult> {
-  const workspace = path.resolve(input.workspace);
-  const stateFile = await safeInputFile(workspace, input.decisionFile, 'decisions');
+  const workspace = await realpath(input.workspace);
+  const stateFile = await safeInputFile(
+    workspace,
+    input.workspace,
+    input.decisionFile,
+    'decisions',
+  );
   const state = asStoredDecision(JSON.parse(await readFile(stateFile, 'utf8')) as unknown);
   const record = recordProjectConfigurationDecision({
     request: state.request,
@@ -413,6 +444,9 @@ export async function applyProjectConfigurationDecision(
     actor: input.actor,
     timestamp: state.record?.decidedAt ?? input.timestamp,
   });
+  if (record.decision === 'approve' && state.request.storeBinding?.workspaceRoot !== workspace) {
+    throw new Error('Approved Store binding belongs to another Workspace checkout');
+  }
   if (state.status === 'confirmed' && state.result) {
     if (
       !state.record ||
@@ -424,11 +458,11 @@ export async function applyProjectConfigurationDecision(
     return structuredClone(state.result);
   }
   if (record.decision !== 'approve') {
-    await atomicWriteJson(stateFile, {
-      ...state,
-      status: record.decision === 'reject' ? 'rejected' : 'request_changes',
-      record,
-    });
+    await atomicWriteJson(
+      stateFile,
+      { ...state, status: record.decision === 'reject' ? 'rejected' : 'request_changes', record },
+      { containedRoot: workspace },
+    );
     return {
       status: record.decision === 'reject' ? 'rejected' : 'request_changes',
       configFile: null,
@@ -457,20 +491,21 @@ export async function applyProjectConfigurationDecision(
     throw new Error('Approved project configuration no longer matches its digest');
   }
   const configFile = path.join(workspace, 'repoctopus.yaml');
-  const draftFile = path.join(
+  const draftFile = await safeInputFile(
     workspace,
-    '.repoctopus',
+    input.workspace,
+    path.join(workspace, '.repoctopus', 'drafts', `project-detect-${state.request.draftId}.json`),
     'drafts',
-    `project-detect-${state.request.draftId}.json`,
   );
   const draft = asDraft(JSON.parse(await readFile(draftFile, 'utf8')) as unknown);
-  if (state.request.storeBinding?.workspaceRoot !== workspace) {
-    throw new Error('Approved Store binding belongs to another Workspace checkout');
-  }
   if (state.request.storeBinding?.repositories.some((binding) => binding.selection === 'blocked')) {
     throw new Error('Approved Store binding still contains blocked repository conflicts');
   }
-  await atomicWriteJson(stateFile, { ...state, status: 'applying', record });
+  await atomicWriteJson(
+    stateFile,
+    { ...state, status: 'applying', record },
+    { containedRoot: workspace },
+  );
   const receiptFiles = state.request.storeBinding
     ? await applyStoreBinding({
         workspace,
@@ -491,16 +526,21 @@ export async function applyProjectConfigurationDecision(
   if (writtenDigest !== candidateDigest) {
     throw new Error('Written project configuration does not match the approved digest');
   }
-  await atomicWriteJson(draftFile, {
-    ...draft,
-    status: 'confirmed',
-  } satisfies ProjectDetectionDraft);
+  await atomicWriteJson(
+    draftFile,
+    { ...draft, status: 'confirmed' } satisfies ProjectDetectionDraft,
+    { containedRoot: workspace },
+  );
   const result: ProjectConfigurationApplyResult = {
     status: 'confirmed',
     configFile,
     configDigest: writtenDigest,
     bindingReceiptFiles: receiptFiles,
   };
-  await atomicWriteJson(stateFile, { ...state, status: 'confirmed', record, result });
+  await atomicWriteJson(
+    stateFile,
+    { ...state, status: 'confirmed', record, result },
+    { containedRoot: workspace },
+  );
   return result;
 }
