@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 056bcc51-968f-409c-b9f5-910f9ed3d163
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: fa12a31c39e4eb3db592d746a790525be0780591
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-06
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/publish-github-release-distribution
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: f37df9cb93e79fd50253f030d502b2c7bf5408cef2b488a71a7a749157052be1
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: publish-github-release-distribution
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 5a1b9d4658bea67d39a0e9154038b7edc43aa79decda5fd89f45b0ccd048dad9
+    input:
+      change: publish-github-release-distribution
+      changeDir: openspec/changes/publish-github-release-distribution
+      workspaceBaseline:
+        ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: fa12a31c39e4eb3db592d746a790525be0780591
+      boundBranch: comet/publish-github-release-distribution
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-06
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: publish-github-release-distribution:1
+        input:
+          input:
+            change: publish-github-release-distribution
+            changeDir: openspec/changes/publish-github-release-distribution
+            workspaceBaseline:
+              ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+          outputs: {}
+        inputHash: ab7e698544eab69f46ca32eb9135c474fbe1c28be68a3bc83626a6947f3e44eb
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: publish-github-release-distribution
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      publish-github-release-distribution:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: a35b345c8a1b740195d33ff1d26b7c29db5d36360ef6feedfe4d788a901b5cc1
