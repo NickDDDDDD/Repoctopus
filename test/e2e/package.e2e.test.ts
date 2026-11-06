@@ -102,22 +102,39 @@ async function npm(args: string[], cwd: string) {
   });
 }
 
+async function packageUnderTest(
+  root: string,
+): Promise<{ archive: string; packagedPaths: string[] }> {
+  const candidate = process.env.REPOCTOPUS_PACKAGE_CANDIDATE;
+  if (candidate) {
+    const archive = path.resolve(candidate);
+    const { stdout } = await execFileAsync('tar', ['-tzf', archive], { cwd: root });
+    const packagedPaths = stdout
+      .trim()
+      .split(/\r?\n/u)
+      .map((file) => file.replace(/^package\//u, ''));
+    return { archive, packagedPaths };
+  }
+
+  const packDirectory = path.join(root, 'pack');
+  await mkdir(packDirectory);
+  const packed = await npm(['pack', '--json', '--pack-destination', packDirectory], repositoryRoot);
+  const archives = JSON.parse(packed.stdout) as Array<{
+    filename: string;
+    files: Array<{ path: string }>;
+  }>;
+  return {
+    archive: path.join(packDirectory, archives[0]!.filename),
+    packagedPaths: archives[0]!.files.map((file) => file.path.replaceAll('\\', '/')),
+  };
+}
+
 describe('published package', () => {
   it('installs with production dependencies and runs the JSON protocol', async () => {
     const root = await temporaryDirectory('repoctopus-package-');
     cleanup.push(root);
-    const packDirectory = path.join(root, 'pack');
     const installation = path.join(root, 'installation');
-    await mkdir(packDirectory);
-    const packed = await npm(
-      ['pack', '--json', '--pack-destination', packDirectory],
-      repositoryRoot,
-    );
-    const archives = JSON.parse(packed.stdout) as Array<{
-      filename: string;
-      files: Array<{ path: string }>;
-    }>;
-    const packagedPaths = archives[0]!.files.map((file) => file.path.replaceAll('\\', '/'));
+    const { archive, packagedPaths } = await packageUnderTest(root);
     expect(packagedPaths).toContain('docs/schemas/project-config.schema.json');
     expect(packagedPaths).toContain('docs/schemas/delivery-intent.schema.json');
     expect(packagedPaths).toContain('docs/examples/repoctopus.gitignore');
@@ -136,7 +153,6 @@ describe('published package', () => {
         'skills-lock.json',
       ]),
     );
-    const archive = path.join(packDirectory, archives[0]!.filename);
     await npm(['init', '-y'], root);
     await npm(
       ['install', '--ignore-scripts', '--omit=dev', '--prefix', installation, archive],

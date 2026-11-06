@@ -1,0 +1,228 @@
+name: Prepare or publish Repoctopus release
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Prepare a verified draft or publish an existing verified draft
+        type: choice
+        options: [prepare, publish]
+        default: prepare
+      commit:
+        description: Full commit SHA from main with successful CI
+        type: string
+        required: true
+      tag:
+        description: Version tag matching package.json
+        type: string
+        required: true
+      artifact_id:
+        description: Candidate artifact ID from a successful Prepare run (Publish only)
+        type: string
+        required: false
+
+permissions: {}
+
+concurrency:
+  group: repoctopus-release-publication
+  cancel-in-progress: false
+
+env:
+  RELEASE_COMMIT: ${{ inputs.commit }}
+  RELEASE_TAG: ${{ inputs.tag }}
+
+jobs:
+  preflight:
+    name: Verify release source
+    if: github.ref == 'refs/heads/main' && github.repository == 'NickDDDDDD/Repoctopus'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      commit: ${{ steps.source.outputs.commit }}
+      ci-run: ${{ steps.source.outputs.ciRun }}
+      ci-attempt: ${{ steps.source.outputs.ciAttempt }}
+      candidate-run: ${{ steps.source.outputs.candidateRun }}
+      candidate-attempt: ${{ steps.source.outputs.candidateAttempt }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check commit, CI and operation inputs
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_OPERATION: ${{ inputs.operation }}
+          RELEASE_ARTIFACT_ID: ${{ inputs.artifact_id }}
+          RELEASE_CHECK_TAG: 'true'
+        run: |
+          if [[ "$RELEASE_OPERATION" == "publish" && -z "$RELEASE_ARTIFACT_ID" ]]; then
+            echo 'Publish requires the candidate artifact ID from Prepare' >&2
+            exit 1
+          fi
+          if [[ "$RELEASE_OPERATION" == "prepare" && -n "$RELEASE_ARTIFACT_ID" ]]; then
+            echo 'Prepare creates its own candidate artifact' >&2
+            exit 1
+          fi
+          node scripts/github-release.mjs preflight
+
+  candidate:
+    name: Build and verify candidate packages
+    if: inputs.operation == 'prepare'
+    needs: [preflight]
+    runs-on: windows-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      attempt: ${{ steps.package.outputs.attempt }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.preflight.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Build and verify the exact CLI and Windows packages
+        id: package
+        shell: pwsh
+        env:
+          RELEASE_CI_RUN: ${{ needs.preflight.outputs.ci-run }}
+          RELEASE_CI_ATTEMPT: ${{ needs.preflight.outputs.ci-attempt }}
+          REPOCTOPUS_DESKTOP_E2E_EVIDENCE: ${{ runner.temp }}/repoctopus-desktop-evidence.json
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $directory = Join-Path $env:RUNNER_TEMP 'repoctopus-release'
+          New-Item -ItemType Directory -Path $directory | Out-Null
+          $names = node scripts/github-release.mjs names | ConvertFrom-Json
+          npm.cmd ci
+          npm.cmd run build
+          npm.cmd pack --ignore-scripts --pack-destination $directory
+          $env:REPOCTOPUS_PACKAGE_CANDIDATE = Join-Path $directory $names.cli
+          $env:RELEASE_CLI_DIGEST = (node scripts/github-release.mjs cli-digest $directory | ConvertFrom-Json).digest
+          npm.cmd run test:package-e2e
+          npm.cmd run test:release-npx -- $env:REPOCTOPUS_PACKAGE_CANDIDATE
+          npm.cmd run package:desktop
+          npm.cmd run check:desktop-package
+          npm.cmd run test:desktop-package-e2e
+          Copy-Item -LiteralPath (Join-Path 'dist/desktop-release' $names.desktop) -Destination $directory
+          $env:RELEASE_DESKTOP_EVIDENCE = $env:REPOCTOPUS_DESKTOP_E2E_EVIDENCE
+          node scripts/github-release.mjs seal $directory
+          "attempt=$env:GITHUB_RUN_ATTEMPT" >> $env:GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v4
+        id: upload
+        with:
+          name: repoctopus-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/repoctopus-release
+          if-no-files-found: error
+          compression-level: 0
+      - name: Summarize the selected candidate
+        shell: pwsh
+        env:
+          CANDIDATE_ID: ${{ steps.upload.outputs.artifact-id }}
+        run: |
+          "Candidate artifact ID: $env:CANDIDATE_ID" >> $env:GITHUB_STEP_SUMMARY
+
+  draft:
+    name: Stage release draft
+    if: inputs.operation == 'prepare'
+    needs: [preflight, candidate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ needs.candidate.outputs.artifact-id }}
+          path: ${{ runner.temp }}/repoctopus-release
+          merge-multiple: true
+      - name: Reconcile and verify the release draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ARTIFACT_ID: ${{ needs.candidate.outputs.artifact-id }}
+          RELEASE_CANDIDATE_RUN: ${{ github.run_id }}
+          RELEASE_CANDIDATE_ATTEMPT: ${{ needs.candidate.outputs.attempt }}
+        run: node scripts/github-release.mjs draft "$RUNNER_TEMP/repoctopus-release"
+
+  publish:
+    name: Publish verified release
+    if: inputs.operation == 'publish'
+    needs: [preflight]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ inputs.artifact_id }}
+          run-id: ${{ needs.preflight.outputs.candidate-run }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/repoctopus-release
+          merge-multiple: true
+      - name: Recheck the source and publish the exact verified draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ARTIFACT_ID: ${{ inputs.artifact_id }}
+          RELEASE_CANDIDATE_RUN: ${{ needs.preflight.outputs.candidate-run }}
+          RELEASE_CANDIDATE_ATTEMPT: ${{ needs.preflight.outputs.candidate-attempt }}
+        run: node scripts/github-release.mjs publish "$RUNNER_TEMP/repoctopus-release"
+
+  public-smoke:
+    name: Verify public downloads and npx
+    if: inputs.operation == 'publish'
+    needs: [preflight, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ inputs.artifact_id }}
+          run-id: ${{ needs.preflight.outputs.candidate-run }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/repoctopus-release
+          merge-multiple: true
+      - name: Verify actual public bytes and exercise the documented CLI path
+        env:
+          RELEASE_CANDIDATE_RUN: ${{ needs.preflight.outputs.candidate-run }}
+          RELEASE_CANDIDATE_ATTEMPT: ${{ needs.preflight.outputs.candidate-attempt }}
+        run: |
+          node scripts/github-release.mjs public-assets "$RUNNER_TEMP/repoctopus-release"
+          npm run test:release-npx -- "https://github.com/NickDDDDDD/Repoctopus/releases/download/$RELEASE_TAG/repoctopus-${RELEASE_TAG#v}.tgz"

@@ -8,12 +8,18 @@ import { promisify } from 'node:util';
 
 import { extractAll, listPackage } from '@electron/asar';
 
+import { releaseAssetNames } from './release-policy.mjs';
+
 const root = path.resolve(import.meta.dirname, '..');
+const { version: packageVersion } = JSON.parse(
+  await readFile(path.join(root, 'package.json'), 'utf8'),
+);
+const [, installerName] = releaseAssetNames(packageVersion);
 const execute = promisify(execFile);
 const release = path.join(root, 'dist', 'desktop-release');
 const unpacked = path.join(release, 'win-unpacked');
 const asar = path.join(unpacked, 'resources', 'app.asar');
-const installer = path.join(release, 'Repoctopus-Desktop-0.1.0-x64-Setup.exe');
+const installer = path.join(release, installerName);
 const required = [
   '/dist/desktop/main.js',
   '/dist/desktop/preload.cjs',
@@ -97,7 +103,7 @@ if (
   version.ProductName !== 'Repoctopus' ||
   version.FileDescription !== 'Repoctopus' ||
   !String(version.CompanyName).includes('Repoctopus') ||
-  version.ProductVersion !== '0.1.0.0'
+  version.ProductVersion !== packageVersion + '.0'
 ) {
   throw new Error(`Desktop executable has invalid metadata: ${JSON.stringify(version)}`);
 }
