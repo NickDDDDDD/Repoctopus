@@ -16,6 +16,29 @@ describe('canonical observation destination configuration', () => {
     });
   });
 
+  it('preserves case-insensitive environment access when using the workspace base', () => {
+    const environment = new Proxy<NodeJS.ProcessEnv>(
+      {
+        otel_exporter_otlp_traces_endpoint: 'https://trace.example/collect',
+        otel_exporter_otlp_headers: 'authorization=Bearer%20example',
+        otel_exporter_otlp_metrics_timeout: '9000',
+      },
+      {
+        get(values, key) {
+          return typeof key === 'string' ? values[key.toLowerCase()] : undefined;
+        },
+      },
+    );
+    const [remote] = observationDestinationsFromEnvironment(
+      environment,
+      'https://workspace.example',
+    );
+
+    expect(remote?.signalEndpoints?.trace).toBe('https://trace.example/collect');
+    expect(remote?.signalHeaders?.metric?.authorization).toBe('Bearer example');
+    expect(remote?.signalTimeouts?.metric).toBe(9_000);
+  });
+
   it('prefers the common environment endpoint to the workspace base', () => {
     const [remote] = observationDestinationsFromEnvironment(
       { OTEL_EXPORTER_OTLP_ENDPOINT: 'https://deployment.example/otel' },

@@ -21,11 +21,12 @@ describe('Evidence OTLP export', () => {
   it.each(['environment', 'workspace YAML'] as const)(
     'exports trace, log and metric signals using %s',
     async (source) => {
-      const paths: string[] = [];
+      const requests: Array<{ path: string; body: string }> = [];
       const server = createServer((request, response) => {
-        paths.push(request.url ?? '');
-        request.resume();
+        const chunks: Buffer[] = [];
+        request.on('data', (chunk: Buffer) => chunks.push(chunk));
         request.on('end', () => {
+          requests.push({ path: request.url ?? '', body: Buffer.concat(chunks).toString('utf8') });
           response.writeHead(200, { 'content-type': 'application/x-protobuf' });
           response.end();
         });
@@ -70,7 +71,8 @@ describe('Evidence OTLP export', () => {
         source === 'workspace YAML'
           ? { ...config, telemetry: { endpoint: `${base}/otel/` } }
           : config;
-      await writeFile(path.join(workspace, 'repoctopus.yaml'), stringify(workspaceConfig));
+      const workspaceConfigPath = path.join(workspace, 'repoctopus.yaml');
+      await writeFile(workspaceConfigPath, stringify(config));
       const environment = {
         OTEL_EXPORTER_OTLP_ENDPOINT: undefined,
         OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: undefined,
@@ -131,6 +133,9 @@ guardrails:
         expect(pending.nextActions).toContain(
           'repoctopus run record --run <run-id> --action <action-id> --status succeeded --summary <text> --evidence-attempt <attempt-id>',
         );
+        if (source === 'workspace YAML') {
+          await writeFile(workspaceConfigPath, stringify(workspaceConfig));
+        }
         const result = await runCli({
           packageRoot,
           cwd: workspace,
@@ -157,7 +162,10 @@ guardrails:
           },
         });
         const prefix = source === 'workspace YAML' ? '/otel' : '';
-        expect(new Set(paths)).toEqual(
+        const evidencePaths = requests
+          .filter(({ body }) => body.includes('repoctopus.evidence.'))
+          .map(({ path }) => path);
+        expect(new Set(evidencePaths)).toEqual(
           new Set([`${prefix}/v1/traces`, `${prefix}/v1/logs`, `${prefix}/v1/metrics`]),
         );
       } finally {

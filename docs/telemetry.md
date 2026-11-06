@@ -13,7 +13,7 @@ telemetry:
 
 填写 Collector 的 OTLP/HTTP 基础 URL。可以包含网关路径前缀，例如 `https://collector.example.internal/otlp`。Runtime 会追加 `/v1/traces`、`/v1/logs` 和 `/v1/metrics`。认证通过环境变量配置，YAML 地址不接受内嵌凭据、查询参数或片段。
 
-地址优先级从高到低为按信号环境变量、公共环境变量、工作区 YAML。仅使用环境变量的部署继续有效。上报字段名使用 [schema v1](telemetry-reference.md) 的公开名称。Repoctopus 不提供字段别名，也不要求 Collector Transform 改名。
+地址优先级从高到低为按信号环境变量、公共环境变量、工作区 YAML。认证 Header 会发送到实际选中的 Collector，请在可信的工作区使用团队配置。同一 Runtime 版本内，Collector 地址不参与 Run 的执行配置身份。仅使用环境变量的部署继续有效。上报字段名使用 [schema v1](telemetry-reference.md) 的公开名称。Repoctopus 不提供字段别名，也不要求 Collector Transform 改名。
 
 | 变量                                                                                                            | 作用                                                                         | 优先级                                              |
 | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------- |

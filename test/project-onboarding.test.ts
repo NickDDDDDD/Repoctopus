@@ -195,6 +195,7 @@ describe('project configuration onboarding', () => {
         id: 'user-confirmed-workspace',
       },
       evidence: { retention: { maxAgeDays: 45, minRecentSuccesses: 2 } },
+      telemetry: { endpoint: 'https://collector.example/otel' },
     };
     const prepared = await prepareProjectConfigurationDecision({
       workspace,
@@ -267,7 +268,8 @@ describe('project configuration onboarding', () => {
       /openspec\//u,
     );
     expect(loaded.shared).toEqual(parseSharedProjectConfig(completedCandidate));
-    expect(loaded.sharedDigest).toBe(hashProjectConfig(prepared.request.candidateConfig));
+    expect(hashProjectConfig(loaded.shared)).toBe(prepared.request.candidateConfigDigest);
+    expect(loaded.sharedDigest).not.toBe(prepared.request.candidateConfigDigest);
     expect((JSON.parse(await readFile(detected.file, 'utf8')) as { status: string }).status).toBe(
       'confirmed',
     );

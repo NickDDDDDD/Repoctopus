@@ -487,7 +487,8 @@ export async function applyProjectConfigurationDecision(
   }
   await ensureRepoctopusGitignore(workspace);
   const written = await loadProjectConfig(workspace);
-  if (written.sharedDigest !== candidateDigest) {
+  const writtenDigest = hashProjectConfig(written.shared);
+  if (writtenDigest !== candidateDigest) {
     throw new Error('Written project configuration does not match the approved digest');
   }
   await atomicWriteJson(draftFile, {
@@ -497,7 +498,7 @@ export async function applyProjectConfigurationDecision(
   const result: ProjectConfigurationApplyResult = {
     status: 'confirmed',
     configFile,
-    configDigest: written.sharedDigest,
+    configDigest: writtenDigest,
     bindingReceiptFiles: receiptFiles,
   };
   await atomicWriteJson(stateFile, { ...state, status: 'confirmed', record, result });

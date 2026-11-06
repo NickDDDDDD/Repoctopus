@@ -27,12 +27,7 @@ export function observationDestinationsFromEnvironment(
   workspaceEndpoint?: string,
 ): readonly ObservationDestination[] {
   const destinations: ObservationDestination[] = [];
-  const deploymentEnvironment =
-    workspaceEndpoint && !environment.OTEL_EXPORTER_OTLP_ENDPOINT?.trim()
-      ? { ...environment, OTEL_EXPORTER_OTLP_ENDPOINT: workspaceEndpoint }
-      : environment;
-  const deployment = resolveOtlpDeployment(deploymentEnvironment);
-  const remote = deploymentEnvironment.OTEL_EXPORTER_OTLP_ENDPOINT?.trim();
+  const deployment = resolveOtlpDeployment(environment, workspaceEndpoint);
   const signalEndpoints = {
     ...(deployment.traces.url ? { trace: deployment.traces.url } : {}),
     ...(deployment.logs.url ? { log: deployment.logs.url } : {}),
@@ -42,7 +37,7 @@ export function observationDestinationsFromEnvironment(
     const resource = createRepoctopusResource('repoctopus-runtime', '0.1.0', environment);
     destinations.push({
       id: 'remote',
-      ...(remote ? { endpoint: remote } : {}),
+      ...(deployment.baseEndpoint ? { endpoint: deployment.baseEndpoint } : {}),
       ...(Object.keys(signalEndpoints).length > 0 ? { signalEndpoints } : {}),
       signalHeaders: {
         trace: deployment.traces.headers,

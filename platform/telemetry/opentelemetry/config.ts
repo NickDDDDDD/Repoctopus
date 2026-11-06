@@ -17,6 +17,7 @@ export interface OtlpSignalConfiguration {
 
 export interface OtlpDeploymentConfiguration {
   enabled: boolean;
+  baseEndpoint?: string;
   traces: OtlpSignalConfiguration;
   logs: OtlpSignalConfiguration;
   metrics: OtlpSignalConfiguration;
@@ -63,13 +64,13 @@ function signalUrl(base: string, signal: OtlpSignal): string {
 function signalConfiguration(
   signal: OtlpSignal,
   environment: NodeJS.ProcessEnv,
+  baseEndpoint: string | undefined,
 ): OtlpSignalConfiguration {
   const suffix = SIGNAL_ENV[signal];
   const exact = environment[`OTEL_EXPORTER_OTLP_${suffix}_ENDPOINT`];
-  const shared = environment.OTEL_EXPORTER_OTLP_ENDPOINT;
   const exactHeaders = environment[`OTEL_EXPORTER_OTLP_${suffix}_HEADERS`];
   const exactTimeout = environment[`OTEL_EXPORTER_OTLP_${suffix}_TIMEOUT`];
-  const url = exact?.trim() || (shared?.trim() ? signalUrl(shared.trim(), signal) : undefined);
+  const url = exact?.trim() || (baseEndpoint ? signalUrl(baseEndpoint, signal) : undefined);
   return {
     enabled: url !== undefined,
     ...(url ? { url } : {}),
@@ -80,12 +81,15 @@ function signalConfiguration(
 
 export function resolveOtlpDeployment(
   environment: NodeJS.ProcessEnv = process.env,
+  workspaceEndpoint?: string,
 ): OtlpDeploymentConfiguration {
-  const traces = signalConfiguration('traces', environment);
-  const logs = signalConfiguration('logs', environment);
-  const metrics = signalConfiguration('metrics', environment);
+  const baseEndpoint = environment.OTEL_EXPORTER_OTLP_ENDPOINT?.trim() || workspaceEndpoint;
+  const traces = signalConfiguration('traces', environment, baseEndpoint);
+  const logs = signalConfiguration('logs', environment, baseEndpoint);
+  const metrics = signalConfiguration('metrics', environment, baseEndpoint);
   return {
     enabled: traces.enabled || logs.enabled || metrics.enabled,
+    ...(baseEndpoint ? { baseEndpoint } : {}),
     traces,
     logs,
     metrics,
