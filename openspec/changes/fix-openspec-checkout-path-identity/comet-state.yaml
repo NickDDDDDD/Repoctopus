@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: bc71fa2c-3a67-4520-9bcc-a592a2c65308
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: d0ab8d9fdff3cf25fbda71984be49af157a8d0d0
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-06
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/fix-openspec-checkout-path-identity
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 31c144ada349755428a6b8503b67021bbcfc0b51483fdcd832bc87962319e047
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: fix-openspec-checkout-path-identity
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 142a989827cdedf77990d8ab953ad9aa1af6845a400c611a93cbc02d3074bade
+    input:
+      change: fix-openspec-checkout-path-identity
+      changeDir: openspec/changes/fix-openspec-checkout-path-identity
+      workspaceBaseline:
+        ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: d0ab8d9fdff3cf25fbda71984be49af157a8d0d0
+      boundBranch: comet/fix-openspec-checkout-path-identity
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-06
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: fix-openspec-checkout-path-identity:1
+        input:
+          input:
+            change: fix-openspec-checkout-path-identity
+            changeDir: openspec/changes/fix-openspec-checkout-path-identity
+            workspaceBaseline:
+              ref: 9ede53a2-f073-4243-9774-0935ae631ecf
+          outputs: {}
+        inputHash: d6c2feb85dbf0cbb9c5f3146750ac5e5000872ee778c3f55f934195d186d1b0f
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-openspec-checkout-path-identity
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      fix-openspec-checkout-path-identity:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 11512ea6f6b3673068523553d8cc671eadd5d9c715fe39107552b71116a177e7
