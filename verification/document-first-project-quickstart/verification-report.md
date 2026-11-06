@@ -1,10 +1,10 @@
 # 首次接入快速开始验证报告
 
-- Tested implementation commit: `5c613ee5dc228dfbafc995faa11cdd38ffafb4ac`
+- Tested implementation commit: `96ba47f2ec7f81eb3706f87d90f3fd13a2df5284`
 - Package: `repoctopus@0.1.0`
 - Package files: `459`
-- Package content bytes: `5661340`
-- Package content SHA-256: `f7ab563e02473c566c301dea16291001e43f36de06c0d54fe497fc98c3f9ea5f`
+- Package content bytes: `5661626`
+- Package content SHA-256: `f101d5afb6005d53919b702cd86e41a875166d2cec699ea0e113161d4889f443`
 - 验证环境为 Windows x64、Node.js 24.21.0 和 npm 11.19.0。
 
 ## 验收
