@@ -2,6 +2,7 @@
 change: publish-github-release-distribution
 design-doc: openspec/changes/publish-github-release-distribution/design.md
 base-ref: fa12a31c39e4eb3db592d746a790525be0780591
+archived-with: 2026-11-06-publish-github-release-distribution
 ---
 
 # GitHub Releases 实施计划

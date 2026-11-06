@@ -2,6 +2,8 @@
 comet_change: publish-github-release-distribution
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-06-publish-github-release-distribution
+status: final
 ---
 
 # Design
