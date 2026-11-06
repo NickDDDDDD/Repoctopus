@@ -2,6 +2,8 @@
 comet_change: configure-workspace-otlp-endpoint
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-06-configure-workspace-otlp-endpoint
+status: final
 ---
 
 # Design

@@ -2,6 +2,7 @@
 change: configure-workspace-otlp-endpoint
 design-doc: openspec/changes/configure-workspace-otlp-endpoint/design.md
 base-ref: 1d76ba588271d7e46db0c5d7c2ca40d9f289508d
+archived-with: 2026-11-06-configure-workspace-otlp-endpoint
 ---
 
 # 工作区 OTLP 地址实施计划
