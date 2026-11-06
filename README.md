@@ -21,7 +21,7 @@ npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage r
 
 ### 2. 初始化自己的项目
 
-在 PowerShell 中进入业务 Git 仓库根目录。这个目录就是单仓项目的 **Workspace**。多仓项目则进入协调仓根目录。下面的命令扫描共同父目录的直接子仓库，示例假定父目录只放了本项目要接入的仓库。[多仓布局与接入](docs/project-onboarding.md#选择-workspace)
+在 PowerShell 中进入业务 Git 仓库根目录。这个目录就是单仓项目的 **Workspace**。多仓项目则进入协调仓根目录。下面的命令扫描共同父目录的直接子仓库。请使用只包含本项目仓库的父目录。若探测到无关仓库，先把要接入的仓库放进专用父目录，再从 Workspace 重新探测。[多仓布局与接入](docs/project-onboarding.md#选择-workspace)
 
 ```powershell
 $detected = npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus project detect --workspace . --scan-root .. --json | ConvertFrom-Json
@@ -40,13 +40,15 @@ $prepared = npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repocto
 npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus project review --workspace . --request $prepared.result.file
 ```
 
-批准后，Repoctopus 准备或复用 `openspec/`、登记本机的 OpenSpec Store，并写入团队共享的 `repoctopus.yaml`。Repoctopus 也会在 `.gitignore` 忽略本机的 `.repoctopus/`。把生成的共享文件按团队 Git 流程提交到目标分支，通常包括 `repoctopus.yaml`、`openspec/`、`.openspec-store/` 和变更后的 `.gitignore`。[配置示例与审核细节](docs/project-onboarding.md)
+批准后，Repoctopus 准备或复用 `openspec/`、登记本机的 OpenSpec Store，并写入团队共享的 `repoctopus.yaml`。Repoctopus 也会在 `.gitignore` 忽略本机的 `.repoctopus/`。把生成的共享文件按团队 Git 流程合入远端目标分支，通常包括 `repoctopus.yaml`、`openspec/`、`.openspec-store/` 和变更后的 `.gitignore`。[配置示例与审核细节](docs/project-onboarding.md)
 
 ### 3. 启动第一个 Change
 
-从已经接入的目标分支开始。下面以远端 `origin`、目标分支 `main` 和一个小修复为例。
+确认远端目标分支已包含初始化文件，然后从同步后的本地目标分支开始。下面以远端 `origin`、目标分支 `main` 和一个小修复为例。
 
 ```powershell
+git switch main
+git pull --ff-only origin main
 git switch -c change/fix-settings-save-message
 git push -u origin HEAD
 npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus run start --workspace . --change fix-settings-save-message --target main --json

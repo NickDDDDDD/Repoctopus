@@ -36,7 +36,7 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个
 
 ## 1. 生成探测草稿
 
-在选定的 Workspace Git 仓库根目录运行。CLI 只扫描 `--scan-root` 的直接子 Git 仓库，所以单仓和同级多仓布局都用 `--scan-root ..`。Workspace 必须位于扫描目录下一级。建议使用仅包含本项目仓库的父目录。若扫描结果还包含无关仓库，审核前核对配置候选和 Store pointer 清单。
+在选定的 Workspace Git 仓库根目录运行。CLI 只扫描 `--scan-root` 的直接子 Git 仓库，所以单仓和同级多仓布局都用 `--scan-root ..`。Workspace 必须位于扫描目录下一级。使用只包含本项目仓库的父目录。若扫描结果包含无关仓库，把要接入的仓库放到专用父目录，再从 Workspace 重新探测。
 
 ```powershell
 $detected = repoctopus project detect --scan-root .. --workspace . --store team-platform --json | ConvertFrom-Json
@@ -48,7 +48,7 @@ $draft
 
 `--store` 是可编辑的 lowercase kebab-case OpenSpec Store ID；省略时优先沿用已有共享配置，否则从 Workspace 名称派生。草稿的 `storeBinding.root` 会把 Workspace Root 分类为：已精确登记、健康但本机未登记、缺失、部分/不健康或登记冲突，并绑定固定 OpenSpec 版本、根 manifest 与本机 registry Evidence。只有前三类可进入审批；部分根和冲突必须先按诊断处理，Repoctopus 不会覆盖或自动修复。
 
-同一草稿还明确记录逐业务仓分类：未配置、已指向同一 Store、指向其他 Store、本地规格权威、配置损坏或只读。只有安全的未配置仓会得到 `openspec/config.yaml` 的精确 `before/after` pointer diff；冲突不会生成覆盖操作。用户不希望为某个仓安装 pointer 时，可以在候选中把 selection 改为 `skip`，或重新探测时传 `--skip-pointer repo-a,repo-b`。Runtime 仍通过显式 `--store` 使用权威 Store，不依赖业务仓 pointer。
+同一草稿还明确记录逐业务仓分类：未配置、已指向同一 Store、指向其他 Store、本地规格权威、配置损坏或只读。只有安全的未配置仓会得到 `openspec/config.yaml` 的精确 `before/after` pointer diff；冲突不会生成覆盖操作。对于允许安装 pointer 的业务仓，可传 `--skip-pointer repo-a,repo-b` 重新探测，明确跳过该仓的 pointer 安装。这个参数只控制 pointer 安装，指定的仓仍会出现在探测结果中。Runtime 仍通过显式 `--store` 使用权威 Store，不依赖业务仓 pointer。
 
 Store ID 是团队配置，registration 是每机状态：新成员、CI 节点和另一台开发机 clone Workspace 后都必须各自登记相同 ID 到各自的绝对路径。pointer 可选且可按仓跳过，它不负责登记，也不改变 Workspace 的 Specification 权威。
 
