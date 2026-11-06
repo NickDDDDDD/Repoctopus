@@ -65,6 +65,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "pretest:package-e2e": "npm run build",
+    "test:release-npx": "node scripts/release-npx-smoke.mjs",
     "test:package-e2e": "vitest run test/e2e/package.e2e.test.ts",
     "test:desktop-e2e": "npm run build:desktop && vitest run test/desktop-host.e2e.test.ts",
     "test:tracer-e2e": "vitest run test/e2e/runtime-tracer.e2e.test.ts",

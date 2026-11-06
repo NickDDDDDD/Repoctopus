@@ -6,22 +6,20 @@
 
 ## 安装
 
-准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。在包含团队发给你的 CLI 安装包的目录用 PowerShell 运行以下命令，以 0.1.0 为例。
+准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。从 [GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases) 选定团队使用的版本，再用固定下载地址运行 CLI。以下以首版 `v0.1.0` 为例。
 
-```powershell
-$repoctopusInstall = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.repoctopus-cli'
-npm.cmd install --ignore-scripts --omit=dev --prefix $repoctopusInstall ./repoctopus-0.1.0.tgz
-$repoctopusBin = Join-Path $repoctopusInstall 'node_modules/.bin'
-$env:Path = "$repoctopusBin$([IO.Path]::PathSeparator)$env:Path"
-repoctopus.cmd --help
+```bash
+npx --yes --ignore-scripts --package=https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz repoctopus --help
 ```
 
-看到 `Usage: repoctopus ...` 即可在业务工作区使用 CLI。若从其他终端或桌面图标打开 Agent，先把上面的 `$repoctopusBin` 加入用户 `PATH`，再重启 Agent。当前 [GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases) 尚无安装资产。维护者可以从固定提交生成 CLI 安装包，按需生成 Windows x64 桌面安装器，再分发给团队。桌面应用用于观察 Change 进度，CLI 负责运行工作流。详见[获取与安装](docs/install.md)。
+看到 `Usage: repoctopus ...` 后就可以在业务 Workspace 运行 CLI。继续使用同一条命令，把 `--help` 换成需要的子命令。Windows PowerShell 若阻止 `.ps1` 启动器，可以用 `npx.cmd`。对应版本公开后才可使用该下载地址，已有本地 `.tgz` 的团队也可按[安装指南](docs/install.md)运行。
+
+Windows x64 的 Desktop 安装器用于可选的本地看板。CLI 可独立启动和推进工作流。
 
 ## 快速开始
 
 1. 打开团队的 **Workspace**，也就是有 `repoctopus.yaml` 和 OpenSpec 规格的 Git 仓库。单仓项目可以直接用业务仓，多仓项目通常用一个与业务仓同级的协调仓。如果项目还没接入，先完成[首次接入](docs/project-onboarding.md)。
-2. 在 Workspace 中打开你的编码 Agent，说明要做的任务，并让它用 Repoctopus。下面是一条可以放到 Agent 对话里的示例。
+2. 在 Workspace 中打开编码 Agent。提供上面的固定版本 `npx` 命令并说明任务，让它用相同的前缀调用后续 Repoctopus 命令。
 
    > 用 Repoctopus 做这个 Change：修正设置页保存失败时的提示。当前目录是 Workspace，目标分支是 main。请先创建并推送 Change 分支，然后用 repoctopus run start 启动。按 Runtime 派发的 Work 领取并执行 Skill，提交 Outcome 后再继续。遇到人工决定时停下来，把确认入口给我。
 

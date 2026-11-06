@@ -9,13 +9,14 @@ import process from 'node:process';
 import { setTimeout as delay } from 'node:timers/promises';
 import { build } from 'esbuild';
 
+import { releaseAssetNames } from './release-policy.mjs';
+
 const root = path.resolve(import.meta.dirname, '..');
-const installer = path.join(
-  root,
-  'dist',
-  'desktop-release',
-  'Repoctopus-Desktop-0.1.0-x64-Setup.exe',
+const { version: packageVersion } = JSON.parse(
+  await readFile(path.join(root, 'package.json'), 'utf8'),
 );
+const [, installerName] = releaseAssetNames(packageVersion);
+const installer = path.join(root, 'dist', 'desktop-release', installerName);
 const evidenceFile = path.resolve(
   process.env.REPOCTOPUS_DESKTOP_E2E_EVIDENCE ??
     path.join(root, 'dist', 'desktop-release', 'windows-package-e2e.json'),
