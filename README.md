@@ -22,11 +22,13 @@ npm.cmd install --global --ignore-scripts --legacy-peer-deps https://github.com/
 
 在发布页的 **Assets** 下载 `repoctopus-0.1.0.tgz`，也可以使用团队发给你的同版本文件。[v0.1.0 发布页](https://github.com/NickDDDDDD/Repoctopus/releases/tag/v0.1.0)
 
-如果文件保存在下载目录，运行下面的命令。存放在其他位置时，把引号内的路径替换成实际文件路径。
+把文件放到计划用作 Workspace 的文件夹。在这个文件夹中打开 PowerShell，运行下面的命令。
 
 ```powershell
-npm.cmd install --global --ignore-scripts --legacy-peer-deps "$env:USERPROFILE\Downloads\repoctopus-0.1.0.tgz"
+npm.cmd install --global --ignore-scripts --legacy-peer-deps .\repoctopus-0.1.0.tgz
 ```
+
+安装完成后，把 `.tgz` 移到 Workspace 之外，以免随项目文件提交。
 
 **检查安装**
 
@@ -47,10 +49,9 @@ team-platform/
 └── backend/    # 后端业务仓
 ```
 
-这个例子使用 Workspace 内的 OpenSpec 规格树，Store ID 为 `team-platform`，由团队自定。进入父目录 `team-platform/` 后执行以下命令。CLI 扫描父目录的直接子 Git 仓库，父目录应只放参与本次接入的仓库。
+这个例子使用 Workspace 内的 OpenSpec 规格树，Store ID 为 `team-platform`，由团队自定。在 Workspace 根目录执行以下命令。CLI 扫描父目录的直接子 Git 仓库，父目录应只放参与本次接入的仓库。
 
 ```powershell
-Set-Location .\workspace
 $detected = repoctopus.cmd project detect --workspace . --scan-root .. --store team-platform --json | ConvertFrom-Json
 $draft = $detected.result.file
 $draft
