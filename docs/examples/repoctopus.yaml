@@ -8,6 +8,9 @@ repositories:
     path: .
   - id: app
     path: ../app
+# 可选。用协调仓中的一个 OTLP/HTTP URL 开启团队遥测。
+# telemetry:
+#   endpoint: https://signoz-collector.example.internal
 composition:
   plugins: []
 profiles:

@@ -144,6 +144,7 @@ export interface SharedProjectConfig {
   skillProviders?: CapabilityProviderReference[];
   specificationProvider?: SpecificationProviderReference;
   lifecycle?: { skillBindings: TeamSkillBindingsConfig };
+  telemetry?: { endpoint: string };
 }
 
 export interface LocalProjectConfig {

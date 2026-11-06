@@ -555,6 +555,7 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
       'skillProviders',
       'specificationProvider',
       'lifecycle',
+      'telemetry',
     ],
     'config',
   );
@@ -729,6 +730,27 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     lifecycle = { skillBindings: parseTeamSkillBindings(value.skillBindings) };
   }
 
+  let telemetry: SharedProjectConfig['telemetry'];
+  if (root.telemetry !== undefined) {
+    const value = object(root.telemetry, 'telemetry');
+    exactKeys(value, ['endpoint'], 'telemetry');
+    const endpoint = string(value.endpoint, 'telemetry.endpoint').trim();
+    const url = URL.parse(endpoint);
+    if (
+      !url ||
+      !/^https?:\/\/[^/]/iu.test(endpoint) ||
+      /[\\\s?#]/u.test(endpoint) ||
+      url.username ||
+      url.password
+    ) {
+      throw new ProjectConfigError(
+        'expected an absolute HTTP(S) base URL without credentials, query, or fragment',
+        'telemetry.endpoint',
+      );
+    }
+    telemetry = { endpoint };
+  }
+
   return {
     apiVersion: PROJECT_CONFIG_API_VERSION,
     kind: 'RepoctopusWorkspace',
@@ -744,6 +766,7 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     ...(skillProviders ? { skillProviders } : {}),
     ...(specificationProvider ? { specificationProvider } : {}),
     ...(lifecycle ? { lifecycle } : {}),
+    ...(telemetry ? { telemetry } : {}),
   };
 }
 

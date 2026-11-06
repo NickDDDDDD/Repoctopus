@@ -18,6 +18,32 @@ async function fixture(): Promise<Record<string, unknown>> {
 }
 
 describe('project configuration', () => {
+  it('accepts an optional OTLP base URL with a path prefix', async () => {
+    const input = await fixture();
+    expect(parseSharedProjectConfig(input).telemetry).toBeUndefined();
+    input.telemetry = { endpoint: ' https://collector.example/otel ' };
+    expect(parseSharedProjectConfig(input).telemetry).toEqual({
+      endpoint: 'https://collector.example/otel',
+    });
+  });
+
+  it.each([
+    ' ',
+    '/collector',
+    'https:collector.example',
+    'ftp://collector.example',
+    'http://collector.example:99999',
+    'https://agent:do-not-echo@collector.example',
+    'https://collector.example?token=do-not-echo',
+    'https://collector.example#fragment',
+  ])('rejects invalid OTLP base URL %s without echoing credentials', async (endpoint) => {
+    const input = await fixture();
+    input.telemetry = { endpoint };
+    expect(() => parseSharedProjectConfig(input)).toThrow(
+      /^telemetry\.endpoint: (?!.*do-not-echo)/u,
+    );
+  });
+
   it('keeps the GitHub credential with Delivery publication', async () => {
     const config = parseSharedProjectConfig(await fixture());
     expect(config.delivery?.publication.apiCredential).toEqual({

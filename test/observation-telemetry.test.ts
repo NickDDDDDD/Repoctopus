@@ -3,6 +3,32 @@ import { describe, expect, it } from 'vitest';
 import { observationDestinationsFromEnvironment } from '../services/observation-telemetry.js';
 
 describe('canonical observation destination configuration', () => {
+  it('uses the workspace base for signals with no environment endpoint', () => {
+    const [remote] = observationDestinationsFromEnvironment(
+      { OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: 'https://trace.example/collect' },
+      'https://workspace.example/otel/',
+    );
+
+    expect(remote?.signalEndpoints).toEqual({
+      trace: 'https://trace.example/collect',
+      log: 'https://workspace.example/otel/v1/logs',
+      metric: 'https://workspace.example/otel/v1/metrics',
+    });
+  });
+
+  it('prefers the common environment endpoint to the workspace base', () => {
+    const [remote] = observationDestinationsFromEnvironment(
+      { OTEL_EXPORTER_OTLP_ENDPOINT: 'https://deployment.example/otel' },
+      'https://workspace.example/otel',
+    );
+
+    expect(remote?.signalEndpoints).toEqual({
+      trace: 'https://deployment.example/otel/v1/traces',
+      log: 'https://deployment.example/otel/v1/logs',
+      metric: 'https://deployment.example/otel/v1/metrics',
+    });
+  });
+
   it('covers remote-only, remote-plus-desktop, desktop-disabled and signal-specific OTLP modes', () => {
     const [remoteOnly] = observationDestinationsFromEnvironment({
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4318',

@@ -2,19 +2,19 @@
 change_id: ead8236d-5235-4a52-8d92-be160bc7d7a5
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: 1d76ba588271d7e46db0c5d7c2ca40d9f289508d
-design_doc: null
-plan: null
+design_doc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: comet/configure-workspace-otlp-endpoint
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
 handoff_hash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: d37605d880baff4a63b39632c6e1550181e6e15d2a6d05eaffd1ba88f94cfac0
+  hash: 4b3a32046b32f8302236f57013f3ba840732337382fbe62528f1131c4d9a0d58
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,32 +56,32 @@ run_checkpoint:
       baseRef: 1d76ba588271d7e46db0c5d7c2ca40d9f289508d
       boundBranch: comet/configure-workspace-otlp-endpoint
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-06
-      designDoc: null
-      directOverride: null
+      designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+      directOverride: false
       handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
       handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
       isolation: worktree
       language: zh-CN
-      phase: design
-      plan: null
+      phase: build
+      plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 6
+    status: running
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -251,10 +251,695 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e23d424b5c9d2afeb82e60919d641bba8e03b18660b56a9796ac806cdfcad1d1
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:7
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                    handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                    proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                      URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                      Project Composition 将地址传入共享 Observation
+                      Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                    requirementsEvidence:
+                      contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+                    sourceEvidence:
+                      contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.design.handoff:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                    ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open.evidence:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open.revalidate:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        inputHash: 51de9211ec13b5380f539fc8920fb00a729b49622b7cf290ee16d7715717c226
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:7
+          attempt: 1
+          claimToken: portable-e23d424b5c9d2afeb82e60919d641bba8e03b18660b56a9796ac806cdfcad1d1
+          inputHash: 51de9211ec13b5380f539fc8920fb00a729b49622b7cf290ee16d7715717c226
+          outcomeId: d1f6b148-bb70-48c5-9f85-4a3dd7491e0c
+          output:
+            designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 627a870e4d49fa4aa7ab6e7dd0ab85aaec5267b81c3ceb3a46d4258809d06a1c
+            outcomeId: d1f6b148-bb70-48c5-9f85-4a3dd7491e0c
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-ca9878b8bbe8a2b2a31cd1976e897e2b0a962dd5d2870c7e500a5818428a54a4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:9
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                    handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                    proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                      URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                      Project Composition 将地址传入共享 Observation
+                      Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                    requirementsEvidence:
+                      contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+                    sourceEvidence:
+                      contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.design.document:
+              designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+            full.design.evidence:
+              contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+              ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                    ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open.evidence:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open.revalidate:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        inputHash: 09c9ecd89b74250d9cc77f35f625fffa647ad90389b0a834ff5add7df224df33
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:9
+          attempt: 1
+          claimToken: portable-ca9878b8bbe8a2b2a31cd1976e897e2b0a962dd5d2870c7e500a5818428a54a4
+          inputHash: 09c9ecd89b74250d9cc77f35f625fffa647ad90389b0a834ff5add7df224df33
+          outcomeId: 70024964-cb89-4682-b0fa-173f7d435bce
+          output:
+            boundBranch: comet/configure-workspace-otlp-endpoint
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1f276093c3beb18ed975438a2ce2434a429f0184d24900e45a4fcd2936dae924
+            outcomeId: 70024964-cb89-4682-b0fa-173f7d435bce
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-b8e4434f5fca75e753743d8c102db8713cebc5ad50a87ee4ca09cfd3b46b3e42
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:11
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.build.configure:
+              boundBranch: comet/configure-workspace-otlp-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/configure-workspace-otlp-endpoint
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                    handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                    proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                      URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                      Project Composition 将地址传入共享 Observation
+                      Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                    requirementsEvidence:
+                      contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+                    sourceEvidence:
+                      contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.design.document:
+              designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+            full.design.evidence:
+              contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+              ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                    ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open.evidence:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open.revalidate:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        inputHash: 560917736f476e661e19500af71e0ee45a6bc3471dcb290041f67da6adb99240
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:11
+          attempt: 1
+          claimToken: portable-b8e4434f5fca75e753743d8c102db8713cebc5ad50a87ee4ca09cfd3b46b3e42
+          inputHash: 560917736f476e661e19500af71e0ee45a6bc3471dcb290041f67da6adb99240
+          outcomeId: d47e68f4-5592-4b0e-91cb-95589a249fe9
+          output:
+            designEvidence:
+              contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+              ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+            plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+            planEvidence:
+              contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+              ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+            taskRevision: 17187a98238289be4cc11959069012e6978d93099ec574d925a3f7594bac54f4
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1cff1373edd4001a739b7c7009ca0116d1c11833488b2445e8caddbfa115d5b3
+            outcomeId: d47e68f4-5592-4b0e-91cb-95589a249fe9
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: configure-workspace-otlp-endpoint:13
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.build.configure:
+              boundBranch: comet/configure-workspace-otlp-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/configure-workspace-otlp-endpoint
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+                ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+              plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+              planEvidence:
+                contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+                ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+              taskRevision: 17187a98238289be4cc11959069012e6978d93099ec574d925a3f7594bac54f4
+            full.build.plan.evidence:
+              contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+              ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                    handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                    proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                      URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                      Project Composition 将地址传入共享 Observation
+                      Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                    requirementsEvidence:
+                      contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+                    sourceEvidence:
+                      contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.design.document:
+              designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+            full.design.evidence:
+              contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+              ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                    ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open.evidence:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+            full.open.revalidate:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        inputHash: 543afb947836ff92427ad70b6bd9f818abd4a4f92e10d6f55653e96b0cd2e31e
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
     actionContexts:
       configure-workspace-otlp-endpoint:1:
         results: {}
         sequence: 1
+      configure-workspace-otlp-endpoint:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/configure-workspace-otlp-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/configure-workspace-otlp-endpoint
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                    handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                    proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                      URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                      Project Composition 将地址传入共享 Observation
+                      Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                    requirementsEvidence:
+                      contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+                    sourceEvidence:
+                      contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+              ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                    ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        sequence: 11
+      configure-workspace-otlp-endpoint:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/configure-workspace-otlp-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/configure-workspace-otlp-endpoint
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+                ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+              plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+              planEvidence:
+                contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+                ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+              taskRevision: 17187a98238289be4cc11959069012e6978d93099ec574d925a3f7594bac54f4
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+              ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                    handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                    proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                      URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                      Project Composition 将地址传入共享 Observation
+                      Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                    requirementsEvidence:
+                      contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+                    sourceEvidence:
+                      contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+              ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                    ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        sequence: 13
       configure-workspace-otlp-endpoint:4:
         results:
           full.open:
@@ -315,6 +1000,157 @@ run_checkpoint:
             value:
               contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
         sequence: 5
+      configure-workspace-otlp-endpoint:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                    handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                    proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                      URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                      Project Composition 将地址传入共享 Observation
+                      Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                    requirementsEvidence:
+                      contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+                    sourceEvidence:
+                      contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                    ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        sequence: 7
+      configure-workspace-otlp-endpoint:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                    handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                    proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                      URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                      Project Composition 将地址传入共享 Observation
+                      Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                    requirementsEvidence:
+                      contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+                    sourceEvidence:
+                      contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+              ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                    ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        sequence: 9
     waits:
       - id: configure-workspace-otlp-endpoint:3
         stepId: full.open.confirm
@@ -353,7 +1189,7 @@ run_checkpoint:
       - id: configure-workspace-otlp-endpoint:6
         stepId: full.design.confirm
         sequence: 6
-        status: pending
+        status: resolved
         proposal:
           input:
             change: configure-workspace-otlp-endpoint
@@ -423,6 +1259,125 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        decision:
+          id: classic-design-6a677d2102fb79c2687d825fd1a45f1d28e700679bbd83f4f47cd93dbf932566-approved
+          choice: approved
+          proposalHash: 6a677d2102fb79c2687d825fd1a45f1d28e700679bbd83f4f47cd93dbf932566
+      - id: configure-workspace-otlp-endpoint:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.build.configure:
+              boundBranch: comet/configure-workspace-otlp-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: ed9e6bf678d0953aa99000fd01d9e1646031ecfd792deec097a2a3babe85a546
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/configure-workspace-otlp-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                    handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                    proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                      URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                      Project Composition 将地址传入共享 Observation
+                      Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                    requirementsEvidence:
+                      contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+                    sourceEvidence:
+                      contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+              ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                    ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        decision:
+          id: ae63b4ea-2c83-4a56-8a8b-4629eb9aa561
+          choice: approved
+          proposalHash: ed9e6bf678d0953aa99000fd01d9e1646031ecfd792deec097a2a3babe85a546
     evidenceWaits:
       - id: configure-workspace-otlp-endpoint:2
         stepId: full.open.evidence
@@ -438,9 +1393,296 @@ run_checkpoint:
           ref: openspec/changes/configure-workspace-otlp-endpoint
           contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
           submissionId: 4f472e59-17c4-41d6-9f85-4e3a71a16e20
+      - id: configure-workspace-otlp-endpoint:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                    handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                    proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                      URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                      Project Composition 将地址传入共享 Observation
+                      Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                    requirementsEvidence:
+                      contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+                    sourceEvidence:
+                      contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                    ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        receipt:
+          ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+          submissionId: fd203073-91ea-4ca2-85ef-c096220a8987
+      - id: configure-workspace-otlp-endpoint:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/configure-workspace-otlp-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/configure-workspace-otlp-endpoint
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+                ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+              plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+              planEvidence:
+                contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+                ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+              taskRevision: 17187a98238289be4cc11959069012e6978d93099ec574d925a3f7594bac54f4
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                    handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                    proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                      URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                      Project Composition 将地址传入共享 Observation
+                      Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                    requirementsEvidence:
+                      contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+                    sourceEvidence:
+                      contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                      ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+              ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: configure-workspace-otlp-endpoint
+                  changeDir: openspec/changes/configure-workspace-otlp-endpoint
+                  workspaceBaseline:
+                    ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                    ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        receipt:
+          ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+          contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+          submissionId: 510a3397-268f-42b2-9b9b-f2a6a659446f
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: comet/configure-workspace-otlp-endpoint
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: configure-workspace-otlp-endpoint
+              changeDir: openspec/changes/configure-workspace-otlp-endpoint
+              workspaceBaseline:
+                ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+            outputs:
+              full.build.configure:
+                boundBranch: comet/configure-workspace-otlp-endpoint
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+            ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+          planEvidence:
+            contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+            ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+          taskRevision: 17187a98238289be4cc11959069012e6978d93099ec574d925a3f7594bac54f4
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+          ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: configure-workspace-otlp-endpoint
+              changeDir: openspec/changes/configure-workspace-otlp-endpoint
+              workspaceBaseline:
+                ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                  URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                  Project Composition 将地址传入共享 Observation
+                  Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                requirementsEvidence:
+                  contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                  ref: openspec/changes/configure-workspace-otlp-endpoint
+                sourceEvidence:
+                  contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                  ref: openspec/changes/configure-workspace-otlp-endpoint
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+          ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
       full.design.handoff:
         sequence: 5
         value:
@@ -487,6 +1729,6 @@ run_checkpoint:
           contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
     children: []
     lineage: []
-  sourceRevision: 9
-  sourceHash: d6e1e9d423552b5eeaf40823b37942b4bcf16248249c61ebb84377f5bfd49275
-check_epoch: 1
+  sourceRevision: 19
+  sourceHash: 1dc1678d2f832eb37f80ae1605e26c11335b646877a105422a08461aa81df109
+check_epoch: 2
