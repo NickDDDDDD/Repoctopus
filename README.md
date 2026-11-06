@@ -1,60 +1,94 @@
 # Repoctopus
 
-让编码 Agent 按同一套规格、验证和交付流程推进单仓或多仓变更。
-
-在自己的项目接入 Repoctopus 后，用 Agent 提出需求，审核规格与设计，并在交付前查看实际验证结果。
+用一个 Change 协调跨仓库的需求、实现、验证和交付。团队从 **Workspace** 进入工作流，在协调仓维护共享配置和 OpenSpec 规格，在各业务仓提交实现。单仓项目也可以直接把业务仓作为 Workspace。
 
 ## 快速开始
 
-以下从一个已有代码、尚未接入 Repoctopus 的 Git 项目开始。团队已经完成初始化时，可以直接走[已有项目入口](#接入已有团队项目)。
+首次接入从获取 CLI 开始，然后选择[多仓项目](#接入多仓项目)或[单仓项目](#接入单仓项目)。团队已完成初始化时，直接看[接入已有团队项目](#接入已有团队项目)。
 
-### 1. 获取 CLI
+### 获取 CLI
 
-准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。选择团队使用的版本。以下是 `v0.1.0` 的 PowerShell 示例。[GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases)
+准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。以下 PowerShell 示例使用 `v0.1.0`。在同一终端运行后续命令，`Invoke-Repoctopus` 会沿用这个版本。[GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases)
 
 ```powershell
 $repoctopusPackage = 'https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz'
-npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus --help
+
+function Invoke-Repoctopus {
+    npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus @args
+}
+
+Invoke-Repoctopus --help
 ```
 
-看到 `Usage: repoctopus ...` 后继续。版本公开前或 Releases 不可达时，将 `$repoctopusPackage` 改为团队提供的本地 `.tgz` **绝对路径**，再运行同一条命令。后续命令沿用这个变量。也可以把 CLI 安装到用户目录，直接使用 `repoctopus`。[安装指南](docs/install.md)
+看到 `Usage: repoctopus ...` 后继续。网络无法访问 Releases 时，把 `$repoctopusPackage` 换成团队提供的本地 `.tgz` 绝对路径。也可以把 CLI 安装到用户目录，后续直接使用 `repoctopus`。[安装指南](docs/install.md)
 
-### 2. 初始化自己的项目
+### 接入多仓项目
 
-在 PowerShell 中进入业务 Git 仓库根目录。这个目录就是单仓项目的 **Workspace**。多仓项目则进入协调仓根目录。下面的命令扫描共同父目录的直接子仓库。请使用只包含本项目仓库的父目录。若探测到无关仓库，先把要接入的仓库放进专用父目录，再从 Workspace 重新探测。[多仓布局与接入](docs/project-onboarding.md#选择-workspace)
+准备一个团队共享的 Git 协调仓作为 Workspace。可以复用现有协调仓，也可以在团队的托管平台新建并初始化一个仓库。把它和业务仓检出到同一个父目录，每个仓都要有 Git 提交。
+
+```text
+team-platform/
+├── workspace/  # 协调仓，保存 repoctopus.yaml 和 openspec/
+├── web/        # 前端业务仓
+└── backend/    # 后端业务仓
+```
+
+这个例子使用 Workspace 内的 OpenSpec 规格树，Store ID 为 `team-platform`，由团队自定。进入父目录 `team-platform/` 后执行以下命令。CLI 扫描父目录的直接子 Git 仓库，父目录应只放参与本次接入的仓库。
 
 ```powershell
-$detected = npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus project detect --workspace . --scan-root .. --json | ConvertFrom-Json
+Set-Location .\workspace
+$detected = Invoke-Repoctopus project detect --workspace . --scan-root .. --store team-platform --json | ConvertFrom-Json
 $draft = $detected.result.file
 $draft
 ```
 
-把输出的草稿路径交给 Agent，核对探测到的仓库与验证命令。可以直接发下面这段话。
+草稿应识别 `workspace`、`web` 和 `backend`。发现无关仓库时，把要接入的仓库放到专用父目录，再从 Workspace 重新探测。然后继续[审核并提交配置](#审核并提交配置)。[多仓布局与 Store 说明](docs/project-onboarding.md#选择-workspace)
 
-> 帮我首次接入 Repoctopus。读取我给你的探测草稿，核对仓库、未决项以及实际可运行的构建和测试命令。补全 `verify` Profile，说明每条必需检查能验证什么，把候选写到 `.repoctopus/drafts/project-candidate.yaml`。完成后把候选交给我审核。
+### 接入单仓项目
 
-候选保存后，准备并审核配置。最后一条命令在交互终端中执行。
+以现有业务仓根目录作为 Workspace，例如 `settings-app/`。规格、团队配置与业务代码同仓存放。把业务仓放在只包含该仓的父目录下，然后进入业务仓根目录运行。
 
 ```powershell
-$prepared = npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus project prepare --workspace . --draft $draft --candidate .repoctopus/drafts/project-candidate.yaml --json | ConvertFrom-Json
-npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus project review --workspace . --request $prepared.result.file
+$detected = Invoke-Repoctopus project detect --workspace . --scan-root .. --json | ConvertFrom-Json
+$draft = $detected.result.file
+$draft
 ```
 
-批准后，Repoctopus 准备或复用 `openspec/`、登记本机的 OpenSpec Store，并写入团队共享的 `repoctopus.yaml`。Repoctopus 也会在 `.gitignore` 忽略本机的 `.repoctopus/`。把生成的共享文件按团队 Git 流程合入远端目标分支，通常包括 `repoctopus.yaml`、`openspec/`、`.openspec-store/` 和变更后的 `.gitignore`。[配置示例与审核细节](docs/project-onboarding.md)
+草稿应只识别这个业务仓。继续[审核并提交配置](#审核并提交配置)。
 
-### 3. 启动第一个 Change
+### 审核并提交配置
 
-确认远端目标分支已包含初始化文件，然后从同步后的本地目标分支开始。下面以远端 `origin`、目标分支 `main` 和一个小修复为例。
+把草稿路径交给 Agent。可以直接发下面这段话。
+
+> 帮我首次接入 Repoctopus。读取我给你的探测草稿，核对要接入的仓库、未决项以及各仓实际可运行的构建和测试命令。补全 `verify` Profile，说明每条必需检查能验证什么，把候选写到 `.repoctopus/drafts/project-candidate.yaml`，再交给我审核。
+
+候选保存后，在同一个 Workspace 根目录准备审批。最后一条命令在交互终端中执行。
+
+```powershell
+$prepared = Invoke-Repoctopus project prepare --workspace . --draft $draft --candidate .repoctopus/drafts/project-candidate.yaml --json | ConvertFrom-Json
+Invoke-Repoctopus project review --workspace . --request $prepared.result.file
+```
+
+批准后，Repoctopus 准备或复用 Workspace 的 `openspec/`，登记本机的 OpenSpec Store，并写入团队共享的 `repoctopus.yaml`。把生成的共享文件按团队 Git 流程合入远端目标分支。
+
+- **Workspace** 提交 `repoctopus.yaml`、`openspec/`、`.openspec-store/` 和变更后的 `.gitignore`。草稿和本机配置保存在被忽略的 `.repoctopus/` 中。
+- **多仓中的业务仓** 如果批准了 Store 指向配置，将生成的 `openspec/config.yaml` 提交到它所属的业务仓。
+
+[配置示例与审核细节](docs/project-onboarding.md)
+
+### 启动第一个 Change
+
+在 Workspace 根目录操作。确认远端目标分支已包含初始化文件，再从同步后的本地目标分支创建并推送 Change 分支。以下以 `origin/main` 和一个小修复为例。
 
 ```powershell
 git switch main
 git pull --ff-only origin main
 git switch -c change/fix-settings-save-message
 git push -u origin HEAD
-npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus run start --workspace . --change fix-settings-save-message --target main --json
+Invoke-Repoctopus run start --workspace . --change fix-settings-save-message --target main --json
 ```
 
-把输出中的 `runId`、任务描述和固定版本的 CLI 命令交给 Agent。让它从这个 Run 继续，按 Repoctopus 派发的 Work 执行，在需要人工确认时停下来。Open 产物准备好后，审核 OpenSpec 提案和本次变更范围。[启动与恢复指南](docs/project-onboarding.md#启动第一个-change)
+把输出的 `runId`、任务描述和固定版本的 CLI 命令交给 Agent。让它按 Repoctopus 派发的 Work 继续，在需要人工确认时停下来。Open 产物准备好后，在 Workspace 审核 OpenSpec 提案和涉及的仓库。多仓 Change 的实现分别提交到对应的业务仓。[启动与恢复指南](docs/project-onboarding.md#启动第一个-change)
 
 ## 接入已有团队项目
 

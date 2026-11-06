@@ -4,10 +4,11 @@
 
 ## 选择 Workspace
 
-- **单仓**。以业务仓根目录作为 Workspace，审核接入后由 Repoctopus 写入共享配置并准备 `openspec/`。业务 MR 和 Change MR 可以在同一仓库，使用各自的分支和 MR。
-- **多仓**。把协调仓和业务仓检出到同一个父目录，例如 `team-platform/` 下的 `workspace/`、`web/` 和 `backend/`。协调仓保存共享配置、OpenSpec 和 Change MR，业务仓保存实现和业务 MR。
+**多仓项目**以 Git 协调仓作为 Workspace。可以复用团队已有的协调仓，也可以创建一个有初始提交的共享仓库。把协调仓和要接入的业务仓检出到同一个专用父目录，例如 `team-platform/` 下的 `workspace/`、`web/` 和 `backend/`。在 `workspace/` 根目录执行接入命令。协调仓保存团队配置、OpenSpec 和 Change MR，业务仓保存实现和业务 MR。[多仓快速开始](../README.md#接入多仓项目)
 
-OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个 ID，例如 `team-platform`。每台机器把该 ID 登记到自己的 Workspace 路径。详见 [Workspace、Store 与实现仓](specification.md#workspacestore-与实现仓)。
+**单仓项目**以业务仓根目录作为 Workspace。该仓保存实现、团队配置和 OpenSpec。业务 MR 和 Change MR 可以在同一个仓库，使用各自的分支和 MR。[单仓快速开始](../README.md#接入单仓项目)
+
+OpenSpec Store 是 Workspace 内规格树的逻辑身份。团队共用同一个 ID，例如 `team-platform`。每台机器把该 ID 登记到自己的 Workspace 路径。[Workspace、Store 与实现仓](specification.md#workspacestore-与实现仓)
 
 ## 配置放在哪里
 
