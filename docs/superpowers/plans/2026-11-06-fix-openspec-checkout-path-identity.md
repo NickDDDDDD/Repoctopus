@@ -2,6 +2,7 @@
 change: fix-openspec-checkout-path-identity
 design-doc: openspec/changes/fix-openspec-checkout-path-identity/design.md
 base-ref: d0ab8d9fdff3cf25fbda71984be49af157a8d0d0
+archived-with: 2026-11-06-fix-openspec-checkout-path-identity
 ---
 
 # OpenSpec Store checkout 路径身份实施计划

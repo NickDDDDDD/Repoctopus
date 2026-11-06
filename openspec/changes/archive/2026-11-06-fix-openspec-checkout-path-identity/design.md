@@ -2,6 +2,8 @@
 comet_change: fix-openspec-checkout-path-identity
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-06-fix-openspec-checkout-path-identity
+status: final
 ---
 
 # 设计
