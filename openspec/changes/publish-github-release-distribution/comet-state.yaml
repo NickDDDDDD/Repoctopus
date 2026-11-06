@@ -2,7 +2,7 @@
 change_id: 056bcc51-968f-409c-b9f5-910f9ed3d163
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: comet/publish-github-release-distribution
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/publish-github-release-distribution/.comet/handoff/design-context.json
+handoff_hash: 7ff282e7b776b6fff63a1e7929be14600b73f4c64ab25db1d4a2f651c9ed9efe
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: f37df9cb93e79fd50253f030d502b2c7bf5408cef2b488a71a7a749157052be1
+  hash: 704d4fa8050f87b44d5020b6355728b43f8aacec19cd637527310b4b70c54037
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,17 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 1
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-06
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/publish-github-release-distribution/.comet/handoff/design-context.json
+      handoffHash: 7ff282e7b776b6fff63a1e7929be14600b73f4c64ab25db1d4a2f651c9ed9efe
       isolation: worktree
       language: zh-CN
-      phase: open
+      phase: design
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -79,10 +80,18 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 1
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-e93b9b05e4992a86bb0fb54aa074e296a1c086828d440fa9ba9eee55dbf1c7ca
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: publish-github-release-distribution:1
         input:
           input:
@@ -92,25 +101,422 @@ run_checkpoint:
               ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
           outputs: {}
         inputHash: ab7e698544eab69f46ca32eb9135c474fbe1c28be68a3bc83626a6947f3e44eb
+        outcome:
+          actionId: publish-github-release-distribution:1
+          attempt: 1
+          claimToken: portable-e93b9b05e4992a86bb0fb54aa074e296a1c086828d440fa9ba9eee55dbf1c7ca
+          inputHash: ab7e698544eab69f46ca32eb9135c474fbe1c28be68a3bc83626a6947f3e44eb
+          outcomeId: daaab489-562c-4eca-829a-93a512acc1c2
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 475cf8f718c1a9e1674b464bbc8eb58f3f80c4fd2db396c080ae90e7d68751a8
+            outcomeId: daaab489-562c-4eca-829a-93a512acc1c2
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: publish-github-release-distribution
-        status: pending
+        status: succeeded
         stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-bec08f0f65d731939f0a5cfb1fa9ca8ef7abfc5a9d0326f61550b4478149521c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: publish-github-release-distribution:4
+        input:
+          input:
+            change: publish-github-release-distribution
+            changeDir: openspec/changes/publish-github-release-distribution
+            workspaceBaseline:
+              ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: publish-github-release-distribution
+                  changeDir: openspec/changes/publish-github-release-distribution
+                  workspaceBaseline:
+                    ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+                    ref: openspec/changes/publish-github-release-distribution
+            full.open.evidence:
+              contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+              ref: openspec/changes/publish-github-release-distribution
+        inputHash: 5564350a1fef400a7617849f4c2a3d297ff9a8232ceb386aa973d4287ba0ef33
+        outcome:
+          actionId: publish-github-release-distribution:4
+          attempt: 1
+          claimToken: portable-bec08f0f65d731939f0a5cfb1fa9ca8ef7abfc5a9d0326f61550b4478149521c
+          inputHash: 5564350a1fef400a7617849f4c2a3d297ff9a8232ceb386aa973d4287ba0ef33
+          outcomeId: publish-github-release-distribution:4:1:executor-result
+          output:
+            contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 741a85d503c1e2a0eeb931e585e3f9c9eb337388cf090dd234bb17ba5cf2914a
+            outcomeId: publish-github-release-distribution:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: publish-github-release-distribution
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-5ff8517f8ae8e5d9ae6d1a43a4110a6eec6a20d0e1a80d381ed7273e6e68e361
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: publish-github-release-distribution:5
+        input:
+          input:
+            change: publish-github-release-distribution
+            changeDir: openspec/changes/publish-github-release-distribution
+            workspaceBaseline:
+              ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: publish-github-release-distribution
+                  changeDir: openspec/changes/publish-github-release-distribution
+                  workspaceBaseline:
+                    ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+                    ref: openspec/changes/publish-github-release-distribution
+            full.open.evidence:
+              contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+              ref: openspec/changes/publish-github-release-distribution
+            full.open.revalidate:
+              contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+        inputHash: d95453aafabbc3149c1b0443e70035864e6e19a0fca5b0fe0da26bc66b93e1cf
+        outcome:
+          actionId: publish-github-release-distribution:5
+          attempt: 1
+          claimToken: portable-5ff8517f8ae8e5d9ae6d1a43a4110a6eec6a20d0e1a80d381ed7273e6e68e361
+          inputHash: d95453aafabbc3149c1b0443e70035864e6e19a0fca5b0fe0da26bc66b93e1cf
+          outcomeId: 5dc3009f-4f3b-4a38-b0d4-272aeda7967f
+          output:
+            handoffContext: openspec/changes/publish-github-release-distribution/.comet/handoff/design-context.json
+            handoffHash: 7ff282e7b776b6fff63a1e7929be14600b73f4c64ab25db1d4a2f651c9ed9efe
+            proposal: 采用单个仅由官方仓库 main 手动触发的 workflow，分 Prepare 和 Publish。Prepare 核对完整 SHA
+              在远端 main 历史、ci.yml 的 main push 和同 SHA verify 成功、Tag 与 package.json
+              版本匹配；Windows 只读作业打包一次，现有 CLI 协议测试消费候选 tarball，空缓存 npx 从源码外启动，同一
+              EXE 走安装、激活、卸载并校验回执摘要，桌面校验按 package.json
+              版本识别。写权限仅用于草稿和公开步骤。候选工件保存三份发布资产及独立来源记录，按成功 Prepare Run
+              和工件身份取得原始字节，不重新构建代替。Prepare 核对 Tag、目标和现有资产，只为相同候选补传缺项并重新核对。Publish
+              显式选择同一候选，重新核对来源、草稿、Tag 和三份资产后公开预发布；完整已发布结果可复用，冲突、来源或摘要不明时停止，保留原有
+              Tag 和资产。README 使用固定 URL 的 npx，保留本地 tarball 路径，公开后用匿名 URL
+              和空缓存复验。手工构建缺少一致来源证明，每次合入自动发布无法表达版本授权。Windows
+              验收失败、候选工件过期、草稿漂移均阻止公开。九项任务覆盖实施与候选验收，无 Spec Patch；首版公开和真实 URL
+              验收在合入后执行。
+            requirementsEvidence:
+              contentHash: b25816f8cfeef3cb1618463da97f779feefd659f759286c17612dbf56b5613ac
+              ref: openspec/changes/publish-github-release-distribution
+            sourceEvidence:
+              contentHash: 42c3a7579abfdeb1f2dd36f835c8cc5fca0a1a366bef3e73089b22c7d1fff109
+              ref: openspec/changes/publish-github-release-distribution
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 71afe3bcb39b02eaa17ebff6faae3cb0ff2c3322a44d8310d1549d7bfc61dcf7
+            outcomeId: 5dc3009f-4f3b-4a38-b0d4-272aeda7967f
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: publish-github-release-distribution
+        status: succeeded
+        stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
       publish-github-release-distribution:1:
         results: {}
         sequence: 1
-    waits: []
+      publish-github-release-distribution:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: publish-github-release-distribution
+                  changeDir: openspec/changes/publish-github-release-distribution
+                  workspaceBaseline:
+                    ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+                    ref: openspec/changes/publish-github-release-distribution
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+              ref: openspec/changes/publish-github-release-distribution
+        sequence: 4
+      publish-github-release-distribution:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: publish-github-release-distribution
+                  changeDir: openspec/changes/publish-github-release-distribution
+                  workspaceBaseline:
+                    ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+                    ref: openspec/changes/publish-github-release-distribution
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+              ref: openspec/changes/publish-github-release-distribution
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+        sequence: 5
+    waits:
+      - id: publish-github-release-distribution:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: publish-github-release-distribution
+            changeDir: openspec/changes/publish-github-release-distribution
+            workspaceBaseline:
+              ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+              ref: openspec/changes/publish-github-release-distribution
+        proposalHash: f4a818054596ddc035de941a97699eafbf088f11d3bfed579ae48c622f6495ed
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+              ref: openspec/changes/publish-github-release-distribution
+        decision:
+          id: classic-open-69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+          choice: approved
+          proposalHash: f4a818054596ddc035de941a97699eafbf088f11d3bfed579ae48c622f6495ed
+      - id: publish-github-release-distribution:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: publish-github-release-distribution
+            changeDir: openspec/changes/publish-github-release-distribution
+            workspaceBaseline:
+              ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/publish-github-release-distribution/.comet/handoff/design-context.json
+              handoffHash: 7ff282e7b776b6fff63a1e7929be14600b73f4c64ab25db1d4a2f651c9ed9efe
+              proposal: 采用单个仅由官方仓库 main 手动触发的 workflow，分 Prepare 和 Publish。Prepare 核对完整 SHA
+                在远端 main 历史、ci.yml 的 main push 和同 SHA verify 成功、Tag 与
+                package.json 版本匹配；Windows 只读作业打包一次，现有 CLI 协议测试消费候选 tarball，空缓存
+                npx 从源码外启动，同一 EXE 走安装、激活、卸载并校验回执摘要，桌面校验按 package.json
+                版本识别。写权限仅用于草稿和公开步骤。候选工件保存三份发布资产及独立来源记录，按成功 Prepare Run
+                和工件身份取得原始字节，不重新构建代替。Prepare 核对
+                Tag、目标和现有资产，只为相同候选补传缺项并重新核对。Publish 显式选择同一候选，重新核对来源、草稿、Tag
+                和三份资产后公开预发布；完整已发布结果可复用，冲突、来源或摘要不明时停止，保留原有 Tag 和资产。README 使用固定
+                URL 的 npx，保留本地 tarball 路径，公开后用匿名 URL
+                和空缓存复验。手工构建缺少一致来源证明，每次合入自动发布无法表达版本授权。Windows
+                验收失败、候选工件过期、草稿漂移均阻止公开。九项任务覆盖实施与候选验收，无 Spec Patch；首版公开和真实 URL
+                验收在合入后执行。
+              requirementsEvidence:
+                contentHash: b25816f8cfeef3cb1618463da97f779feefd659f759286c17612dbf56b5613ac
+                ref: openspec/changes/publish-github-release-distribution
+              sourceEvidence:
+                contentHash: 42c3a7579abfdeb1f2dd36f835c8cc5fca0a1a366bef3e73089b22c7d1fff109
+                ref: openspec/changes/publish-github-release-distribution
+        proposalHash: d62d76ca7e0aa9ac50b85c205296a27bb383e3d8f576f4d777ad8a826d9a52c0
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/publish-github-release-distribution/.comet/handoff/design-context.json
+              handoffHash: 7ff282e7b776b6fff63a1e7929be14600b73f4c64ab25db1d4a2f651c9ed9efe
+              proposal: 采用单个仅由官方仓库 main 手动触发的 workflow，分 Prepare 和 Publish。Prepare 核对完整 SHA
+                在远端 main 历史、ci.yml 的 main push 和同 SHA verify 成功、Tag 与
+                package.json 版本匹配；Windows 只读作业打包一次，现有 CLI 协议测试消费候选 tarball，空缓存
+                npx 从源码外启动，同一 EXE 走安装、激活、卸载并校验回执摘要，桌面校验按 package.json
+                版本识别。写权限仅用于草稿和公开步骤。候选工件保存三份发布资产及独立来源记录，按成功 Prepare Run
+                和工件身份取得原始字节，不重新构建代替。Prepare 核对
+                Tag、目标和现有资产，只为相同候选补传缺项并重新核对。Publish 显式选择同一候选，重新核对来源、草稿、Tag
+                和三份资产后公开预发布；完整已发布结果可复用，冲突、来源或摘要不明时停止，保留原有 Tag 和资产。README 使用固定
+                URL 的 npx，保留本地 tarball 路径，公开后用匿名 URL
+                和空缓存复验。手工构建缺少一致来源证明，每次合入自动发布无法表达版本授权。Windows
+                验收失败、候选工件过期、草稿漂移均阻止公开。九项任务覆盖实施与候选验收，无 Spec Patch；首版公开和真实 URL
+                验收在合入后执行。
+              requirementsEvidence:
+                contentHash: b25816f8cfeef3cb1618463da97f779feefd659f759286c17612dbf56b5613ac
+                ref: openspec/changes/publish-github-release-distribution
+              sourceEvidence:
+                contentHash: 42c3a7579abfdeb1f2dd36f835c8cc5fca0a1a366bef3e73089b22c7d1fff109
+                ref: openspec/changes/publish-github-release-distribution
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: publish-github-release-distribution
+                  changeDir: openspec/changes/publish-github-release-distribution
+                  workspaceBaseline:
+                    ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+                    ref: openspec/changes/publish-github-release-distribution
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+              ref: openspec/changes/publish-github-release-distribution
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+    evidenceWaits:
+      - id: publish-github-release-distribution:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/publish-github-release-distribution
+          contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+          submissionId: 743c4905-858b-4c4f-b13a-4d3030506099
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/publish-github-release-distribution/.comet/handoff/design-context.json
+          handoffHash: 7ff282e7b776b6fff63a1e7929be14600b73f4c64ab25db1d4a2f651c9ed9efe
+          proposal: 采用单个仅由官方仓库 main 手动触发的 workflow，分 Prepare 和 Publish。Prepare 核对完整 SHA
+            在远端 main 历史、ci.yml 的 main push 和同 SHA verify 成功、Tag 与 package.json
+            版本匹配；Windows 只读作业打包一次，现有 CLI 协议测试消费候选 tarball，空缓存 npx 从源码外启动，同一 EXE
+            走安装、激活、卸载并校验回执摘要，桌面校验按 package.json
+            版本识别。写权限仅用于草稿和公开步骤。候选工件保存三份发布资产及独立来源记录，按成功 Prepare Run
+            和工件身份取得原始字节，不重新构建代替。Prepare 核对 Tag、目标和现有资产，只为相同候选补传缺项并重新核对。Publish
+            显式选择同一候选，重新核对来源、草稿、Tag 和三份资产后公开预发布；完整已发布结果可复用，冲突、来源或摘要不明时停止，保留原有 Tag
+            和资产。README 使用固定 URL 的 npx，保留本地 tarball 路径，公开后用匿名 URL
+            和空缓存复验。手工构建缺少一致来源证明，每次合入自动发布无法表达版本授权。Windows
+            验收失败、候选工件过期、草稿漂移均阻止公开。九项任务覆盖实施与候选验收，无 Spec Patch；首版公开和真实 URL
+            验收在合入后执行。
+          requirementsEvidence:
+            contentHash: b25816f8cfeef3cb1618463da97f779feefd659f759286c17612dbf56b5613ac
+            ref: openspec/changes/publish-github-release-distribution
+          sourceEvidence:
+            contentHash: 42c3a7579abfdeb1f2dd36f835c8cc5fca0a1a366bef3e73089b22c7d1fff109
+            ref: openspec/changes/publish-github-release-distribution
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: publish-github-release-distribution
+              changeDir: openspec/changes/publish-github-release-distribution
+              workspaceBaseline:
+                ref: d1cd4a49-5391-4b48-a4a4-2ed70054e252
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+                ref: openspec/changes/publish-github-release-distribution
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
+          ref: openspec/changes/publish-github-release-distribution
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: 69377be4a74bd67afe9909ad6c71047143c1d51cd471a8ec306aa60882cab031
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: a35b345c8a1b740195d33ff1d26b7c29db5d36360ef6feedfe4d788a901b5cc1
+  sourceRevision: 9
+  sourceHash: a3866da9d4f0bc25689a967af009dc0696588ddedbc9bef79b884411d44b1100
+check_epoch: 1

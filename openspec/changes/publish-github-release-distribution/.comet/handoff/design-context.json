@@ -1,0 +1,16 @@
+{
+  "change": "publish-github-release-distribution",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "7ff282e7b776b6fff63a1e7929be14600b73f4c64ab25db1d4a2f651c9ed9efe",
+  "files": [
+    { "path": "openspec/changes/publish-github-release-distribution/proposal.md", "sha256": "946a8c4f703889bee72c7fb3808c6acc00bc7c8b3cee1873e16566153012f373" },
+    { "path": "openspec/changes/publish-github-release-distribution/design.md", "sha256": "b0dc13ffb7c5da5be2deb7c1a49a0e36aafa492de625dc5d33af7d563bf22e18" },
+    { "path": "openspec/changes/publish-github-release-distribution/tasks.md", "sha256": "014e994693270fea44d27fd30dba886bd894cc8c19c320e39fd576423768c008" },
+    { "path": "openspec/changes/publish-github-release-distribution/.openspec.yaml", "sha256": "9b4b840064a33a6866a0ebc375b496fbdc2387a324f6c8fb4f21b270218c0d37" },
+    { "path": "openspec/changes/publish-github-release-distribution/specs/product-distribution/spec.md", "sha256": "aea18a9d3ae15b406325a56f373ac5159f725460711781a7661696fcdb03a676" }
+  ]
+}
