@@ -24,10 +24,10 @@ import {
 /** Transport-only destination configuration. Domain mapping is complete before this boundary. */
 export function observationDestinationsFromEnvironment(
   environment: NodeJS.ProcessEnv,
+  workspaceEndpoint?: string,
 ): readonly ObservationDestination[] {
   const destinations: ObservationDestination[] = [];
-  const deployment = resolveOtlpDeployment(environment);
-  const remote = environment.OTEL_EXPORTER_OTLP_ENDPOINT?.trim();
+  const deployment = resolveOtlpDeployment(environment, workspaceEndpoint);
   const signalEndpoints = {
     ...(deployment.traces.url ? { trace: deployment.traces.url } : {}),
     ...(deployment.logs.url ? { log: deployment.logs.url } : {}),
@@ -37,7 +37,7 @@ export function observationDestinationsFromEnvironment(
     const resource = createRepoctopusResource('repoctopus-runtime', '0.1.0', environment);
     destinations.push({
       id: 'remote',
-      ...(remote ? { endpoint: remote } : {}),
+      ...(deployment.baseEndpoint ? { endpoint: deployment.baseEndpoint } : {}),
       ...(Object.keys(signalEndpoints).length > 0 ? { signalEndpoints } : {}),
       signalHeaders: {
         trace: deployment.traces.headers,
@@ -77,7 +77,10 @@ abstract class CanonicalObservationTelemetry {
   ) {}
 
   protected async deliver(): Promise<void> {
-    const destinations = observationDestinationsFromEnvironment(this.environment);
+    const destinations = observationDestinationsFromEnvironment(
+      this.environment,
+      this.delivery.workspaceOtlpEndpoint,
+    );
     const configured = new Set(destinations.map((destination) => destination.id));
     const desktopMode = this.environment.REPOCTOPUS_DESKTOP_OTLP_MODE?.trim();
     await Promise.all([

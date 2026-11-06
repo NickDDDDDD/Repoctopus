@@ -34,9 +34,13 @@ export class ObservationDelivery extends Service {
 
   constructor(
     context: Context,
-    private readonly config: { workspaceRoot?: string } = {},
+    private readonly config: { workspaceRoot?: string; workspaceOtlpEndpoint?: string } = {},
   ) {
     super(context, 'observationDelivery');
+  }
+
+  get workspaceOtlpEndpoint(): string | undefined {
+    return this.config.workspaceOtlpEndpoint;
   }
 
   async append(envelopes: readonly ObservationEnvelope[]): Promise<void> {

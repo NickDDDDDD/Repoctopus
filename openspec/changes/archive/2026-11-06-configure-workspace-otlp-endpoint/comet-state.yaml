@@ -1,0 +1,2585 @@
+# comet-execution: managed-run
+change_id: ead8236d-5235-4a52-8d92-be160bc7d7a5
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 1d76ba588271d7e46db0c5d7c2ca40d9f289508d
+design_doc: openspec/changes/archive/2026-11-06-configure-workspace-otlp-endpoint/design.md
+plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/configure-workspace-otlp-endpoint.md
+branch_status: pending
+created_at: 2026-11-06
+verified_at: 2026-11-06
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/configure-workspace-otlp-endpoint
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-06-configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+handoff_hash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: b04747616de4485f7a7ba8fda226e43bf5b1a3b25ced14e9a07beb1f4617db45
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: configure-workspace-otlp-endpoint
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 18adcb696019266ef1a35cde5ac1a7510dd5d8d8db093cc80f27a9513ccc0211
+    input:
+      change: configure-workspace-otlp-endpoint
+      changeDir: openspec/changes/configure-workspace-otlp-endpoint
+      workspaceBaseline:
+        ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 1d76ba588271d7e46db0c5d7c2ca40d9f289508d
+      boundBranch: comet/configure-workspace-otlp-endpoint
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 6
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-06
+      designDoc: openspec/changes/archive/2026-11-06-configure-workspace-otlp-endpoint/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-06-configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+      handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/configure-workspace-otlp-endpoint.md
+      verifiedAt: 2026-11-06
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 24
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-5ce52c51ee49f7cdf0e98edfa6c6a2b6ca9a8bd8963e94baa4e40bb7144aa07b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:1
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: 359c9f0409e2282de0d4bb153ec257cb196745593f462dd052c260f33246a978
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:1
+          attempt: 1
+          claimToken: portable-5ce52c51ee49f7cdf0e98edfa6c6a2b6ca9a8bd8963e94baa4e40bb7144aa07b
+          inputHash: 359c9f0409e2282de0d4bb153ec257cb196745593f462dd052c260f33246a978
+          outcomeId: 0378ca40-1316-4266-b8c2-0e5f6945c21e
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c5d799d0cf47849f7b73f2bcc77bb67cc9b26729564fa97fbdd12e57d81effd8
+            outcomeId: 0378ca40-1316-4266-b8c2-0e5f6945c21e
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-9684f0bc985be6c0e139d6272216b957893ab369b582deea10beddc016bafbd0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:4
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: 9dca5f0f69fad403af888f1e7e3c52ab4eadda3cec1897889bcd8513fb3a4c74
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:4
+          attempt: 1
+          claimToken: portable-9684f0bc985be6c0e139d6272216b957893ab369b582deea10beddc016bafbd0
+          inputHash: 9dca5f0f69fad403af888f1e7e3c52ab4eadda3cec1897889bcd8513fb3a4c74
+          outcomeId: configure-workspace-otlp-endpoint:4:1:executor-result
+          output:
+            contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7fa9f3d343675dfe7972aa9839ef0f39cf09d3d6676ce63e5d8dca5400774ae7
+            outcomeId: configure-workspace-otlp-endpoint:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-2f4e66ac04e85f42b7a760f36ae82dd5a5d985d14fccf63b404d07f174404a27
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:5
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: 74ffac399378f415fb6577197c05bb872205d671370cde13c9434e7cd9433100
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:5
+          attempt: 1
+          claimToken: portable-2f4e66ac04e85f42b7a760f36ae82dd5a5d985d14fccf63b404d07f174404a27
+          inputHash: 74ffac399378f415fb6577197c05bb872205d671370cde13c9434e7cd9433100
+          outcomeId: 58ee5875-df00-401f-8db0-309ba08f95cd
+          output:
+            handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+            handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+            proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+              URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过 Project
+              Composition 将地址传入共享 Observation Delivery，沿用三类信号、现有认证和重试，使用真实 CLI
+              与测试接收器验证。
+            requirementsEvidence:
+              contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+            sourceEvidence:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 275813eb08b6340387122c66b2d47c1f92a0e07452c77c48d41f86d5b94eb954
+            outcomeId: 58ee5875-df00-401f-8db0-309ba08f95cd
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e23d424b5c9d2afeb82e60919d641bba8e03b18660b56a9796ac806cdfcad1d1
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:7
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: 51de9211ec13b5380f539fc8920fb00a729b49622b7cf290ee16d7715717c226
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:7
+          attempt: 1
+          claimToken: portable-e23d424b5c9d2afeb82e60919d641bba8e03b18660b56a9796ac806cdfcad1d1
+          inputHash: 51de9211ec13b5380f539fc8920fb00a729b49622b7cf290ee16d7715717c226
+          outcomeId: d1f6b148-bb70-48c5-9f85-4a3dd7491e0c
+          output:
+            designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 627a870e4d49fa4aa7ab6e7dd0ab85aaec5267b81c3ceb3a46d4258809d06a1c
+            outcomeId: d1f6b148-bb70-48c5-9f85-4a3dd7491e0c
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-ca9878b8bbe8a2b2a31cd1976e897e2b0a962dd5d2870c7e500a5818428a54a4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:9
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: 09c9ecd89b74250d9cc77f35f625fffa647ad90389b0a834ff5add7df224df33
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:9
+          attempt: 1
+          claimToken: portable-ca9878b8bbe8a2b2a31cd1976e897e2b0a962dd5d2870c7e500a5818428a54a4
+          inputHash: 09c9ecd89b74250d9cc77f35f625fffa647ad90389b0a834ff5add7df224df33
+          outcomeId: 70024964-cb89-4682-b0fa-173f7d435bce
+          output:
+            boundBranch: comet/configure-workspace-otlp-endpoint
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1f276093c3beb18ed975438a2ce2434a429f0184d24900e45a4fcd2936dae924
+            outcomeId: 70024964-cb89-4682-b0fa-173f7d435bce
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-b8e4434f5fca75e753743d8c102db8713cebc5ad50a87ee4ca09cfd3b46b3e42
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:11
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: 560917736f476e661e19500af71e0ee45a6bc3471dcb290041f67da6adb99240
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:11
+          attempt: 1
+          claimToken: portable-b8e4434f5fca75e753743d8c102db8713cebc5ad50a87ee4ca09cfd3b46b3e42
+          inputHash: 560917736f476e661e19500af71e0ee45a6bc3471dcb290041f67da6adb99240
+          outcomeId: d47e68f4-5592-4b0e-91cb-95589a249fe9
+          output:
+            designEvidence:
+              contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+              ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+            plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+            planEvidence:
+              contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+              ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+            taskRevision: 17187a98238289be4cc11959069012e6978d93099ec574d925a3f7594bac54f4
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1cff1373edd4001a739b7c7009ca0116d1c11833488b2445e8caddbfa115d5b3
+            outcomeId: d47e68f4-5592-4b0e-91cb-95589a249fe9
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-workspace-otlp
+          token: portable-270273e51f65092dc079b049d83d26f484f9b7f6784519360d608f1d623b5b2c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:13
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: 543afb947836ff92427ad70b6bd9f818abd4a4f92e10d6f55653e96b0cd2e31e
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:13
+          attempt: 1
+          claimToken: portable-270273e51f65092dc079b049d83d26f484f9b7f6784519360d608f1d623b5b2c
+          inputHash: 543afb947836ff92427ad70b6bd9f818abd4a4f92e10d6f55653e96b0cd2e31e
+          outcomeId: 31d189d8-3260-4fb5-8cfe-63532e578b2a
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 795d14cd27e120a24ada7ce1a31d96400853307d5b3cff008d44bc0f0a85aa93
+            outcomeId: 31d189d8-3260-4fb5-8cfe-63532e578b2a
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-7cfe4b63ebf1cb0bab88c6f011f26f9022d66c88a8d00a5ad564b7828ce04b88
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:14
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: ea516764d83754ce35b309be6c59f7b7d6708c1fded63b74b419139ce18cc732
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:14
+          attempt: 1
+          claimToken: portable-7cfe4b63ebf1cb0bab88c6f011f26f9022d66c88a8d00a5ad564b7828ce04b88
+          inputHash: ea516764d83754ce35b309be6c59f7b7d6708c1fded63b74b419139ce18cc732
+          outcomeId: b2cec746-e24d-47fc-b937-532e968d6f7e
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 8877a2da5974f0fe197b3b3ce56975c07e1d1c54f4d4fc305db42aafb55784a5
+            cwd: .
+            environment: 8667039a20760855941bebb69727462672f0167fc316a0671c73bf9623e0358e
+            exitCode: 0
+            inputAfter: fc6c9a103f4f814a8c01ce5bae20595f839322898607ff0919b8311c5e2d3ba4
+            inputBefore: fc6c9a103f4f814a8c01ce5bae20595f839322898607ff0919b8311c5e2d3ba4
+            manifestHash: a3bc7b8f0c7db57461ac42000b49d38be262454cd87356418ae8aaae8b42c347
+            manifestRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/fa998971-283d-4010-9193-fc5e6adb56dc.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/51265909-9f6f-4075-9ede-00e9ee682001.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9c1f1e83074d7e3fa6fcdbdf8dbe1158ee49e8aa9c396aee17a3fa1880d86840
+            outcomeId: b2cec746-e24d-47fc-b937-532e968d6f7e
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-5d2ea0708df41a184edca4da0760a84f55f541bf8f64d779a8a956d6b419fe47
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:16
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: 15d6259e3e110299a16bd00382f704dc06717c66694d61435356a5679a4a19a3
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:16
+          attempt: 1
+          claimToken: portable-5d2ea0708df41a184edca4da0760a84f55f541bf8f64d779a8a956d6b419fe47
+          inputHash: 15d6259e3e110299a16bd00382f704dc06717c66694d61435356a5679a4a19a3
+          outcomeId: 95f70d62-3918-44b8-aeca-ab1b86b85120
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/configure-workspace-otlp-endpoint.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5b5aef495c1f43699eba6e4ee49105cd7c535be3e91abcda00662294b07ec3b3
+            outcomeId: 95f70d62-3918-44b8-aeca-ab1b86b85120
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-9c9ae62a0ed03e08b94aa3d2e37d86026ad4e3bc026de4b4aaa9c5cad325bcc2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:18
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: 3a3571c09d4b06494e95a0eb717d16b92b83b70faa824e3062bc8bbc74910e96
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:18
+          attempt: 1
+          claimToken: portable-9c9ae62a0ed03e08b94aa3d2e37d86026ad4e3bc026de4b4aaa9c5cad325bcc2
+          inputHash: 3a3571c09d4b06494e95a0eb717d16b92b83b70faa824e3062bc8bbc74910e96
+          outcomeId: e0016739-47c7-46fb-ba58-9ac91d7503c7
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 5ba528060c2588e5e7d4111e2eaafe8657529d63fc90534be1b938c44ea5fab9
+            cwd: .
+            deliveryInputs: {}
+            environment: 317edf487ce2df07f2d383f3dd5409134fd6f7507b39a778ff22baa0b22f7c40
+            exitCode: 0
+            inputAfter: b7bf72c82bfc29b7a3d20c03232246667872997114755f551b53db2901e10b88
+            inputBefore: b7bf72c82bfc29b7a3d20c03232246667872997114755f551b53db2901e10b88
+            manifestHash: c90d933be85d7fc0bbf1ff54dc62279b297748d4b840a39e1280224e989d71c8
+            manifestRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/e002ac77-ebca-46a3-9458-72cd42071c12.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/3ef11ffb-687d-4a80-be80-34da93b507b7.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2c3887ee3e5de4f755aa3ff5cba04806b7932265dea3d4f3ecb5cd7e6b86a1bc
+            outcomeId: e0016739-47c7-46fb-ba58-9ac91d7503c7
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c91d58dadcd9515eefa66cc58ae19de038daa757ad3bf531ce7abce1d7b09672
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:20
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: 60cda58e6bf1cb39a8558ea9919f720431b55ccf47f17020f1e126e8cc291bd3
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:20
+          attempt: 1
+          claimToken: portable-c91d58dadcd9515eefa66cc58ae19de038daa757ad3bf531ce7abce1d7b09672
+          inputHash: 60cda58e6bf1cb39a8558ea9919f720431b55ccf47f17020f1e126e8cc291bd3
+          outcomeId: 7d502278-fc7e-453b-9d35-f3ab50d211af
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档工作区 OTLP 地址配置功能，同步遥测规格，推送归档提交并创建指向 main 的 PR
+            targetBranch: comet/configure-workspace-otlp-endpoint
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 091441534bbce8fb0d4606951a604b1dfd042dbf9dff0b1505a0d7524ce488c9
+            outcomeId: 7d502278-fc7e-453b-9d35-f3ab50d211af
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-33d7d13117672e577bd00e000e02bf7c5b0e76b845d8bb252fa91f38cacb427f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:22
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: 4e8ddcb818050694117be08002cf5f53ea7ced1bf3420dbdf5332563cd11d101
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:22
+          attempt: 1
+          claimToken: portable-33d7d13117672e577bd00e000e02bf7c5b0e76b845d8bb252fa91f38cacb427f
+          inputHash: 4e8ddcb818050694117be08002cf5f53ea7ced1bf3420dbdf5332563cd11d101
+          outcomeId: efdb0a20-bd09-412f-84d2-8db01f6b4e3b
+          output:
+            baseCommit: 00dfcd6f87b73f18671a4b4b75f6c14ed35ce3be
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/configure-workspace-otlp-endpoint
+            verifiedBranch: comet/configure-workspace-otlp-endpoint
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6e01afce8ce72d10d8978d39d68759936ae3fab447e79eed760e26e230cb8f27
+            outcomeId: efdb0a20-bd09-412f-84d2-8db01f6b4e3b
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-f0978ca99b7ae8c31c9300494545446717a312e1991a4389e963b32788c8ffca
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: configure-workspace-otlp-endpoint:23
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: bb0b125214380b023b720384c51fe9e2401dfe60e0b9b243fa0d030941d63e26
+        outcome:
+          actionId: configure-workspace-otlp-endpoint:23
+          artifacts:
+            - sha256: 286a8cb00885c5287eda2acec29b9d610ba5a214a5f9a07c24f5f441a5e32b9b
+              uri: openspec/changes/archive/2026-11-06-configure-workspace-otlp-endpoint/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-f0978ca99b7ae8c31c9300494545446717a312e1991a4389e963b32788c8ffca
+          inputHash: bb0b125214380b023b720384c51fe9e2401dfe60e0b9b243fa0d030941d63e26
+          outcomeId: fd14483e-c43f-41fe-96af-e534f2326c83
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-06-configure-workspace-otlp-endpoint
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f41d05574fae05cf85d4b1a2472bcdabee35f8726db8bbb707d7d63f6290cf99
+            outcomeId: fd14483e-c43f-41fe-96af-e534f2326c83
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: configure-workspace-otlp-endpoint:24
+        input:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs: {}
+        inputHash: e06edf46ece5bdaf06a8329b06c4e827659df8378c3273a304917e6563436bfd
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: configure-workspace-otlp-endpoint
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      configure-workspace-otlp-endpoint:1:
+        results: {}
+        sequence: 1
+      configure-workspace-otlp-endpoint:11:
+        results: {}
+        sequence: 11
+      configure-workspace-otlp-endpoint:13:
+        results: {}
+        sequence: 13
+      configure-workspace-otlp-endpoint:14:
+        results: {}
+        sequence: 14
+      configure-workspace-otlp-endpoint:16:
+        results: {}
+        sequence: 16
+      configure-workspace-otlp-endpoint:18:
+        results: {}
+        sequence: 18
+      configure-workspace-otlp-endpoint:20:
+        results: {}
+        sequence: 20
+      configure-workspace-otlp-endpoint:22:
+        results: {}
+        sequence: 22
+      configure-workspace-otlp-endpoint:23:
+        results: {}
+        sequence: 23
+      configure-workspace-otlp-endpoint:24:
+        results: {}
+        sequence: 24
+      configure-workspace-otlp-endpoint:4:
+        results: {}
+        sequence: 4
+      configure-workspace-otlp-endpoint:5:
+        results: {}
+        sequence: 5
+      configure-workspace-otlp-endpoint:7:
+        results: {}
+        sequence: 7
+      configure-workspace-otlp-endpoint:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: configure-workspace-otlp-endpoint:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+        proposalHash: 768403dd154fe7c319d76a7e874e758a7607a4f27d320379131583477dfb920d
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+          choice: approved
+          proposalHash: 768403dd154fe7c319d76a7e874e758a7607a4f27d320379131583477dfb920d
+      - id: configure-workspace-otlp-endpoint:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+        proposalHash: 6a677d2102fb79c2687d825fd1a45f1d28e700679bbd83f4f47cd93dbf932566
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-6a677d2102fb79c2687d825fd1a45f1d28e700679bbd83f4f47cd93dbf932566-approved
+          choice: approved
+          proposalHash: 6a677d2102fb79c2687d825fd1a45f1d28e700679bbd83f4f47cd93dbf932566
+      - id: configure-workspace-otlp-endpoint:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.build.configure:
+              boundBranch: comet/configure-workspace-otlp-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: ed9e6bf678d0953aa99000fd01d9e1646031ecfd792deec097a2a3babe85a546
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: ae63b4ea-2c83-4a56-8a8b-4629eb9aa561
+          choice: approved
+          proposalHash: ed9e6bf678d0953aa99000fd01d9e1646031ecfd792deec097a2a3babe85a546
+      - id: configure-workspace-otlp-endpoint:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档工作区 OTLP 地址配置功能，同步遥测规格，推送归档提交并创建指向 main 的 PR
+              targetBranch: comet/configure-workspace-otlp-endpoint
+        proposalHash: 9fd92d9ab43eda8857792933526e5ceb8d1ebce60c651a4ef4ef3e709283d14e
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-9fd92d9ab43eda8857792933526e5ceb8d1ebce60c651a4ef4ef3e709283d14e-pr
+          choice: pr
+          proposalHash: 9fd92d9ab43eda8857792933526e5ceb8d1ebce60c651a4ef4ef3e709283d14e
+    evidenceWaits:
+      - id: configure-workspace-otlp-endpoint:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/configure-workspace-otlp-endpoint
+          contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+          submissionId: 4f472e59-17c4-41d6-9f85-4e3a71a16e20
+      - id: configure-workspace-otlp-endpoint:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+          submissionId: fd203073-91ea-4ca2-85ef-c096220a8987
+      - id: configure-workspace-otlp-endpoint:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+          contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+          submissionId: 510a3397-268f-42b2-9b9b-f2a6a659446f
+      - id: configure-workspace-otlp-endpoint:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/51265909-9f6f-4075-9ede-00e9ee682001.log
+          contentHash: 8877a2da5974f0fe197b3b3ce56975c07e1d1c54f4d4fc305db42aafb55784a5
+          submissionId: 01d847a6-273d-48a0-a27b-04e06a723a90
+      - id: configure-workspace-otlp-endpoint:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/configure-workspace-otlp-endpoint.md
+          contentHash: 4aedaab69ea5a4141301d659fe56418040c595f8e2d12548704784d3373fca55
+          submissionId: 44fee982-db74-476b-93d3-d33c6bd81862
+      - id: configure-workspace-otlp-endpoint:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/3ef11ffb-687d-4a80-be80-34da93b507b7.log
+          contentHash: 5ba528060c2588e5e7d4111e2eaafe8657529d63fc90534be1b938c44ea5fab9
+          submissionId: 9a527098-68db-4cc8-9f75-c6c167d2964b
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 37
+  sourceHash: 295c8d8b8881be5b0d72e567b42155ff2bd2cb319b5e850e3e4a957c4f429257
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+              ref: openspec/changes/configure-workspace-otlp-endpoint
+      - contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+        ref: openspec/changes/configure-workspace-otlp-endpoint
+      - contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+      - choice: approved
+        proposal:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+              handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+              proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                Project Composition 将地址传入共享 Observation
+                Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+              requirementsEvidence:
+                contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+              sourceEvidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+      - handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+        handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+        proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+          URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过 Project
+          Composition 将地址传入共享 Observation Delivery，沿用三类信号、现有认证和重试，使用真实 CLI
+          与测试接收器验证。
+        requirementsEvidence:
+          contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+          ref: openspec/changes/configure-workspace-otlp-endpoint
+        sourceEvidence:
+          contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+          ref: openspec/changes/configure-workspace-otlp-endpoint
+      - designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+      - contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+        ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+      - boundBranch: comet/configure-workspace-otlp-endpoint
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.build.configure:
+              boundBranch: comet/configure-workspace-otlp-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+          ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+        plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+        planEvidence:
+          contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+          ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+        taskRevision: 17187a98238289be4cc11959069012e6978d93099ec574d925a3f7594bac54f4
+      - contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+        ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 8877a2da5974f0fe197b3b3ce56975c07e1d1c54f4d4fc305db42aafb55784a5
+        cwd: .
+        environment: 8667039a20760855941bebb69727462672f0167fc316a0671c73bf9623e0358e
+        exitCode: 0
+        inputAfter: fc6c9a103f4f814a8c01ce5bae20595f839322898607ff0919b8311c5e2d3ba4
+        inputBefore: fc6c9a103f4f814a8c01ce5bae20595f839322898607ff0919b8311c5e2d3ba4
+        manifestHash: a3bc7b8f0c7db57461ac42000b49d38be262454cd87356418ae8aaae8b42c347
+        manifestRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/fa998971-283d-4010-9193-fc5e6adb56dc.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/51265909-9f6f-4075-9ede-00e9ee682001.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 8877a2da5974f0fe197b3b3ce56975c07e1d1c54f4d4fc305db42aafb55784a5
+        ref: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/51265909-9f6f-4075-9ede-00e9ee682001.log
+      - contentHash: 4aedaab69ea5a4141301d659fe56418040c595f8e2d12548704784d3373fca55
+        ref: docs/superpowers/reports/configure-workspace-otlp-endpoint.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/configure-workspace-otlp-endpoint.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 5ba528060c2588e5e7d4111e2eaafe8657529d63fc90534be1b938c44ea5fab9
+        cwd: .
+        deliveryInputs: {}
+        environment: 317edf487ce2df07f2d383f3dd5409134fd6f7507b39a778ff22baa0b22f7c40
+        exitCode: 0
+        inputAfter: b7bf72c82bfc29b7a3d20c03232246667872997114755f551b53db2901e10b88
+        inputBefore: b7bf72c82bfc29b7a3d20c03232246667872997114755f551b53db2901e10b88
+        manifestHash: c90d933be85d7fc0bbf1ff54dc62279b297748d4b840a39e1280224e989d71c8
+        manifestRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/e002ac77-ebca-46a3-9458-72cd42071c12.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/3ef11ffb-687d-4a80-be80-34da93b507b7.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 5ba528060c2588e5e7d4111e2eaafe8657529d63fc90534be1b938c44ea5fab9
+        ref: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/3ef11ffb-687d-4a80-be80-34da93b507b7.log
+      - choice: pr
+        proposal:
+          input:
+            change: configure-workspace-otlp-endpoint
+            changeDir: openspec/changes/configure-workspace-otlp-endpoint
+            workspaceBaseline:
+              ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档工作区 OTLP 地址配置功能，同步遥测规格，推送归档提交并创建指向 main 的 PR
+              targetBranch: comet/configure-workspace-otlp-endpoint
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档工作区 OTLP 地址配置功能，同步遥测规格，推送归档提交并创建指向 main 的 PR
+        targetBranch: comet/configure-workspace-otlp-endpoint
+      - baseCommit: 00dfcd6f87b73f18671a4b4b75f6c14ed35ce3be
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: comet/configure-workspace-otlp-endpoint
+        verifiedBranch: comet/configure-workspace-otlp-endpoint
+      - archiveDirectory: openspec/changes/archive/2026-11-06-configure-workspace-otlp-endpoint
+      - sequence: 9
+        value:
+          boundBranch: comet/configure-workspace-otlp-endpoint
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: configure-workspace-otlp-endpoint
+              changeDir: openspec/changes/configure-workspace-otlp-endpoint
+              workspaceBaseline:
+                ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+            outputs:
+              full.build.configure:
+                boundBranch: comet/configure-workspace-otlp-endpoint
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: configure-workspace-otlp-endpoint
+              changeDir: openspec/changes/configure-workspace-otlp-endpoint
+              workspaceBaseline:
+                ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+                handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+                proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+                  URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过
+                  Project Composition 将地址传入共享 Observation
+                  Delivery，沿用三类信号、现有认证和重试，使用真实 CLI 与测试接收器验证。
+                requirementsEvidence:
+                  contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+                  ref: openspec/changes/configure-workspace-otlp-endpoint
+                sourceEvidence:
+                  contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                  ref: openspec/changes/configure-workspace-otlp-endpoint
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/configure-workspace-otlp-endpoint/design.md
+      - sequence: 8
+        value:
+          contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+          ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/configure-workspace-otlp-endpoint/.comet/handoff/design-context.json
+          handoffHash: b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25
+          proposal: 在协调仓 repoctopus.yaml 支持可选 telemetry.endpoint。工作区地址是 OTLP/HTTP 基础
+            URL，允许路径前缀，拒绝无效协议、内嵌凭据、查询和片段。按信号环境变量优先于公共环境变量，再回退到 YAML。通过 Project
+            Composition 将地址传入共享 Observation Delivery，沿用三类信号、现有认证和重试，使用真实 CLI
+            与测试接收器验证。
+          requirementsEvidence:
+            contentHash: 94418771553f13029dea120b9d97099a1798859703f3facba419fdd67e7f7c94
+            ref: openspec/changes/configure-workspace-otlp-endpoint
+          sourceEvidence:
+            contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+            ref: openspec/changes/configure-workspace-otlp-endpoint
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: configure-workspace-otlp-endpoint
+              changeDir: openspec/changes/configure-workspace-otlp-endpoint
+              workspaceBaseline:
+                ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+                ref: openspec/changes/configure-workspace-otlp-endpoint
+      - sequence: 2
+        value:
+          contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+          ref: openspec/changes/configure-workspace-otlp-endpoint
+      - sequence: 4
+        value:
+          contentHash: 0ec71bb434e6357f362a1b0c67348e7351b1294fb16c61c179b3214bbea7a952
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda
+            ref: openspec/changes/configure-workspace-otlp-endpoint/design.md
+          plan: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+          planEvidence:
+            contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+            ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+          taskRevision: 17187a98238289be4cc11959069012e6978d93099ec574d925a3f7594bac54f4
+      - sequence: 12
+        value:
+          contentHash: 7ab9870e3d5a57ce9d7adccc127df447bdce21cce3c13e4ec55d937aa43d5517
+          ref: docs/superpowers/plans/2026-11-06-configure-workspace-otlp-endpoint.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 8877a2da5974f0fe197b3b3ce56975c07e1d1c54f4d4fc305db42aafb55784a5
+          cwd: .
+          environment: 8667039a20760855941bebb69727462672f0167fc316a0671c73bf9623e0358e
+          exitCode: 0
+          inputAfter: fc6c9a103f4f814a8c01ce5bae20595f839322898607ff0919b8311c5e2d3ba4
+          inputBefore: fc6c9a103f4f814a8c01ce5bae20595f839322898607ff0919b8311c5e2d3ba4
+          manifestHash: a3bc7b8f0c7db57461ac42000b49d38be262454cd87356418ae8aaae8b42c347
+          manifestRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/fa998971-283d-4010-9193-fc5e6adb56dc.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/51265909-9f6f-4075-9ede-00e9ee682001.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 15
+        value:
+          contentHash: 8877a2da5974f0fe197b3b3ce56975c07e1d1c54f4d4fc305db42aafb55784a5
+          ref: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/51265909-9f6f-4075-9ede-00e9ee682001.log
+      - sequence: 17
+        value:
+          contentHash: 4aedaab69ea5a4141301d659fe56418040c595f8e2d12548704784d3373fca55
+          ref: docs/superpowers/reports/configure-workspace-otlp-endpoint.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/configure-workspace-otlp-endpoint.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 5ba528060c2588e5e7d4111e2eaafe8657529d63fc90534be1b938c44ea5fab9
+          cwd: .
+          deliveryInputs: {}
+          environment: 317edf487ce2df07f2d383f3dd5409134fd6f7507b39a778ff22baa0b22f7c40
+          exitCode: 0
+          inputAfter: b7bf72c82bfc29b7a3d20c03232246667872997114755f551b53db2901e10b88
+          inputBefore: b7bf72c82bfc29b7a3d20c03232246667872997114755f551b53db2901e10b88
+          manifestHash: c90d933be85d7fc0bbf1ff54dc62279b297748d4b840a39e1280224e989d71c8
+          manifestRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/e002ac77-ebca-46a3-9458-72cd42071c12.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/3ef11ffb-687d-4a80-be80-34da93b507b7.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 19
+        value:
+          contentHash: 5ba528060c2588e5e7d4111e2eaafe8657529d63fc90534be1b938c44ea5fab9
+          ref: .comet/runtime/classic-sdk-checks/4cf910ba2e447abe20d6312b4ed9b313704b7f89f166bfb5610b99f30b586ea0/3ef11ffb-687d-4a80-be80-34da93b507b7.log
+      - sequence: 21
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: configure-workspace-otlp-endpoint
+              changeDir: openspec/changes/configure-workspace-otlp-endpoint
+              workspaceBaseline:
+                ref: 23603919-e2cb-49f7-80d3-43c3ddc9e97c
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档工作区 OTLP 地址配置功能，同步遥测规格，推送归档提交并创建指向 main 的 PR
+                targetBranch: comet/configure-workspace-otlp-endpoint
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档工作区 OTLP 地址配置功能，同步遥测规格，推送归档提交并创建指向 main 的 PR
+          targetBranch: comet/configure-workspace-otlp-endpoint
+      - sequence: 22
+        value:
+          baseCommit: 00dfcd6f87b73f18671a4b4b75f6c14ed35ce3be
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/configure-workspace-otlp-endpoint
+          verifiedBranch: comet/configure-workspace-otlp-endpoint
+      - sequence: 23
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-06-configure-workspace-otlp-endpoint
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 52
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 54
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 48
+        height: 5
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: 57
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 58
+        right: 51
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 53
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 59
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 22
+        left: 63
+        right: 64
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 65
+        right: 51
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 66
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 67
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 70
+        height: 2
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 72
+        right: 73
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 75
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 76
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 71
+        right: 77
+        height: 4
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: 79
+        right: 80
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 81
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 82
+        right: 77
+        height: 4
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 84
+        height: 2
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: 80
+        height: 2
+      - key: full.build.plan
+        value: 33
+        left: 85
+        right: 86
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 87
+        right: 77
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 89
+        right: 90
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 91
+        right: 84
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 92
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 77
+        height: 5
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: 96
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: 97
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 99
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 102
+        right: 96
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 101
+        right: 103
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 104
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 43
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 90
+        right: 84
+        height: 2
+      - key: full.build.check.evidence
+        value: 37
+        left: 109
+        right: 110
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 111
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 112
+        right: 105
+        height: 5
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: 114
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 115
+        right: 108
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 110
+        right: 86
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 116
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 118
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 45
+        left: 120
+        right: 121
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 122
+        right: 108
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 123
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 124
+        right: 105
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 127
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 129
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 132
+        right: 133
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 134
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 136
+        right: 137
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: 138
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 139
+        right: 130
+        height: 4
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: 141
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 145
+        height: 2
+      - key: full.open
+        value: 29
+        left: 143
+        right: 146
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 149
+        right: 150
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 148
+        right: 151
+        height: 3
+      - key: full.open
+        value: 29
+        left: 152
+        right: 146
+        height: 4
+      - key: full.archive.prepare
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: 154
+        right: 155
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: 158
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: 157
+        right: 159
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: 156
+        right: 160
+        height: 4
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 162
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 164
+        right: 165
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 163
+        right: 166
+        height: 3
+      - key: full.open
+        value: 29
+        left: 151
+        right: 167
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 161
+        right: 168
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 171
+        right: 172
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 175
+        height: 2
+      - key: full.open
+        value: 29
+        left: 173
+        right: 176
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 178
+        right: 179
+        height: 2
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 181
+        right: 182
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 180
+        right: 183
+        height: 3
+      - key: full.open
+        value: 29
+        left: 184
+        right: 176
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: 186
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: 188
+        right: 189
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 187
+        right: 190
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 176
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: 191
+        right: 192
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 194
+        right: 195
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 196
+        right: 190
+        height: 3
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: 198
+        height: 2
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 199
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 200
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 201
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 203
+        height: 2
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: 205
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 204
+        right: 206
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 207
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 208
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 56
+      - 62
+      - 68
+      - 78
+      - 83
+      - 88
+      - 94
+      - 100
+      - 106
+      - 113
+      - 119
+      - 125
+      - 128
+      - 131
+      - 135
+      - 140
+      - 142
+      - 147
+      - 153
+      - 169
+      - 170
+      - 177
+      - 185
+      - 193
+      - 202
+      - 209
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:11
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:13
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:14
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:16
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:18
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:20
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:22
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:23
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:4
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:5
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:7
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - configure-workspace-otlp-endpoint:9
+          - results
+        map: 26
+      - path:
+          - outputs
+        map: 22
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 27
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 28
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 29
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 31
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 36
+  storageHash: 6e02ef5fa64ac8743c0423a9bfd3ec8c3632b7c718d6c50c4ed443165dcd0fe3
+check_epoch: 6

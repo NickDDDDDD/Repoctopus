@@ -177,7 +177,12 @@ function projectSelections(
     runtimeSelection('desktop-launcher', { productRoot }, { productRoot: PRODUCT_ROOT_IDENTITY }),
     runtimeSelection(
       'observation-delivery',
-      { workspaceRoot },
+      {
+        workspaceRoot,
+        ...(config.shared.telemetry
+          ? { workspaceOtlpEndpoint: config.shared.telemetry.endpoint }
+          : {}),
+      },
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
     { id: 'workflow-telemetry-otel' },

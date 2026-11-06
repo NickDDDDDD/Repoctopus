@@ -4,11 +4,20 @@ Repoctopus 通过标准 OTLP/HTTP 向自部署的 SigNoz 等后端发送数据�
 
 ## 配置
 
-使用标准 OpenTelemetry 环境变量配置 Collector 地址、认证、超时和 Resource。字段名属于公开协议，不是部署配置；Repoctopus 不提供字段别名，也不要求 Collector Transform 改名。
+在协调仓的 `repoctopus.yaml` 添加 `telemetry.endpoint`，从该工作区启动 Repoctopus 即可开启远端上报。
+
+```yaml
+telemetry:
+  endpoint: https://signoz-collector.example.internal
+```
+
+填写 Collector 的 OTLP/HTTP 基础 URL。可以包含网关路径前缀，例如 `https://collector.example.internal/otlp`。Runtime 会追加 `/v1/traces`、`/v1/logs` 和 `/v1/metrics`。认证通过环境变量配置，YAML 地址不接受内嵌凭据、查询参数或片段。
+
+地址优先级从高到低为按信号环境变量、公共环境变量、工作区 YAML。认证 Header 会发送到实际选中的 Collector，请在可信的工作区使用团队配置。同一 Runtime 版本内，Collector 地址不参与 Run 的执行配置身份。仅使用环境变量的部署继续有效。上报字段名使用 [schema v1](telemetry-reference.md) 的公开名称。Repoctopus 不提供字段别名，也不要求 Collector Transform 改名。
 
 | 变量                                                                                                            | 作用                                                                         | 优先级                                              |
 | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------- |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`                                                                                   | 三类信号的总端点；Runtime 自动追加 `/v1/traces`、`/v1/logs` 和 `/v1/metrics` | 低于按信号端点                                      |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`                                                                                   | 三类信号的总端点；Runtime 自动追加 `/v1/traces`、`/v1/logs` 和 `/v1/metrics` | 高于 YAML，低于按信号端点                           |
 | `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`、`OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`、`OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` | 单独覆盖一个信号的完整 URL                                                   | 最高                                                |
 | `OTEL_EXPORTER_OTLP_HEADERS`                                                                                    | URL 编码的公共请求头，如 `authorization=Bearer%20token`                      | 低于按信号 headers                                  |
 | `OTEL_EXPORTER_OTLP_TRACES_HEADERS`、`OTEL_EXPORTER_OTLP_LOGS_HEADERS`、`OTEL_EXPORTER_OTLP_METRICS_HEADERS`    | 单独覆盖一个信号的请求头                                                     | 最高                                                |
@@ -28,7 +37,7 @@ $env:REPOCTOPUS_ENVIRONMENT = 'development'
 node bin/repoctopus.js evidence run --workspace . --profile verify --json
 ```
 
-命令完成后，Collector 会收到 Trace、Log 和 Metric。三个信号携带同一 envelope identity 与允许列表语义；认证 header 只用于 HTTP 请求，不进入领域状态、日志属性或配置摘要。只配置按信号端点时，Runtime 只发送已配置的信号。没有配置任何远端端点时，远端导出保持关闭，Run 和 Evidence 继续执行。
+命令完成后，Collector 会收到 Trace、Log 和 Metric。三个信号携带同一 envelope identity 与允许列表语义；认证 header 只用于 HTTP 请求，不进入领域状态、日志属性或配置摘要。没有 YAML 或公共环境变量端点时，Runtime 只发送已单独配置端点的信号。所有配置都缺少端点时，远端导出保持关闭，Run 和 Evidence 继续执行。
 
 正常的 Change Run 会自动启动或激活 Desktop，Runtime 再从受保护的 discovery 取得本机会话端点和短期凭据。只有在隔离的 Receiver 冒烟测试中才显式设置：
 

@@ -45,7 +45,10 @@ export async function loadProjectConfig(workspace: string): Promise<EffectivePro
       throw new Error('Local config cannot override the Workspace Repository path');
     }
   }
-  const sharedDigest = hashProjectConfig(shared);
+  // Collector routing is a deployment setting and does not change Run or Evidence inputs.
+  const executionConfig = { ...shared };
+  delete executionConfig.telemetry;
+  const sharedDigest = hashProjectConfig(executionConfig);
   const localDigest = local ? hashProjectConfig(local) : null;
   const effectiveDigest = createHash('sha256')
     .update(canonicalJson({ sharedDigest, localDigest }))

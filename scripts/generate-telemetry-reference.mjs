@@ -61,7 +61,7 @@ const document = `# Telemetry schema v1 reference
 
 Use this generated reference to build SigNoz dashboards against Repoctopus's public OTLP protocol. Change the machine catalog in \`domains/telemetry/observation-contract.ts\`, then run \`npm run generate:telemetry-reference\`; don't edit this file by hand.
 
-Field names are protocol, not deployment configuration. Configure the Collector address and authentication with standard OpenTelemetry environment variables.
+Use these field names as written in queries. See [deployment configuration](telemetry.md#配置) for the workspace Collector URL, OpenTelemetry overrides, and authentication.
 
 ${signalSections.join('\n\n')}
 

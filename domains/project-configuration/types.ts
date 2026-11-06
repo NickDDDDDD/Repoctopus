@@ -144,6 +144,7 @@ export interface SharedProjectConfig {
   skillProviders?: CapabilityProviderReference[];
   specificationProvider?: SpecificationProviderReference;
   lifecycle?: { skillBindings: TeamSkillBindingsConfig };
+  telemetry?: { endpoint: string };
 }
 
 export interface LocalProjectConfig {
@@ -166,6 +167,7 @@ export interface EffectiveProjectConfig {
   shared: SharedProjectConfig;
   local: LocalProjectConfig | null;
   repositories: Array<RepositoryConfig & { resolvedPath: string }>;
+  /** Shared execution inputs. Use the full shared configuration hash for onboarding approval. */
   sharedDigest: string;
   localDigest: string | null;
   effectiveDigest: string;
