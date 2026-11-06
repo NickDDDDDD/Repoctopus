@@ -1,0 +1,16 @@
+{
+  "change": "fix-openspec-checkout-path-identity",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "9d1cdb27cac5ac5b73e7634eacc892cf83f88b3792dad210382eb11f354c524f",
+  "files": [
+    { "path": "openspec/changes/fix-openspec-checkout-path-identity/proposal.md", "sha256": "4769824d6772119b4bb181953c493e27e6cb9204ed6768aa0a8d61c2dc276451" },
+    { "path": "openspec/changes/fix-openspec-checkout-path-identity/design.md", "sha256": "edb4ac088c4406f74178df4ecd585bc115bd06ca835d052d8d8a2fcd9b7e703c" },
+    { "path": "openspec/changes/fix-openspec-checkout-path-identity/tasks.md", "sha256": "916ca2430e824cdcc4b59f82b6bccb24f0da0608c84b7edb84ac81b34f785429" },
+    { "path": "openspec/changes/fix-openspec-checkout-path-identity/.openspec.yaml", "sha256": "9b4b840064a33a6866a0ebc375b496fbdc2387a324f6c8fb4f21b270218c0d37" },
+    { "path": "openspec/changes/fix-openspec-checkout-path-identity/specs/specification-authority/spec.md", "sha256": "75a25572430fdd8096856ade737197f20aa0586d0e022ef4c64a9b1051b61e8f" }
+  ]
+}
