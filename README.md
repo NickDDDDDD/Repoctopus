@@ -10,19 +10,31 @@ Repoctopus 按团队配置推进需求确认、设计、实现、验证和归档
 
 ### 获取 CLI
 
-准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。以下 PowerShell 示例使用 `v0.1.0`。在同一终端运行后续命令，`Invoke-Repoctopus` 会沿用这个版本。[GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases)
+准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。下面以 `v0.1.0` 为例，在 PowerShell 中任选一种方式安装。
+
+**方式一：直接从发布地址安装**
 
 ```powershell
-$repoctopusPackage = 'https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz'
-
-function Invoke-Repoctopus {
-    npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus @args
-}
-
-Invoke-Repoctopus --help
+npm.cmd install --global --ignore-scripts --legacy-peer-deps https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz
 ```
 
-看到 `Usage: repoctopus ...` 后继续。网络无法访问 Releases 时，把 `$repoctopusPackage` 换成团队提供的本地 `.tgz` 绝对路径。也可以把 CLI 安装到用户目录，后续直接使用 `repoctopus`。[安装指南](docs/install.md)
+**方式二：手动下载 `.tgz` 后安装**
+
+在发布页的 **Assets** 下载 `repoctopus-0.1.0.tgz`，也可以使用团队发给你的同版本文件。[v0.1.0 发布页](https://github.com/NickDDDDDD/Repoctopus/releases/tag/v0.1.0)
+
+如果文件保存在下载目录，运行下面的命令。存放在其他位置时，把引号内的路径替换成实际文件路径。
+
+```powershell
+npm.cmd install --global --ignore-scripts --legacy-peer-deps "$env:USERPROFILE\Downloads\repoctopus-0.1.0.tgz"
+```
+
+**检查安装**
+
+```powershell
+repoctopus.cmd --help
+```
+
+看到 `Usage: repoctopus ...` 后，继续下方的多仓或单仓接入。全局安装后可以在其他终端直接使用 `repoctopus.cmd`。需要临时运行、安装到独立用户目录，或终端找不到命令时，见[安装指南](docs/install.md)。
 
 ### 接入多仓项目
 
@@ -39,7 +51,7 @@ team-platform/
 
 ```powershell
 Set-Location .\workspace
-$detected = Invoke-Repoctopus project detect --workspace . --scan-root .. --store team-platform --json | ConvertFrom-Json
+$detected = repoctopus.cmd project detect --workspace . --scan-root .. --store team-platform --json | ConvertFrom-Json
 $draft = $detected.result.file
 $draft
 ```
@@ -51,7 +63,7 @@ $draft
 以现有业务仓根目录作为 Workspace，例如 `settings-app/`。规格、团队配置与业务代码同仓存放。把业务仓放在只包含该仓的父目录下，然后进入业务仓根目录运行。
 
 ```powershell
-$detected = Invoke-Repoctopus project detect --workspace . --scan-root .. --json | ConvertFrom-Json
+$detected = repoctopus.cmd project detect --workspace . --scan-root .. --json | ConvertFrom-Json
 $draft = $detected.result.file
 $draft
 ```
@@ -67,8 +79,8 @@ $draft
 候选保存后，在同一个 Workspace 根目录准备审批。最后一条命令在交互终端中执行。
 
 ```powershell
-$prepared = Invoke-Repoctopus project prepare --workspace . --draft $draft --candidate .repoctopus/drafts/project-candidate.yaml --json | ConvertFrom-Json
-Invoke-Repoctopus project review --workspace . --request $prepared.result.file
+$prepared = repoctopus.cmd project prepare --workspace . --draft $draft --candidate .repoctopus/drafts/project-candidate.yaml --json | ConvertFrom-Json
+repoctopus.cmd project review --workspace . --request $prepared.result.file
 ```
 
 批准后，Repoctopus 准备或复用 Workspace 的 `openspec/`，登记本机的 OpenSpec Store，并写入团队共享的 `repoctopus.yaml`。把生成的共享文件按团队 Git 流程合入远端目标分支。
@@ -87,10 +99,10 @@ git switch main
 git pull --ff-only origin main
 git switch -c change/fix-settings-save-message
 git push -u origin HEAD
-Invoke-Repoctopus run start --workspace . --change fix-settings-save-message --target main --json
+repoctopus.cmd run start --workspace . --change fix-settings-save-message --target main --json
 ```
 
-把输出的 `runId`、任务描述和固定版本的 CLI 命令交给 Agent。让它按 Repoctopus 派发的 Work 继续，在需要人工确认时停下来。Open 产物准备好后，在 Workspace 审核 OpenSpec 提案和涉及的仓库。多仓 Change 的实现分别提交到对应的业务仓。[启动与恢复指南](docs/project-onboarding.md#启动第一个-change)
+把输出的 `runId`、任务描述和团队使用的 CLI 版本交给 Agent。让它按 Repoctopus 派发的 Work 继续，在需要人工确认时停下来。Open 产物准备好后，在 Workspace 审核 OpenSpec 提案和涉及的仓库。多仓 Change 的实现分别提交到对应的业务仓。[启动与恢复指南](docs/project-onboarding.md#启动第一个-change)
 
 ## 接入已有团队项目
 
