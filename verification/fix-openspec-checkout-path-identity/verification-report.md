@@ -14,3 +14,9 @@
 - 从精确修复提交构建 tarball。将测试临时目录设为真实 8.3 短路径，实际安装版 `test:package-e2e` 通过。隔离 npm 缓存使用同一候选运行 `test:release-npx`，帮助与 JSON 协议均通过。临时安装和打包目录已清理。随后只调整失效登记测试的断言写法，重新运行安装验收与 lint 均通过。组合摘要测试确认改动后的插件实现身份，包内容未因这两项测试调整而变化。
 - Build 独立审查复核了审批文件边界、恢复时 Store 登记重新核验和正反路径场景。发现的问题已修正并复审。现有 Archive 隔离测试覆盖正常隔离 checkout。本次仅验证与路径身份改动相关的归档行为。
 - 远端 Windows CLI 和桌面安装器验收由合入后的 Release Prepare 执行。公开安装包与真实 URL 的 `npx` 验收由 Publish 执行。
+
+## 全量检查与独立集成审查
+
+- Comet Build 通过 `npm.cmd run verify`。195 个测试文件通过，1 个跳过。1,013 项测试通过，3 项跳过。19 个 OpenSpec 条目严格校验通过，包摘要门禁通过。
+- 独立 Verify 审查核对最终产品 diff、OpenSpec 要求、审批和扫描边界、正常 Archive 隔离，以及 Windows 8.3 安装包验收证据。当前变更无阻塞项。
+- 审查标记了一处既有的 Archive 候选目录 junction 校验缺口，和本次 Store 路径判断修复分开记录。正常隔离 worktree 路径通过已有验收。
