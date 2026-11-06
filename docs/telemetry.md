@@ -1,19 +1,29 @@
-# OpenTelemetry
+# 接入团队 SigNoz
 
-Repoctopus 通过标准 OTLP/HTTP 向自部署的 SigNoz 等后端发送数据。本文说明如何配置投递，以及 Runtime 如何保证本地 Desktop 与远端后端消费同一套事实。完整字段、信号、单位、基数和指标公式见[遥测 schema v1 参考](telemetry-reference.md)。
+在 Workspace 的 `repoctopus.yaml` 配置 Collector 地址后，Repoctopus 会将工作流的 Trace、Log 和 Metric 发到团队的 SigNoz。Windows Desktop 可同时显示当前 Change，两者消费同一套 OTLP 事件。完整字段、信号、单位和指标公式见[遥测 schema v1 参考](telemetry-reference.md)。
 
 ## 配置
 
-在协调仓的 `repoctopus.yaml` 添加 `telemetry.endpoint`，从该工作区启动 Repoctopus 即可开启远端上报。
+### 1. 取得 Collector 地址
+
+请 SigNoz 管理员提供开发机和 CI 能访问的 **OTLP/HTTP 基础 URL**。自托管 Collector 直连常用 HTTP 端口 `4318`，团队也可以通过 HTTPS 网关暴露。例如，网关基础地址 `https://signoz-collector.example.internal/otlp` 对应 Trace 路由 `https://signoz-collector.example.internal/otlp/v1/traces`。Repoctopus 发送 OTLP/HTTP JSON，网关需要允许 `POST` 与 `application/json`。SigNoz 看板网页地址用于浏览数据，默认 gRPC 端口 `4317` 用于其他客户端。参见 [SigNoz 自托管接入文档](https://signoz.io/docs/ingestion/self-hosted/overview/)。
+
+### 2. 写入团队共享配置
+
+在 Workspace 根目录已有的 `repoctopus.yaml` 增加以下块。把示例 URL 换成团队提供的基础地址，保留网关路径前缀，省略末尾的信号路径。
 
 ```yaml
 telemetry:
-  endpoint: https://signoz-collector.example.internal
+  endpoint: https://signoz-collector.example.internal/otlp
 ```
 
-填写 Collector 的 OTLP/HTTP 基础 URL。可以包含网关路径前缀，例如 `https://collector.example.internal/otlp`。Runtime 会追加 `/v1/traces`、`/v1/logs` 和 `/v1/metrics`。认证通过环境变量配置，YAML 地址不接受内嵌凭据、查询参数或片段。
+Runtime 会追加 `/v1/traces`、`/v1/logs` 和 `/v1/metrics`。YAML 使用 HTTP(S) URL，省略 URL 内的凭据、查询参数和片段。凭据通过进程环境提供。
 
-地址优先级从高到低为按信号环境变量、公共环境变量、工作区 YAML。认证 Header 会发送到实际选中的 Collector，请在可信的工作区使用团队配置。同一 Runtime 版本内，Collector 地址不参与 Run 的执行配置身份。仅使用环境变量的部署继续有效。上报字段名使用 [schema v1](telemetry-reference.md) 的公开名称。Repoctopus 不提供字段别名，也不要求 Collector Transform 改名。
+### 3. 按需注入认证与部署属性
+
+自托管 SigNoz 默认无需 ingestion key。如果团队网关要求认证，在启动 Agent 或 CLI 的同一个环境中提供 `OTEL_EXPORTER_OTLP_HEADERS`。值是逗号分隔的 `键=值`，例如由凭据管理器注入 `authorization=Bearer%20...`。Header 会发送到实际选中的 Collector。
+
+同一 Runtime 版本内，Collector 地址不参与 Run 的执行配置身份。字段名使用 [schema v1](telemetry-reference.md) 的公开名称。Repoctopus 不提供字段别名，也不要求 Collector Transform 改名。
 
 | 变量                                                                                                            | 作用                                                                         | 优先级                                              |
 | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------- |
@@ -25,30 +35,47 @@ telemetry:
 | `OTEL_EXPORTER_OTLP_TRACES_TIMEOUT`、`OTEL_EXPORTER_OTLP_LOGS_TIMEOUT`、`OTEL_EXPORTER_OTLP_METRICS_TIMEOUT`    | 单独覆盖一个信号的超时                                                       | 最高                                                |
 | `OTEL_SERVICE_NAME`                                                                                             | 覆盖默认服务名 `repoctopus-runtime`                                          | 高于 `OTEL_RESOURCE_ATTRIBUTES` 中的 `service.name` |
 | `OTEL_RESOURCE_ATTRIBUTES`                                                                                      | 逗号分隔、URL 编码的 Resource 属性                                           | 不能覆盖固定产品名和 schema 版本                    |
+| `REPOCTOPUS_ENVIRONMENT`                                                                                        | 设置 `deployment.environment.name` 的默认值，未设置时为 `development`        | 低于 `OTEL_RESOURCE_ATTRIBUTES` 中的同名属性        |
 
-在 PowerShell 中设置变量后启动 CLI：
+不需要认证或环境覆盖时，YAML 地址就是开启远端上报所需的配置。只设置单信号端点时，仅向该信号端点发送。没有任何远端端点时，工作流继续执行。地址优先级从高到低为按信号环境变量、公共环境变量、Workspace YAML。
+
+## 确认 SigNoz 已收到数据
+
+在已接入的 Workspace 运行一次真实 Change，或执行团队已有的 `verify` Profile。后者会实际执行 Profile 的检查命令。
 
 ```powershell
-$env:OTEL_EXPORTER_OTLP_ENDPOINT = 'http://signoz.example.internal:4318'
-$env:OTEL_EXPORTER_OTLP_HEADERS = 'authorization=Bearer%20replace-with-secret'
-$env:OTEL_SERVICE_NAME = 'team-platform-repoctopus'
-$env:OTEL_RESOURCE_ATTRIBUTES = 'service.namespace=developer-platform,deployment.environment.name=production'
-$env:REPOCTOPUS_ENVIRONMENT = 'development'
-node bin/repoctopus.js evidence run --workspace . --profile verify --json
+repoctopus evidence run --workspace . --profile verify --json
 ```
 
-命令完成后，Collector 会收到 Trace、Log 和 Metric。三个信号携带同一 envelope identity 与允许列表语义；认证 header 只用于 HTTP 请求，不进入领域状态、日志属性或配置摘要。没有 YAML 或公共环境变量端点时，Runtime 只发送已单独配置端点的信号。所有配置都缺少端点时，远端导出保持关闭，Run 和 Evidence 继续执行。
+1. 在 SigNoz 选中覆盖这次执行的时间范围。在 **Logs Explorer** 搜索 `service.name = 'repoctopus-runtime'`。如果团队设置了 `OTEL_SERVICE_NAME`，改用实际服务名。
+2. 如果同一服务名下有多种数据，加入 `repoctopus.product.name = 'repoctopus'`。将 `repoctopus.event.type` 加到结果列，检查是否出现此次操作的事件。使用 Change Run 时，可以用 `repoctopus.run.id` 查单次运行，并按 `repoctopus.event.sequence` 读取事件顺序。
+3. 在 **Traces Explorer** 用同样的服务名确认 Span，在 **Metrics Explorer** 查找 `repoctopus.observation`。Evidence 冒烟能验证接收链路。Build、Skill 使用、归档等数据在执行对应工作流步骤后出现。
 
-正常的 Change Run 会自动启动或激活 Desktop，Runtime 再从受保护的 discovery 取得本机会话端点和短期凭据。只有在隔离的 Receiver 冒烟测试中才显式设置：
+如果三个信号都缺失，核对命令运行的 Workspace、Agent 环境里的 OTLP 地址覆盖，以及开发机到 Collector 的 DNS、TLS 和网关认证。只有一种信号缺失时，优先检查该信号的环境覆盖、`/v1/...` 路由与 Collector pipeline。网关返回 `404` 时核对地址和前缀，`401/403` 时核对认证，`415` 时核对 JSON 请求支持。CLI 工作结果成功并不代表远端投递成功。
+
+## 创建团队看板
+
+在 SigNoz 的 Dashboards 新建看板，用 Query Builder 添加 Metric 面板。每个面板先用实际的 `service.name` 限定 Repoctopus 数据。以下字段可以直接在面板使用。
+
+| 想看什么               | Metric                               | 聚合与分组                                                                                                             |
+| ---------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| 各类工作流事件的数量   | `repoctopus.workflow.events`         | 时间聚合选 Increase，空间聚合选 Sum，按 `repoctopus.event.type` 分组。                                                 |
+| 哪个阶段的 Work 耗时长 | `repoctopus.work.execution.duration` | 时间聚合选 Max，空间聚合选 Max，按 `repoctopus.execution.phase` 和 `repoctopus.execution.work.kind` 分组。单位为毫秒。 |
+| Skill 回执与结果的分布 | `repoctopus.skill.usage`             | 时间聚合选 Increase，空间聚合选 Sum，按 `repoctopus.skill.category`、`repoctopus.skill.result` 分组。                  |
+| 各交付状态的事件数量   | `repoctopus.delivery.events`         | 时间聚合选 Increase，空间聚合选 Sum，按 `repoctopus.delivery.state` 分组。                                             |
+
+看板用低基数字段观察团队趋势。排查具体 Change 时，在 Logs Explorer 或 Traces Explorer 用 `repoctopus.run.id`、`repoctopus.change.id` 和面板的时间范围定位执行。按阶段、等待、Work 或 Evidence 逐步缩小范围。指标公式与可用维度见[遥测字段参考](telemetry-reference.md)，界面操作见 [SigNoz Query Builder](https://signoz.io/docs/userguide/query-builder-v5/)和[指标聚合](https://signoz.io/docs/metrics-management/types-and-aggregation/)。
+
+## Windows Desktop
+
+正常的 Change Run 会尝试启动或激活已安装的 Desktop，Runtime 从受保护的 discovery 获取本地会话端点和短期凭据。以下变量仅用于隔离的 Receiver 冒烟测试。
 
 ```powershell
 $env:REPOCTOPUS_DESKTOP_OTLP_ENDPOINT = 'http://127.0.0.1:4319'
 $env:REPOCTOPUS_DESKTOP_OTLP_TOKEN = '<session-token>'
 ```
 
-只配置远端时只有 `remote` 目的地；同时配置上面两个 Desktop 变量时增加 `desktop` 目的地。设置 `REPOCTOPUS_DESKTOP_OTLP_MODE=paused` 会暂停并保留有界积压；设置为 `removed` 或清空 Desktop 端点会移除本地目的地。没有配置任何端点时，事实仍然可以落入本地 envelope store，工作流结果不受影响。
-
-源码和安装态激活方法见[启动或恢复 Desktop Dashboard](desktop-activation.md)。桌面不可用只影响本地观测，不改变 Change Run 或远端目的地。
+`REPOCTOPUS_DESKTOP_OTLP_MODE=paused` 暂停本地投递并保留有界积压。`removed` 移除本地目的地。桌面不可用时，Change Run 和远端上报继续执行。详见[启动或恢复 Desktop Dashboard](desktop-activation.md)。
 
 ## 先落盘，再导出
 

@@ -152,7 +152,7 @@ node bin/repoctopus.js change reconcile --workspace . --change <change-id> --jso
 | 数据                                         | 权威位置                       | 运维要求                                |
 | -------------------------------------------- | ------------------------------ | --------------------------------------- |
 | 团队配置和 Provider 选择                     | `repoctopus.yaml`              | 进入 Git，只引用 Credential 名称        |
-| 本机覆盖                                     | `repoctopus.local.yaml`        | 不提交，不得扩大共享权限                |
+| 本机覆盖                                     | `.repoctopus/local.yaml`       | 不提交，不得扩大共享权限                |
 | Run、Trajectory、Evidence、Action、Delivery  | `.repoctopus/`                 | 受限权限、备份和保留策略                |
 | Publication Receipt 与一致性审查             | `.repoctopus/` 对应领域 Store  | 不手工编辑；通过命令恢复                |
 | Host Hook、rules、Skill 与 Agent instruction | 原 Host 约定路径               | 保持原位；由输入策略登记并绑定 Evidence |

@@ -1,26 +1,45 @@
 # 项目接入
 
-Repoctopus 使用“确定性扫描 → Agent 补全 → 用户确认”建立团队共享配置。扫描结果只是本机草稿；Agent 不能把自己的推断直接写成团队事实。
+由团队维护者执行首次接入。先[安装 CLI](install.md)，再选定一个 Git 仓库作为 Workspace。接入分三步建立共享配置：CLI 探测仓库，Agent 核对并补全候选，维护者审核后发布。已经接入的团队成员可以直接看[新成员接入](#新成员接入)。
 
-## 配置边界
+## 选择 Workspace
 
-- Workspace 是团队共享、版本化的 Repoctopus 工作流入口。单仓项目可将它嵌入业务仓（Embedded Workspace）；多仓项目通常使用与业务仓同级的独立 Workspace Repository（Dedicated Workspace）。两种拓扑使用同一配置与运行模型。
-- `workspace.repositoryId` 必须指向路径为 `.` 的登记仓库。每个 change 的 Change MR 位于这个 Workspace Repository；业务 MR 位于 Delivery Intent 选定的业务仓。Embedded Workspace 可以让两类 MR 同仓，但必须使用不同分支拓扑与 MR 身份。
-- `repoctopus.yaml` 进入 Git，保存逻辑仓库、Evidence Profile、团队插件、保留规则和交付策略。
-- `.repoctopus/local.yaml` 被 Git 忽略，只保存本机仓库路径、端口、浏览器路径、视觉反馈交换目录和资源上限。
-- `.repoctopus/drafts/` 和 `.repoctopus/decisions/` 是本机接入状态，不进入业务仓。
+- **单仓**。在业务仓根目录放置 `repoctopus.yaml` 和 `openspec/`。业务 MR 和 Change MR 可以在同一仓库，使用各自的分支和 MR。
+- **多仓**。把协调仓和业务仓检出到同一个父目录，例如 `team-platform/` 下的 `workspace/`、`web/` 和 `backend/`。协调仓保存共享配置、OpenSpec 和 Change MR，业务仓保存实现和业务 MR。
 
-初始化项目仓时可把 [`examples/repoctopus.gitignore`](examples/repoctopus.gitignore) 的规则加入 workspace `.gitignore`。当前规则忽略整个 `.repoctopus/`，因为该目录只包含本机覆盖、草稿、运行状态、证据对象和受管浏览器；共享事实仅写入根目录的 `repoctopus.yaml`。
+OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个 ID，例如 `team-platform`。每台机器把该 ID 登记到自己的 Workspace 路径。详见 [Workspace、Store 与实现仓](specification.md#workspacestore-与实现仓)。
 
-- `project detect` 只在首次接入或显式重新探测时扫描 `--scan-root` 指定目录中的直接子 Git 仓库，并把 `--workspace` 所在 Git 仓库一同纳入候选。日常 Run、Evidence、Delivery 与恢复不扫描目录，只使用正式配置中登记的仓库。
+## 配置放在哪里
+
+| 位置                                    | 谁维护                 | 放什么                                                                                 |
+| --------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------- |
+| Workspace 根目录的 `repoctopus.yaml`    | 团队维护者，提交到 Git | 仓库 ID、相对路径、验证 Profile、交付策略、OpenSpec Store、团队 Skill 和 Collector URL |
+| Workspace 内的 `.repoctopus/local.yaml` | 本机用户               | 绝对仓库路径、端口、浏览器、视觉交换目录及资源上限                                     |
+| 启动 Agent 或 CLI 的进程环境            | 开发者或 CI 的凭据管理 | GitHub API Token、Collector 认证 Header 等凭据                                         |
+| Workspace 内的 `.repoctopus/`           | Runtime                | 探测草稿、审批请求、Run 状态与 Evidence                                                |
+
+将[示例忽略规则](examples/repoctopus.gitignore)加入 Workspace 的 `.gitignore`。本机覆盖、状态和草稿随 `.repoctopus/` 一起留在本机。
+
+[共享配置示例](examples/repoctopus.yaml)展示多仓字段的组织方式。按团队实际仓库、验证命令、Skill 和目标环境补全候选，再走下面的审核流程。
+
+| 共享配置项                                                         | 如何填写                                                                                                                                                 |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apiVersion`、`kind`                                               | 使用示例中的版本和类型。                                                                                                                                 |
+| `workspace`、`repositories`                                        | 为 Workspace 和各仓设置稳定 ID。`workspace.repositoryId` 指向路径为 `.` 的登记仓库，其他仓填写相对路径。                                                 |
+| `profiles`、`evidence.retention`                                   | 用 `verify` Profile 指定各仓的构建、测试和验收命令。按真实验证范围填写 `covers`，按团队要求设置本地 Evidence 的保留规则。详见 [Evidence](evidence.md)。  |
+| `specificationProvider.store`                                      | 使用探测和审批确认的 Store ID，`repositoryId` 指向规格所在的 Workspace 仓库。                                                                            |
+| `delivery.checkpoint`、`delivery.publication`                      | 配置受保护分支、检查命令、远端和 GitHub API。凭据位置填环境变量名，例如 `REPOCTOPUS_GITHUB_TOKEN`，由开发环境或 CI 注入值。详见[交付治理](delivery.md)。 |
+| `skillProviders`、`lifecycle.skillBindings`、`composition.plugins` | 按需添加团队 Skill 来源、阶段绑定或经过审核的扩展。详见 [Skills](skills.md)和[插件](plugins.md)。                                                        |
+| `telemetry.endpoint`                                               | 可选。填写团队的 OTLP/HTTP Collector 基础 URL，详见 [SigNoz 接入](telemetry.md)。                                                                        |
+
+字段形状见[共享配置 Schema](schemas/project-config.schema.json)和[本机覆盖 Schema](schemas/local-project-config.schema.json)。
 
 ## 1. 生成探测草稿
 
-在 Repoctopus workspace 中运行：
+在选定的 Workspace Git 仓库根目录运行。多仓布局用 `--scan-root ..`，单仓用 `--scan-root .`。CLI 扫描指定目录的直接子 Git 仓库，并纳入 Workspace 本身。日常运行只使用审核后登记的仓库。
 
 ```powershell
-npm run build
-$detected = node bin/repoctopus.js project detect --scan-root .. --workspace . --store team-platform --json | ConvertFrom-Json
+$detected = repoctopus project detect --scan-root .. --workspace . --store team-platform --json | ConvertFrom-Json
 $draft = $detected.result.file
 $draft
 ```
@@ -58,7 +77,7 @@ Profile 必须至少有一个声明 coverage 的 required 节点；optional 节�
 ## 3. 准备人工决定
 
 ```powershell
-$prepared = node bin/repoctopus.js project prepare `
+$prepared = repoctopus project prepare `
   --workspace . `
   --draft $draft `
   --candidate .repoctopus/drafts/project-candidate.yaml `
@@ -71,7 +90,7 @@ Repoctopus 会再次解析完整候选，计算候选摘要，并把当前正式
 ## 4. 由用户确认
 
 ```powershell
-node bin/repoctopus.js project review --workspace . --request $request
+repoctopus project review --workspace . --request $request
 ```
 
 `project review` 只接受交互式终端。IDE Adapter 可以展示同一版本化请求，但必须提供经过认证且绑定当前 `snapshotDigest` 的响应。选择批准后，Runtime 才原子写入 `repoctopus.yaml`；请求修改或拒绝不会写入正式配置。
@@ -87,15 +106,15 @@ node bin/repoctopus.js project review --workspace . --request $request
 
 如果看到 `store_register_root_unhealthy`，说明使用的是尚未具备 Root bootstrap 的旧接入路径，或当前 `openspec/` 已是部分根。不要手工修改 `.repoctopus/` journal，也不要删除已有 `openspec/`。升级后重新运行 `project detect`；缺失根会得到可审批的初始化计划，已存在的不健康根则会给出阻断诊断。
 
-需要从本机安全移除登记时，先停止引用该 Workspace 的 CLI/Desktop，运行 `npx openspec context --store <store-id> --json` 核对精确路径，再运行 `npx openspec store unregister <store-id> --json`。该命令不删除 checkout；禁止把 `store remove` 当作清理命令。业务仓 pointer 的删除必须作为普通 Git change 单独评审。
+需要从本机安全移除登记时，先停止引用该 Workspace 的 CLI/Desktop，运行 `npx --yes --package @fission-ai/openspec@1.14.3 openspec context --store <store-id> --json` 核对精确路径，再运行 `npx --yes --package @fission-ai/openspec@1.14.3 openspec store unregister <store-id> --json`。该命令不删除 checkout；禁止把 `store remove` 当作清理命令。业务仓 pointer 的删除必须作为普通 Git change 单独评审。
 
 ## 5. 运行首次 Evidence
 
 ```powershell
-node bin/repoctopus.js evidence plan --workspace . --profile verify --json
-$run = node bin/repoctopus.js evidence run --workspace . --profile verify --json | ConvertFrom-Json
-node bin/repoctopus.js evidence status --workspace . --attempt $run.runId --json
-node bin/repoctopus.js evidence inspect --workspace . --attempt $run.runId --json
+repoctopus evidence plan --workspace . --profile verify --json
+$run = repoctopus evidence run --workspace . --profile verify --json | ConvertFrom-Json
+repoctopus evidence status --workspace . --attempt $run.runId --json
+repoctopus evidence inspect --workspace . --attempt $run.runId --json
 ```
 
 `plan` 在副作用前完成配置解析、DAG 校验和输入指纹采集。`run` 将 Attempt、Receipt、Artifact 和 Bundle 保存到 `.repoctopus/evidence/`。若进程在运行中中断，使用 `evidence resume --attempt <id>`；恢复不会静默重跑已开始但没有 Receipt 的命令。
@@ -103,3 +122,35 @@ node bin/repoctopus.js evidence inspect --workspace . --attempt $run.runId --jso
 ## 更新已有项目
 
 再次执行 `project detect` 会生成新草稿，并在 `reconcile` 中列出新增、删除和冲突。现有正式配置保持不变。完成 Agent 补全和用户确认后，才会写入新版本。
+
+## 新成员接入
+
+1. 检出团队 Workspace 和需要使用的业务仓，尽量沿用团队相对目录布局。
+2. 如果本机布局不同，按仓库 ID 在 `.repoctopus/local.yaml` 覆盖实际路径。例如，团队登记的 `backend` 在另一块盘时可以写成：
+
+   ```yaml
+   apiVersion: repoctopus/v1alpha1
+   kind: RepoctopusLocal
+   repositoryPaths:
+     backend: 'D:/team-platform/backend'
+   ```
+
+3. 在本机登记团队已批准的 Store ID。沿用第 1 至 4 步，以现有 `repoctopus.yaml` 为候选，核对审批预览只包含预期登记或 pointer。工作区配置已被审批且根健康时，仍需完成本机登记。详见 [OpenSpec Store](specification.md#workspacestore-与实现仓)。
+4. 从启动 Agent 或 CLI 的环境注入团队要求的发布凭据和 Collector Header。用 `repoctopus evidence plan --workspace . --profile verify --json` 检查仓库和 Profile 能否解析。
+
+## 启动第一个 Change
+
+在已接入的 Workspace 中，从团队目标分支创建并公开一个 Change 分支。下面以 `main` 为目标，`fix-settings-save-message` 为 Change ID。也可以让 Agent 在收到需求后执行这些命令。
+
+```powershell
+git switch main
+git pull --ff-only origin main
+git switch -c change/fix-settings-save-message
+git push -u origin HEAD
+
+$started = repoctopus run start --workspace . --change fix-settings-save-message --target main --json | ConvertFrom-Json
+$runId = $started.runId
+repoctopus run status --workspace . --run $runId --json
+```
+
+在 Agent 对话中同时说明需求、`changeId` 和 `runId`，让它从同一个 Run 继续。Agent 用 `run next` 请求 Runtime 派发下一步，按返回的 continuation 领取 Work、使用执行包里的 Skill 并提交 Outcome。遇到人工决定时，由你在 Runtime 给出的可信交互入口确认。多仓任务在 Build 为需要写入的业务仓准备并推送各自的工作分支。运行中断后，先查原 Run 状态，再按[恢复指南](self-hosting.md#3-运行与恢复)操作。
