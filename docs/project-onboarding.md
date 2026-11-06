@@ -36,7 +36,7 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个
 
 ## 1. 生成探测草稿
 
-在选定的 Workspace Git 仓库根目录运行。CLI 只扫描 `--scan-root` 的直接子 Git 仓库，所以单仓和同级多仓布局都用 `--scan-root ..`。Workspace 必须位于扫描目录下一级。父目录若还有无关仓库，先核对探测到的仓库 ID，用 `--skip-pointer` 重新探测以跳过这些仓库，再从配置候选中移除它们。日常运行只使用审核后登记的仓库。
+在选定的 Workspace Git 仓库根目录运行。CLI 只扫描 `--scan-root` 的直接子 Git 仓库，所以单仓和同级多仓布局都用 `--scan-root ..`。Workspace 必须位于扫描目录下一级。建议使用仅包含本项目仓库的父目录。若扫描结果还包含无关仓库，审核前核对配置候选和 Store pointer 清单。
 
 ```powershell
 $detected = repoctopus project detect --scan-root .. --workspace . --store team-platform --json | ConvertFrom-Json
