@@ -80,7 +80,7 @@ Build phase 固定执行 `Configure → Plan → Plan Evidence → Execute → C
 
 `ExecutionBinding` schema v3 只记录 Runtime 在 Configure 观察并验证的协调 Host identity、repository/branch/HEAD、ownership 和 opaque local overlay reference；它不记录 Configure invocation 的 capability list 或 digest。绝对路径只保存在本机 overlay，不进入可移植状态或 OTLP。Configure 成功后自动进入 Plan，不建立第二次常规人工批准。Plan、Execute 与 Check Outcome 只绑定原 claim/invocation/submission identity，并重新验证 Binding 自己拥有的事实；后续 Work 使用更小或不同的合法 capability 集合不会重建 Binding。旧 Binding schema 明确返回 `migration_required`，不双读旧 capability identity。
 
-隔离意图不包含 delivery target branch，也不包含逐仓 branch map。前者属于 `ChangeStartBinding`/Delivery，后者属于可重建的 `ExecutionBinding`；否则协调仓功能分支、只读仓 `main` 和不同名称的业务功能分支会被错误要求同名。Open 只验证 topology、repository identity 和隔离形态。Plan 形成精确 write scopes 后才对可写仓执行 protected-branch 检查；只读仓可以继续停留在 target branch。
+隔离意图不包含 delivery target branch，也不包含逐仓 branch map。前者属于 `ChangeStartBinding`/Delivery，后者属于可重建的 `ExecutionBinding`；否则 Workspace 的功能分支、只读仓 `main` 和不同名称的业务功能分支会被错误要求同名。Open 只验证 topology、repository identity 和隔离形态。Plan 形成精确 write scopes 后才对可写仓执行 protected-branch 检查；只读仓可以继续停留在 target branch。
 
 Runtime 本版不创建、切换或删除 checkout；Runner 先准备 checkout，再把当前事实交给 Configure。同一 Strategy 下协调 Host identity、checkout、ownership、isolation 或 local overlay 漂移会自动选择新的 Configure Work，建立新 Binding revision，并只失效依赖旧 Binding state 的 Plan/Evidence/未执行 Work。Strategy 不变时复用原 Design 决定。当前 Work 暂时没有兼容 Host 时保持该 Work pending；它不是 Binding drift。越界 ownership、错误 isolation 或不兼容 composition 仍然 fail closed。
 

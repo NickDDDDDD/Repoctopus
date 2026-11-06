@@ -251,7 +251,7 @@ Evidence retention MUST 把已接受 Bundle 的 Acceptance Trace、所有 entry 
 
 ### Requirement: Evidence 输入必须区分产品与执行控制面
 
-Repoctopus MUST 使用版本化 Repository Input Policy 与仓库角色把输入区分为实现产品内容、规范化规划语义、内容寻址的执行控制面和未知输入。Evidence fingerprint 与 Verification Input MUST 记录各分区identity及当前检查实际声明的依赖；不得把协调仓原始HEAD、Task checkbox或publication provenance冒充规划语义，也不得静默忽略检查真实消费的输入。
+Repoctopus MUST 使用版本化 Repository Input Policy 与仓库角色把输入区分为实现产品内容、规范化规划语义、内容寻址的执行控制面和未知输入。Evidence fingerprint 与 Verification Input MUST 记录各分区identity及当前检查实际声明的依赖；不得把 Workspace 的原始 HEAD、Task checkbox或publication provenance冒充规划语义，也不得静默忽略检查真实消费的输入。
 
 #### Scenario: 外部 Host 在仓库中安装执行文件
 
@@ -270,7 +270,7 @@ Repoctopus MUST 使用版本化 Repository Input Policy 与仓库角色把输入
 
 #### Scenario: Specification 仓只勾选已完成 Task
 
-- **WHEN** Specification Provider确认Task稳定ID、正文、依赖、Acceptance和Requirement mappings未变，只有合法Work导致checkbox状态和协调仓commit变化
+- **WHEN** Specification Provider确认Task稳定ID、正文、依赖、Acceptance和Requirement mappings未变，只有合法Work导致checkbox状态和Workspace 的 Git commit 变化
 - **THEN** planning semantic identity保持不变，未声明读取checkbox或commit的实现与验证Evidence不得失效
 
 ### Requirement: 控制面输入分类必须 fail-closed
@@ -341,7 +341,7 @@ Repoctopus MUST 用同一个纯领域 resolver 处理 Design preflight 和 Verif
 
 #### Scenario: 非语义收尾提交
 
-- **WHEN** 协调仓提交只更新Task checkbox、验证报告引用或publication provenance，且没有改变planning semantic identity或任何检查声明的输入
+- **WHEN** Workspace 中的提交只更新Task checkbox、验证报告引用或publication provenance，且没有改变planning semantic identity或任何检查声明的输入
 - **THEN** Runtime保留Design approval、Build Plan、实现completion与Verify Evidence，不返回Design或Verify
 
 ### Requirement: Evidence 无效与 Evidence 不可用必须分离

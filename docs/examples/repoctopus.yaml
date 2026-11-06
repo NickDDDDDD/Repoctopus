@@ -8,7 +8,7 @@ repositories:
     path: .
   - id: app
     path: ../app
-# 可选。用协调仓中的一个 OTLP/HTTP URL 开启团队遥测。
+# 可选。在 Workspace 的共享配置中设置 OTLP/HTTP URL，开启团队遥测。
 # telemetry:
 #   endpoint: https://signoz-collector.example.internal
 composition:

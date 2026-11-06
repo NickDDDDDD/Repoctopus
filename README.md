@@ -1,6 +1,8 @@
 # Repoctopus
 
-用一个 Change 协调跨仓库的需求、实现、验证和交付。团队从 **Workspace** 进入工作流，在协调仓维护共享配置和 OpenSpec 规格，在各业务仓提交实现。单仓项目也可以直接把业务仓作为 Workspace。
+Repoctopus 是一套面向软件团队的规格驱动开发工作流，帮助团队用编码 Agent 完成跨 Git 仓库的变更。例如，一个功能同时涉及前端和后端时，团队可以在一份 OpenSpec 变更里约定需求和验收标准，Agent 在各业务仓完成实现。
+
+Repoctopus 按团队配置推进需求确认、设计、实现、验证和归档。开发者在关键节点审批，交付前可以查看运行了哪些检查及其结果。工作中断后，团队可以从原有进度继续。
 
 ## 快速开始
 
@@ -24,11 +26,11 @@ Invoke-Repoctopus --help
 
 ### 接入多仓项目
 
-准备一个团队共享的 Git 协调仓作为 Workspace。可以复用现有协调仓，也可以在团队的托管平台新建并初始化一个仓库。把它和业务仓检出到同一个父目录，每个仓都要有 Git 提交。
+**Workspace** 是团队使用 Repoctopus 的入口，保存共享配置和 OpenSpec 规格。多仓项目使用一个独立的 Git 仓库作为 Workspace，可以复用已有仓库或新建一个。把 Workspace 和参与项目的业务仓检出到同一个父目录，每个仓至少要有一个 Git 提交。
 
 ```text
 team-platform/
-├── workspace/  # 协调仓，保存 repoctopus.yaml 和 openspec/
+├── workspace/  # Workspace，保存 repoctopus.yaml 和 openspec/
 ├── web/        # 前端业务仓
 └── backend/    # 后端业务仓
 ```

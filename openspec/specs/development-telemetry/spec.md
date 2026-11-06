@@ -625,7 +625,7 @@ Telemetry Adapter MUST 支持在工作区 `repoctopus.yaml` 中声明可选的 `
 
 #### Scenario: 工作区仅用 YAML 配置 Collector
 
-- **WHEN** 协调仓在 `telemetry.endpoint` 填写一个合法的 HTTP 或 HTTPS Collector 基础 URL，并且没有 OTLP 环境变量端点
+- **WHEN** Workspace 的 `telemetry.endpoint` 配置了一个合法的 HTTP 或 HTTPS Collector 基础 URL，并且没有 OTLP 环境变量端点
 - **THEN** 从该工作区启动的 Runtime 使用这个地址发送 traces、logs 和 metrics，保留可选的 URL 路径前缀并追加相应的 `/v1/{signal}`
 
 #### Scenario: 团队配置统一 OTLP 端点
