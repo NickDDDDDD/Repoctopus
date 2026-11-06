@@ -1,0 +1,16 @@
+{
+  "change": "configure-workspace-otlp-endpoint",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "b6c860b3267d093106be3a9b0076d9d2a26ba098dc602769587104b9585fdd25",
+  "files": [
+    { "path": "openspec/changes/configure-workspace-otlp-endpoint/proposal.md", "sha256": "df9fdea9e79a2de6009e521bf717f9bec5d6297769ce22803448dd3c7153fa26" },
+    { "path": "openspec/changes/configure-workspace-otlp-endpoint/design.md", "sha256": "fbd8f36aefd8329d35f56a0eb04b90662dbab78c9f5f19e7cea922afcc594dda" },
+    { "path": "openspec/changes/configure-workspace-otlp-endpoint/tasks.md", "sha256": "17187a98238289be4cc11959069012e6978d93099ec574d925a3f7594bac54f4" },
+    { "path": "openspec/changes/configure-workspace-otlp-endpoint/.openspec.yaml", "sha256": "9b4b840064a33a6866a0ebc375b496fbdc2387a324f6c8fb4f21b270218c0d37" },
+    { "path": "openspec/changes/configure-workspace-otlp-endpoint/specs/development-telemetry/spec.md", "sha256": "082cfa2aad256760bb35139d93e410cf02c4d19091443cbc21ea1b6223403fbd" }
+  ]
+}
