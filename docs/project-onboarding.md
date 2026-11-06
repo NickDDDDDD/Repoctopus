@@ -1,10 +1,10 @@
 # 项目接入
 
-由团队维护者执行首次接入。先[安装 CLI](install.md)，再选定一个 Git 仓库作为 Workspace。接入分三步建立共享配置：CLI 探测仓库，Agent 核对并补全候选，维护者审核后发布。已经接入的团队成员可以直接看[新成员接入](#新成员接入)。
+首次接入时，先获取 CLI，再选定一个 Git 仓库作为 Workspace。CLI 探测仓库，Agent 核对并补全候选，维护者审核后，Repoctopus 才写入团队共享配置。此页给出各步骤的细节。可以先按 README 跑通最短路径。[快速开始](../README.md#快速开始) · [CLI 安装](install.md) · [新成员接入](#新成员接入)
 
 ## 选择 Workspace
 
-- **单仓**。在业务仓根目录放置 `repoctopus.yaml` 和 `openspec/`。业务 MR 和 Change MR 可以在同一仓库，使用各自的分支和 MR。
+- **单仓**。以业务仓根目录作为 Workspace，审核接入后由 Repoctopus 写入共享配置并准备 `openspec/`。业务 MR 和 Change MR 可以在同一仓库，使用各自的分支和 MR。
 - **多仓**。把协调仓和业务仓检出到同一个父目录，例如 `team-platform/` 下的 `workspace/`、`web/` 和 `backend/`。协调仓保存共享配置、OpenSpec 和 Change MR，业务仓保存实现和业务 MR。
 
 OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个 ID，例如 `team-platform`。每台机器把该 ID 登记到自己的 Workspace 路径。详见 [Workspace、Store 与实现仓](specification.md#workspacestore-与实现仓)。
@@ -18,7 +18,7 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个
 | 启动 Agent 或 CLI 的进程环境            | 开发者或 CI 的凭据管理 | GitHub API Token、Collector 认证 Header 等凭据                                         |
 | Workspace 内的 `.repoctopus/`           | Runtime                | 探测草稿、审批请求、Run 状态与 Evidence                                                |
 
-将[示例忽略规则](examples/repoctopus.gitignore)加入 Workspace 的 `.gitignore`。本机覆盖、状态和草稿随 `.repoctopus/` 一起留在本机。
+批准接入时，Repoctopus 将 `.repoctopus/` 加入 Workspace 的 `.gitignore`。本机覆盖、状态和草稿随该目录留在本机。[示例忽略规则](examples/repoctopus.gitignore)
 
 [共享配置示例](examples/repoctopus.yaml)展示多仓字段的组织方式。按团队实际仓库、验证命令、Skill 和目标环境补全候选，再走下面的审核流程。
 
@@ -36,7 +36,7 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个
 
 ## 1. 生成探测草稿
 
-在选定的 Workspace Git 仓库根目录运行。多仓布局用 `--scan-root ..`，单仓用 `--scan-root .`。CLI 扫描指定目录的直接子 Git 仓库，并纳入 Workspace 本身。日常运行只使用审核后登记的仓库。
+在选定的 Workspace Git 仓库根目录运行。CLI 只扫描 `--scan-root` 的直接子 Git 仓库，所以单仓和同级多仓布局都用 `--scan-root ..`。Workspace 必须位于扫描目录下一级。父目录若还有无关仓库，先核对探测到的仓库 ID，用 `--skip-pointer` 重新探测以跳过这些仓库，再从配置候选中移除它们。日常运行只使用审核后登记的仓库。
 
 ```powershell
 $detected = repoctopus project detect --scan-root .. --workspace . --store team-platform --json | ConvertFrom-Json
