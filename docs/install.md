@@ -4,14 +4,19 @@
 
 ## 团队成员安装 CLI
 
-安装 Git 和 Node.js。支持 Node.js 22.16 或更新的 22.x 版本，以及 Node.js 24 及以上。使用团队指定版本的安装包，在该文件所在目录运行以下命令，以 0.1.0 为例。
+安装 Git 和 Node.js。支持 Node.js 22.16 或更新的 22.x 版本，以及 Node.js 24 及以上。使用团队指定版本的安装包，在该文件所在目录打开 Windows PowerShell，运行以下命令，以 0.1.0 为例。
 
 ```powershell
-npm install -g --ignore-scripts --omit=dev ./repoctopus-0.1.0.tgz
-repoctopus --help
+$repoctopusInstall = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.repoctopus-cli'
+npm.cmd install --ignore-scripts --omit=dev --prefix $repoctopusInstall ./repoctopus-0.1.0.tgz
+$repoctopusBin = Join-Path $repoctopusInstall 'node_modules/.bin'
+$env:Path = "$repoctopusBin$([IO.Path]::PathSeparator)$env:Path"
+repoctopus.cmd --help
 ```
 
-如果系统找不到 `repoctopus`，用 `npm prefix -g` 找到全局前缀。Windows 的命令在该目录下，其他系统通常在该目录的 `bin` 下。将它加入 `PATH` 后重新打开终端和编码 Agent。Windows PowerShell 若阻止 npm 的 `.ps1` 启动器，使用 `npm.cmd` 和 `repoctopus.cmd`。
+示例把 CLI 安装到用户目录下的 `.repoctopus-cli`，并更新当前 PowerShell 的 `PATH`。可以从这个终端启动 Agent，让它继承环境。若平时从桌面图标启动 Agent，在 Windows 用户环境变量 `Path` 中加入 `$repoctopusBin` 指向的目录，再重启 Agent。Windows PowerShell 若阻止 `.ps1` 启动器，后续命令也可用 `repoctopus.cmd`。
+
+macOS 和 Linux 同样用 `npm install --ignore-scripts --omit=dev --prefix` 把包安装到独立用户目录，再把该目录下的 `node_modules/.bin` 加入 `PATH`。在 Windows 的 npm 11 验证中，全局安装会在 Cordis 的本地依赖与 DSH peer 依赖之间反复解析，以上独立目录路径已通过打包安装验证。
 
 安装成功后切换到团队 Workspace，再按[首次接入](project-onboarding.md)或[快速开始](../README.md#快速开始)操作。若高级文档中的命令用 `node bin/repoctopus.js` 直接调用源码，安装后可改用 `repoctopus`，其余参数相同。
 

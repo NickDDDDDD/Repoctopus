@@ -6,14 +6,17 @@
 
 ## 安装
 
-准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。在包含团队发给你的 CLI 安装包的目录运行以下命令，以 0.1.0 为例。
+准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。在包含团队发给你的 CLI 安装包的目录用 PowerShell 运行以下命令，以 0.1.0 为例。
 
 ```powershell
-npm install -g --ignore-scripts --omit=dev ./repoctopus-0.1.0.tgz
-repoctopus --help
+$repoctopusInstall = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.repoctopus-cli'
+npm.cmd install --ignore-scripts --omit=dev --prefix $repoctopusInstall ./repoctopus-0.1.0.tgz
+$repoctopusBin = Join-Path $repoctopusInstall 'node_modules/.bin'
+$env:Path = "$repoctopusBin$([IO.Path]::PathSeparator)$env:Path"
+repoctopus.cmd --help
 ```
 
-看到 `Usage: repoctopus ...` 即可在业务工作区使用 CLI。当前 [GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases) 尚无安装资产。维护者可以从固定提交生成 CLI 安装包，按需生成 Windows x64 桌面安装器，再分发给团队。桌面应用用于观察 Change 进度，CLI 负责运行工作流。详见[获取与安装](docs/install.md)。
+看到 `Usage: repoctopus ...` 即可在业务工作区使用 CLI。若从其他终端或桌面图标打开 Agent，先把上面的 `$repoctopusBin` 加入用户 `PATH`，再重启 Agent。当前 [GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases) 尚无安装资产。维护者可以从固定提交生成 CLI 安装包，按需生成 Windows x64 桌面安装器，再分发给团队。桌面应用用于观察 Change 进度，CLI 负责运行工作流。详见[获取与安装](docs/install.md)。
 
 ## 快速开始
 
