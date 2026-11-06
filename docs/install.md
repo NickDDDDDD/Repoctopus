@@ -7,12 +7,12 @@
 在 [GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases) 找到该版本的 `repoctopus-<版本>.tgz`。以下以 `v0.1.0` 为例。
 
 ```bash
-npx --yes --ignore-scripts --package=https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz repoctopus --help
+npx --yes --ignore-scripts --legacy-peer-deps --package=https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz repoctopus --help
 ```
 
-确认输出 `Usage: repoctopus ...` 后，打开团队 Workspace。把上面的 `npx` 前缀加到文档里的 `repoctopus` 命令前，其余参数原样传入。让 Agent 执行时也提供这个固定版本命令。Windows PowerShell 若阻止 `.ps1` 启动器，使用 `npx.cmd`。
+确认输出 `Usage: repoctopus ...` 后，进入准备接入的 Git 项目或已有团队 Workspace。把上面的 `npx` 前缀加到文档里的 `repoctopus` 命令前，其余参数原样传入。让 Agent 执行时也提供这个固定版本命令。Windows PowerShell 若阻止 `.ps1` 启动器，使用 `npx.cmd`。示例带上 `--legacy-peer-deps`，以避开 Windows npm 11 在同一项目连续运行本地 tarball 时的缓存解析错误。
 
-当指定版本仍是草稿、尚无公开资产或网络无法访问 Releases 时，使用团队分发的 tarball。切换到该文件所在目录，再把 `--package` 的值换成 `./repoctopus-0.1.0.tgz`。
+当指定版本仍是草稿、尚无公开资产或网络无法访问 Releases 时，使用团队分发的 tarball。把 `--package` 的值换成该文件的绝对路径，切换到项目目录后仍可使用同一个路径。
 
 ## 安装到用户目录
 

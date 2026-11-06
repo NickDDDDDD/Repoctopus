@@ -1,58 +1,73 @@
 # Repoctopus
 
-让团队的编码 Agent 从需求、设计和验证走到归档交付，同一个 Change 可以协调多个 Git 仓库。
+让编码 Agent 按同一套规格、验证和交付流程推进单仓或多仓变更。
 
-在 Codex 等能运行终端命令的 Agent 中提出任务。Repoctopus Runtime 决定下一步、为 Agent 提供当前步骤的 Skill，并核验执行结果。团队成员在需要人工决定时确认。
-
-## 安装
-
-准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。从 [GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases) 选定团队使用的版本，再用固定下载地址运行 CLI。以下以首版 `v0.1.0` 为例。
-
-```bash
-npx --yes --ignore-scripts --package=https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz repoctopus --help
-```
-
-看到 `Usage: repoctopus ...` 后就可以在业务 Workspace 运行 CLI。继续使用同一条命令，把 `--help` 换成需要的子命令。Windows PowerShell 若阻止 `.ps1` 启动器，可以用 `npx.cmd`。对应版本公开后才可使用该下载地址，已有本地 `.tgz` 的团队也可按[安装指南](docs/install.md)运行。
-
-Windows x64 的 Desktop 安装器用于可选的本地看板。CLI 可独立启动和推进工作流。
+在自己的项目接入 Repoctopus 后，用 Agent 提出需求，审核规格与设计，并在交付前查看实际验证结果。
 
 ## 快速开始
 
-1. 打开团队的 **Workspace**，也就是有 `repoctopus.yaml` 和 OpenSpec 规格的 Git 仓库。单仓项目可以直接用业务仓，多仓项目通常用一个与业务仓同级的协调仓。如果项目还没接入，先完成[首次接入](docs/project-onboarding.md)。
-2. 在 Workspace 中打开编码 Agent。提供上面的固定版本 `npx` 命令并说明任务，让它用相同的前缀调用后续 Repoctopus 命令。
+以下从一个已有代码、尚未接入 Repoctopus 的 Git 项目开始。团队已经完成初始化时，可以直接走[已有项目入口](#接入已有团队项目)。
 
-   > 用 Repoctopus 做这个 Change：修正设置页保存失败时的提示。当前目录是 Workspace，目标分支是 main。请先创建并推送 Change 分支，然后用 repoctopus run start 启动。按 Runtime 派发的 Work 领取并执行 Skill，提交 Outcome 后再继续。遇到人工决定时停下来，把确认入口给我。
+### 1. 获取 CLI
 
-3. Agent 从 `repoctopus run start` 的 JSON 得到 `runId`。需要查看进度时，让 Agent 用 `repoctopus run status --workspace . --run` 加上这个 ID。已有 Run 在同一个 Workspace 续接，详见[命令与恢复](docs/self-hosting.md#3-运行与恢复)。
+准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。选择团队使用的版本。以下是 `v0.1.0` 的 PowerShell 示例。[GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases)
 
-| 阶段    | 你会看到什么                                                                                            |
-| ------- | ------------------------------------------------------------------------------------------------------- |
-| Open    | Agent 核对需求和代码，准备 OpenSpec 的 Proposal、Delta Specs、Design、Tasks。你确认本次 Change 的范围。 |
-| Design  | Agent 深化同一份设计和任务，你确认实施与验证方案。                                                      |
-| Build   | Runtime 确定执行配置并派发工作包。Agent 执行、提交并推送，Runtime 核验结果。                            |
-| Verify  | Runtime 按项目配置收集 Evidence，确认需求和实现对应。                                                   |
-| Archive | 通过交付审批后，Runtime 归档规格并发布业务 MR 和 Change MR。团队在代码托管平台评审和合入。              |
-
-## 团队配置
-
-把团队共享配置提交到 Workspace 根目录的 `repoctopus.yaml`。个人机器的仓库路径、端口等覆盖写在 `.repoctopus/local.yaml`。发布 Token 通过进程环境注入。
-
-- 首次接入、单仓与多仓、OpenSpec Store 和各配置项的作用见[项目接入](docs/project-onboarding.md)。
-- 检查命令和覆盖范围见 [Evidence 配置](docs/evidence.md)。
-- 团队 Skill 的接入和 IDE 投影见 [Skills](docs/skills.md)。
-- Git 远端、发布审批和 MR 恢复见[交付](docs/delivery.md)。
-
-## 接入团队 SigNoz
-
-在现有 `repoctopus.yaml` 增加以下配置，把示例 URL 换成团队提供的 OTLP/HTTP Collector 基础地址。
-
-```yaml
-telemetry:
-  endpoint: https://signoz-collector.example.internal/otlp
+```powershell
+$repoctopusPackage = 'https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz'
+npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus --help
 ```
 
-Repoctopus 会在基础地址后追加各信号的路径，并在运行时发送 Trace、Log 和 Metric。团队网关需要认证时，从启动 Agent 的环境注入 Header。详见 [SigNoz 接入、数据验证与看板](docs/telemetry.md)和[遥测字段参考](docs/telemetry-reference.md)。
+看到 `Usage: repoctopus ...` 后继续。版本公开前或 Releases 不可达时，将 `$repoctopusPackage` 改为团队提供的本地 `.tgz` **绝对路径**，再运行同一条命令。后续命令沿用这个变量。也可以把 CLI 安装到用户目录，直接使用 `repoctopus`。[安装指南](docs/install.md)
 
-当前 Change 的即时进度可用 [Windows Desktop Dashboard](docs/desktop-activation.md) 查看。团队历史和趋势可在 SigNoz 查询。
+### 2. 初始化自己的项目
 
-开发资料见 [Runtime 与插件架构](docs/architecture.md) · [状态与恢复](docs/runtime-state.md) · [Specification Provider](docs/specification.md) · [自举与源码验证](docs/self-hosting.md) · [上游采用记录](third_party/comet/adoption-report.md)
+在 PowerShell 中进入业务 Git 仓库根目录。这个目录就是单仓项目的 **Workspace**。多仓项目则进入协调仓根目录。下面的命令扫描共同父目录的直接子仓库。请使用只包含本项目仓库的父目录。若探测到无关仓库，先把要接入的仓库放进专用父目录，再从 Workspace 重新探测。[多仓布局与接入](docs/project-onboarding.md#选择-workspace)
+
+```powershell
+$detected = npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus project detect --workspace . --scan-root .. --json | ConvertFrom-Json
+$draft = $detected.result.file
+$draft
+```
+
+把输出的草稿路径交给 Agent，核对探测到的仓库与验证命令。可以直接发下面这段话。
+
+> 帮我首次接入 Repoctopus。读取我给你的探测草稿，核对仓库、未决项以及实际可运行的构建和测试命令。补全 `verify` Profile，说明每条必需检查能验证什么，把候选写到 `.repoctopus/drafts/project-candidate.yaml`。完成后把候选交给我审核。
+
+候选保存后，准备并审核配置。最后一条命令在交互终端中执行。
+
+```powershell
+$prepared = npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus project prepare --workspace . --draft $draft --candidate .repoctopus/drafts/project-candidate.yaml --json | ConvertFrom-Json
+npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus project review --workspace . --request $prepared.result.file
+```
+
+批准后，Repoctopus 准备或复用 `openspec/`、登记本机的 OpenSpec Store，并写入团队共享的 `repoctopus.yaml`。Repoctopus 也会在 `.gitignore` 忽略本机的 `.repoctopus/`。把生成的共享文件按团队 Git 流程合入远端目标分支，通常包括 `repoctopus.yaml`、`openspec/`、`.openspec-store/` 和变更后的 `.gitignore`。[配置示例与审核细节](docs/project-onboarding.md)
+
+### 3. 启动第一个 Change
+
+确认远端目标分支已包含初始化文件，然后从同步后的本地目标分支开始。下面以远端 `origin`、目标分支 `main` 和一个小修复为例。
+
+```powershell
+git switch main
+git pull --ff-only origin main
+git switch -c change/fix-settings-save-message
+git push -u origin HEAD
+npx.cmd --yes --ignore-scripts --legacy-peer-deps --package $repoctopusPackage repoctopus run start --workspace . --change fix-settings-save-message --target main --json
+```
+
+把输出中的 `runId`、任务描述和固定版本的 CLI 命令交给 Agent。让它从这个 Run 继续，按 Repoctopus 派发的 Work 执行，在需要人工确认时停下来。Open 产物准备好后，审核 OpenSpec 提案和本次变更范围。[启动与恢复指南](docs/project-onboarding.md#启动第一个-change)
+
+## 接入已有团队项目
+
+检出团队的 Workspace 和所需业务仓，使用团队指定的 CLI 版本。首次在本机使用时，登记团队的 OpenSpec Store，并按需配置本机仓库路径和团队凭据。[新成员接入](docs/project-onboarding.md#新成员接入)
+
+## 工作流如何推进
+
+**Open → Design → Build → Verify → Archive**
+
+先确认需求范围与实施方案，再由 Agent 执行。Repoctopus 按项目配置运行验证并保存证据，交付获批后归档规格并发布 MR。团队在托管平台审查并合入。[状态与恢复](docs/runtime-state.md) · [交付指南](docs/delivery.md)
+
+## 配置与观测
+
+- 团队在根目录的 `repoctopus.yaml` 共享验证、交付和 Skill 配置。本机仓库路径和端口写在 `.repoctopus/local.yaml`，凭据由进程环境提供。[项目配置](docs/project-onboarding.md#配置放在哪里)
+- 在共享配置填 `telemetry.endpoint`，连接团队 SigNoz 的 OTLP/HTTP Collector。指南包含信号验证、看板查询和完整字段清单。[SigNoz 指南](docs/telemetry.md) · [遥测字段参考](docs/telemetry-reference.md)
+- 安装可选的 Windows x64 Desktop Dashboard，可查看当前 Change 的实时阶段和进度。[桌面安装与激活](docs/desktop-activation.md)

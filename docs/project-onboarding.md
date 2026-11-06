@@ -1,10 +1,10 @@
 # 项目接入
 
-由团队维护者执行首次接入。先[安装 CLI](install.md)，再选定一个 Git 仓库作为 Workspace。接入分三步建立共享配置：CLI 探测仓库，Agent 核对并补全候选，维护者审核后发布。已经接入的团队成员可以直接看[新成员接入](#新成员接入)。
+首次接入时，先获取 CLI，再选定一个 Git 仓库作为 Workspace。CLI 探测仓库，Agent 核对并补全候选，维护者审核后，Repoctopus 才写入团队共享配置。此页给出各步骤的细节。可以先按 README 跑通最短路径。[快速开始](../README.md#快速开始) · [CLI 安装](install.md) · [新成员接入](#新成员接入)
 
 ## 选择 Workspace
 
-- **单仓**。在业务仓根目录放置 `repoctopus.yaml` 和 `openspec/`。业务 MR 和 Change MR 可以在同一仓库，使用各自的分支和 MR。
+- **单仓**。以业务仓根目录作为 Workspace，审核接入后由 Repoctopus 写入共享配置并准备 `openspec/`。业务 MR 和 Change MR 可以在同一仓库，使用各自的分支和 MR。
 - **多仓**。把协调仓和业务仓检出到同一个父目录，例如 `team-platform/` 下的 `workspace/`、`web/` 和 `backend/`。协调仓保存共享配置、OpenSpec 和 Change MR，业务仓保存实现和业务 MR。
 
 OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个 ID，例如 `team-platform`。每台机器把该 ID 登记到自己的 Workspace 路径。详见 [Workspace、Store 与实现仓](specification.md#workspacestore-与实现仓)。
@@ -18,7 +18,7 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个
 | 启动 Agent 或 CLI 的进程环境            | 开发者或 CI 的凭据管理 | GitHub API Token、Collector 认证 Header 等凭据                                         |
 | Workspace 内的 `.repoctopus/`           | Runtime                | 探测草稿、审批请求、Run 状态与 Evidence                                                |
 
-将[示例忽略规则](examples/repoctopus.gitignore)加入 Workspace 的 `.gitignore`。本机覆盖、状态和草稿随 `.repoctopus/` 一起留在本机。
+批准接入时，Repoctopus 将 `.repoctopus/` 加入 Workspace 的 `.gitignore`。本机覆盖、状态和草稿随该目录留在本机。[示例忽略规则](examples/repoctopus.gitignore)
 
 [共享配置示例](examples/repoctopus.yaml)展示多仓字段的组织方式。按团队实际仓库、验证命令、Skill 和目标环境补全候选，再走下面的审核流程。
 
@@ -36,7 +36,7 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份，团队共用同一个
 
 ## 1. 生成探测草稿
 
-在选定的 Workspace Git 仓库根目录运行。多仓布局用 `--scan-root ..`，单仓用 `--scan-root .`。CLI 扫描指定目录的直接子 Git 仓库，并纳入 Workspace 本身。日常运行只使用审核后登记的仓库。
+在选定的 Workspace Git 仓库根目录运行。CLI 只扫描 `--scan-root` 的直接子 Git 仓库，所以单仓和同级多仓布局都用 `--scan-root ..`。Workspace 必须位于扫描目录下一级。使用只包含本项目仓库的父目录。若扫描结果包含无关仓库，把要接入的仓库放到专用父目录，再从 Workspace 重新探测。
 
 ```powershell
 $detected = repoctopus project detect --scan-root .. --workspace . --store team-platform --json | ConvertFrom-Json
@@ -48,7 +48,7 @@ $draft
 
 `--store` 是可编辑的 lowercase kebab-case OpenSpec Store ID；省略时优先沿用已有共享配置，否则从 Workspace 名称派生。草稿的 `storeBinding.root` 会把 Workspace Root 分类为：已精确登记、健康但本机未登记、缺失、部分/不健康或登记冲突，并绑定固定 OpenSpec 版本、根 manifest 与本机 registry Evidence。只有前三类可进入审批；部分根和冲突必须先按诊断处理，Repoctopus 不会覆盖或自动修复。
 
-同一草稿还明确记录逐业务仓分类：未配置、已指向同一 Store、指向其他 Store、本地规格权威、配置损坏或只读。只有安全的未配置仓会得到 `openspec/config.yaml` 的精确 `before/after` pointer diff；冲突不会生成覆盖操作。用户不希望为某个仓安装 pointer 时，可以在候选中把 selection 改为 `skip`，或重新探测时传 `--skip-pointer repo-a,repo-b`。Runtime 仍通过显式 `--store` 使用权威 Store，不依赖业务仓 pointer。
+同一草稿还明确记录逐业务仓分类：未配置、已指向同一 Store、指向其他 Store、本地规格权威、配置损坏或只读。只有安全的未配置仓会得到 `openspec/config.yaml` 的精确 `before/after` pointer diff；冲突不会生成覆盖操作。对于允许安装 pointer 的业务仓，可传 `--skip-pointer repo-a,repo-b` 重新探测，明确跳过该仓的 pointer 安装。这个参数只控制 pointer 安装，指定的仓仍会出现在探测结果中。Runtime 仍通过显式 `--store` 使用权威 Store，不依赖业务仓 pointer。
 
 Store ID 是团队配置，registration 是每机状态：新成员、CI 节点和另一台开发机 clone Workspace 后都必须各自登记相同 ID 到各自的绝对路径。pointer 可选且可按仓跳过，它不负责登记，也不改变 Workspace 的 Specification 权威。
 
