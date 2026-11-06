@@ -1688,4 +1688,29 @@ describe('Managed Host reconciliation', () => {
     expect(executed.marks.completed).toHaveBeenCalledOnce();
     expect(executed.host.invoke).not.toHaveBeenCalled();
   });
+
+  it('records attributable malformed reconciliation output as a rejection', async () => {
+    const outcome = {
+      schemaVersion: 1,
+      invocationId: invocation.invocationId,
+      hostId: invocation.host.id,
+      packetDigest: invocation.packet.packetDigest,
+      status: ['succeeded'],
+      summary: 'existing side effect found',
+      consumedLayerDigests: [],
+      completedAt: '2026-10-25T00:01:00.000Z',
+    };
+    const { service, marks, host } = executor({ status: 'executed', outcome });
+    await expect(service.reconcile('run-recovery')).resolves.toMatchObject({
+      hostOutcome: { status: 'failed' },
+      acceptance: null,
+    });
+    expect(marks.completed).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ status: 'failed' }),
+      `reconcile:${invocation.invocationId}`,
+      { rawPayload: outcome, diagnostic: expect.stringMatching(/status is invalid/u) as unknown },
+    );
+    expect(host.invoke).not.toHaveBeenCalled();
+  });
 });

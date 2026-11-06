@@ -518,6 +518,60 @@ describe('Work execution Host submission identity', () => {
     expect(submitted.actionOutcome).toBeUndefined();
     expect(submitted.receiptId).toBeUndefined();
 
+    const submittedState = state;
+    await expect(
+      authority.rejectHostSubmission({
+        intent: intent as never,
+        reasonCode: 'output-invalid',
+        diagnostic: 'stale rejection',
+        expectedPending: { ...submitted.pendingSubmission!, submissionId: 'different-submission' },
+      }),
+    ).rejects.toThrow(/pending Host submission changed/u);
+    expect(state).toBe(submittedState);
+
+    await expect(
+      authority.markHostUnknown(intent as never, 'late result after submission'),
+    ).resolves.toEqual(submitted);
+    expect(state).toBe(submittedState);
+    const reportedUnknown = createWorkExecutionSubmission('reported-unknown', {
+      ...outcome(),
+      status: 'unknown',
+    });
+    state = { ...state, workExecution: { ...submitted, pendingSubmission: reportedUnknown } };
+    const unknown = await authority.markHostUnknown(
+      intent as never,
+      'Host explicitly reported uncertainty',
+      reportedUnknown,
+    );
+    expect(unknown).toMatchObject({
+      status: 'unknown',
+      continuation: 'reconcile',
+      pendingSubmission: reportedUnknown,
+    });
+    await expect(
+      authority.markHostCompleted(intent as never, outcome(), 'malformed-while-unknown', {
+        diagnostic: 'invalid Host result',
+      }),
+    ).rejects.toThrow(/cannot replace an existing Host submission or side effect/u);
+    expect(state.workExecution).toEqual(unknown);
+
+    state = {
+      ...state,
+      workExecution: {
+        ...unknown,
+        pendingSubmission: null,
+        unknownKind: 'external-side-effect',
+      },
+    };
+    const sideEffectState = state;
+    await expect(
+      authority.markHostCompleted(intent as never, outcome(), 'malformed-during-side-effect', {
+        diagnostic: 'invalid Host result',
+      }),
+    ).rejects.toThrow(/cannot replace an existing Host submission or side effect/u);
+    expect(state).toBe(sideEffectState);
+    state = submittedState;
+
     const rejected = await authority.rejectHostSubmission({
       intent: intent as never,
       reasonCode: 'outcome-rejected',
@@ -532,6 +586,11 @@ describe('Work execution Host submission identity', () => {
       pendingSubmission: null,
       rejectedSubmissions: [{ submissionId: 'submission-1' }],
     });
+
+    await expect(
+      authority.markHostUnknown(intent as never, 'late reconciliation response'),
+    ).resolves.toEqual(rejected);
+    expect(state.workExecution).toEqual(rejected);
 
     await expect(
       authority.markHostCompleted(intent as never, outcome(), 'submission-1'),
