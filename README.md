@@ -14,6 +14,8 @@ Repoctopus 按团队配置推进需求确认、设计、实现、验证和归档
 
 **方式一：直接从发布地址安装**
 
+在任意目录打开 PowerShell，运行下面的命令。
+
 ```powershell
 npm.cmd install --global --ignore-scripts --legacy-peer-deps https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz
 ```
@@ -22,13 +24,11 @@ npm.cmd install --global --ignore-scripts --legacy-peer-deps https://github.com/
 
 在发布页的 **Assets** 下载 `repoctopus-0.1.0.tgz`，也可以使用团队发给你的同版本文件。[v0.1.0 发布页](https://github.com/NickDDDDDD/Repoctopus/releases/tag/v0.1.0)
 
-把文件放到计划用作 Workspace 的文件夹。在这个文件夹中打开 PowerShell，运行下面的命令。
+在 `.tgz` 文件所在的目录打开 PowerShell，运行下面的命令。
 
 ```powershell
 npm.cmd install --global --ignore-scripts --legacy-peer-deps .\repoctopus-0.1.0.tgz
 ```
-
-安装完成后，把 `.tgz` 移到 Workspace 之外，以免随项目文件提交。
 
 **检查安装**
 
@@ -36,7 +36,7 @@ npm.cmd install --global --ignore-scripts --legacy-peer-deps .\repoctopus-0.1.0.
 repoctopus.cmd --help
 ```
 
-看到 `Usage: repoctopus ...` 后，继续下方的多仓或单仓接入。全局安装后可以在其他终端直接使用 `repoctopus.cmd`。需要临时运行、安装到独立用户目录，或终端找不到命令时，见[安装指南](docs/install.md)。
+看到 `Usage: repoctopus ...` 后，继续下方的多仓或单仓接入。接入命令在 Workspace 根目录执行。全局安装后可以在其他终端直接使用 `repoctopus.cmd`。需要临时运行、安装到独立用户目录，或终端找不到命令时，见[安装指南](docs/install.md)。
 
 ### 接入多仓项目
 
