@@ -1,0 +1,35 @@
+{
+  "change": "preserve-completed-run-recovery",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917",
+  "files": [
+    {
+      "path": "openspec/changes/preserve-completed-run-recovery/proposal.md",
+      "sha256": "d173b22fa362b390b220302f04e4aa93c8b4e4db3fcf317657c560822b34a45e"
+    },
+    {
+      "path": "openspec/changes/preserve-completed-run-recovery/design.md",
+      "sha256": "97b9356875c1d6c5f4149a151e8c9315577914a1b90dc8e0205811397fcd64a3"
+    },
+    {
+      "path": "openspec/changes/preserve-completed-run-recovery/tasks.md",
+      "sha256": "dd1a651ebddd1ec94dfb3bb096fc68afb3e554e96ef144ee4b91c71aebd15ee5"
+    },
+    {
+      "path": "openspec/changes/preserve-completed-run-recovery/.openspec.yaml",
+      "sha256": "5fd2cc7d290b25cf909218418df74e542dd2eb03ebf67a63a38a9bee04d94037"
+    },
+    {
+      "path": "openspec/changes/preserve-completed-run-recovery/specs/change-lifecycle/spec.md",
+      "sha256": "80de47de1650c19de31f20d9001b8d52e5b3e9a805685ed871e423e5299b2499"
+    },
+    {
+      "path": "openspec/changes/preserve-completed-run-recovery/specs/runtime-foundation/spec.md",
+      "sha256": "ba8b232001126a85753ed3cbf7c9e211a5eb9a27efdad171d36ca4437343b512"
+    }
+  ]
+}
