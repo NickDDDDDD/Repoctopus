@@ -209,7 +209,9 @@ export class DeliveryServiceV3 {
     return next;
   }
 
-  async publishArchive(options: DeliveryV3Preparation): Promise<ArchivePublicationResult> {
+  async publishArchive(
+    options: DeliveryV3Preparation & { expectedRepositoryHeads: Readonly<Record<string, string>> },
+  ): Promise<ArchivePublicationResult> {
     if (!options.runId?.trim()) throw new Error('Archive publication requires a stable Run id');
     this.validate(options.intent, options.policy);
     await this.evidence.assertSatisfied(
@@ -217,14 +219,31 @@ export class DeliveryServiceV3 {
       options.evidenceCompositionDigest ?? this.compositionDigest,
     );
     const repositories = selectedRepositories(options.project, options.intent);
+    const priorJournal = await this.publicationJournal.load(options.runId);
     const facts: BusinessDeliveryFactsV3[] = [];
     for (const delivery of options.intent.businessDeliveries) {
+      const expectedHead = options.expectedRepositoryHeads[delivery.repositoryId];
+      if (!expectedHead || !/^[a-f0-9]{40,64}$/u.test(expectedHead))
+        throw new Error(
+          `Archive publication requires a frozen Business OID: ${delivery.repositoryId}`,
+        );
+      const observed = await this.git.inspect(
+        repositories.get(delivery.deliveryId)!,
+        businessIntent(delivery),
+        options.policy,
+      );
+      const priorItem = priorJournal?.items.find(
+        (item) => item.intent.deliveryId === delivery.deliveryId,
+      );
+      if (observed.head !== expectedHead && (!priorItem || priorItem.status === 'pending'))
+        throw new Error(
+          `Business HEAD differs from the frozen Archive OID: ${delivery.repositoryId}`,
+        );
+      // An unsettled operation is observed against its original OID. The push port
+      // still checks expectedHead if a new push is ever legally requested.
       facts.push({
-        ...(await this.git.inspect(
-          repositories.get(delivery.deliveryId)!,
-          businessIntent(delivery),
-          options.policy,
-        )),
+        ...observed,
+        head: expectedHead,
         deliveryId: delivery.deliveryId,
       });
     }

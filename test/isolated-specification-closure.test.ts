@@ -43,12 +43,14 @@ async function repository(): Promise<string> {
   await exec('git', ['config', 'user.email', 'test@example.com'], { cwd: root });
   await exec('git', ['add', '.'], { cwd: root });
   await exec('git', ['commit', '-m', 'initial'], { cwd: root });
+  plan.sourceOid = (await exec('git', ['rev-parse', 'HEAD'], { cwd: root })).stdout.trim();
   return root;
 }
 
 const plan: SpecificationClosurePlan = {
   apiVersion: 'repoctopus.specification/v1alpha1',
   kind: 'SpecificationClosurePlan',
+  sourceOid: 'a'.repeat(40),
   changeId: 'isolated-close',
   provider: {
     id: 'openspec',
@@ -100,6 +102,17 @@ function closureResult() {
 }
 
 describe('isolated Specification closure transaction', () => {
+  it('creates its checkout from the frozen OID even if the primary HEAD moves', async () => {
+    const root = await repository();
+    const sourceOid = plan.sourceOid;
+    await exec('git', ['commit', '--allow-empty', '-m', 'same content, later HEAD'], { cwd: root });
+    const manager = new GitSpecificationCheckoutManager(root);
+    const checkout = await manager.create('frozen-source', sourceOid);
+    expect(checkout.head).toBe(sourceOid);
+    expect((await exec('git', ['rev-parse', 'HEAD'], { cwd: checkout.root })).stdout.trim()).toBe(
+      sourceOid,
+    );
+  });
   it.each([
     ['after-prepared', 'prepared', false],
     ['after-command', 'applying', true],

@@ -67,7 +67,7 @@ async function fixture(): Promise<Fixture> {
   const primaryHead = await git(repository, ['rev-parse', 'HEAD']);
   const checkoutManager = new GitSpecificationCheckoutManager(repository);
   const checkoutId = 'closure-example';
-  const checkout = await checkoutManager.create(checkoutId);
+  const checkout = await checkoutManager.create(checkoutId, primaryHead);
   await mkdir(path.dirname(path.join(checkout.root, archived)), { recursive: true });
   await rename(path.join(checkout.root, active), path.join(checkout.root, archived));
 

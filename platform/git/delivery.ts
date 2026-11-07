@@ -220,7 +220,7 @@ export class GitDeliveryAdapter {
     await git(cwd, [
       'push',
       policy.publication.remote,
-      `${action.sourceBranch}:refs/heads/${action.sourceBranch}`,
+      `${action.expectedHead}:refs/heads/${action.sourceBranch}`,
     ]);
     const published = await remoteOid(cwd, policy.publication.remote, action.sourceBranch);
     if (published !== facts.head)

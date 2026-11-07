@@ -740,6 +740,14 @@ describe('Archive publication terminal lifecycle', () => {
     );
     const app = await bootProjectComposition(path.resolve(import.meta.dirname, '..'), workspace);
     try {
+      // These focused protocol fixtures begin at Archive without a Build binding.
+      // The real binding boundary is exercised by managed-change-execution.e2e.
+      vi.spyOn(
+        app.context.workflowRuns as unknown as {
+          assertEvidenceWorkspaceAuthorityCurrent: () => Promise<void>;
+        },
+        'assertEvidenceWorkspaceAuthorityCurrent',
+      ).mockResolvedValue();
       const archiveDefinition = await app.context.skills.get('repoctopus-archive-change', {
         cwd: workspace,
       });
@@ -907,6 +915,14 @@ describe('Archive publication terminal lifecycle', () => {
     );
     const app = await bootProjectComposition(path.resolve(import.meta.dirname, '..'), workspace);
     try {
+      // These focused protocol fixtures begin at Archive without a Build binding.
+      // The real binding boundary is exercised by managed-change-execution.e2e.
+      vi.spyOn(
+        app.context.workflowRuns as unknown as {
+          assertEvidenceWorkspaceAuthorityCurrent: () => Promise<void>;
+        },
+        'assertEvidenceWorkspaceAuthorityCurrent',
+      ).mockResolvedValue();
       const archiveDefinition = await app.context.skills.get('repoctopus-archive-change', {
         cwd: workspace,
       });
@@ -967,6 +983,7 @@ describe('Archive publication terminal lifecycle', () => {
       vi.spyOn(app.context.specification, 'prepareClosure').mockResolvedValue({
         apiVersion: 'repoctopus.specification/v1alpha1',
         kind: 'SpecificationClosurePlan',
+        sourceOid: 'a'.repeat(40),
         changeId: closure.changeId,
         provider: closure.provider,
         mergeFactsDigest: digest('d'),
@@ -1018,6 +1035,27 @@ describe('Archive publication terminal lifecycle', () => {
           .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
           .map((layer) => layer.digest),
       });
+      // A commit after the outer preflight must be rejected inside the effect fence.
+      const frozenState = await app.context.runStore.loadRun(preflight.identity.runId);
+      const effect = vi.fn(() => Promise.resolve());
+      vi.spyOn(app.context.project, 'snapshot').mockResolvedValueOnce({
+        ...coordinateProject,
+        repositories: coordinateProject.repositories.map((repo) => ({
+          ...repo,
+          head: 'f'.repeat(40),
+        })),
+      });
+      await expect(
+        (
+          app.context.workflowRuns as unknown as {
+            withArchiveEffectAuthority: (
+              state: typeof frozenState,
+              effect: () => Promise<void>,
+            ) => Promise<void>;
+          }
+        ).withArchiveEffectAuthority(frozenState, effect),
+      ).rejects.toThrow(/checkpoint changed/u);
+      expect(effect).not.toHaveBeenCalled();
       const result = await app.context.workflowRuns.executeArchiveDelivery({
         runId: preflight.identity.runId,
         project,
@@ -1070,6 +1108,14 @@ describe('Archive publication terminal lifecycle', () => {
     const productRoot = path.resolve(import.meta.dirname, '..');
     const app = await bootProjectComposition(productRoot, workspace);
     try {
+      // This protocol fixture supplies no Build binding; the production boundary
+      // is covered by the real multi-repository managed execution test.
+      vi.spyOn(
+        app.context.workflowRuns as unknown as {
+          assertEvidenceWorkspaceAuthorityCurrent: () => Promise<void>;
+        },
+        'assertEvidenceWorkspaceAuthorityCurrent',
+      ).mockResolvedValue();
       const prDefinition = await app.context.skills.get('pr', { cwd: workspace });
       if (!prDefinition) throw new Error('Expected the pr Skill in the production composition');
       const actionSkill = await snapshotSkillDefinition(prDefinition);

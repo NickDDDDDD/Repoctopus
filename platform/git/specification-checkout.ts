@@ -20,7 +20,12 @@ export class GitSpecificationCheckoutManager {
     this.checkoutRoot = path.resolve(workspaceRoot, '.repoctopus', 'archive-checkouts');
   }
 
-  async create(checkoutId: string): Promise<IsolatedSpecificationCheckout> {
+  async create(
+    checkoutId: string,
+    expectedSourceOid: string,
+  ): Promise<IsolatedSpecificationCheckout> {
+    if (!/^[a-f0-9]{40,64}$/u.test(expectedSourceOid))
+      throw new Error('Archive checkout requires a frozen source OID');
     if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/u.test(checkoutId)) {
       throw new Error('Archive checkout id is invalid');
     }
@@ -30,8 +35,12 @@ export class GitSpecificationCheckoutManager {
     }
     await mkdir(this.checkoutRoot, { recursive: true });
     const existing = await this.find(checkoutId);
-    if (existing) return existing;
-    const head = await git(this.workspaceRoot, ['rev-parse', 'HEAD']);
+    if (existing) {
+      if (existing.head !== expectedSourceOid)
+        throw new Error('Existing Archive checkout differs from its frozen source OID');
+      return existing;
+    }
+    const head = expectedSourceOid;
     await git(this.workspaceRoot, ['worktree', 'add', '--detach', root, head]);
     return { checkoutId, root: await realpath(root), head };
   }

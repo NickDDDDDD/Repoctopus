@@ -20,9 +20,9 @@ Evidence 是 Repoctopus 对“实现已经获得正确反馈”的可审计证�
 Evidence 不再把“Git 是否忽略”当成唯一输入边界。Project composition 中的
 `RepositoryInputPolicy` Contributor 会把每个仓库的输入分成四类：
 
-- **product**：Git HEAD、index、已跟踪改动，以及没有被策略认领的未知文件；进入正常产品 dirty fingerprint。
+- **product**：实际有效文件内容及没有被策略认领的未知文件；默认不把 HEAD、index 或 dirty 表示作为验证依赖。
 - **control-plane**：Host 为本次执行读取、但不属于交付物的已登记未跟踪文件；不污染产品 dirty 集合，但文件内容和策略摘要进入独立的 control-plane manifest。
-- **runtime-state**：`.repoctopus/` 中的 Run、Journal、Receipt 与 Artifact；由对应 Store 管理，不作为被验证产品源码。
+- **runtime-output**：`.repoctopus/` 中的 Run、Journal、Receipt 与 Artifact；由对应 Store 管理，不作为被验证产品源码。
 - **unknown**：没有 Contributor 明确认领的文件；默认按 product 处理，不能因为位于 `.codex/` 等目录就被静默排除。
 
 内建策略当前登记 Codex Hook/rules、Agent Skill installation、Agent instructions 和
@@ -32,10 +32,47 @@ fail closed。未跟踪但已登记的 Host 文件即使被本机 `.gitignore` �
 竞态安全散列并绑定到 Evidence。符号链接、目录联接、越界解析、超出文件数或大小上限的
 控制面输入都会被拒绝。
 
-每次 Evidence 采集都会同时冻结 policy digest 和逐仓 control-plane digest；任一策略、
-内容、仓库 HEAD/tree 或普通 dirty 输入变化，都会改变 Verification Input，使旧 Receipt、
-Verify 结果和 Archive 重验失效。不要通过移动 Host 目录、临时修改 ignore 或手工改
-fingerprint 来恢复流程；应保留文件原位并重新采集 Evidence。
+每次采集冻结 policy、逐仓 control-plane 和逐节点实际内容摘要。HEAD、暂存状态及提交同字节文件默认不改变验证身份；原始 Git 坐标仍单独保留，用于授权和审计。文件新增、删除、内容变化，以及配置、工具、Provider 或控制面变化仍会使相应证据失效。默认范围包括未知 ignored 文件，不能用 .gitignore 隐藏真实依赖；大仓应明确声明输入和产物，避免扫描 node_modules 等无关目录。读取存在竞态、越界链接或超过预算时明确失败，不截断为成功快照。
+
+## 命令输入与选择性复用
+
+command 节点可在 repoctopus.yaml 声明输入；其他节点不接受 inputs，也不复用命令缓存：
+
+```yaml
+- id: frontend-build
+  type: command
+  repository: frontend
+  executable: npm
+  args: [run, build]
+  cache: true
+  inputs:
+    schemaVersion: 1
+    repositories:
+      - repository: frontend
+        files: [src/**, package.json, package-lock.json]
+        outputs: [dist/**]
+    git: none
+    taskCheckboxes: ignore
+    env: [BUILD_CHANNEL]
+```
+
+repository 必须是已登记仓库。省略 repositories 时保守绑定全部仓库的有效文件；省略 files 时绑定所选仓库全部内容。路径相对仓库根，使用 /；支持字面路径、\*、?、整段 \*\*，不支持 shell 展开、否定、父目录或绝对路径。输入与自身输出不能交叠，两个 producer 不能认领重叠输出。
+
+默认 git: none；依赖提交 SHA 或 index 的命令应选 all。默认 taskCheckboxes: ignore 只规范化当前 Change 的官方 Tasks 完成状态；Provider 语义与 Runtime 接受的完成事实必须匹配。其他 Markdown、任务正文、配置和规格内容仍绑定真实字节。需要读取复选框的命令选 include。env 只绑定明确列出的变量名及值摘要，不保存明文；可执行程序和 Node 的身份始终绑定。
+
+只有 cache: true 且 passed、verified、未过 TTL 的确定性命令可复用。候选来自实际已提交 Receipt 及节点完成 Journal；只有 Receipt、没有 completion 的执行保持 unknown。新 Attempt 为复用生成新 Receipt，并用 sourceReceiptId 指向原证据，不覆盖历史或延长有效期。
+
+每个节点单独绑定源输入；A 改变时只使 A 和依赖它的后继失效，独立 B 保留。producer 声明 outputs 后，产物不污染源输入。producer 完成时先保存内容寻址 manifest，再提交节点 completion；consumer 绑定真实产物字节和当前 producer Receipt。缓存 producer 仅在输出仍存在且匹配时复用；缺失时重新采集，Runtime 不从 Artifact Store 自动回写文件。重采 producer 得到同字节产物时，consumer 仍可复用并重新绑定证明引用。未知执行、失败、外部服务、浏览器和视觉反馈不按这条规则自动重放。
+
+当前持久协议：Receipt/Attempt schema 1，Bundle/Gate schema 3，Verification Input schema 4，Plan Evidence/Build Check schema 2。各对象必须有 canonical EvidenceDependencyRecord，绑定实现内容、规划语义、执行控制及显式 Git 依赖；发布来源单独记录，不自动成为验证依赖。读取时核对记录、对象身份、上下游引用及 manifest，旧格式或损坏记录拒绝执行。
+
+## Verify、恢复与 Archive
+
+resume 和 next 在 Verify/Archive 共用恢复判定。先检查冻结 Binding、仓库路径、分支、remote、worktree 和 ownership，再检查规划批准，最后检查实际证据依赖。语义等价 commit 保留 Verification Input、Gate、Bundle 和完成事实；不能借内容等价授权切分支，也不能清除无关 blocker。Provider 无法读取时返回 reobserve；未知命令或发布结果保留原 Work、Attempt 和 Journal。
+
+ArchiveDeliveryInput schema 3 单独冻结 publicationCheckpoint。提交同字节文件可能改变发布 OID：在 Closure/Publication 尚未启动时，重新 prepare 只更新发布坐标和对应 Work，允许合法 checkEpoch 变化，不重新 Verify。副作用已启动则按原 Journal 和冻结 OID 恢复。每个新 effect 前在 Run 事务锁内重验授权；新 Closure 还重验发布坐标和验证输入。Business push 使用冻结 OID，不能把后来的 HEAD 发布为已验证提交。
+
+这采用 Comet 的内容快照、声明输入及 Archive preflight 原则；跨仓 DAG 的 producer/consumer manifest 是 Repoctopus 针对自身架构的实现。
 
 ## 零测试
 

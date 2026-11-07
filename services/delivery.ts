@@ -61,7 +61,11 @@ export abstract class Delivery extends Service {
     signal?: AbortSignal,
   ): Promise<DeliveryState | DeliveryStateV3>;
   publishArchive(
-    options: DeliveryPreparation & { intent: DeliveryIntentV3; runId?: string },
+    options: DeliveryPreparation & {
+      intent: DeliveryIntentV3;
+      runId?: string;
+      expectedRepositoryHeads: Readonly<Record<string, string>>;
+    },
     signal?: AbortSignal,
   ): Promise<ArchivePublicationResult> {
     void signal;

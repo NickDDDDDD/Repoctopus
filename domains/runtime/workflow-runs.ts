@@ -241,6 +241,27 @@ function event(options: {
 }
 
 export class WorkflowRunCoordinator {
+  /** Keep lifecycle authorization stable while its owner performs an external effect. */
+  withArchiveEffectAuthority<T>(
+    expected: RunState,
+    effect: (latest: RunState) => Promise<T>,
+  ): Promise<T> {
+    return this.store.commitGuarded(expected.runId, async ({ state: latest }) => {
+      if (
+        latest.status !== 'running' ||
+        latest.reconciliationRequired ||
+        latest.changeLifecycle?.phase !== 'archive' ||
+        latest.changeLifecycle.currentWork?.workId !==
+          expected.changeLifecycle?.currentWork?.workId ||
+        latest.changeLifecycle.checkEpoch !== expected.changeLifecycle?.checkEpoch ||
+        latest.changeLifecycle.archiveDeliveryInput?.digest !==
+          expected.changeLifecycle?.archiveDeliveryInput?.digest
+      )
+        throw new Error('Archive effect authority changed before execution');
+      return { value: await effect(latest) };
+    });
+  }
+
   constructor(
     private readonly store: RunStorePort,
     private readonly telemetry: TelemetryPort,

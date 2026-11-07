@@ -79,101 +79,110 @@ const project: ProjectSnapshot = {
 };
 
 describe('Delivery v3 Archive publication', () => {
-  it('requires ordinary clean Business delivery facts after isolated Specification closure', async () => {
-    const inspect = vi.fn<DeliveryGitPort['inspect']>((repository, delivery) =>
-      Promise.resolve({
-        repositoryId: repository.id,
-        repositoryName: repository.name,
-        remoteIdentity: repository.remoteIdentity,
-        sourceBranch: delivery.sourceBranch,
-        targetBranch: delivery.targetBranch,
-        head,
-        tree: 'c'.repeat(40),
-        remoteSourceOid: head,
-        remoteTargetOid: target,
-        clean: true,
-      }),
-    );
-    const git: DeliveryGitPort = {
-      checkpoint: () => Promise.reject(new Error('not used')),
-      inspect,
-      push: () => Promise.resolve(head),
-    };
-    const store: DeliveryV3StorePort = {
-      load: () => Promise.resolve(null),
-      list: () => Promise.resolve([]),
-      commit: () => Promise.resolve(),
-    };
-    const mergeRequest = {
-      provider: 'github',
-      repositoryId: 'workspace',
-      number: 42,
-      url: 'https://github.com/team/workspace/pull/42',
-    };
-    const mergeRequests: MergeRequestPort = {
-      capability: () => Promise.reject(new Error('not used')),
-      find: () => Promise.resolve(null),
-      findAll: () => Promise.resolve([]),
-      create: () => Promise.resolve(mergeRequest),
-      update: () => Promise.reject(new Error('not used')),
-      status: () =>
+  it.each([head, 'd'.repeat(40)])(
+    'publishes only the frozen Business OID: %s',
+    async (observedHead) => {
+      const inspect = vi.fn<DeliveryGitPort['inspect']>((repository, delivery) =>
         Promise.resolve({
-          ...mergeRequest,
-          state: 'open',
-          sourceBranch: 'spec/archive-cleanliness',
-          targetBranch: 'main',
-          headCommit: head,
-          ci: 'pending',
-          review: 'pending',
-          conversationsResolved: null,
-          mergeCommit: null,
-          mergedAt: null,
+          repositoryId: repository.id,
+          repositoryName: repository.name,
+          remoteIdentity: repository.remoteIdentity,
+          sourceBranch: delivery.sourceBranch,
+          targetBranch: delivery.targetBranch,
+          head: observedHead,
+          tree: 'c'.repeat(40),
+          remoteSourceOid: head,
+          remoteTargetOid: target,
+          clean: true,
         }),
-    };
-    const evidence: DeliveryEvidencePort = {
-      assertSatisfied: vi.fn(() => Promise.resolve()),
-    };
-    let publicationJournal: PublicationJournal | null = null;
-    const publicationJournalStore: PublicationJournalStore = {
-      load: () => Promise.resolve(publicationJournal),
-      create: (journal) => {
-        publicationJournal = structuredClone(journal);
-        return Promise.resolve();
-      },
-      compareAndSet: (journal, expectedDigest) => {
-        if (publicationJournal?.digest !== expectedDigest) throw new Error('CAS conflict');
-        publicationJournal = structuredClone(journal);
-        return Promise.resolve();
-      },
-    };
-    const service = new DeliveryServiceV3(
-      store,
-      git,
-      mergeRequests,
-      evidence,
-      publicationJournalStore,
-      TEST_COMPOSITION_DIGEST,
-    );
+      );
+      const git: DeliveryGitPort = {
+        checkpoint: () => Promise.reject(new Error('not used')),
+        inspect,
+        push: () => Promise.resolve(head),
+      };
+      const store: DeliveryV3StorePort = {
+        load: () => Promise.resolve(null),
+        list: () => Promise.resolve([]),
+        commit: () => Promise.resolve(),
+      };
+      const mergeRequest = {
+        provider: 'github',
+        repositoryId: 'workspace',
+        number: 42,
+        url: 'https://github.com/team/workspace/pull/42',
+      };
+      const mergeRequests: MergeRequestPort = {
+        capability: () => Promise.reject(new Error('not used')),
+        find: () => Promise.resolve(null),
+        findAll: () => Promise.resolve([]),
+        create: () => Promise.resolve(mergeRequest),
+        update: () => Promise.reject(new Error('not used')),
+        status: () =>
+          Promise.resolve({
+            ...mergeRequest,
+            state: 'open',
+            sourceBranch: 'spec/archive-cleanliness',
+            targetBranch: 'main',
+            headCommit: head,
+            ci: 'pending',
+            review: 'pending',
+            conversationsResolved: null,
+            mergeCommit: null,
+            mergedAt: null,
+          }),
+      };
+      const evidence: DeliveryEvidencePort = {
+        assertSatisfied: vi.fn(() => Promise.resolve()),
+      };
+      let publicationJournal: PublicationJournal | null = null;
+      const publicationJournalStore: PublicationJournalStore = {
+        load: () => Promise.resolve(publicationJournal),
+        create: (journal) => {
+          publicationJournal = structuredClone(journal);
+          return Promise.resolve();
+        },
+        compareAndSet: (journal, expectedDigest) => {
+          if (publicationJournal?.digest !== expectedDigest) throw new Error('CAS conflict');
+          publicationJournal = structuredClone(journal);
+          return Promise.resolve();
+        },
+      };
+      const service = new DeliveryServiceV3(
+        store,
+        git,
+        mergeRequests,
+        evidence,
+        publicationJournalStore,
+        TEST_COMPOSITION_DIGEST,
+      );
 
-    await expect(
-      service.publishArchive({
-        runId: 'run-archive-cleanliness',
-        project,
-        intent,
+      const publication = () =>
+        service.publishArchive({
+          runId: 'run-archive-cleanliness',
+          project,
+          intent,
+          policy,
+          reportContents: 'verified',
+          evidenceBundleIds: ['bundle'],
+          expectedRepositoryHeads: { workspace: head },
+        });
+      if (observedHead !== head) {
+        await expect(publication()).rejects.toThrow(/frozen/u);
+        expect(publicationJournal).toBeNull();
+        return;
+      }
+      await expect(publication()).resolves.toMatchObject({
+        receipts: [
+          { deliveryId: 'primary', type: 'git.push', remoteOid: head },
+          { deliveryId: 'primary', type: 'mr.create_or_update', mergeRequest: { number: 42 } },
+        ],
+      });
+      expect(inspect).toHaveBeenCalledWith(
+        project.repositories[0],
+        expect.objectContaining({ sourceBranch: 'spec/archive-cleanliness' }),
         policy,
-        reportContents: 'verified',
-        evidenceBundleIds: ['bundle'],
-      }),
-    ).resolves.toMatchObject({
-      receipts: [
-        { deliveryId: 'primary', type: 'git.push', remoteOid: head },
-        { deliveryId: 'primary', type: 'mr.create_or_update', mergeRequest: { number: 42 } },
-      ],
-    });
-    expect(inspect).toHaveBeenCalledWith(
-      project.repositories[0],
-      expect.objectContaining({ sourceBranch: 'spec/archive-cleanliness' }),
-      policy,
-    );
-  });
+      );
+    },
+  );
 });

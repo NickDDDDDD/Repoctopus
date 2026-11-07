@@ -153,7 +153,7 @@ function asContext(value: unknown): EvidenceRunContext {
   ) {
     throw new Error('Invalid EvidenceRunContext');
   }
-  const fingerprint = record.fingerprint as EvidenceFingerprint;
+  const fingerprint = record.fingerprint;
   fingerprint.manifest.nodeInputs.forEach(assertEvidenceNodeInputSnapshot);
   if (createEvidenceFingerprint(fingerprint.manifest).digest !== fingerprint.digest)
     throw new Error('Evidence fingerprint content digest mismatch');
@@ -558,6 +558,13 @@ export class EvidenceCoordinator extends Service {
     );
     const reusableReceipts = [];
     for (const candidate of candidates) {
+      const bundle = await this.store.findBundleByAttempt(candidate.attemptId);
+      const check = bundle?.checks.find(
+        (entry) => entry.receiptId === candidate.receiptId && entry.nodeId === candidate.nodeId,
+      );
+      // The immutable Receipt precedes ending-input validation. Its original
+      // Bundle owns the later superseded conclusion for this particular node.
+      if (!check || check.status !== 'passed' || check.freshness === 'superseded') continue;
       const entries = await this.journal.load(candidate.attemptId);
       if (
         entries.some(

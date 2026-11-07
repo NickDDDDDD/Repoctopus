@@ -1,4 +1,4 @@
-import { access } from 'node:fs/promises';
+import { access, realpath } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import path from 'node:path';
 import type { EvidenceExecutionPlan } from '../../domains/feedback/profile.js';
@@ -44,15 +44,20 @@ async function programIdentity(executable: string, cwd: string): Promise<unknown
   }
   if (!resolved || !path.isAbsolute(resolved)) return { executable, available: false };
   try {
-    const file = await hashFileRaceSafe(resolved, {
+    const target = await realpath(resolved);
+    const file = await hashFileRaceSafe(target, {
       bigint: true,
       label: 'Evidence command program',
+      verify: async () => {
+        if ((await realpath(resolved)) !== target)
+          throw new Error('Evidence command target changed while capturing');
+      },
     });
     // A hash of the resolved path distinguishes equal programs at different locations
     // without exporting machine paths. Bytes and Node remain bound independently.
     return {
       available: true,
-      pathDigest: evidenceInputDigest(file.realPath),
+      pathDigest: evidenceInputDigest({ resolved, target: file.realPath }),
       digest: file.digest,
       node: process.version,
     };

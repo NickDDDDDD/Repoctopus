@@ -361,6 +361,7 @@ export interface SpecificationCompatibility {
 }
 
 export interface SpecificationClosurePlan {
+  sourceOid: string;
   apiVersion: typeof SPECIFICATION_API_VERSION;
   kind: 'SpecificationClosurePlan';
   changeId: string;

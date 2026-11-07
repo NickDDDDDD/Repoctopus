@@ -164,3 +164,9 @@ Evidence fingerprint manifest 从 v2 改为 v3，Context 从 v1 改为 v2，Bund
 另外用实际 producer 生成初始不存在的文件，再由 consumer 读取，证明合法产物不导致 Attempt superseded；在 consumer 开始后替换产物则阻断。分别在 producer Receipt 前、manifest 后及节点 completion 后中断，核对未知状态不重发、完整前驱不重跑。删除缓存 producer 的输出后再次采集，证明不会把旧成功误认为输出仍存在。
 
 最终用独立依赖安装构建固定候选，避免共享 node_modules 路径进入打包身份；在真实实验多仓复验，并在正式报告区分生命周期 Gate、独立 Profile 和未执行范围。普通决策继续写在本文件，结果进入 Evidence 与验证报告。
+
+### 实施约束：副作用使用冻结 OID
+
+独立审查确认 Run 事务锁只能序列化 Run 写入，不能锁住外部 Git。Archive 每个 effect 前在领域 owner 的 guarded operation 中核对 Work、epoch、input、blocker 和完整 Binding；新 Closure 复核规划、证据及 publication checkpoint。SpecificationClosurePlan 固定 sourceOid，checkout 直接从该 literal OID 创建；Business push 同样使用冻结 OID，不能再次读取可前移的分支作为实际发布来源。已开始 Journal 始终恢复原计划。该约束是现有“冻结发布坐标”验收的具体实现，不增设审批或生命周期。
+
+缓存资格还必须读取原 Bundle 的逐节点 superseded 结论；不可因源码恢复原值复活已失效 Receipt。声明输出逐 pattern 缺失时不缓存；程序 launcher 可以是符号链接，但身份绑定入口与真实目标，并在稳定读取中验证解析不变。

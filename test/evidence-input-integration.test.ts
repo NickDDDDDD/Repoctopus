@@ -1,4 +1,6 @@
-import { readFile, writeFile, unlink } from 'node:fs/promises';
+import { readFile, writeFile, unlink, symlink } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import path from 'node:path';
 import { Context } from '@deepseek-ai/cordis';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -10,6 +12,7 @@ import { RepositoryInputPolicies } from '../services/repository-input-policies.j
 import builtinHostInputPolicy from '../plugins/evidence/builtin-host-input-policy.js';
 import { localCommandContributor } from '../plugins/evidence/local-adapter-contributors.js';
 import { FileEvidenceJournal } from '../platform/evidence/file-evidence-journal.js';
+import { FileEvidenceInputProofs } from '../platform/evidence/file-input-proofs.js';
 import { parseEvidenceInputPolicy } from '../domains/evidence/input-policy.js';
 import type {
   SharedProjectConfig,
@@ -24,6 +27,7 @@ import {
 
 const cleanup: string[] = [];
 const contexts: Context[] = [];
+const git = promisify(execFile);
 afterEach(async () => {
   vi.restoreAllMocks();
   await Promise.all(contexts.splice(0).map((ctx) => ctx.fiber.dispose()));
@@ -173,3 +177,111 @@ it('does not replay an unknown producer or reuse a Receipt without its completio
   expect((await counts()).filter((id) => id === 'a')).toHaveLength(2);
   expect(await readFile(path.join(app, 'dist', 'value.txt'), 'utf8')).toBe('one');
 }, 60_000);
+
+it('binds only declared environment and Git inputs using the production observer', async () => {
+  const { workspace, app } = await fixture();
+  const file = path.join(workspace, 'repoctopus.yaml');
+  const config = JSON.parse(await readFile(file, 'utf8')) as SharedProjectConfig;
+  const nodes = config.profiles[0]!.nodes as CommandNodeConfig[];
+  nodes[0]!.inputs!.env = ['REPOCTOPUS_EVIDENCE_TEST_CHANNEL'];
+  nodes[1]!.inputs!.git = 'all';
+  await writeFile(file, JSON.stringify(config));
+  const beforeEnv = process.env.REPOCTOPUS_EVIDENCE_TEST_CHANNEL;
+  try {
+    process.env.REPOCTOPUS_EVIDENCE_TEST_CHANNEL = 'first';
+    const evidence = await boot(workspace);
+    const snapshots = async () =>
+      Object.fromEntries(
+        (await evidence.plan('verify')).fingerprint.manifest.nodeInputs.map((node) => [
+          node.nodeId,
+          node.fingerprint,
+        ]),
+      );
+    const first = await snapshots();
+    process.env.REPOCTOPUS_EVIDENCE_TEST_CHANNEL = 'second';
+    const second = await snapshots();
+    expect(second.a).not.toBe(first.a);
+    expect(second.b).toBe(first.b);
+    await git('git', ['add', '.'], { cwd: app });
+    await git('git', ['commit', '-m', 'same effective input bytes'], { cwd: app });
+    const third = await snapshots();
+    expect(third.a).toBe(second.a);
+    expect(third.b).not.toBe(second.b);
+  } finally {
+    if (beforeEnv === undefined) delete process.env.REPOCTOPUS_EVIDENCE_TEST_CHANNEL;
+    else process.env.REPOCTOPUS_EVIDENCE_TEST_CHANNEL = beforeEnv;
+  }
+}, 60_000);
+
+it('rejects a persisted Receipt whose canonical dependency proof was removed', async () => {
+  const { workspace, counts } = await fixture();
+  const evidence = await boot(workspace);
+  const result = await evidence.run('verify', 'corrupt-proof');
+  const receipt = result.receipts[0]!;
+  const withoutProof: Partial<typeof receipt> = { ...receipt };
+  delete withoutProof.dependencies;
+  await writeFile(
+    path.join(workspace, '.repoctopus', 'evidence', 'receipts', `${receipt.receiptId}.json`),
+    JSON.stringify(withoutProof),
+  );
+  await expect((await boot(workspace)).status('corrupt-proof')).rejects.toThrow(/dependency/u);
+  expect(await counts()).toHaveLength(3);
+}, 60_000);
+
+it('does not resurrect a superseded node when its source is restored, but preserves independent receipts', async () => {
+  const { workspace, app, counts } = await fixture();
+  // Preserve the original receiver in the fault-injection wrapper below.
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const capture = FileEvidenceInputProofs.prototype.captureOutputs;
+  const fault = vi
+    .spyOn(FileEvidenceInputProofs.prototype, 'captureOutputs')
+    .mockImplementation(async function (this: FileEvidenceInputProofs, snapshot) {
+      const result = await capture.call(this, snapshot);
+      if (snapshot.nodeId === 'a')
+        await writeFile(path.join(app, 'a.txt'), 'changed during execution');
+      return result;
+    });
+  const first = await (await boot(workspace)).run('verify', 'drifted');
+  fault.mockRestore();
+  expect(first.bundle.checks.find((check) => check.nodeId === 'a')!.freshness).toBe('superseded');
+  await writeFile(path.join(app, 'a.txt'), 'one');
+  const restored = await (await boot(workspace)).run('verify', 'restored');
+  expect(restored.receipts.find((receipt) => receipt.nodeId === 'a')!.freshness).toBe('fresh');
+  expect(restored.receipts.find((receipt) => receipt.nodeId === 'b')!.freshness).toBe('reused');
+  expect((await counts()).filter((id) => id === 'a')).toHaveLength(2);
+}, 60_000);
+
+it('does not accept or cache a producer that never created its declared outputs', async () => {
+  const { workspace, counts } = await fixture();
+  const file = path.join(workspace, 'repoctopus.yaml');
+  const config = JSON.parse(await readFile(file, 'utf8')) as SharedProjectConfig;
+  const node = config.profiles[0]!.nodes[1]! as CommandNodeConfig;
+  node.inputs!.repositories![0]!.outputs = ['missing/**'];
+  config.profiles[0]!.nodes = [node];
+  await writeFile(file, JSON.stringify(config));
+  const evidence = await boot(workspace);
+  const first = await evidence.run('verify', 'missing-first');
+  expect(first.bundle.outcome).toBe('incomplete');
+  const second = await evidence.run('verify', 'missing-second');
+  expect(second.receipts[0]!.freshness).toBe('fresh');
+  expect(await counts()).toHaveLength(2);
+}, 60_000);
+
+it.skipIf(process.platform === 'win32')(
+  'resolves a normal Unix symlink launcher and binds its real program',
+  async () => {
+    const { workspace, app } = await fixture();
+    const launcher = path.join(app, 'node-launcher');
+    await symlink(process.execPath, launcher);
+    const file = path.join(workspace, 'repoctopus.yaml');
+    const config = JSON.parse(await readFile(file, 'utf8')) as SharedProjectConfig;
+    const node = config.profiles[0]!.nodes[0]! as CommandNodeConfig;
+    node.executable = launcher;
+    config.profiles[0]!.nodes = [node];
+    await writeFile(file, JSON.stringify(config));
+    expect(
+      (await (await boot(workspace)).plan('verify')).fingerprint.manifest.nodeInputs[0]!.cacheable,
+    ).toBe(true);
+  },
+  60_000,
+);

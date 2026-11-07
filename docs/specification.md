@@ -116,7 +116,7 @@ Archive 在任何远端 MR 发布前调用 `prepareClosure`，把以下事实绑
 
 ## 替换 Provider
 
-一个 project composition 必须恰好提供一个 `specification` Service。零个 Provider 会触发缺少服务诊断；两个 Provider 会触发权威冲突。兼容 Provider 必须实现 `inspect`、`validate`、`prepareClosure` 和 `close`，并返回 `repoctopus.specification/v1alpha1` 类型。
+一个 project composition 必须恰好提供一个 `specification` Service。零个 Provider 会触发缺少服务诊断；两个 Provider 会触发权威冲突。兼容 Provider 必须实现 `inspect`、`validate`、`evidenceProjection`、`closureExecutionStarted`、`prepareClosure` 和 `close`，并返回 `repoctopus.specification/v1alpha1` 类型。
 
 OpenSpec 是首个内置 Provider，不是 Workflow 写死的规格体系。Provider 可以使用不同的规格工具，并把自己的产物规范化为稳定领域契约；专有目录、文件名和 CLI 输出不得成为 Workflow 分支条件。更换 Provider 只影响新 Run，已有 Run 保留原 Provider 快照；如果新 Provider 无法兼容旧快照，Runtime 必须停止并进入迁移诊断。
 

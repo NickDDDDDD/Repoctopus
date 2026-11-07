@@ -172,6 +172,8 @@ export function createSpecificationClosureJournal(input: {
 }
 
 export function assertSpecificationClosureJournal(journal: SpecificationClosureJournal): void {
+  if (!/^[a-f0-9]{40,64}$/u.test(journal.plan.sourceOid))
+    throw new Error('Specification Closure Journal requires a frozen source OID');
   if (
     journal.apiVersion !== SPECIFICATION_CLOSURE_JOURNAL_API_VERSION ||
     journal.kind !== 'SpecificationClosureJournal' ||

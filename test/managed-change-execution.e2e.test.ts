@@ -109,6 +109,23 @@ describe('managed Change execution production composition', () => {
       const workspace = await createGitRepository(root, 'workspace', workspaceRemote);
       const appRepository = await createGitRepository(root, 'app', appRemote);
       const workerRepository = await createGitRepository(root, 'worker', workerRemote);
+      // Keep portable remote identities stable from Run creation through publication.
+      for (const [repository, remote] of [
+        [workspace, workspaceRemote],
+        [appRepository, appRemote],
+        [workerRepository, workerRemote],
+      ]) {
+        await execFileAsync(
+          'git',
+          [
+            'remote',
+            'set-url',
+            'origin',
+            path.relative(repository!, remote!).replaceAll('\\', '/'),
+          ],
+          { cwd: repository },
+        );
+      }
       await execFileAsync('git', ['push', '--set-upstream', 'origin', 'main'], { cwd: workspace });
       await execFileAsync('git', ['push', '--set-upstream', 'origin', 'main'], {
         cwd: appRepository,

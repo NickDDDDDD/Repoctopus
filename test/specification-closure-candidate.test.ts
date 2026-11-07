@@ -34,6 +34,7 @@ const expected = [
 const plan: SpecificationClosurePlan = {
   apiVersion: 'repoctopus.specification/v1alpha1',
   kind: 'SpecificationClosurePlan',
+  sourceOid: 'a'.repeat(40),
   changeId: 'candidate',
   provider: {
     id: 'openspec',

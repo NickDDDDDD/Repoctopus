@@ -75,6 +75,7 @@ export function createSpecificationPhaseContext(input: {
 }
 
 export interface PrepareSpecificationClosureInput {
+  expectedSourceOid?: string;
   changeId: string;
   mergeFactsDigest: `sha256:${string}`;
   targetBaselineDigest: `sha256:${string}`;

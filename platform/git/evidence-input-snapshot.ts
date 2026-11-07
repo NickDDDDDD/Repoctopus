@@ -1,10 +1,11 @@
-import { lstat, readdir, realpath } from 'node:fs/promises';
+import { lstat, readdir, realpath, stat as targetStat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 
 import type { DirtyFileFingerprint } from '../../domains/evidence/fingerprint.js';
 import {
   matchesEvidenceInputPath,
+  evidenceInputPatternsOverlap,
   validateEvidenceInputPath,
 } from '../../domains/evidence/input-policy.js';
 import {
@@ -71,6 +72,14 @@ export async function collectEvidenceInputFiles(input: {
         throw error;
       });
       if (!stat) return;
+      if (
+        stat.isSymbolicLink() &&
+        (!input.files ||
+          input.files.some((pattern) => evidenceInputPatternsOverlap(pattern, `${relative}/**`))) &&
+        (await targetStat(path.join(root, relative))).isDirectory()
+      ) {
+        throw new Error(`Evidence directory link is not a supported input: ${relative}`);
+      }
       if (stat.isDirectory() && !stat.isSymbolicLink()) {
         for (const entry of await readdir(path.join(root, relative))) {
           if (entry === '.git') continue;
@@ -118,6 +127,12 @@ export async function collectEvidenceInputFiles(input: {
     const files: DirtyFileFingerprint[] = [];
     let bytes = 0;
     for (const file of paths) {
+      const parents = file.split('/').slice(0, -1);
+      for (let index = 1; index <= parents.length; index++) {
+        const parent = parents.slice(0, index).join('/');
+        if ((await lstat(path.join(root, parent))).isSymbolicLink())
+          throw new Error(`Evidence directory link is not a supported input: ${parent}`);
+      }
       let value = await fingerprintFile(root, file);
       if (value.kind === 'symlink') {
         const resolved = await realpath(path.join(root, file));

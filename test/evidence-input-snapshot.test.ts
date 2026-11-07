@@ -70,6 +70,20 @@ it('includes unknown ignored files in the default conservative scope', async () 
   expect(await collectEvidenceInputFiles({ root: repo })).not.toEqual(first);
 });
 
+it('rejects directory junctions in explicit input prefixes instead of silently omitting contents', async () => {
+  const root = await temporaryDirectory('evidence-junction-');
+  cleanup.push(root);
+  const repo = await createGitRepository(root, 'app');
+  await mkdir(path.join(repo, 'real'));
+  await writeFile(path.join(repo, 'real', 'source.txt'), 'input');
+  await symlink(path.join(repo, 'real'), path.join(repo, 'linked'), 'junction');
+  for (const files of [['linked/**'], ['linked/source.txt']]) {
+    await expect(collectEvidenceInputFiles({ root: repo, files })).rejects.toThrow(
+      /directory link/u,
+    );
+  }
+});
+
 it('binds internal symlink target bytes and rejects external targets', async (context) => {
   const root = await temporaryDirectory('evidence-symlink-');
   cleanup.push(root);

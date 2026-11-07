@@ -82,6 +82,14 @@ export class FileEvidenceInputProofs implements EvidenceInputProofPort {
     if (!receipt.outputManifest) return false;
     const expected = await this.load(receipt.outputManifest);
     const current = await this.capture(snapshot.outputs);
+    if (
+      current.repositories.some((repo) =>
+        repo.patterns.some(
+          (pattern) => !repo.files.some((file) => matchesEvidenceInputPath(pattern, file.path)),
+        ),
+      )
+    )
+      return false;
     return canonicalJson(expected) === canonicalJson(current);
   }
 

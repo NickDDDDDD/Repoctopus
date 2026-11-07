@@ -1039,7 +1039,8 @@ export class OpenSpecProvider extends Specification {
     if (frozen) {
       if (
         frozen.mergeFactsDigest !== input.mergeFactsDigest ||
-        frozen.targetBaselineDigest !== input.targetBaselineDigest
+        frozen.targetBaselineDigest !== input.targetBaselineDigest ||
+        (input.expectedSourceOid !== undefined && frozen.sourceOid !== input.expectedSourceOid)
       )
         throw new Error(
           'Specification closure has an existing frozen execution; reconcile its original plan',
@@ -1066,6 +1067,9 @@ export class OpenSpecProvider extends Specification {
         .sort((left, right) => left.file.localeCompare(right.file)),
     );
     const base = {
+      sourceOid:
+        input.expectedSourceOid ??
+        (await execute('git', ['rev-parse', 'HEAD'], { cwd: workspace })).stdout.trim(),
       apiVersion: SPECIFICATION_API_VERSION,
       kind: 'SpecificationClosurePlan' as const,
       changeId: change.changeId,
@@ -1344,6 +1348,7 @@ ${references}
       changeId: plan.changeId,
       mergeFactsDigest: plan.mergeFactsDigest,
       targetBaselineDigest: plan.targetBaselineDigest,
+      expectedSourceOid: plan.sourceOid,
       ...(signal ? { signal } : {}),
     });
     if (current.planDigest !== plan.planDigest) {
@@ -1394,6 +1399,7 @@ ${references}
       changeId: plan.changeId,
       mergeFactsDigest: plan.mergeFactsDigest,
       targetBaselineDigest: plan.targetBaselineDigest,
+      expectedSourceOid: plan.sourceOid,
       ...(signal ? { signal } : {}),
     });
     if (current.planDigest !== plan.planDigest) {
