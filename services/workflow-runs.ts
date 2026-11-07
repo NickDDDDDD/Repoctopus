@@ -6,6 +6,8 @@ import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
 import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/engine/types.js';
 import type { ProjectReconciliation, ProjectSnapshot } from '../domains/project/types.js';
 import { reconcileProjectSnapshots } from '../domains/project/snapshot.js';
+import { classifyBuildWorkspaceRecovery } from '../domains/runtime/build-workspace-recovery.js';
+import type { WorkspaceSnapshotInput } from './project.js';
 import { classifyWorkContinuation } from '../domains/change-lifecycle/continuation.js';
 import {
   WorkflowRunCoordinator,
@@ -286,10 +288,15 @@ export class WorkflowRuns extends Service {
   private readonly buildOutcomeAcceptance: BuildWorkOutcomeAcceptanceCoordinator;
   private readonly operations: OperationOwnership;
   private readonly workspaceRoot: string;
+  private readonly projectInput: WorkspaceSnapshotInput | undefined;
 
-  constructor(context: Context, config: { workspaceRoot?: string } = {}) {
+  constructor(
+    context: Context,
+    config: { workspaceRoot?: string; projectInput?: WorkspaceSnapshotInput } = {},
+  ) {
     super(context, 'workflowRuns');
     this.workspaceRoot = config.workspaceRoot ?? process.cwd();
+    this.projectInput = config.projectInput;
     this.operations = bindOperationOwnership(context, 'workflowRuns');
     this.buildOutcomeAcceptance = new BuildWorkOutcomeAcceptanceCoordinator({
       workDispatcher: context.workDispatcher,
@@ -1608,6 +1615,107 @@ export class WorkflowRuns extends Service {
     }
   }
 
+  private async recoverBoundBuildWorkspace(
+    runId: string,
+    entrypoint: 'next' | 'resume',
+  ): Promise<RuntimeResult<ResumeView> | null> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    const lifecycle = state.changeLifecycle;
+    if (
+      lifecycle?.phase !== 'build' ||
+      !lifecycle.buildProtocol?.binding ||
+      !lifecycle.buildProtocol.workspaceCheckpoint ||
+      lifecycle.currentWork?.kind === 'build.configure'
+    )
+      return null;
+    const previous = await this.ctx.runStore.loadProjectSnapshot(runId);
+    if (!this.projectInput)
+      throw new Error('Build recovery requires current project observation configuration');
+    const current = await this.ctx.project.snapshot(this.projectInput);
+    const authorization = await this.authorizedProtectedBranchRebind(state, lifecycle, current);
+    if (authorization) {
+      const base = await this.loadChangePlanningBase(state, lifecycle, 'design');
+      const dispatched = await this.dispatchExecutionBindingRevalidation({
+        state,
+        lifecycle,
+        projectSnapshot: current,
+        projectConfigDigest: base.projectConfigDigest,
+        workspaceRepositoryId: base.workspaceRepositoryId,
+        reasonCode: 'protected-branch-correction',
+        authorizedRebind: { entrypoint, evidence: authorization },
+      });
+      return {
+        ...dispatched,
+        value: {
+          ...dispatched.value,
+          reconciliation: { ...authorization.reconciliation, requiresReconciliation: false },
+          execution: await this.ctx.workExecutionAuthority.recovery(runId),
+        },
+      };
+    }
+    let observed: ExecutionWorkspaceBinding | null = null;
+    let observationError: string | undefined;
+    try {
+      observed = await this.bindExecutionWorkspace(state, lifecycle, current);
+    } catch (error) {
+      observationError =
+        error instanceof ExecutionWorkspaceBindingError
+          ? error.code
+          : 'checkout-observation-failed';
+    }
+    const planning =
+      lifecycle.currentWork?.kind === 'build.plan'
+        ? await this.observeChangePlanning(state, lifecycle)
+        : null;
+    const classified = classifyBuildWorkspaceRecovery({
+      state,
+      previous,
+      current,
+      observed,
+      ...(observationError ? { observationError } : {}),
+      ...(planning?.snapshot
+        ? {
+            planningPublication: {
+              repositoryId: planning.workspaceRepositoryId,
+              snapshotDigest: planning.snapshot.digest,
+            },
+          }
+        : {}),
+    });
+    let result = await this.coordinator.reconcileBuildWorkspace(runId, classified);
+    if (!result.value.state.reconciliationRequired && planning?.status === 'invalid') {
+      const latest = result.value.state;
+      const revised = await this.returnToDesignForPlanningRevision(
+        latest,
+        latest.changeLifecycle!,
+        planning,
+        current,
+        planning.projectConfigDigest,
+        planning.workspaceRepositoryId,
+      );
+      result = {
+        ...revised,
+        value: { ...revised.value, reconciliation: result.value.reconciliation },
+      };
+    }
+    const recovery = await this.ctx.workExecutionAuthority.recovery(runId);
+    const finalStatus = await this.coordinator.status(runId);
+    const execution = finalStatus.state.reconciliationRequired
+      ? { ...recovery, continuation: 'reconcile' as const, reason: 'project-drift' as const }
+      : recovery;
+    return {
+      ...result,
+      value: {
+        ...finalStatus,
+        reconciliation: {
+          ...result.value.reconciliation,
+          requiresReconciliation: finalStatus.state.reconciliationRequired,
+        },
+        execution,
+      },
+    };
+  }
+
   private async executionWorkspaceDrift(
     state: RunState,
     lifecycle: NonNullable<RunState['changeLifecycle']>,
@@ -1659,7 +1767,12 @@ export class WorkflowRuns extends Service {
       evidence: AuthorizedProtectedBranchRebind;
     };
     signal?: AbortSignal;
-  }) {
+  }): Promise<RuntimeResult<RunStatusView>> {
+    if (['checkout', 'path', 'head'].includes(input.reasonCode) && !input.authorizedRebind) {
+      const recovery = await this.recoverBoundBuildWorkspace(input.state.runId, 'next');
+      if (recovery) return recovery;
+      throw new Error('Checkout revalidation requires a current authorized recovery decision');
+    }
     const protocol = input.lifecycle.buildProtocol!;
     const strategy = protocol.strategy;
     const skills = await this.resolveLifecycleWorkSkills(
@@ -2166,7 +2279,27 @@ export class WorkflowRuns extends Service {
   ): Promise<RuntimeResult<RunStatusView>> {
     await this.coordinator.recoverChangeLifecycleDefinition(runId);
     await this.ctx.workExecutionAuthority.reconcileCurrentCheckpoint(runId);
+    const workspaceRecovery = await this.recoverBoundBuildWorkspace(runId, 'next');
+    if (
+      workspaceRecovery &&
+      (workspaceRecovery.value.state.reconciliationRequired ||
+        workspaceRecovery.value.changeLifecycle?.phase !== 'build' ||
+        workspaceRecovery.value.changeLifecycle?.currentWork?.kind === 'build.configure')
+    )
+      return workspaceRecovery;
     const preflight = await this.ctx.runStore.loadRun(runId);
+    if (preflight.reconciliationRequired) {
+      return {
+        value: await this.coordinator.status(runId),
+        diagnostics: [
+          {
+            level: 'warning',
+            code: 'runtime.project-changed',
+            message: 'Restore the bound workspace before continuing this Run',
+          },
+        ],
+      };
+    }
     const preflightLifecycle = preflight.changeLifecycle;
     if (
       preflightLifecycle?.phase === 'verify' &&
@@ -2978,10 +3111,7 @@ export class WorkflowRuns extends Service {
                   },
                   transition: bindingObservation,
                   assertTransitionFeasible: (state) =>
-                    this.coordinator.assertChangeObservationFeasible(
-                      state,
-                      bindingObservation,
-                    ),
+                    this.coordinator.assertChangeObservationFeasible(state, bindingObservation),
                 });
                 if (acceptance.kind === 'processing-error') {
                   return {
@@ -4266,9 +4396,8 @@ export class WorkflowRuns extends Service {
                       refreshedProjectSnapshot,
                       protocol.workspaceCheckpoint!,
                     );
-                    const refreshedEvidencePlan = await this.ctx.evidenceCoordinator.plan(
-                      profileId,
-                    );
+                    const refreshedEvidencePlan =
+                      await this.ctx.evidenceCoordinator.plan(profileId);
                     const refreshedVerificationInput = createVerificationInput({
                       runId,
                       checkEpoch: lifecycle.checkEpoch + 1,
@@ -5656,6 +5785,7 @@ export class WorkflowRuns extends Service {
     signal?: AbortSignal,
   ): Promise<RuntimeResult<ResumeView>> {
     return this.operations.run({ cancellable: false, signal }, async () => {
+      await this.coordinator.recoverChangeLifecycleDefinition(options.runId);
       const [skillCompatibility, specificationCompatibility, previousProjectSnapshot] =
         await Promise.all([
           this.skillCompatibility(options.runId, signal),
@@ -5710,54 +5840,14 @@ export class WorkflowRuns extends Service {
         };
       }
       const currentState = await this.ctx.runStore.loadRun(options.runId);
-      const lifecycle = currentState.changeLifecycle;
-      if (
-        lifecycle?.phase === 'build' &&
-        lifecycle.currentWork?.kind === 'build.plan' &&
-        lifecycle.buildProtocol?.binding &&
-        currentState.workExecution?.status === 'invoking' &&
-        currentState.workExecution.continuation === 'awaiting-correction'
-      ) {
-        const authorization = await this.authorizedProtectedBranchRebind(
-          currentState,
-          lifecycle,
-          options.currentProjectSnapshot,
-        );
-        if (authorization) {
-          const projectConfigDigest = currentState.trigger?.facts.projectConfigDigest;
-          const specificationRoot = currentState.trigger?.facts.specificationRoot as
-            | { repositoryId?: unknown }
-            | undefined;
-          if (
-            typeof projectConfigDigest !== 'string' ||
-            !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
-            typeof specificationRoot?.repositoryId !== 'string'
-          ) {
-            throw new Error('Protected branch recovery trigger identities are missing');
-          }
-          const dispatched = await this.dispatchExecutionBindingRevalidation({
-            state: currentState,
-            lifecycle,
-            projectSnapshot: options.currentProjectSnapshot,
-            projectConfigDigest: projectConfigDigest as `sha256:${string}`,
-            workspaceRepositoryId: specificationRoot.repositoryId,
-            reasonCode: 'protected-branch-correction',
-            authorizedRebind: { entrypoint: 'resume', evidence: authorization },
-            ...(signal ? { signal } : {}),
-          });
-          return {
-            ...dispatched,
-            value: {
-              ...dispatched.value,
-              reconciliation: authorization.reconciliation,
-              skillCompatibility,
-              specificationCompatibility,
-              execution: await this.ctx.workExecutionAuthority.recovery(options.runId),
-            },
-          };
-        }
-      }
       await this.ctx.workExecutionAuthority.reconcileCurrentCheckpoint(options.runId);
+      const boundRecovery = await this.recoverBoundBuildWorkspace(options.runId, 'resume');
+      if (boundRecovery) {
+        return {
+          ...boundRecovery,
+          value: { ...boundRecovery.value, skillCompatibility, specificationCompatibility },
+        };
+      }
       const priorAuthorization = await this.priorAuthorizedBranchRebind(
         currentState,
         options.currentProjectSnapshot,

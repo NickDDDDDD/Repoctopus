@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readdir, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -1317,6 +1317,28 @@ describe('managed Change execution production composition', () => {
           expect(retainedDesignApproval).toMatchObject({
             decisionRequest: { requestId: approval.decisionRequest.requestId },
           });
+          const tasksPath = path.join(
+            workspace,
+            'openspec',
+            'changes',
+            'managed-blackbox',
+            'tasks.md',
+          );
+          const acceptedTasks = await readFile(tasksPath, 'utf8');
+          const originalPlanWork = (await status()).changeLifecycle!.currentWork!.workId;
+          const invocationCount = capture.invocations.length;
+          await writeFile(tasksPath, `${acceptedTasks}\n- [ ] 9.9 Unapproved planning change\n`);
+          await execFileAsync('git', ['switch', '-c', 'unrelated/planning-and-branch'], {
+            cwd: workerRepository,
+          });
+          const blockedPlanning = await next();
+          expect(blockedPlanning.value.state.reconciliationRequired).toBe(true);
+          expect(blockedPlanning.value.changeLifecycle?.currentWork?.workId).toBe(originalPlanWork);
+          expect(capture.invocations).toHaveLength(invocationCount);
+          await writeFile(tasksPath, acceptedTasks);
+          await execFileAsync('git', ['switch', 'feature/managed-blackbox'], {
+            cwd: workerRepository,
+          });
         }
         await restartApplication();
         let planInvocation: (typeof capture.invocations)[number] | undefined;
@@ -1589,6 +1611,67 @@ describe('managed Change execution production composition', () => {
           currentWork: { kind: 'build.execute' },
           build: { action: 'execute', planRevision: 1 },
         });
+        if (multiRepository && executionMode === 'autonomous' && !protectedWriteRepositories) {
+          const beforeRace = await status();
+          const bind = application.context.executionWorkspace.bind.bind(
+            application.context.executionWorkspace,
+          );
+          let observations = 0;
+          const lateBranch = vi
+            .spyOn(application.context.executionWorkspace, 'bind')
+            .mockImplementation(async (input) => {
+              const observed = await bind(input);
+              observations += 1;
+              if (observations === 1)
+                await execFileAsync('git', ['switch', '-c', 'unrelated/before-claim'], {
+                  cwd: workerRepository,
+                });
+              return observed;
+            });
+          let blockedRace: RuntimeResult<RunStatusView>;
+          try {
+            blockedRace = await next();
+          } finally {
+            lateBranch.mockRestore();
+          }
+          expect(blockedRace.value.state.reconciliationRequired).toBe(true);
+          expect(blockedRace.value.state.changeLifecycle?.buildProtocol).toEqual(
+            beforeRace.state.changeLifecycle?.buildProtocol,
+          );
+          expect(capture.invocations).toHaveLength(0);
+          await execFileAsync('git', ['switch', 'feature/managed-blackbox'], {
+            cwd: workerRepository,
+          });
+
+          const host = application.context.workExecutionHosts.get('capturing-work-execution-host');
+          if (!host) throw new Error('Missing package Host for the execution race');
+          const invoke = host.invoke.bind(host);
+          const interruptedHost = vi
+            .spyOn(host, 'invoke')
+            .mockImplementationOnce(async (packet, session) => {
+              const outcome = await invoke(packet, session);
+              await execFileAsync('git', ['switch', '-c', 'unrelated/after-host'], {
+                cwd: workerRepository,
+              });
+              return outcome;
+            });
+          let blockedOutcome: RuntimeResult<RunStatusView>;
+          try {
+            blockedOutcome = await next();
+          } finally {
+            interruptedHost.mockRestore();
+          }
+          expect(blockedOutcome.value.state.reconciliationRequired).toBe(true);
+          expect(blockedOutcome.value.state.changeLifecycle?.buildProtocol).toEqual(
+            beforeRace.state.changeLifecycle?.buildProtocol,
+          );
+          expect(blockedOutcome.value.state.workExecution?.hostInvocation).toBeDefined();
+          expect(blockedOutcome.value.state.workExecution?.pendingSubmission).toBeDefined();
+          expect(capture.invocations).toHaveLength(1);
+          await execFileAsync('git', ['switch', 'feature/managed-blackbox'], {
+            cwd: workerRepository,
+          });
+        }
         let afterFirstPackage: RunStatusView;
         let afterFirstPackageDiagnostics: RuntimeResult<RunStatusView>['diagnostics'] = [];
         let afterAllPackages: RuntimeResult<RunStatusView>;
@@ -1717,7 +1800,8 @@ describe('managed Change execution production composition', () => {
             invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
             capture.dispose();
             await application.close();
-            const commands = executionMode === 'autonomous' ? ['resume', 'next'] : ['next', 'resume'];
+            const commands =
+              executionMode === 'autonomous' ? ['resume', 'next'] : ['next', 'resume'];
             const recover = (command: string) =>
               runCli<ResumeView>({
                 packageRoot: productRoot,
