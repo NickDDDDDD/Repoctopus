@@ -2,6 +2,7 @@
 change: preserve-completed-run-recovery
 design-doc: openspec/changes/preserve-completed-run-recovery/design.md
 base-ref: c872b4080d8336d2440410e28e482fce98423464
+archived-with: 2026-11-08-preserve-completed-run-recovery
 ---
 
 # 已完成 Run 恢复实施计划

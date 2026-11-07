@@ -2,6 +2,8 @@
 comet_change: preserve-completed-run-recovery
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-08-preserve-completed-run-recovery
+status: final
 ---
 
 # Design
