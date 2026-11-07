@@ -13,6 +13,7 @@ import builtinHostInputPolicy from '../plugins/evidence/builtin-host-input-polic
 import { localCommandContributor } from '../plugins/evidence/local-adapter-contributors.js';
 import { FileEvidenceJournal } from '../platform/evidence/file-evidence-journal.js';
 import { FileEvidenceInputProofs } from '../platform/evidence/file-input-proofs.js';
+import { FileArtifactStore } from '../platform/evidence/file-artifact-store.js';
 import { parseEvidenceInputPolicy } from '../domains/evidence/input-policy.js';
 import type {
   SharedProjectConfig,
@@ -285,3 +286,48 @@ it.skipIf(process.platform === 'win32')(
   },
   60_000,
 );
+
+it('keeps a producer unknown when interrupted before its manifest is committed', async () => {
+  const { workspace, counts } = await fixture();
+  const artifacts = new FileArtifactStore(workspace);
+  const put = artifacts.put.bind(artifacts);
+  const fault = vi
+    .spyOn(FileArtifactStore.prototype, 'put')
+    .mockImplementation((bytes, options) => {
+      if (options.artifactType === 'evidence-output-manifest')
+        throw new Error('before manifest commit');
+      return put(bytes, options);
+    });
+  await expect((await boot(workspace)).run('verify', 'before-manifest')).rejects.toThrow(
+    'before manifest commit',
+  );
+  fault.mockRestore();
+  const before = await counts();
+  const resumed = await (await boot(workspace)).resume('before-manifest');
+  expect(resumed.bundle?.outcome).toBe('incomplete');
+  expect(await counts()).toEqual(before);
+}, 60_000);
+
+it('recovers a committed producer completion without executing it again after interruption', async () => {
+  const { workspace, counts } = await fixture();
+  const journal = new FileEvidenceJournal(workspace);
+  const complete = journal.recordCompletion.bind(journal);
+  const fault = vi
+    .spyOn(FileEvidenceJournal.prototype, 'recordCompletion')
+    .mockImplementation(async (attempt, node, ...rest) => {
+      await complete(attempt, node, ...rest);
+      if (node === 'a') throw new Error('after completion commit');
+    });
+  await expect((await boot(workspace)).run('verify', 'after-completion')).rejects.toThrow(
+    'after completion commit',
+  );
+  fault.mockRestore();
+  const resumed = await (await boot(workspace)).resume('after-completion');
+  // Resume reconstructs committed facts; it does not silently run the pending consumer.
+  expect(resumed.bundle?.checks.find((check) => check.nodeId === 'a')).toMatchObject({
+    status: 'passed',
+  });
+  expect(resumed.bundle?.outcome).toBe('incomplete');
+  expect((await counts()).filter((id) => id === 'a')).toHaveLength(1);
+  expect((await counts()).sort()).toEqual(['a', 'b']);
+}, 60_000);

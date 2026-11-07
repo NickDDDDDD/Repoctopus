@@ -2376,7 +2376,9 @@ describe('managed Change execution production composition', () => {
         }
       }
     },
-    240_000,
+    // The expanded matrix includes three independent cold CLI restores after
+    // Verify; the previous 240s budget expired during the added Archive path.
+    360_000,
   );
 
   it('recovers one persisted Run from current to worktree across process restarts', async () => {
