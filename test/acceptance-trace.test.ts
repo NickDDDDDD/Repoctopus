@@ -1,3 +1,4 @@
+import { createEvidenceReceipt } from '../domains/evidence/receipt.js';
 import { describe, expect, it } from 'vitest';
 
 import { createAcceptanceTrace } from '../domains/evidence/acceptance-trace.js';
@@ -18,10 +19,7 @@ const context: EvidenceAcceptanceContext = {
 };
 
 function receipt(nodeId: string, overrides: Partial<EvidenceReceipt> = {}): EvidenceReceipt {
-  return {
-    apiVersion: 'repoctopus/v1alpha1',
-    kind: 'EvidenceReceipt',
-    receiptId: `receipt-${nodeId}`,
+  return createEvidenceReceipt({
     compositionDigest: TEST_COMPOSITION_DIGEST,
     attemptId: 'attempt-1',
     nodeId,
@@ -35,7 +33,7 @@ function receipt(nodeId: string, overrides: Partial<EvidenceReceipt> = {}): Evid
     artifacts: [],
     findings: [],
     ...overrides,
-  };
+  });
 }
 
 function check(nodeId: string, overrides: Partial<EvidenceCheck> = {}): EvidenceCheck {
@@ -45,7 +43,7 @@ function check(nodeId: string, overrides: Partial<EvidenceCheck> = {}): Evidence
     status: 'passed',
     trust: 'verified',
     freshness: 'fresh',
-    receiptId: `receipt-${nodeId}`,
+    receiptId: receipt(nodeId).receiptId,
     ...overrides,
   };
 }
@@ -70,7 +68,7 @@ describe('Acceptance Trace', () => {
           acceptanceId,
           status: 'passed',
           nodeIds: ['e2e', 'typecheck'],
-          receiptIds: ['receipt-e2e', 'receipt-typecheck'],
+          receiptIds: [receipt('e2e').receiptId, receipt('typecheck').receiptId].sort(),
         },
       ],
     });
@@ -88,7 +86,7 @@ describe('Acceptance Trace', () => {
   ] as const)('fails when one bound Receipt is %s', (_case, e2eCheck, e2eReceipt) => {
     const trace = createAcceptanceTrace({
       context,
-      checks: [check('typecheck'), e2eCheck],
+      checks: [check('typecheck'), { ...e2eCheck, receiptId: e2eReceipt.receiptId }],
       receipts: [receipt('typecheck'), e2eReceipt],
       inputFingerprint: 'fingerprint-1',
     });

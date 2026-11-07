@@ -1,3 +1,4 @@
+import { createEvidenceReceipt } from '../domains/evidence/receipt.js';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -5,14 +6,11 @@ import {
   createEvidenceBundle,
   projectEvidenceGate,
 } from '../domains/evidence/gate.js';
-import { EVIDENCE_API_VERSION, type EvidenceReceipt } from '../domains/evidence/types.js';
+import type { EvidenceReceipt } from '../domains/evidence/types.js';
 import { parseEvidenceBundle, parseEvidenceReceipt } from '../domains/evidence/validation.js';
 import { TEST_COMPOSITION_DIGEST } from './helpers/fixtures.js';
 
-const receipt: EvidenceReceipt = {
-  apiVersion: EVIDENCE_API_VERSION,
-  kind: 'EvidenceReceipt',
-  receiptId: 'receipt-1',
+const receipt: EvidenceReceipt = createEvidenceReceipt({
   compositionDigest: TEST_COMPOSITION_DIGEST,
   attemptId: 'attempt-1',
   nodeId: 'build',
@@ -26,14 +24,13 @@ const receipt: EvidenceReceipt = {
   exitCode: 0,
   artifacts: [],
   findings: [],
-};
+});
 
 describe('evidence contracts', () => {
   it('round-trips versioned receipts and bundles', () => {
     expect(parseEvidenceReceipt(JSON.parse(JSON.stringify(receipt)))).toEqual(receipt);
     const bundle = createEvidenceBundle({
       compositionDigest: TEST_COMPOSITION_DIGEST,
-      bundleId: 'bundle-1',
       attemptId: 'attempt-1',
       profileId: 'verify',
       inputFingerprint: 'fingerprint',
@@ -52,6 +49,17 @@ describe('evidence contracts', () => {
       findings: [],
     });
     expect(parseEvidenceBundle(JSON.parse(JSON.stringify(bundle)))).toEqual(bundle);
+    const changed = structuredClone(bundle);
+    changed.checks[0]!.freshness = 'reused';
+    expect(() => parseEvidenceBundle(changed)).toThrow(/identity/u);
+    const superseded = createEvidenceBundle({
+      ...bundle,
+      checks: bundle.checks.map((check) => ({ ...check, freshness: 'superseded' })),
+    });
+    const resurrected = structuredClone(superseded);
+    resurrected.checks[0]!.freshness = 'fresh';
+    resurrected.outcome = 'passed';
+    expect(() => parseEvidenceBundle(resurrected)).toThrow(/identity/u);
     expect(projectEvidenceGate(bundle)).toMatchObject({
       kind: 'EvidenceGateProjection',
       status: 'satisfied',

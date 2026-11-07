@@ -13,6 +13,7 @@ export interface RepositoryInputPolicyRule {
   match: RepositoryInputPathMatch;
   tracked: RepositoryInputTrackedDisposition;
   allowedKinds: readonly RepositoryInputFileKind[];
+  untracked?: 'runtime-output';
 }
 
 export interface RepositoryInputPolicyContributor {
@@ -29,6 +30,7 @@ export interface CompiledRepositoryInputPolicy {
 
 export type RepositoryInputClassification =
   | { kind: 'product' }
+  | { kind: 'runtime-output'; ruleId: string; owner: string }
   | { kind: 'control-plane'; ruleId: string; owner: string }
   | { kind: 'conflict'; ruleId: string; owner: string };
 
@@ -108,6 +110,12 @@ export function compileRepositoryInputPolicy(
       if (rule.tracked !== 'product' && rule.tracked !== 'conflict') {
         throw new Error(`Repository Input Policy rule ${id} has an invalid tracked disposition`);
       }
+      if (
+        rule.untracked !== undefined &&
+        (rule.untracked !== 'runtime-output' || rule.tracked !== 'conflict')
+      ) {
+        throw new Error(`Repository Input Policy rule ${id} has invalid Runtime output ownership`);
+      }
       return {
         id,
         owner,
@@ -115,6 +123,7 @@ export function compileRepositoryInputPolicy(
         match: rule.match,
         tracked: rule.tracked,
         allowedKinds: normalizedKinds(rule.allowedKinds),
+        ...(rule.untracked === 'runtime-output' ? { untracked: 'runtime-output' as const } : {}),
       } satisfies RepositoryInputPolicyRule;
     }),
   );
@@ -167,5 +176,5 @@ export function classifyRepositoryInput(
       ? { kind: 'conflict', ruleId: rule.id, owner: rule.owner }
       : { kind: 'product' };
   }
-  return { kind: 'control-plane', ruleId: rule.id, owner: rule.owner };
+  return { kind: rule.untracked ?? 'control-plane', ruleId: rule.id, owner: rule.owner };
 }

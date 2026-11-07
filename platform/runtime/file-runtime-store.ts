@@ -3,6 +3,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { RunState } from '../../domains/engine/types.js';
+import { assertVerificationInput } from '../../domains/change-lifecycle/verification-input.js';
 import type { RunStoreInspection } from '../../domains/runtime/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import type {
@@ -146,7 +147,10 @@ export class FileRuntimeStore {
 
   async loadRun(runId: string): Promise<RunState> {
     await this.recover(runId);
-    return readJson<RunState>(this.paths(runId).run);
+    const state = await readJson<RunState>(this.paths(runId).run);
+    if (state.changeLifecycle?.verificationInput)
+      assertVerificationInput(state.changeLifecycle.verificationInput);
+    return state;
   }
 
   async loadWorkflow(runId: string): Promise<WorkflowPackage> {
@@ -206,6 +210,9 @@ export class FileRuntimeStore {
           readJson<WorkflowPackage>(paths.workflow),
           readTrajectory(paths.trajectory),
         ]);
+        if (state.changeLifecycle?.verificationInput) {
+          assertVerificationInput(state.changeLifecycle.verificationInput);
+        }
         const result = await operation({ state, workflow, trajectory });
         if (result.state && result.event) {
           await this.commitUnlocked(

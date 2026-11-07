@@ -233,7 +233,10 @@ export class FileDeliveryProvider extends Delivery {
   }
 
   override publishArchive(
-    options: DeliveryPreparation & { intent: DeliveryIntentV3 },
+    options: DeliveryPreparation & {
+      intent: DeliveryIntentV3;
+      expectedRepositoryHeads: Readonly<Record<string, string>>;
+    },
     signal?: AbortSignal,
   ): Promise<ArchivePublicationResult> {
     return this.operations.run({ cancellable: false, signal }, async () => {

@@ -7,6 +7,7 @@ import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/eng
 import type { ProjectReconciliation, ProjectSnapshot } from '../domains/project/types.js';
 import { reconcileProjectSnapshots } from '../domains/project/snapshot.js';
 import { classifyBuildWorkspaceRecovery } from '../domains/runtime/build-workspace-recovery.js';
+import { classifyEvidenceWorkspaceRecovery } from '../domains/runtime/evidence-workspace-recovery.js';
 import type { WorkspaceSnapshotInput } from './project.js';
 import { classifyWorkContinuation } from '../domains/change-lifecycle/continuation.js';
 import {
@@ -122,10 +123,12 @@ import {
 } from '../domains/change-lifecycle/start-binding.js';
 import {
   createArchiveDeliveryInput,
+  createArchivePublicationCheckpoint,
   createDeliveryPublishWork,
   createSpecificationCloseWork,
 } from '../domains/change-lifecycle/archive-input.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
+import { FileResourceLeaseManager } from '../platform/runtime/resource-lease.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
 import { normalizeProtectedBranchPatterns } from '../domains/delivery/branch-policy.js';
 import type { ActionIntent, ActionReceipt, WorkExecutorIdentity } from '../domains/action/types.js';
@@ -289,6 +292,7 @@ export class WorkflowRuns extends Service {
   private readonly operations: OperationOwnership;
   private readonly workspaceRoot: string;
   private readonly projectInput: WorkspaceSnapshotInput | undefined;
+  private readonly archiveLeases: FileResourceLeaseManager;
 
   constructor(
     context: Context,
@@ -297,6 +301,7 @@ export class WorkflowRuns extends Service {
     super(context, 'workflowRuns');
     this.workspaceRoot = config.workspaceRoot ?? process.cwd();
     this.projectInput = config.projectInput;
+    this.archiveLeases = new FileResourceLeaseManager(this.workspaceRoot);
     this.operations = bindOperationOwnership(context, 'workflowRuns');
     this.buildOutcomeAcceptance = new BuildWorkOutcomeAcceptanceCoordinator({
       workDispatcher: context.workDispatcher,
@@ -1716,6 +1721,284 @@ export class WorkflowRuns extends Service {
     };
   }
 
+  private async assertEvidenceWorkspaceAuthorityCurrent(
+    state: RunState,
+    signal?: AbortSignal,
+    checkPlanning = true,
+  ): Promise<void> {
+    const lifecycle = state.changeLifecycle;
+    if (!lifecycle || !this.projectInput || state.reconciliationRequired)
+      throw new Error('Evidence workspace authority is unavailable');
+    const [previous, current] = await Promise.all([
+      this.ctx.runStore.loadProjectSnapshot(state.runId),
+      this.ctx.project.snapshot(this.projectInput),
+    ]);
+    const observed = await this.bindExecutionWorkspace(state, lifecycle, current);
+    const authority = classifyEvidenceWorkspaceRecovery({ state, previous, current, observed });
+    if (authority.conflicts.length)
+      throw new Error(`Evidence workspace authority changed: ${authority.conflicts.join(', ')}`);
+    if (checkPlanning) {
+      const planning = await this.observeChangePlanning(state, lifecycle, signal);
+      if (planning.status !== 'authorized')
+        throw new Error('Evidence planning authority changed during protected acceptance');
+    }
+  }
+
+  private async preserveUnsettledVerify(
+    runId: string,
+    attemptId: string,
+    bundleId: string | null,
+    reason: string,
+    continuation: 'reconcile' | 'reobserve' = 'reconcile',
+  ): Promise<RuntimeResult<VerifyChangeRunResult>> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    const recovery = {
+      schemaVersion: 2 as const,
+      continuation,
+      workId: state.changeLifecycle?.currentWork?.workId ?? null,
+      attempt: state.workExecution?.attempt ?? null,
+      checkEpoch: state.changeLifecycle?.checkEpoch ?? null,
+      reason:
+        continuation === 'reconcile'
+          ? ('external-result-unknown' as const)
+          : ('evidence-observation-unavailable' as const),
+    };
+    await this.ctx.workExecutionAuthority.recordContinuation(runId, recovery);
+    const run = await this.coordinator.status(runId);
+    return {
+      value: {
+        attemptId,
+        bundleId,
+        gate: 'blocked',
+        run: run.state.reconciliationRequired ? run : { ...run, continuation: recovery },
+      },
+      diagnostics: [
+        {
+          level: 'warning',
+          code:
+            continuation === 'reconcile'
+              ? 'evidence.result-unknown'
+              : 'evidence.inputs-unavailable',
+          message: reason,
+        },
+      ],
+    };
+  }
+
+  private async recoverEvidenceWorkspace(
+    runId: string,
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<ResumeView> | null> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    const lifecycle = state.changeLifecycle;
+    if (
+      !lifecycle ||
+      state.status !== 'running' ||
+      !['verify', 'archive'].includes(lifecycle.phase) ||
+      !lifecycle.verificationInput ||
+      !lifecycle.buildProtocol?.binding ||
+      !lifecycle.buildProtocol.workspaceCheckpoint
+    )
+      return null;
+    if (!this.projectInput)
+      throw new Error('Evidence recovery requires current project observation configuration');
+    const previous = await this.ctx.runStore.loadProjectSnapshot(runId);
+    const current = await this.ctx.project.snapshot(this.projectInput);
+    let observed: ExecutionWorkspaceBinding | null = null;
+    let observationError: string | undefined;
+    try {
+      observed = await this.bindExecutionWorkspace(state, lifecycle, current);
+    } catch (error) {
+      observationError =
+        error instanceof ExecutionWorkspaceBindingError
+          ? error.code
+          : 'checkout-observation-failed';
+    }
+    const classified = classifyEvidenceWorkspaceRecovery({
+      state,
+      previous,
+      current,
+      observed,
+      ...(observationError ? { observationError } : {}),
+    });
+    const result = await this.coordinator.reconcileEvidenceWorkspace(runId, classified);
+    const complete = async (
+      diagnostics: RuntimeDiagnostic[] = result.diagnostics,
+    ): Promise<RuntimeResult<ResumeView>> => {
+      const recovery = await this.ctx.workExecutionAuthority.recovery(runId);
+      const value = await this.coordinator.status(runId);
+      const execution = value.state.reconciliationRequired
+        ? { ...recovery, continuation: 'reconcile' as const, reason: 'project-drift' as const }
+        : recovery;
+      return {
+        value: {
+          ...value,
+          reconciliation: {
+            ...result.value.reconciliation,
+            requiresReconciliation: value.state.reconciliationRequired,
+          },
+          execution,
+        },
+        diagnostics,
+      };
+    };
+    if (result.value.state.reconciliationRequired) return complete();
+    const latest = await this.ctx.runStore.loadRun(runId);
+    const active = latest.changeLifecycle!;
+    const latestAttemptId = result.value.changeLifecycle?.evidence.latestAttemptId ?? null;
+    // An unknown or started external Action must reconcile its original invocation;
+    // input observation never creates another closure/publication effect.
+    if (
+      active.specificationClosure ||
+      active.publicationReceipt ||
+      (latest.workExecution && ['invoking', 'unknown'].includes(latest.workExecution.status))
+    )
+      return complete();
+    if (
+      active.phase === 'archive' &&
+      (await this.ctx.specification.closureExecutionStarted(active.identity.changeId))
+    )
+      return complete();
+    if (
+      active.currentWork &&
+      (await this.ctx.evidenceCoordinator.hasUnsettledWorkAttempt(runId, active.currentWork.workId))
+    )
+      return complete();
+    try {
+      const planning = await this.observeChangePlanning(latest, active, signal);
+      if (planning.status === 'invalid') {
+        if (planning.observationKind === 'unknown')
+          throw new Error('Planning Provider observation is unavailable');
+        const revised = await this.returnToDesignForPlanningRevision(
+          latest,
+          active,
+          planning,
+          current,
+          planning.projectConfigDigest,
+          planning.workspaceRepositoryId,
+          signal,
+        );
+        return complete(revised.diagnostics);
+      }
+      const refreshed = await this.ctx.evidenceCoordinator.plan(
+        active.verificationInput!.evidenceProfile.id,
+        runId,
+      );
+      let drift =
+        refreshed.fingerprint.digest !==
+        active.verificationInput!.evidenceProfile.fingerprintDigest;
+      if (!drift && active.phase === 'archive' && latestAttemptId) {
+        drift =
+          (await this.ctx.evidenceCoordinator.assessInputs(latestAttemptId, runId)) === 'drift';
+      }
+      if (!drift) {
+        const archive = active.archiveDeliveryInput;
+        if (archive && active.currentWork?.kind === 'specification.close') {
+          const intent: DeliveryIntentV3 = {
+            schemaVersion: 3,
+            changeId: archive.changeId,
+            changeBranch: archive.changeBranch,
+            businessDeliveries: archive.businessDeliveries,
+            ...(archive.businessSplitReason
+              ? { businessSplitReason: archive.businessSplitReason }
+              : {}),
+          };
+          const checkpoint = createArchivePublicationCheckpoint(current, intent);
+          if (checkpoint.digest !== archive.publicationCheckpoint.digest) {
+            const view = await complete();
+            return {
+              ...view,
+              value: {
+                ...view.value,
+                continuation: {
+                  schemaVersion: 2,
+                  continuation: 'reobserve',
+                  workId: active.currentWork.workId,
+                  attempt: latest.workExecution?.attempt ?? null,
+                  checkEpoch: active.checkEpoch,
+                  reason: 'publication-checkpoint-stale',
+                },
+              },
+              diagnostics: [
+                ...view.diagnostics,
+                {
+                  level: 'info',
+                  code: 'change.archive-preflight-stale',
+                  message:
+                    'Verified contents remain valid; refresh only the authorized publication checkpoint before effects',
+                },
+              ],
+            };
+          }
+        }
+        return complete();
+      }
+      if (active.phase === 'archive') {
+        const revised = await this.reverifyArchiveIfFingerprintChanged(
+          runId,
+          latest,
+          active,
+          signal,
+          true,
+        );
+        if (revised) return complete(revised.diagnostics);
+      } else {
+        const continuation = await this.createVerifyFailureContinuation(
+          latest,
+          'evidence-drift',
+          signal,
+        );
+        const revised = await this.applyVerifyRecovery(
+          latest,
+          active,
+          'evidence-drift',
+          latestAttemptId ?? 'uncollected',
+          null,
+          'Declared Evidence inputs changed before Verify acceptance',
+          continuation,
+        );
+        await this.ctx.workExecutionAuthority.recordWorkCreated(runId, continuation.work);
+        return complete([
+          ...revised.diagnostics,
+          {
+            level: 'info',
+            code: 'change.evidence-inputs-refreshed',
+            message: 'Verify Work now binds the observed declared inputs',
+          },
+        ]);
+      }
+      return complete();
+    } catch (error) {
+      signal?.throwIfAborted();
+      const value = await this.coordinator.status(runId);
+      const execution = value.state.workExecution;
+      return {
+        value: {
+          ...value,
+          reconciliation: result.value.reconciliation,
+          continuation: {
+            schemaVersion: 2,
+            continuation: 'reobserve',
+            workId: execution?.workId ?? value.changeLifecycle?.currentWork?.workId ?? null,
+            attempt: execution?.attempt ?? null,
+            checkEpoch: value.state.changeLifecycle?.checkEpoch ?? null,
+            reason: 'evidence-observation-unavailable',
+            observationStage: 'evidence-inputs',
+          },
+        },
+        diagnostics: [
+          ...result.diagnostics,
+          {
+            level: 'warning',
+            code: 'evidence.inputs-unavailable',
+            message:
+              error instanceof Error ? error.message : 'Evidence input observation is unavailable',
+          },
+        ],
+      };
+    }
+  }
+
   private async executionWorkspaceDrift(
     state: RunState,
     lifecycle: NonNullable<RunState['changeLifecycle']>,
@@ -2287,6 +2570,17 @@ export class WorkflowRuns extends Service {
         workspaceRecovery.value.changeLifecycle?.currentWork?.kind === 'build.configure')
     )
       return workspaceRecovery;
+    const evidenceRecovery = await this.recoverEvidenceWorkspace(runId, signal);
+    if (
+      evidenceRecovery &&
+      (evidenceRecovery.value.state.reconciliationRequired ||
+        evidenceRecovery.value.continuation?.continuation === 'reobserve' ||
+        !['verify', 'archive'].includes(evidenceRecovery.value.changeLifecycle?.phase ?? '') ||
+        evidenceRecovery.diagnostics.some((entry) =>
+          ['change.evidence-inputs-refreshed', 'change.archive-reverify'].includes(entry.code),
+        ))
+    )
+      return evidenceRecovery;
     const preflight = await this.ctx.runStore.loadRun(runId);
     if (preflight.reconciliationRequired) {
       return {
@@ -2311,8 +2605,10 @@ export class WorkflowRuns extends Service {
       preflight.workExecution.actionOutcome?.status === 'succeeded'
     ) {
       const verified = await this.verifyChange({ runId }, signal);
-      const continuation = await this.ctx.workExecutionAuthority.recovery(runId);
-      await this.ctx.workExecutionAuthority.recordContinuation(runId, continuation);
+      const continuation =
+        verified.value.run.continuation ?? (await this.ctx.workExecutionAuthority.recovery(runId));
+      if (!verified.value.run.continuation)
+        await this.ctx.workExecutionAuthority.recordContinuation(runId, continuation);
       return {
         diagnostics: verified.diagnostics,
         value: await this.coordinator.status(runId),
@@ -2847,7 +3143,7 @@ export class WorkflowRuns extends Service {
               if (typeof profileId !== 'string' || !profileId.trim()) {
                 throw new Error('Verification Evidence Profile identity is missing');
               }
-              const refreshed = await this.ctx.evidenceCoordinator.plan(profileId);
+              const refreshed = await this.ctx.evidenceCoordinator.plan(profileId, runId);
               if (
                 refreshed.fingerprint.digest ===
                 lifecycle.verificationInvalidation.evidenceInputFingerprint
@@ -4325,7 +4621,7 @@ export class WorkflowRuns extends Service {
               if (typeof profileId !== 'string' || !profileId.trim()) {
                 throw new Error('Verification Evidence Profile identity is missing');
               }
-              const evidencePlan = await this.ctx.evidenceCoordinator.plan(profileId);
+              const evidencePlan = await this.ctx.evidenceCoordinator.plan(profileId, runId);
               const verifySkills = await this.resolveLifecycleWorkSkills(
                 'evidence.verify',
                 signal,
@@ -4396,8 +4692,10 @@ export class WorkflowRuns extends Service {
                       refreshedProjectSnapshot,
                       protocol.workspaceCheckpoint!,
                     );
-                    const refreshedEvidencePlan =
-                      await this.ctx.evidenceCoordinator.plan(profileId);
+                    const refreshedEvidencePlan = await this.ctx.evidenceCoordinator.plan(
+                      profileId,
+                      runId,
+                    );
                     const refreshedVerificationInput = createVerificationInput({
                       runId,
                       checkEpoch: lifecycle.checkEpoch + 1,
@@ -4766,10 +5064,25 @@ export class WorkflowRuns extends Service {
         [],
         state.runId,
       );
-      const verificationInput = rebaseVerificationInput(
-        lifecycle.verificationInput,
-        lifecycle.checkEpoch + 1,
-      );
+      const refreshed =
+        result === 'evidence-drift'
+          ? await this.ctx.evidenceCoordinator.plan(
+              lifecycle.verificationInput.evidenceProfile.id,
+              state.runId,
+            )
+          : null;
+      const verificationInput = refreshed
+        ? createVerificationInput({
+            runId: state.runId,
+            checkEpoch: lifecycle.checkEpoch + 1,
+            tasks: lifecycle.tasks ?? [],
+            fingerprint: refreshed.fingerprint,
+            plan: refreshed.plan,
+            projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+            compositionDigest: state.composition.compositionDigest,
+            skills: lifecycle.verificationInput.skills,
+          })
+        : rebaseVerificationInput(lifecycle.verificationInput, lifecycle.checkEpoch + 1);
       const work = createVerifyWork({
         definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
         checkEpoch: lifecycle.checkEpoch + 1,
@@ -4914,6 +5227,22 @@ export class WorkflowRuns extends Service {
     signal?: AbortSignal,
   ): Promise<RuntimeResult<VerifyChangeRunResult>> {
     return this.operations.run({ cancellable: false, signal }, async () => {
+      const observed = await this.recoverEvidenceWorkspace(input.runId, signal);
+      if (
+        observed &&
+        (observed.value.state.reconciliationRequired ||
+          observed.value.continuation?.continuation === 'reobserve')
+      ) {
+        return {
+          value: {
+            attemptId: input.attemptId ?? '',
+            bundleId: null,
+            gate: 'blocked' as const,
+            run: observed.value,
+          },
+          diagnostics: observed.diagnostics,
+        };
+      }
       const state = await this.ctx.runStore.loadRun(input.runId);
       const lifecycle = state.changeLifecycle;
       if (!lifecycle) throw new Error(`Run is not a Change Run: ${input.runId}`);
@@ -4956,7 +5285,25 @@ export class WorkflowRuns extends Service {
         });
       }
       const checkEpoch = current.checkEpoch;
+      const unresolved = await this.ctx.evidenceCoordinator.unsettledWorkAttemptIds(
+        input.runId,
+        current.currentWork.workId,
+      );
+      if (
+        unresolved.length > 1 ||
+        (unresolved.length === 1 &&
+          input.attemptId !== undefined &&
+          input.attemptId !== unresolved[0])
+      ) {
+        return this.preserveUnsettledVerify(
+          input.runId,
+          unresolved[0]!,
+          null,
+          'Resolve the original Evidence Attempt before selecting another attempt identity',
+        );
+      }
       const attemptId =
+        unresolved[0] ??
         input.attemptId ??
         `verify-${createHash('sha256')
           .update(
@@ -4978,6 +5325,14 @@ export class WorkflowRuns extends Service {
         );
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error);
+        if (
+          await this.ctx.evidenceCoordinator.hasUnsettledWorkAttempt(
+            input.runId,
+            current.currentWork.workId,
+          )
+        ) {
+          return this.preserveUnsettledVerify(input.runId, attemptId, null, reason);
+        }
         const classification = reason.includes(
           'input fingerprint changed before Evidence execution',
         )
@@ -5006,22 +5361,50 @@ export class WorkflowRuns extends Service {
       if (!result.bundle) {
         throw new Error(`Evidence attempt has no completed bundle: ${attemptId}`);
       }
-      const gate = await this.ctx.evidenceCoordinator.evaluate({
-        workflowRunId: input.runId,
-        workflowActionId: current.currentWork.workId,
-        workflowStepId: 'verify',
-        checkEpoch,
-        profileId: current.verificationInput.evidenceProfile.id,
-        attemptId,
-      });
+      let gate;
+      try {
+        gate = await this.ctx.evidenceCoordinator.evaluate({
+          workflowRunId: input.runId,
+          workflowActionId: current.currentWork.workId,
+          workflowStepId: 'verify',
+          checkEpoch,
+          profileId: current.verificationInput.evidenceProfile.id,
+          attemptId,
+        });
+      } catch (error) {
+        return this.preserveUnsettledVerify(
+          input.runId,
+          attemptId,
+          result.bundle.bundleId,
+          error instanceof Error ? error.message : 'Evidence input observation unavailable',
+          'reobserve',
+        );
+      }
       if (gate.status === 'blocked') {
+        if (
+          result.bundle.findings.some(
+            (finding) => finding.code === 'recovery-uncertain-side-effect',
+          )
+        ) {
+          return this.preserveUnsettledVerify(
+            input.runId,
+            attemptId,
+            gate.bundleId,
+            'The original Evidence Attempt contains an uncertain node result',
+          );
+        }
         const rejected = rejectVerifyGate({
           runId: input.runId,
           lifecycle: current,
           gate,
           attemptId,
           checkEpoch,
-          result: 'implementation-failure',
+          result:
+            gate.failureKind === 'input-drift'
+              ? 'evidence-drift'
+              : gate.failureKind === 'unavailable'
+                ? 'evidence-unavailable'
+                : 'implementation-failure',
         });
         const continuation = await this.createVerifyFailureContinuation(
           state,
@@ -5055,10 +5438,33 @@ export class WorkflowRuns extends Service {
         attemptId,
         checkEpoch,
       });
-      const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'verify-gate-satisfied',
-        ...accepted,
-      });
+      const advanced = await this.coordinator.acceptChangeObservation(
+        input.runId,
+        {
+          kind: 'verify-gate-satisfied',
+          ...accepted,
+        },
+        {
+          reobserve: async (latest) => {
+            if (
+              latest.changeLifecycle?.currentWork?.workId !== accepted.workId ||
+              latest.reconciliationRequired
+            )
+              throw new Error('Verify acceptance authority changed');
+            await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal);
+            const gate = await this.ctx.evidenceCoordinator.evaluate({
+              workflowRunId: input.runId,
+              workflowActionId: accepted.workId,
+              workflowStepId: 'verify',
+              checkEpoch,
+              profileId: current.verificationInput!.evidenceProfile.id,
+              attemptId,
+            });
+            if (gate.status !== 'satisfied')
+              throw new Error('Verify inputs changed before the protected acceptance commit');
+          },
+        },
+      );
       return {
         value: {
           attemptId,
@@ -5076,6 +5482,7 @@ export class WorkflowRuns extends Service {
     state: RunState,
     lifecycle: ChangeLifecycleState,
     signal?: AbortSignal,
+    force = false,
   ): Promise<RuntimeResult<RunStatusView> | null> {
     if (
       lifecycle.phase !== 'archive' ||
@@ -5087,8 +5494,19 @@ export class WorkflowRuns extends Service {
     }
     const refreshed = await this.ctx.evidenceCoordinator.plan(
       lifecycle.verificationInput.evidenceProfile.id,
+      runId,
+    );
+    const bundleId =
+      lifecycle.archiveDeliveryInput?.evidenceBundleId ?? state.acceptedEvidenceBundleIds.at(-1);
+    if (!bundleId) throw new Error('Archive is missing its accepted Evidence Bundle');
+    const assessment = await this.ctx.evidenceCoordinator.assessBundleInputs(
+      bundleId,
+      runId,
+      lifecycle.verificationInput.digest,
     );
     if (
+      !force &&
+      assessment === 'same' &&
       refreshed.fingerprint.digest === lifecycle.verificationInput.evidenceProfile.fingerprintDigest
     ) {
       return null;
@@ -5160,11 +5578,30 @@ export class WorkflowRuns extends Service {
     };
   }
 
+  private archiveOperation<T>(
+    runId: string,
+    signal: AbortSignal | undefined,
+    operation: () => Promise<T>,
+  ): Promise<T> {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.archiveLeases.withLease(`archive-run:${runId}`, operation),
+    );
+  }
+
   prepareArchiveDelivery(
     input: PrepareArchiveDeliveryInput,
     signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
-    return this.operations.run({ cancellable: false, signal }, async () => {
+    return this.archiveOperation(input.runId, signal, async () => {
+      const recovery = await this.recoverEvidenceWorkspace(input.runId, signal);
+      if (
+        recovery &&
+        (recovery.value.state.reconciliationRequired ||
+          (recovery.value.continuation?.continuation === 'reobserve' &&
+            recovery.value.continuation.reason !== 'publication-checkpoint-stale') ||
+          recovery.value.changeLifecycle?.phase !== 'archive')
+      )
+        return recovery;
       const [state, evidence, projectSnapshot] = await Promise.all([
         this.ctx.runStore.loadRun(input.runId),
         this.ctx.evidenceCoordinator.status(input.attemptId),
@@ -5175,20 +5612,30 @@ export class WorkflowRuns extends Service {
         !lifecycle ||
         state.status !== 'running' ||
         lifecycle.phase !== 'archive' ||
-        lifecycle.currentWork !== null ||
+        (lifecycle.currentWork !== null &&
+          (lifecycle.currentWork.kind !== 'specification.close' ||
+            !lifecycle.archiveDeliveryInput ||
+            lifecycle.specificationClosure ||
+            lifecycle.publicationReceipt)) ||
         !lifecycle.verificationInput
       ) {
         throw new Error(`Change Run is not ready to plan Archive Delivery: ${input.runId}`);
       }
-      const reverify = await this.reverifyArchiveIfFingerprintChanged(
-        input.runId,
-        state,
-        lifecycle,
-        signal,
-      );
-      if (reverify) return reverify;
       if (!evidence.bundle || !evidence.bundle.verificationReport) {
         throw new Error('Archive Delivery requires a completed formal verification report');
+      }
+      if (
+        evidence.context.workflowBinding?.workflowRunId !== input.runId ||
+        evidence.bundle.acceptanceTrace?.verificationInputDigest !==
+          lifecycle.verificationInput.digest ||
+        evidence.bundle.acceptanceTrace.acceptanceSetHash !==
+          lifecycle.verificationInput.acceptanceSetHash ||
+        evidence.bundle.inputFingerprint !==
+          lifecycle.verificationInput.evidenceProfile.fingerprintDigest
+      ) {
+        throw new Error(
+          'Archive preflight requires the Bundle accepted for the current immutable Verification Input',
+        );
       }
       const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
       const specificationRoot = state.trigger?.facts.specificationRoot as
@@ -5221,6 +5668,13 @@ export class WorkflowRuns extends Service {
           signal,
         );
       }
+      const reverify = await this.reverifyArchiveIfFingerprintChanged(
+        input.runId,
+        state,
+        lifecycle,
+        signal,
+      );
+      if (reverify) return reverify;
       await this.ctx.delivery.validateArchiveIntent(
         input.intent,
         input.policy,
@@ -5239,7 +5693,23 @@ export class WorkflowRuns extends Service {
         planningCompositionDigest: state.composition.compositionDigest,
         evidenceCompositionDigest: lifecycle.verificationInput
           .compositionDigest as `sha256:${string}`,
+        publicationCheckpoint: createArchivePublicationCheckpoint(
+          await this.ctx.project.snapshot(this.projectInput!),
+          input.intent,
+        ),
       });
+      const replacing = lifecycle.currentWork !== null;
+      if (replacing && lifecycle.archiveDeliveryInput?.digest === archiveInput.digest)
+        return { value: await this.coordinator.status(input.runId), diagnostics: [] };
+      if (
+        replacing &&
+        ((state.workExecution && ['invoking', 'unknown'].includes(state.workExecution.status)) ||
+          (await this.ctx.specification.closureExecutionStarted(lifecycle.identity.changeId)))
+      ) {
+        throw new Error(
+          'Archive has a started or uncertain original execution; reconcile it before replacing preflight',
+        );
+      }
       const repositoryIds = Array.isArray(state.trigger?.facts.repositoryIds)
         ? state.trigger.facts.repositoryIds.filter(
             (repositoryId): repositoryId is string => typeof repositoryId === 'string',
@@ -5261,13 +5731,89 @@ export class WorkflowRuns extends Service {
         repositoryIds,
       });
       await this.coordinator.bindSkill(input.runId, archiveSkills.actionSkill);
-      const created = await this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'archive-preflight-ready',
-        archiveInput,
-        work,
-      });
+      const created = await this.coordinator.acceptChangeObservation(
+        input.runId,
+        {
+          kind: 'archive-preflight-ready',
+          archiveInput,
+          work,
+          ...(replacing ? { priorArchiveInputDigest: lifecycle.archiveDeliveryInput!.digest } : {}),
+        },
+        {
+          reobserve: async (latest) => {
+            await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal);
+            if (
+              (await this.ctx.evidenceCoordinator.assessInputs(input.attemptId, input.runId)) !==
+              'same'
+            )
+              throw new Error('Archive Evidence changed before preflight commit');
+            const checkpoint = createArchivePublicationCheckpoint(
+              await this.ctx.project.snapshot(this.projectInput!),
+              input.intent,
+            );
+            if (checkpoint.digest !== archiveInput.publicationCheckpoint.digest)
+              throw new Error('Archive publication coordinates changed during preflight');
+            if (
+              replacing &&
+              (await this.ctx.specification.closureExecutionStarted(lifecycle.identity.changeId))
+            )
+              throw new Error(
+                'The original Archive execution started before preflight replacement',
+              );
+          },
+        },
+      );
       await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, work);
       return { ...created, value: await this.coordinator.status(input.runId) };
+    });
+  }
+
+  private withArchiveEffectAuthority<T>(
+    state: RunState,
+    effect: () => Promise<T>,
+    signal?: AbortSignal,
+  ): Promise<T> {
+    return this.coordinator.withArchiveEffectAuthority(state, async (latest) => {
+      await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal, false);
+      if (
+        latest.changeLifecycle!.currentWork?.kind === 'specification.close' &&
+        !(await this.ctx.specification.closureExecutionStarted(
+          latest.changeLifecycle!.identity.changeId,
+        ))
+      ) {
+        const archive = latest.changeLifecycle!.archiveDeliveryInput!;
+        const checkpoint = createArchivePublicationCheckpoint(
+          await this.ctx.project.snapshot(this.projectInput!),
+          {
+            schemaVersion: 3,
+            changeId: archive.changeId,
+            changeBranch: archive.changeBranch,
+            businessDeliveries: archive.businessDeliveries,
+            ...(archive.businessSplitReason
+              ? { businessSplitReason: archive.businessSplitReason }
+              : {}),
+          },
+        );
+        if (checkpoint.digest !== archive.publicationCheckpoint.digest)
+          throw new Error('Archive publication checkpoint changed before protected closure');
+        await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal);
+        const verification = latest.changeLifecycle!.verificationInput!;
+        const observed = await this.ctx.evidenceCoordinator.plan(
+          verification.evidenceProfile.id,
+          state.runId,
+        );
+        if (observed.fingerprint.digest !== verification.evidenceProfile.fingerprintDigest)
+          throw new Error('Archive verification inputs changed before protected closure');
+        if (
+          (await this.ctx.evidenceCoordinator.assessBundleInputs(
+            archive.evidenceBundleId,
+            state.runId,
+            verification.digest,
+          )) !== 'same'
+        )
+          throw new Error('Archive derived inputs changed before protected closure');
+      }
+      return effect();
     });
   }
 
@@ -5275,10 +5821,13 @@ export class WorkflowRuns extends Service {
     input: ExecuteArchiveDeliveryInput,
     signal?: AbortSignal,
   ): Promise<RuntimeResult<ExecuteArchiveDeliveryResult>> {
-    return this.operations.run({ cancellable: false, signal }, async () => {
+    return this.archiveOperation(input.runId, signal, async () => {
       await this.coordinator.recoverChangeLifecycleDefinition(input.runId);
       const state = await this.ctx.runStore.loadRun(input.runId);
       const lifecycle = state.changeLifecycle;
+      if (state.reconciliationRequired)
+        throw new Error('Archive execution requires workspace reconciliation');
+      await this.assertEvidenceWorkspaceAuthorityCurrent(state, signal, false);
       if (
         lifecycle &&
         state.status === 'running' &&
@@ -5341,22 +5890,41 @@ export class WorkflowRuns extends Service {
         throw new Error(`Change Run has no active Archive Delivery Work: ${input.runId}`);
       }
       if (workKind === 'specification.close') {
-        const reverify = await this.reverifyArchiveIfFingerprintChanged(
-          input.runId,
-          state,
-          lifecycle,
-          signal,
+        const intent: DeliveryIntentV3 = {
+          schemaVersion: 3,
+          changeId: archive.changeId,
+          changeBranch: archive.changeBranch,
+          businessDeliveries: archive.businessDeliveries,
+          ...(archive.businessSplitReason
+            ? { businessSplitReason: archive.businessSplitReason }
+            : {}),
+        };
+        const checkpoint = createArchivePublicationCheckpoint(
+          await this.ctx.project.snapshot(this.projectInput!),
+          intent,
         );
-        if (reverify) {
-          return {
-            value: {
-              stage: 'reverify-required',
-              publication: null,
-              receipt: null,
-              run: reverify.value,
-            },
-            diagnostics: reverify.diagnostics,
-          };
+        if (checkpoint.digest !== archive.publicationCheckpoint.digest)
+          throw new Error(
+            'Archive publication checkpoint changed; re-prepare preflight when its original execution has not started',
+          );
+        if (!(await this.ctx.specification.closureExecutionStarted(archive.changeId))) {
+          const reverify = await this.reverifyArchiveIfFingerprintChanged(
+            input.runId,
+            state,
+            lifecycle,
+            signal,
+          );
+          if (reverify) {
+            return {
+              value: {
+                stage: 'reverify-required',
+                publication: null,
+                receipt: null,
+                run: reverify.value,
+              },
+              diagnostics: reverify.diagnostics,
+            };
+          }
         }
       }
       if (deliveryPolicyDigest(input.policy) !== archive.publicationPolicyDigest) {
@@ -5404,13 +5972,22 @@ export class WorkflowRuns extends Service {
         .digest('hex')}` as const;
       let closure = lifecycle.specificationClosure;
       if (workKind === 'specification.close') {
-        const plan = await this.ctx.specification.prepareClosure({
-          changeId: archive.changeId,
-          mergeFactsDigest: archive.digest,
-          targetBaselineDigest,
-          ...(signal ? { signal } : {}),
-        });
-        closure = await this.ctx.specification.close(plan, signal);
+        closure = await this.withArchiveEffectAuthority(
+          state,
+          async () => {
+            const plan = await this.ctx.specification.prepareClosure({
+              expectedSourceOid: archive.publicationCheckpoint.repositories.find(
+                (repo) => repo.repositoryId === archive.changeBranch.repositoryId,
+              )!.head,
+              changeId: archive.changeId,
+              mergeFactsDigest: archive.digest,
+              targetBaselineDigest,
+              ...(signal ? { signal } : {}),
+            });
+            return this.ctx.specification.close(plan, signal);
+          },
+          signal,
+        );
         const skills = await this.resolveLifecycleWorkSkills(
           'delivery.publish',
           signal,
@@ -5614,6 +6191,7 @@ export class WorkflowRuns extends Service {
           evidenceCompositionDigest:
             archive.evidenceCompositionDigest ??
             (verificationCompositionDigest as `sha256:${string}`),
+          publicationCheckpoint: archive.publicationCheckpoint,
         });
         const skills = await this.resolveLifecycleWorkSkills(
           'delivery.publish',
@@ -5665,19 +6243,30 @@ export class WorkflowRuns extends Service {
       let publication: ArchivePublicationResult;
       let receipt: PublicationReceipt;
       try {
-        publication = await this.ctx.delivery.publishArchive(
-          {
-            runId: input.runId,
-            project: input.project,
-            intent,
-            policy: input.policy,
-            reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
-            evidenceBundleIds: [archive.evidenceBundleId],
-            planningCompositionDigest,
-            evidenceCompositionDigest:
-              archive.evidenceCompositionDigest ??
-              (verificationCompositionDigest as `sha256:${string}`),
-          },
+        publication = await this.withArchiveEffectAuthority(
+          state,
+          () =>
+            this.ctx.delivery.publishArchive(
+              {
+                runId: input.runId,
+                project: input.project,
+                intent,
+                policy: input.policy,
+                reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
+                evidenceBundleIds: [archive.evidenceBundleId],
+                expectedRepositoryHeads: Object.fromEntries(
+                  archive.publicationCheckpoint.repositories.map((repo) => [
+                    repo.repositoryId,
+                    repo.head,
+                  ]),
+                ),
+                planningCompositionDigest,
+                evidenceCompositionDigest:
+                  archive.evidenceCompositionDigest ??
+                  (verificationCompositionDigest as `sha256:${string}`),
+              },
+              signal,
+            ),
           signal,
         );
         const verifiedAt = new Date().toISOString();
@@ -5716,17 +6305,22 @@ export class WorkflowRuns extends Service {
             };
           },
         );
-        const specification = await this.ctx.delivery.publishSpecification(
-          {
-            changeId: archive.changeId,
-            runId: lifecycle.identity.runId,
-            workspaceRoot: input.project.root,
-            changeBranch: archive.changeBranch,
-            closure,
-            remote: input.policy.publication.remote,
-            title: `Archive specification: ${archive.changeId}`,
-            body: `Closes verified specification change ${archive.changeId}.`,
-          },
+        const specification = await this.withArchiveEffectAuthority(
+          state,
+          () =>
+            this.ctx.delivery.publishSpecification(
+              {
+                changeId: archive.changeId,
+                runId: lifecycle.identity.runId,
+                workspaceRoot: input.project.root,
+                changeBranch: archive.changeBranch,
+                closure,
+                remote: input.policy.publication.remote,
+                title: `Archive specification: ${archive.changeId}`,
+                body: `Closes verified specification change ${archive.changeId}.`,
+              },
+              signal,
+            ),
           signal,
         );
         receipt = createPublicationReceipt({
@@ -5848,6 +6442,12 @@ export class WorkflowRuns extends Service {
           value: { ...boundRecovery.value, skillCompatibility, specificationCompatibility },
         };
       }
+      const evidenceRecovery = await this.recoverEvidenceWorkspace(options.runId, signal);
+      if (evidenceRecovery)
+        return {
+          ...evidenceRecovery,
+          value: { ...evidenceRecovery.value, skillCompatibility, specificationCompatibility },
+        };
       const priorAuthorization = await this.priorAuthorizedBranchRebind(
         currentState,
         options.currentProjectSnapshot,

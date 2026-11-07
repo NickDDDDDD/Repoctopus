@@ -9,7 +9,13 @@
     "design_assumption_invalid",
     "planning_semantics_changed"
   ],
-  "reviewedSourceRoots": ["app", "domains", "platform", "plugins", "services"],
+  "reviewedSourceRoots": [
+    "app",
+    "domains",
+    "platform",
+    "plugins",
+    "services"
+  ],
   "capabilities": [
     {
       "id": "plugin-composition",
@@ -41,7 +47,10 @@
         "plugins/command/consistency-contributor.ts",
         "services/**"
       ],
-      "upstream": ["third_party/cordis", "third_party/cordis-plugin-loader"],
+      "upstream": [
+        "third_party/cordis",
+        "third_party/cordis-plugin-loader"
+      ],
       "rationale": "App Boot 把 Repoctopus 领域配置编译为唯一 Cordis 插件树，并把生命周期交给 Cordis。"
     },
     {
@@ -70,7 +79,11 @@
     {
       "id": "action-execution",
       "disposition": "behavior-reimplemented",
-      "targets": ["domains/action/**", "domains/work-execution/**", "platform/action/**"],
+      "targets": [
+        "domains/action/**",
+        "domains/work-execution/**",
+        "platform/action/**"
+      ],
       "upstream": [
         "domains/comet-native/native-check-receipt.ts",
         "domains/comet-native/native-check-receipt-storage.ts"
@@ -87,7 +100,10 @@
         "domains/engine/resolver.ts",
         "domains/workflow-contract/hash.ts"
       ],
-      "upstream": ["domains/engine", "domains/workflow-contract/hash.ts"],
+      "upstream": [
+        "domains/engine",
+        "domains/workflow-contract/hash.ts"
+      ],
       "rationale": "采用 Comet 的确定性 Engine 算法并对接 Repoctopus Workflow Contract。"
     },
     {
@@ -104,13 +120,18 @@
         "platform/runtime/paths.ts",
         "platform/workflow/**"
       ],
-      "upstream": ["domains/engine/storage-run.ts", "domains/engine/storage-layout.ts"],
+      "upstream": [
+        "domains/engine/storage-run.ts",
+        "domains/engine/storage-layout.ts"
+      ],
       "rationale": "保留 Run、Trajectory、Checkpoint 和恢复语义，避免引入 Comet Skill 与产品目录布局。"
     },
     {
       "id": "change-lifecycle",
       "disposition": "behavior-reimplemented",
-      "targets": ["domains/change-lifecycle/**"],
+      "targets": [
+        "domains/change-lifecycle/**"
+      ],
       "upstream": [
         "domains/native-orchestration/workflow-definition.ts",
         "domains/native-orchestration/transition.ts",
@@ -146,13 +167,18 @@
         "platform/process/terminate-process-tree.ts",
         "platform/process/windows-process-identity.ts"
       ],
-      "upstream": ["platform/process"],
+      "upstream": [
+        "platform/process"
+      ],
       "rationale": "采用 Comet 已验证的结构化进程、Windows shim、进程身份和进程树终止机制。"
     },
     {
       "id": "filesystem-safety",
       "disposition": "source-modified",
-      "targets": ["platform/filesystem/**", "platform/runtime/resource-lease.ts"],
+      "targets": [
+        "platform/filesystem/**",
+        "platform/runtime/resource-lease.ts"
+      ],
       "upstream": [
         "platform/fs/file-identity.ts",
         "platform/fs/race-safe-read.ts",
@@ -171,13 +197,18 @@
         "platform/git/probe.ts",
         "platform/git/remote-identity.ts"
       ],
-      "upstream": ["platform/project-registry.ts"],
+      "upstream": [
+        "platform/project-registry.ts"
+      ],
       "rationale": "Repoctopus 以同级多仓为项目边界，项目发现快照只提供启发式候选与恢复核对。"
     },
     {
       "id": "project-onboarding",
       "disposition": "repoctopus-native",
-      "targets": ["domains/project-configuration/**", "platform/project-configuration/**"],
+      "targets": [
+        "domains/project-configuration/**",
+        "platform/project-configuration/**"
+      ],
       "upstream": [],
       "rationale": "确定性扫描、Agent 补全和用户确认是 Repoctopus 的多仓接入能力。"
     },
@@ -207,7 +238,9 @@
         "platform/git/specification-checkout.ts",
         "plugins/command/specification-contributor.ts"
       ],
-      "upstream": ["@fission-ai/openspec@1.14.3"],
+      "upstream": [
+        "@fission-ai/openspec@1.14.3"
+      ],
       "rationale": "Specification 是唯一 Cordis 权威 Service；OpenSpec Provider 通过受控进程端口映射官方产物生命周期，Workflow 只消费稳定领域契约。"
     },
     {
@@ -219,20 +252,30 @@
         "platform/git/delivery.ts",
         "platform/github/**"
       ],
-      "upstream": ["domains/comet-native/native-pull-request-finish.ts"],
+      "upstream": [
+        "domains/comet-native/native-pull-request-finish.ts"
+      ],
       "rationale": "交付聚合只负责多仓快照、Human Decision、push/MR 恢复和合入事实，不继承旧工作流 Hook 与阶段状态机。"
     },
     {
       "id": "consistency-review",
       "disposition": "repoctopus-native",
-      "targets": ["domains/consistency/**", "platform/consistency/**"],
-      "upstream": ["domains/comet-native/native-pull-request-finish.ts"],
+      "targets": [
+        "domains/consistency/**",
+        "platform/consistency/**"
+      ],
+      "upstream": [
+        "domains/comet-native/native-pull-request-finish.ts"
+      ],
       "rationale": "发布后的短生命周期拉取只形成有界语义审查事实，不扩展 Change 生命周期或等待远端合入。"
     },
     {
       "id": "evidence-model",
       "disposition": "behavior-reimplemented",
-      "targets": ["domains/evidence/**", "platform/evidence/**"],
+      "targets": [
+        "domains/evidence/**",
+        "platform/evidence/**"
+      ],
       "upstream": [
         "domains/comet-native/native-evidence-storage.ts",
         "domains/comet-native/native-verification-evidence.ts",
@@ -246,35 +289,55 @@
     {
       "id": "repository-fingerprint",
       "disposition": "source-modified",
-      "targets": ["platform/git/evidence-fingerprint.ts"],
-      "upstream": ["domains/comet-native/native-snapshot.ts"],
-      "rationale": "抽取 Comet 的选择前后 Fence、竞态安全内容摘要和输入漂移拒绝规则，并在上层组合多个仓库。"
+      "targets": [
+        "platform/git/evidence-fingerprint.ts",
+        "platform/git/evidence-input-snapshot.ts"
+      ],
+      "upstream": [
+        "domains/comet-native/native-snapshot.ts",
+        "domains/comet-classic/classic-check-policy.ts",
+        "domains/comet-classic/classic-check-snapshot.ts"
+      ],
+      "rationale": "采用 Comet 的逐文件有效内容快照、声明输入、选择前后 Fence 与竞态拒绝规则；原始 Git 坐标保留用于授权和审计，多仓 DAG 派生产物证明由 Repoctopus 重建。"
     },
     {
       "id": "feedback-adapters",
       "disposition": "repoctopus-native",
-      "targets": ["domains/feedback/**", "platform/browser/**", "platform/feedback/**"],
+      "targets": [
+        "domains/feedback/**",
+        "platform/browser/**",
+        "platform/feedback/**"
+      ],
       "upstream": [],
       "rationale": "Managed/Attached 服务、Browser Journey、视觉反馈和资料冲突决定是 Repoctopus 新能力。"
     },
     {
       "id": "telemetry",
       "disposition": "repoctopus-native",
-      "targets": ["domains/telemetry/**", "platform/telemetry/**"],
-      "upstream": ["platform/process/runtime-metrics.ts"],
+      "targets": [
+        "domains/telemetry/**",
+        "platform/telemetry/**"
+      ],
+      "upstream": [
+        "platform/process/runtime-metrics.ts"
+      ],
       "rationale": "机器目录和领域 Receipt 定义规范观测事实；平台只把 canonical envelope 以 OTel 允许列表投递，不复用 Comet 的进程内指标模型。"
     },
     {
       "id": "cli",
       "disposition": "repoctopus-native",
-      "targets": ["app/cli/**"],
+      "targets": [
+        "app/cli/**"
+      ],
       "upstream": [],
       "rationale": "公共 CLI 只组合领域服务并输出版本化 Repoctopus envelope。"
     },
     {
       "id": "provenance",
       "disposition": "repoctopus-native",
-      "targets": ["platform/provenance/**"],
+      "targets": [
+        "platform/provenance/**"
+      ],
       "upstream": [],
       "rationale": "机器检查固定上游、目标摘要和公共品牌边界。"
     }
@@ -290,14 +353,40 @@
       "README.md",
       "docs"
     ],
-    "excludedTargets": ["docs/architecture-review.md"],
+    "excludedTargets": [
+      "docs/architecture-review.md"
+    ],
     "forbiddenPaths": [
-      { "path": ".codex", "match": "tree", "ownership": "external-exclusive" },
-      { "path": ".opencode", "match": "tree", "ownership": "external-exclusive" },
-      { "path": ".codebuddy", "match": "tree", "ownership": "external-exclusive" },
-      { "path": ".codearts", "match": "tree", "ownership": "external-exclusive" },
-      { "path": ".context", "match": "tree", "ownership": "external-exclusive" },
-      { "path": ".rules", "match": "tree", "ownership": "external-exclusive" },
+      {
+        "path": ".codex",
+        "match": "tree",
+        "ownership": "external-exclusive"
+      },
+      {
+        "path": ".opencode",
+        "match": "tree",
+        "ownership": "external-exclusive"
+      },
+      {
+        "path": ".codebuddy",
+        "match": "tree",
+        "ownership": "external-exclusive"
+      },
+      {
+        "path": ".codearts",
+        "match": "tree",
+        "ownership": "external-exclusive"
+      },
+      {
+        "path": ".context",
+        "match": "tree",
+        "ownership": "external-exclusive"
+      },
+      {
+        "path": ".rules",
+        "match": "tree",
+        "ownership": "external-exclusive"
+      },
       {
         "path": "skills/oh-my-workflow",
         "match": "tree",
@@ -318,8 +407,16 @@
         "match": "file",
         "ownership": "external-exclusive"
       },
-      { "path": "workspace.yaml", "match": "file", "ownership": "external-exclusive" },
-      { "path": "project.local.yaml", "match": "file", "ownership": "external-exclusive" }
+      {
+        "path": "workspace.yaml",
+        "match": "file",
+        "ownership": "external-exclusive"
+      },
+      {
+        "path": "project.local.yaml",
+        "match": "file",
+        "ownership": "external-exclusive"
+      }
     ],
     "forbiddenPatterns": [
       "agents-workspace",
@@ -375,7 +472,10 @@
     },
     {
       "id": "evidence-fact-journal",
-      "files": ["domains/evidence/ports.ts", "platform/evidence/file-evidence-journal.ts"],
+      "files": [
+        "domains/evidence/ports.ts",
+        "platform/evidence/file-evidence-journal.ts"
+      ],
       "status": "separate-append-only-facts"
     },
     {
@@ -404,7 +504,10 @@
     },
     {
       "id": "desktop-projection-journal",
-      "files": ["app/desktop/host/projection-journal-store.ts", "services/desktop-projection.ts"],
+      "files": [
+        "app/desktop/host/projection-journal-store.ts",
+        "services/desktop-projection.ts"
+      ],
       "status": "isolated-read-model-recovery"
     }
   ],
@@ -415,114 +518,192 @@
     },
     {
       "pattern": "new\\s+WorkflowRunCoordinator\\s*\\(",
-      "allowed": ["services/workflow-runs.ts"]
+      "allowed": [
+        "services/workflow-runs.ts"
+      ]
     },
     {
       "pattern": "new\\s+FileRuntimeStore\\s*\\(",
-      "allowed": ["plugins/run/file-run-store-provider.ts"]
+      "allowed": [
+        "plugins/run/file-run-store-provider.ts"
+      ]
     },
     {
       "pattern": "new\\s+DeliveryDomainService\\s*\\(",
-      "allowed": ["plugins/delivery/file-delivery-provider.ts"]
+      "allowed": [
+        "plugins/delivery/file-delivery-provider.ts"
+      ]
     }
   ],
   "sourceBoundaries": [
     {
       "id": "single-skill-container",
-      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "targets": [
+        "app/**",
+        "domains/**",
+        "platform/**",
+        "plugins/**",
+        "services/**"
+      ],
       "pattern": "(?:plugin\\s*:\\s*SkillRegistry\\b|new\\s+SkillRegistry\\s*\\(|\\.plugin\\s*\\(\\s*SkillRegistry\\b)",
-      "allowed": ["plugins/builtin-catalog.ts"],
+      "allowed": [
+        "plugins/builtin-catalog.ts"
+      ],
       "exactMatches": 1,
       "message": "Skill providers must contribute through the single registered SkillRegistry container"
     },
     {
       "id": "single-specification-container",
-      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "targets": [
+        "app/**",
+        "domains/**",
+        "platform/**",
+        "plugins/**",
+        "services/**"
+      ],
       "pattern": "super\\s*\\(\\s*context\\s*,\\s*['\"]specification['\"]\\s*\\)",
-      "allowed": ["services/specification.ts"],
+      "allowed": [
+        "services/specification.ts"
+      ],
       "exactMatches": 1,
       "message": "Specification providers must extend the single Specification service container"
     },
     {
       "id": "legacy-delivery-configuration",
-      "targets": ["app/boot/**", "domains/project-configuration/**"],
+      "targets": [
+        "app/boot/**",
+        "domains/project-configuration/**"
+      ],
       "pattern": "merge_request\\.update|update-existing|changeMergeRequest",
-      "allowed": ["domains/project-configuration/config.ts"],
+      "allowed": [
+        "domains/project-configuration/config.ts"
+      ],
       "message": "Delivery v3 composition must reject, not emit, legacy update-existing Change MR configuration"
     },
     {
       "id": "platform-adapter-run-write",
-      "targets": ["platform/**"],
+      "targets": [
+        "platform/**"
+      ],
       "pattern": "\\b(?:ctx|context)\\.(?:workflowRuns|runStore)\\b|from\\s+['\"][^'\"]*services/(?:workflow-runs|run-store)\\.js['\"]",
       "allowed": [],
       "message": "Platform adapters must emit verified facts instead of calling WorkflowRuns or RunStore"
     },
     {
       "id": "specification-provider-closure",
-      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "targets": [
+        "app/**",
+        "domains/**",
+        "platform/**",
+        "plugins/**",
+        "services/**"
+      ],
       "pattern": "\\b(?:execute|spawn|json)\\s*(?:<[^>]+>)?\\s*\\([^)]*\\[\\s*['\"]archive['\"]",
-      "allowed": ["platform/specification/openspec-provider.ts"],
+      "allowed": [
+        "platform/specification/openspec-provider.ts"
+      ],
       "message": "Specification closure commands may only be executed by a Specification Provider"
     },
     {
       "id": "protected-git-publication",
-      "targets": ["platform/**"],
+      "targets": [
+        "platform/**"
+      ],
       "pattern": "(?:\\bgit\\s*\\([^,]+,\\s*|\\bexecute\\s*\\(\\s*['\"]git['\"]\\s*,\\s*)\\[[^\\]]{0,700}['\"](?:commit|push)['\"]",
-      "allowed": ["platform/git/delivery.ts", "platform/delivery/specification-publication.ts"],
+      "allowed": [
+        "platform/git/delivery.ts",
+        "platform/delivery/specification-publication.ts"
+      ],
       "message": "Git commit and push may only be executed by the protected Delivery Action adapter"
     },
     {
       "id": "protected-merge-request-publication",
-      "targets": ["platform/**"],
+      "targets": [
+        "platform/**"
+      ],
       "pattern": "method\\s*:\\s*['\"](?:POST|PATCH)['\"]",
-      "allowed": ["platform/github/merge-request.ts"],
+      "allowed": [
+        "platform/github/merge-request.ts"
+      ],
       "message": "Merge request creation and updates may only be executed by a protected Delivery Action adapter"
     },
     {
       "id": "desktop-renderer-process-isolation",
-      "targets": ["app/desktop/renderer/**"],
+      "targets": [
+        "app/desktop/renderer/**"
+      ],
       "pattern": "from\\s+['\"](?:node:|electron(?:/|['\"])|@deepseek-ai/cordis(?:/|['\"]))",
       "allowed": [],
       "message": "Desktop Renderer must use the preload bridge and must not import Node, Electron, or Cordis"
     },
     {
       "id": "desktop-shell-cordis-isolation",
-      "targets": ["app/desktop/main/**", "app/desktop/preload/**"],
+      "targets": [
+        "app/desktop/main/**",
+        "app/desktop/preload/**"
+      ],
       "pattern": "from\\s+['\"]@deepseek-ai/cordis(?:/|['\"])",
       "allowed": [],
       "message": "Electron Shell and preload must not host or import the Cordis application runtime"
     },
     {
       "id": "single-change-lifecycle-transition-owner",
-      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "targets": [
+        "app/**",
+        "domains/**",
+        "platform/**",
+        "plugins/**",
+        "services/**"
+      ],
       "pattern": "type\\s+ChangePhase\\s*=|enum\\s+ChangePhase\\s*\\{|\\b(?:decide|apply|transition)ChangeLifecycle(?:Transition)?\\s*[=(]",
-      "allowed": ["domains/change-lifecycle/transition.ts"],
+      "allowed": [
+        "domains/change-lifecycle/transition.ts"
+      ],
       "message": "Change lifecycle phases and transition decisions belong only to the canonical transition module"
     },
     {
       "id": "change-lifecycle-host-delegation",
-      "targets": ["app/**", "plugins/command/**"],
+      "targets": [
+        "app/**",
+        "plugins/command/**"
+      ],
       "pattern": "from\\s+['\"][^'\"]*change-lifecycle/(?:definition|transition|host-workflow)(?:\\.js)?['\"]",
       "allowed": [],
       "message": "CLI and command hosts must delegate Change lifecycle behavior to WorkflowRuns"
     },
     {
       "id": "direct-run-state-write",
-      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "targets": [
+        "app/**",
+        "domains/**",
+        "platform/**",
+        "plugins/**",
+        "services/**"
+      ],
       "pattern": "\\b(?:ctx|context)\\.runStore\\.(?:commit|commitGuarded)\\s*\\(",
-      "allowed": ["services/work-execution-authority.ts"],
+      "allowed": [
+        "services/work-execution-authority.ts"
+      ],
       "message": "Callers must submit facts through WorkflowRuns instead of writing Run state directly"
     },
     {
       "id": "legacy-delivery-command-write",
-      "targets": ["plugins/command/delivery-contributor.ts"],
+      "targets": [
+        "plugins/command/delivery-contributor.ts"
+      ],
       "pattern": "context\\.delivery\\.(?:checkpoint|prepare|decide|publish|refresh)\\s*\\(",
       "allowed": [],
       "message": "Legacy public Delivery commands must return a migration diagnostic instead of mutating Delivery state"
     },
     {
       "id": "caller-selected-lifecycle-method",
-      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "targets": [
+        "app/**",
+        "domains/**",
+        "platform/**",
+        "plugins/**",
+        "services/**"
+      ],
       "pattern": "\\b(?:actionSkill|requiredSkill|augmentationSkills|methodProfile)\\s*:\\s*(?:input|options|request|commandInput)\\.",
       "allowed": [
         "domains/change-lifecycle/archive-tracer.ts",
@@ -532,14 +713,26 @@
     },
     {
       "id": "no-general-capability-resolver",
-      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "targets": [
+        "app/**",
+        "domains/**",
+        "platform/**",
+        "plugins/**",
+        "services/**"
+      ],
       "pattern": "(?:class|interface|new)\\s+[A-Za-z0-9_]*CapabilityResolver\\b",
       "allowed": [],
       "message": "Lifecycle composition must use typed Contributor contracts instead of a second general Capability Resolver"
     },
     {
       "id": "no-upstream-product-shell-import",
-      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "targets": [
+        "app/**",
+        "domains/**",
+        "platform/**",
+        "plugins/**",
+        "services/**"
+      ],
       "pattern": "from\\s+['\"][^'\"]*(?:third_party/(?:comet|dsh)|comet/(?:apps|cli|shell)|dsh/(?:apps|agent|session))",
       "allowed": [],
       "message": "Repoctopus must not import Comet product shells or unpublished DSH product source"
@@ -549,7 +742,9 @@
     "requiredBindings": [
       {
         "file": "workflows/foundation.yaml",
-        "patterns": ["evidenceProfile: verify"]
+        "patterns": [
+          "evidenceProfile: verify"
+        ]
       },
       {
         "file": "services/evidence-coordinator.ts",
@@ -561,7 +756,10 @@
       },
       {
         "file": "domains/runtime/workflow-runs.ts",
-        "patterns": ["requireSatisfiedEvidenceGate", "evidenceAttemptId"]
+        "patterns": [
+          "requireSatisfiedEvidenceGate",
+          "evidenceAttemptId"
+        ]
       },
       {
         "file": "domains/runtime/evidence-guard.ts",
@@ -572,17 +770,25 @@
       },
       {
         "file": "app/cli/main.ts",
-        "patterns": ["evidence-attempt", "evidence-bundles"]
+        "patterns": [
+          "evidence-attempt",
+          "evidence-bundles"
+        ]
       },
       {
         "file": "domains/delivery/snapshot.ts",
-        "patterns": ["evidenceBundleIds"]
+        "patterns": [
+          "evidenceBundleIds"
+        ]
       }
     ],
     "restrictedCalls": [
       {
         "pattern": "recordOutcome\\s*\\(",
-        "allowed": ["domains/engine/loop.ts", "domains/runtime/workflow-runs.ts"]
+        "allowed": [
+          "domains/engine/loop.ts",
+          "domains/runtime/workflow-runs.ts"
+        ]
       }
     ]
   }

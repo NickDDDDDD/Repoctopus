@@ -1,0 +1,17 @@
+{
+  "change": "repair-evidence-input-identity",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11",
+  "files": [
+    { "path": "openspec/changes/repair-evidence-input-identity/proposal.md", "sha256": "75e2bff06bcd1e7b9a5107db6e9f7c5a54443086de6b51b9493d50518c23898c" },
+    { "path": "openspec/changes/repair-evidence-input-identity/design.md", "sha256": "25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e" },
+    { "path": "openspec/changes/repair-evidence-input-identity/tasks.md", "sha256": "1da9cb6a84ec8f676859a57c7cd06cc2441afb31634ec589232fe947ed51f8c4" },
+    { "path": "openspec/changes/repair-evidence-input-identity/.openspec.yaml", "sha256": "cb72bd9217510d5461ddb5384ca197195a83da2d8dfbd237178f7ed662291c68" },
+    { "path": "openspec/changes/repair-evidence-input-identity/specs/change-lifecycle/spec.md", "sha256": "43337a72258b13f2e61a8df7daac7ceaf3a6797c6035f34a30a6da2541334b24" },
+    { "path": "openspec/changes/repair-evidence-input-identity/specs/implementation-evidence/spec.md", "sha256": "442563597450d9f0c7de6533bb9db303cc5481290f2b97ff47ea8c84114a6ee4" }
+  ]
+}

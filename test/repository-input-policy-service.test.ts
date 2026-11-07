@@ -10,12 +10,13 @@ describe('Repository Input Policy service', () => {
     const dispose = service.register(BUILTIN_HOST_INPUT_CONTRIBUTOR);
 
     expect(service.current().contributors).toEqual([
-      { id: 'repoctopus-host-inputs', version: '1.0.0' },
+      { id: 'repoctopus-host-inputs', version: '2.0.0' },
     ]);
     expect(service.current().rules.map((rule) => rule.path)).toEqual([
       '.agents/skills',
       '.codex/hooks.json',
       '.codex/rules',
+      '.repoctopus',
       'AGENTS.md',
       'skills-lock.json',
     ]);

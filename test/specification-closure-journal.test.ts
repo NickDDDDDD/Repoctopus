@@ -11,6 +11,7 @@ const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 const plan: SpecificationClosurePlan = {
   apiVersion: 'repoctopus.specification/v1alpha1',
   kind: 'SpecificationClosurePlan',
+  sourceOid: 'a'.repeat(40),
   changeId: 'journal-contract',
   provider: {
     id: 'openspec',

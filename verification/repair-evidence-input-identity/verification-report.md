@@ -1,0 +1,31 @@
+# Evidence 输入身份包验收
+
+- Tested implementation commit: `415ec4861aed3c96ddebbee40a78fabf3a2770fd`
+- Package files: `467`
+- Package content bytes: `5941002`
+- Package content SHA-256: `ba1648c74fce4ec403fb0009a405760f439a7ccc7480d4f6810fdbb03e6b2704`
+- Tarball SHA-256: `0dc780d12b8c416e3befcf86eac0f49af2282f878842c8324fc81f4ddc2152e7`
+
+当前固定产品包为415ec48，补齐Verification Input canonical依赖身份和磁盘读取校验，并在直接Close及最终副作用边界观察实际派生产物。新身份算法不转换旧开发证据；独立新prefix和全新五仓Run实际验收已通过，结果见下方。
+
+新完整生产组合场景实际216.87秒通过：真实producer生成ignored产物、consumer读取该产物，Verify与Close Host Outcome均已接受后修改产物。源fingerprint保持不变，直接Archive publish仍返回Verify，prepareClosure未调用。原两仓正向冷恢复/完成状态提交场景已在此前候选实际通过，将在正式Verify门禁对最终候选再次完整运行。
+
+此前c13237c、7475063、a71442d包及其实际报告保留为历史；不能把旧算法验收冒充本次新Input身份算法的结果。a71442d从全新五仓Run完成两包TDD、BuildCheck、managed Verify，10进程冷恢复/发布OID更新/未授权分支矩阵通过，两条实际Node检查共执行2次。追加真实源码字节后返回Verify，新进程保持合法Verify checkpoint；没有外部Closure或publication。原报告SHA256：38a7e447e9036e869f902f5020ac570d32baeda0fa9603068adbc58e71c8d7f5；内容负例补充SHA256：5522552f5a1b92084b1ab5a6d69ddb595b8ac6556f69b95390af621b8b82bea2。
+
+其他历史报告：原包报告原字节SHA256为1e5c957dd1cfe1d626f297f68cb887724a2bd2cb80e09a1b71dd3df91f091351；追加已知发行诊断范围说明后为97131404018f7504a0eef41d190e80ab26cdc6d47624560f7869acd3c4c0c945。7475063候选恢复补充报告为aee21f7da05304259eefdf9967619bca50ef97729024691abfb13662958aeb7e。
+
+已知独立发行问题：安装包doctor因缺package-lock.json退出1，未复制源码或绕过校验。该源码布局依赖在基线已存在，作为后续发行诊断修复记录；当前工作流专项不宣称doctor通过。
+
+完整实际检查和独立审查见[Comet验证报告](../../docs/superpowers/reports/repair-evidence-input-identity.md)。所有原始证据保存于仓外独立验收目录，旧Store和报告未改写。
+
+## 最终415ec48独立包验收
+
+全新五仓Run后缀9f4f20413a13eaaa，通过managed Open、Design、Configure、Plan/PlanEvidence、两包真实TDD、commit/push、BuildCheck及Verify。Input v4为sha256:d7e70d8286abaf8f44ebb2c2bcd0f707f9f4dffa91031f813a1871172eb5936d；Bundle为cd451beeb48d2559bd41c608be6a7af01ccf5bcdca66051ce8f018ddfdc5313e。独立读取实际facts/dependencies重算当前Input完全一致，且与facts-only旧算法不同。
+
+12个独立PID矩阵全部通过：正向4、checkbox-only提交后4、未授权分支阻断2、切回恢复2。Input/Gate/Bundle/Binding/Plan/BuildCheck/两包completion逐对象相同，两个验证节点各执行一次、总数2，checkbox提交后额外调用0。两个合法publication preflight仅刷新发布坐标，epoch14→15，未重复Verify。各managed Work的claim/host/outcome/completed事件恰好1次，Archive claims为0，最终保留未领取的specification.close Work，未执行外部Closure或publication。
+
+五个旧Store的140/31/44/50/50文件、8份旧报告哈希全不变，新五仓工作树干净且远端OID核对通过。两次非零仅来自预期TDD RED；两处辅助脚本准备/读取错误在真实报告中保留，没有重复claim或修改产品。新Run提示桌面activation unavailable，本独立轮仅声明CLI工作流验收，不声明消费者桌面启动通过。根生产完整derivedClose回归与磁盘损坏测试另行验证，不冒充此独立轮覆盖。
+
+原始独立报告verification-report.md的SHA256：6590736ab5219007a5409b6a0e1c20c4fcb98f0bb21faffd88d06d9b1debf275，父任务已用Get-FileHash复核。脚本、私有原始账本、安装和新实验Store保留为复核资产，没有临时dev server。
+
+正式Comet Verify Guard将对这份固定报告执行完整npm.cmd run verify，覆盖全部生产组合矩阵；其同一Run真实检查收据为最终门禁结论，不由报告预先声明。

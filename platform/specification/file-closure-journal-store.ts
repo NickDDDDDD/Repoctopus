@@ -1,11 +1,14 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import {
   assertSpecificationClosureJournal,
   type SpecificationClosureJournal,
 } from '../../domains/specification/closure-journal.js';
-import type { SpecificationClosureResult } from '../../domains/specification/types.js';
+import type {
+  SpecificationClosureResult,
+  SpecificationClosurePlan,
+} from '../../domains/specification/types.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
 
 export class FileSpecificationClosureJournalStore {
@@ -42,6 +45,36 @@ export class FileSpecificationClosureJournalStore {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
       throw error;
     }
+  }
+
+  async hasExecution(changeId: string): Promise<boolean> {
+    return (await this.planForChange(changeId)) !== null;
+  }
+
+  async planForChange(changeId: string): Promise<SpecificationClosurePlan | null> {
+    const directory = path.dirname(this.file(`sha256:${'0'.repeat(64)}`));
+    const entries = await readdir(directory, { withFileTypes: true }).catch(
+      (error: NodeJS.ErrnoException) => {
+        if (error.code === 'ENOENT') return [];
+        throw error;
+      },
+    );
+    if (entries.length > 4096)
+      throw new Error('Specification closure journal inventory exceeds its bound');
+    const plans: SpecificationClosurePlan[] = [];
+    for (const entry of entries) {
+      if (!entry.isFile() || entry.isSymbolicLink() || !entry.name.endsWith('.json'))
+        throw new Error('Specification closure journal inventory is invalid');
+      const journal = JSON.parse(
+        await readFile(path.join(directory, entry.name), 'utf8'),
+      ) as SpecificationClosureJournal;
+      assertSpecificationClosureJournal(journal);
+      if (journal.changeId === changeId && journal.state !== 'rolled-back')
+        plans.push(journal.plan);
+    }
+    if (plans.length > 1)
+      throw new Error('Specification Change has multiple unresolved closure plans');
+    return plans[0] ?? null;
   }
 
   async create(journal: SpecificationClosureJournal): Promise<void> {

@@ -299,11 +299,11 @@ describe('Change lifecycle definition', () => {
     });
   });
 
-  it('stops an active Run whose Verification Input cannot produce an Acceptance Trace', () => {
+  it.each([1, undefined])('stops an active Run whose Verification Input schema is %s', (schemaVersion) => {
     const persisted = {
       ...createChangeLifecycleSnapshot({ identity }),
       verificationInput: {
-        schemaVersion: 1,
+        ...(schemaVersion === undefined ? {} : { schemaVersion }),
         runId: identity.runId,
       },
     } as unknown as ReturnType<typeof createChangeLifecycleSnapshot>;
@@ -317,7 +317,7 @@ describe('Change lifecycle definition', () => {
         currentWork: null,
         blocker: {
           code: 'change-lifecycle.verification-input-schema-drift',
-          evidenceIds: ['verification-input:v1', 'verification-input:v3'],
+          evidenceIds: [`verification-input:v${String(schemaVersion)}`, 'verification-input:v4'],
         },
       },
     });

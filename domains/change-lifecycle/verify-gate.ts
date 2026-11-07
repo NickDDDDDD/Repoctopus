@@ -1,5 +1,6 @@
 import type { EvidenceGateProjection } from '../evidence/types.js';
 import type { ChangeLifecycleSnapshot } from './transition.js';
+import { assertVerificationInput } from './verification-input.js';
 
 export interface AcceptedVerifyGate {
   runId: string;
@@ -18,7 +19,7 @@ export interface RejectedVerifyGate {
   attemptId: string;
   bundleId: string | null;
   reason: string;
-  result: 'implementation-failure' | 'evidence-unavailable';
+  result: 'implementation-failure' | 'evidence-unavailable' | 'evidence-drift';
   checkEpoch: number;
 }
 
@@ -44,6 +45,7 @@ export function acceptVerifyGate(input: {
   if (verification.runId !== input.runId) {
     throw new Error('Verification input belongs to another Change Run');
   }
+  assertVerificationInput(verification);
   if (work.inputDigest !== verification.digest) {
     throw new Error('Verify Work input digest does not match the immutable verification input');
   }
@@ -101,6 +103,7 @@ export function rejectVerifyGate(input: {
   const { lifecycle, gate } = input;
   const work = lifecycle.currentWork;
   const verification = lifecycle.verificationInput;
+  if (verification) assertVerificationInput(verification);
   if (
     lifecycle.phase !== 'verify' ||
     lifecycle.status !== 'running' ||

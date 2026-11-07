@@ -15,14 +15,44 @@ profiles:
         type: command
         repository: repoctopus
         covers: ['*']
+        inputs: &source-inputs
+          schemaVersion: 1
+          git: all
+          repositories:
+            - repository: repoctopus
+              files:
+                - app/**
+                - bin/**
+                - domains/**
+                - platform/**
+                - plugins/**
+                - services/**
+                - scripts/**
+                - test/**
+                - skills/**
+                - workflows/**
+                - third_party/**
+                - docs/**
+                - openspec/**
+                - deploy/**
+                - verification/**
+                - README.md
+                - package.json
+                - package-lock.json
+                - repoctopus.yaml
+                - tsconfig.json
+                - eslint.config.js
+                - vitest.config.ts
+                - electron-builder.json
         executable: npm
         args: [run, verify]
-        timeoutMs: 900000
+        timeoutMs: 1800000
       - id: package-e2e
         type: command
         repository: repoctopus
         dependsOn: [full-verify]
         covers: ['*']
+        inputs: *source-inputs
         executable: npm
         args: [run, test:package-e2e]
         timeoutMs: 600000
@@ -31,6 +61,7 @@ profiles:
         repository: repoctopus
         dependsOn: [package-e2e]
         covers: ['*']
+        inputs: *source-inputs
         executable: npm
         args: [run, test:tracer-e2e]
         timeoutMs: 600000
@@ -39,6 +70,7 @@ profiles:
         repository: repoctopus
         dependsOn: [tracer-e2e]
         covers: ['*']
+        inputs: *source-inputs
         executable: npm
         args: [audit, --omit=dev]
         timeoutMs: 300000
@@ -47,6 +79,7 @@ profiles:
       - id: interrupted-command
         type: command
         repository: repoctopus
+        inputs: *source-inputs
         executable: node
         args: [-e, 'setTimeout(() => process.exit(0), 30000)']
         timeoutMs: 60000

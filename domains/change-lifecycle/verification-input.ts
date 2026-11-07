@@ -9,9 +9,16 @@ import type {
 } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { resolveAcceptanceCoverage } from './acceptance-coverage.js';
+import {
+  createEvidenceDependencyRecord,
+  assertEvidenceDependencyRecord,
+  evidenceDependencySetDigest,
+  type EvidenceDependencyRecord,
+} from '../evidence/dependencies.js';
+import { evidenceInputDigest } from '../evidence/input-snapshot.js';
 
 export interface VerificationInput {
-  schemaVersion: 3;
+  schemaVersion: 4;
   runId: string;
   checkEpoch: number;
   taskRevisions: readonly { taskId: string; taskRevision: `sha256:${string}` }[];
@@ -38,10 +45,60 @@ export interface VerificationInput {
     fingerprintDigest: string;
   };
   digest: `sha256:${string}`;
+  dependencies: EvidenceDependencyRecord;
 }
 
 function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
+}
+
+function verificationDependencies(fingerprintDigest: string) {
+  return [
+    {
+      partition: 'implementation-content' as const,
+      identity: evidenceInputDigest(fingerprintDigest),
+    },
+  ];
+}
+
+/** Validates persisted semantics independently of mutable Git audit provenance. */
+export function assertVerificationInput(value: unknown): asserts value is VerificationInput {
+  if (!value || typeof value !== 'object') throw new Error('Verification Input is required');
+  const input = value as VerificationInput;
+  if (input.schemaVersion !== 4) throw new Error('Unsupported Verification Input schemaVersion');
+  if (
+    !input.runId?.trim() ||
+    !Number.isSafeInteger(input.checkEpoch) ||
+    input.checkEpoch < 0 ||
+    !Array.isArray(input.taskRevisions) ||
+    !Array.isArray(input.acceptanceCriteria) ||
+    !Array.isArray(input.acceptanceCoverage) ||
+    !Array.isArray(input.repositories) ||
+    !Array.isArray(input.skills) ||
+    !input.evidenceProfile?.id ||
+    !input.evidenceProfile.fingerprintDigest
+  )
+    throw new Error('Invalid Verification Input facts');
+  assertEvidenceDependencyRecord(input.dependencies, 'verification-input', input.digest);
+  const expected = verificationDependencies(input.evidenceProfile.fingerprintDigest);
+  if (
+    canonicalJson(input.dependencies) !==
+    canonicalJson(
+      createEvidenceDependencyRecord({
+        subjectKind: 'verification-input',
+        subjectId: input.digest,
+        dependencies: expected,
+      }),
+    )
+  )
+    throw new Error('Verification Input dependencies do not match its frozen inputs');
+  const { digest, dependencies: _dependencies, repositories: _provenance, ...semantic } = input;
+  void _dependencies;
+  void _provenance;
+  if (
+    digest !== sha256({ ...semantic, dependencySetDigest: evidenceDependencySetDigest(expected) })
+  )
+    throw new Error('Verification Input identity does not match its facts and dependencies');
 }
 
 export function createVerificationInput(input: {
@@ -70,8 +127,8 @@ export function createVerificationInput(input: {
   if (input.plan.profileId !== input.fingerprint.manifest.profileId) {
     throw new Error('Verification Evidence Profile and fingerprint do not match');
   }
-  if (input.fingerprint.manifest.schemaVersion !== 2) {
-    throw new Error('Verification input requires Evidence fingerprint schema v2');
+  if (input.fingerprint.manifest.schemaVersion !== 3) {
+    throw new Error('Verification input requires Evidence fingerprint schema v3');
   }
   if (input.plan.nodes.length === 0) {
     throw new Error(`Verification Evidence Profile has no nodes: ${input.plan.profileId}`);
@@ -86,7 +143,7 @@ export function createVerificationInput(input: {
   }
   const acceptance = resolveAcceptanceCoverage(input.tasks, input.plan);
   const stable = {
-    schemaVersion: 3 as const,
+    schemaVersion: 4 as const,
     runId: input.runId,
     checkEpoch: input.checkEpoch,
     taskRevisions: input.tasks
@@ -125,18 +182,53 @@ export function createVerificationInput(input: {
       fingerprintDigest: input.fingerprint.digest,
     },
   };
-  return { ...stable, digest: sha256(stable) };
+  const { repositories: _provenance, ...semantic } = stable;
+  void _provenance;
+  const dependencies = verificationDependencies(input.fingerprint.digest);
+  const digest = sha256({
+    ...semantic,
+    dependencySetDigest: evidenceDependencySetDigest(dependencies),
+  });
+  return {
+    ...stable,
+    digest,
+    dependencies: createEvidenceDependencyRecord({
+      subjectKind: 'verification-input',
+      subjectId: digest,
+      dependencies,
+    }),
+  };
 }
 
 export function rebaseVerificationInput(
   input: VerificationInput,
   checkEpoch: number,
 ): VerificationInput {
+  assertVerificationInput(input);
   if (!Number.isSafeInteger(checkEpoch) || checkEpoch < 0) {
     throw new Error('Verification input rebase requires a non-negative checkEpoch');
   }
-  const { digest: _digest, ...stable } = input;
+  const { digest: _digest, dependencies: _dependencies, ...stable } = input;
   void _digest;
+  void _dependencies;
   const rebased = { ...structuredClone(stable), checkEpoch };
-  return { ...rebased, digest: sha256(rebased) };
+  const { repositories: _provenance, ...semantic } = rebased;
+  void _provenance;
+  const digest = sha256({
+    ...semantic,
+    dependencySetDigest: evidenceDependencySetDigest(
+      input.dependencies.dependencies,
+      input.dependencies.dependsOnEvidenceIds,
+    ),
+  });
+  return {
+    ...rebased,
+    digest,
+    dependencies: createEvidenceDependencyRecord({
+      subjectKind: 'verification-input',
+      subjectId: digest,
+      dependencies: input.dependencies.dependencies,
+      dependsOnEvidenceIds: input.dependencies.dependsOnEvidenceIds,
+    }),
+  };
 }

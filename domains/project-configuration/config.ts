@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { parseEvidenceInputPolicy } from '../evidence/input-policy.js';
 
 import { canonicalJson, canonicalValue } from '../workflow-contract/canonical.js';
 import type { DeliveryPolicy } from '../delivery/types.js';
@@ -213,6 +214,7 @@ function parseCommandNode(value: unknown, field: string): CommandNodeConfig {
       'cache',
       'cacheTtlMs',
       'zeroTests',
+      'inputs',
     ],
     field,
   );
@@ -246,6 +248,7 @@ function parseCommandNode(value: unknown, field: string): CommandNodeConfig {
         }
       : {}),
     ...(zeroTests !== undefined ? { zeroTests } : {}),
+    ...(node.inputs !== undefined ? { inputs: parseEvidenceInputPolicy(node.inputs) } : {}),
   };
 }
 
@@ -621,6 +624,19 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
   });
   if (new Set(profiles.map((profile) => profile.id)).size !== profiles.length) {
     throw new ProjectConfigError('profile ids must be unique', 'profiles');
+  }
+  for (const profile of profiles) {
+    for (const node of profile.nodes) {
+      if (node.type !== 'command') continue;
+      for (const input of node.inputs?.repositories ?? []) {
+        if (!repositories.some((repository) => repository.id === input.repository)) {
+          throw new ProjectConfigError(
+            'must reference a registered repository',
+            `profiles.${profile.id}.${node.id}.inputs`,
+          );
+        }
+      }
+    }
   }
 
   let evidence: SharedProjectConfig['evidence'];

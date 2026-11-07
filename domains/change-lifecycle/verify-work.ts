@@ -1,7 +1,7 @@
 import type { SkillUsageSnapshot } from '../skill/types.js';
 import type { EffectiveWorkSkillComposition } from '../skill/composition.js';
 import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js';
-import type { VerificationInput } from './verification-input.js';
+import { assertVerificationInput, type VerificationInput } from './verification-input.js';
 import { materializeLifecycleWorkBinding } from './work-definition.js';
 
 export function createVerifyWork(facts: {
@@ -14,6 +14,7 @@ export function createVerifyWork(facts: {
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
 }): WorkDescriptor {
+  assertVerificationInput(facts.verification);
   const binding = materializeLifecycleWorkBinding({
     definition: facts.definition,
     kind: 'evidence.verify',

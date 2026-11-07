@@ -72,6 +72,8 @@ export function createEvidenceTelemetryBatch(input: {
         freshness: receipt.freshness,
         status: receipt.status,
         durationMs: Math.max(0, Date.parse(receipt.completedAt) - Date.parse(receipt.startedAt)),
+        dependencyCount: receipt.dependencies.dependencies.length,
+        derivedProducerCount: receipt.derivedInputs.length,
         ...(receipt.sourceReceiptId ? { sourceReceiptId: receipt.sourceReceiptId } : {}),
       },
     });
@@ -109,6 +111,7 @@ export function createEvidenceTelemetryBatch(input: {
         bundleId: input.gate.bundleId,
         outcome: input.gate.outcome,
         gateStatus: input.gate.status,
+        failureKind: input.gate.failureKind,
       },
     },
     {
@@ -117,7 +120,14 @@ export function createEvidenceTelemetryBatch(input: {
       timestamp: attempt.completedAt ?? input.result.bundle.createdAt,
       runId: input.workflowRunId,
       attemptId: attempt.attemptId,
-      data: { status: attempt.status },
+      data: {
+        status: attempt.status,
+        reusedCount: input.result.receipts.filter((receipt) => receipt.freshness === 'reused')
+          .length,
+        invalidatedCount: input.result.bundle.checks.filter(
+          (check) => check.freshness === 'superseded',
+        ).length,
+      },
     },
   );
   return {

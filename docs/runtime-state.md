@@ -112,6 +112,8 @@ Change Run 还冻结 Lifecycle Definition、Work Contributor、Validator、Exten
 
 第一阶段没有提供“忽略变化继续”的命令。使用者需要恢复原仓库状态；同一活动 change 不会通过创建并列 Run 绕过旧决策。
 
+Verify/Archive 恢复在通用启动 HEAD 检查前使用同一 Evidence authority 判定。有效内容等价的提交保留已接受证据；发布坐标由独立 Archive checkpoint 冻结。Branch、remote、路径或 ownership 漂移仍阻断。参见 [Evidence 输入与恢复](evidence.md)。
+
 ## 诊断
 
 `doctor` 只读检查 Run、Checkpoint、Trajectory、来源清单和遥测 Cursor 的一致性。发现未完成 Journal 时只报告并提示使用 `run resume`，不会完成转换、删除损坏轨迹或猜测正确状态。

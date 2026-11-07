@@ -36,6 +36,36 @@
       "source": "domains/engine/runtime-action.ts",
       "sourceSha256": "da3771d559025fac4442cffdc34d53c47c5ce69ac4c7054ec785676004c21cf4",
       "adoption": "behavioral-reference"
+    },
+    {
+      "role": "command-input-policy",
+      "source": "domains/comet-classic/classic-check-policy.ts",
+      "sourceSha256": "031cd24a24f69efe6cc7bc7bc0c9b4f27769988ff7b1463ef946deff7f2d565f",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "command-content-snapshot",
+      "source": "domains/comet-classic/classic-check-snapshot.ts",
+      "sourceSha256": "15c938ee2673f49dc19760ed275545ef096047fd278426b92e5e1b30335ac13b",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "archive-evidence-preflight",
+      "source": "domains/comet-classic/classic-sdk-archive-preflight.ts",
+      "sourceSha256": "2e002106bf671917a7dad15aa29003b66350142a15bf47a8ff2e047bc642fd95",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "archive-frozen-publication",
+      "source": "domains/comet-classic/classic-sdk-archive.ts",
+      "sourceSha256": "b4360fa347ab36f0ef540ea8ba5c63dc22c412a17fac3c3b67e764310bb05e4a",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "archive-publication-outcome",
+      "source": "domains/comet-classic/classic-sdk-application.ts",
+      "sourceSha256": "cb17fca0241342b42c94aa885f08cddde5d509bdf8a13a77e2e8dc9119570629",
+      "adoption": "behavioral-reference"
     }
   ],
   "files": [
@@ -148,7 +178,7 @@
       "source": "domains/comet-native/native-snapshot.ts",
       "sourceSha256": "865c7d16b87c6b04f96b404986b8c0bacdda6a4de5aa7e47224488b085a397bf",
       "target": "platform/git/evidence-fingerprint.ts",
-      "sha256": "3028ce88b48ad3d5e618867c90a33409737d8867da74658e9b7a5b6d5bdf3e33",
+      "sha256": "0f96425068b6532db92a4eddbfde73b9eced3d2a8a705db06807bf2533098844",
       "adoption": "modified"
     },
     {
@@ -162,7 +192,7 @@
       "source": "domains/comet-classic/classic-guard.ts",
       "sourceSha256": "9d34982be2edce5a1ceb067310b4e82610beb6a874cd1ddbfa0fb5898ac36108",
       "target": "domains/runtime/workflow-runs.ts",
-      "sha256": "31958dd433b17088380809c3ce2e2c899e6bdc8996626f9f932dd733c6b943a8",
+      "sha256": "71013c161f715a234a096e36895af78ff06c8cbff6481dd9c2ea4b28786d2054",
       "adoption": "modified"
     },
     {

@@ -3,8 +3,17 @@ import type { Context, Plugin } from '@deepseek-ai/cordis';
 import type { RepositoryInputPolicyContributor } from '../../domains/evidence/repository-input-policy.js';
 
 export const BUILTIN_HOST_INPUT_CONTRIBUTOR: RepositoryInputPolicyContributor = {
-  identity: { id: 'repoctopus-host-inputs', version: '1.0.0' },
+  identity: { id: 'repoctopus-host-inputs', version: '2.0.0' },
   rules: [
+    {
+      id: 'runtime-evidence-outputs',
+      owner: 'repoctopus-host-inputs',
+      path: '.repoctopus',
+      match: 'tree',
+      tracked: 'conflict',
+      allowedKinds: ['file'],
+      untracked: 'runtime-output',
+    },
     {
       id: 'agent-skill-installation',
       owner: 'repoctopus-host-inputs',

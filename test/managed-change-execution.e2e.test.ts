@@ -71,6 +71,12 @@ describe('managed Change execution production composition', () => {
       multiRepository: true,
     },
     {
+      label: 'derived output drift blocks direct Archive Close',
+      executionMode: 'autonomous' as const,
+      multiRepository: true,
+      derivedCloseDrift: true,
+    },
+    {
       label: 'protected writable repositories fail closed before Execute',
       executionMode: 'autonomous' as const,
       multiRepository: true,
@@ -90,6 +96,7 @@ describe('managed Change execution production composition', () => {
       multiRepository,
       protectedWriteRepositories = false,
       prepoisonedProtectedRecovery = false,
+      derivedCloseDrift = false,
     }) => {
       const root = await temporaryDirectory('repoctopus-managed-change-');
       cleanup.push(root);
@@ -109,6 +116,25 @@ describe('managed Change execution production composition', () => {
       const workspace = await createGitRepository(root, 'workspace', workspaceRemote);
       const appRepository = await createGitRepository(root, 'app', appRemote);
       const workerRepository = await createGitRepository(root, 'worker', workerRemote);
+      if (derivedCloseDrift)
+        await writeFile(path.join(appRepository, '.git', 'info', 'exclude'), 'evidence-dist/\n');
+      // Keep portable remote identities stable from Run creation through publication.
+      for (const [repository, remote] of [
+        [workspace, workspaceRemote],
+        [appRepository, appRemote],
+        [workerRepository, workerRemote],
+      ]) {
+        await execFileAsync(
+          'git',
+          [
+            'remote',
+            'set-url',
+            'origin',
+            path.relative(repository!, remote!).replaceAll('\\', '/'),
+          ],
+          { cwd: repository },
+        );
+      }
       await execFileAsync('git', ['push', '--set-upstream', 'origin', 'main'], { cwd: workspace });
       await execFileAsync('git', ['push', '--set-upstream', 'origin', 'main'], {
         cwd: appRepository,
@@ -175,7 +201,23 @@ describe('managed Change execution production composition', () => {
                   repository: 'app',
                   covers: ['*'],
                   executable: process.execPath,
-                  args: ['-e', 'process.exit(0)'],
+                  args: [
+                    '-e',
+                    derivedCloseDrift
+                      ? "const fs=require('node:fs');fs.mkdirSync('evidence-dist',{recursive:true});fs.writeFileSync('evidence-dist/value.txt','proof')"
+                      : 'process.exit(0)',
+                  ],
+                  ...(derivedCloseDrift
+                    ? {
+                        inputs: {
+                          schemaVersion: 1,
+                          repositories: [{ repository: 'app', outputs: ['evidence-dist/**'] }],
+                          git: 'none',
+                          taskCheckboxes: 'ignore',
+                          env: [],
+                        },
+                      }
+                    : {}),
                 },
                 ...(multiRepository
                   ? [
@@ -185,7 +227,27 @@ describe('managed Change execution production composition', () => {
                         repository: 'worker',
                         covers: ['*'],
                         executable: process.execPath,
-                        args: ['-e', 'process.exit(0)'],
+                        args: [
+                          '-e',
+                          derivedCloseDrift
+                            ? "if(require('node:fs').readFileSync('../app/evidence-dist/value.txt','utf8')!=='proof')process.exit(1)"
+                            : 'process.exit(0)',
+                        ],
+                        ...(derivedCloseDrift
+                          ? {
+                              dependsOn: ['app-check'],
+                              inputs: {
+                                schemaVersion: 1,
+                                repositories: [
+                                  { repository: 'app', files: ['evidence-dist/**'], outputs: [] },
+                                  { repository: 'worker', outputs: [] },
+                                ],
+                                git: 'none',
+                                taskCheckboxes: 'ignore',
+                                env: [],
+                              },
+                            }
+                          : {}),
                       },
                     ]
                   : []),
@@ -2070,24 +2132,37 @@ describe('managed Change execution production composition', () => {
           await execFileAsync('git', ['push'], { cwd: workspace });
         }
 
-        await execFileAsync(
-          'git',
-          ['remote', 'set-url', 'origin', 'https://github.com/example/workspace.git'],
-          { cwd: workspace },
-        );
-        await execFileAsync(
-          'git',
-          ['remote', 'set-url', 'origin', 'https://github.com/example/app.git'],
-          { cwd: appRepository },
-        );
-        if (multiRepository) {
-          await execFileAsync(
-            'git',
-            ['remote', 'set-url', 'origin', 'https://github.com/example/worker.git'],
-            { cwd: workerRepository },
-          );
+        if (multiRepository && !protectedWriteRepositories) {
+          invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
+          capture.dispose();
+          await application.close();
+          for (const command of ['resume', 'next', 'resume']) {
+            const cold = await runCli<ResumeView>({
+              packageRoot: productRoot,
+              cwd: workspace,
+              environment,
+              args: ['run', command, '--workspace', workspace, '--run', runId],
+            });
+            expect(
+              cold.result!.state.reconciliationRequired,
+              'neutral task commit cold recovery',
+            ).toBe(false);
+            expect(cold.result!.changeLifecycle?.phase).toBe('archive');
+            expect(cold.result!.state.acceptedEvidenceBundleIds).toEqual(
+              recovered.value.state.acceptedEvidenceBundleIds,
+            );
+            expect(cold.result!.state.changeLifecycle?.buildProtocol?.packageCompletions).toEqual(
+              recovered.value.state.changeLifecycle?.buildProtocol?.packageCompletions,
+            );
+          }
+          application = await bootProjectComposition(productRoot, workspace);
+          capture = installCapturingWorkExecutionHost({
+            context: application.context,
+            workspace,
+            repositories: { workspace, app: appRepository, worker: workerRepository },
+            operations: () => [],
+          });
         }
-
         const project = await application.context.project.snapshot({
           workspaceId: 'managed-blackbox',
           workspaceRoot: workspace,
@@ -2117,7 +2192,7 @@ describe('managed Change execution production composition', () => {
             {
               deliveryId: 'app',
               repositoryId: 'app',
-              sourceBranch: 'feature/managed-blackbox',
+              sourceBranch: project.repositories.find((repo) => repo.id === 'app')!.branch!,
               targetBranch: 'main',
               commitMessage: 'feat: add managed outputs',
               actions: ['push', 'merge_request'],
@@ -2127,7 +2202,8 @@ describe('managed Change execution production composition', () => {
                   {
                     deliveryId: 'worker',
                     repositoryId: 'worker',
-                    sourceBranch: 'feature/managed-blackbox',
+                    sourceBranch: project.repositories.find((repo) => repo.id === 'worker')!
+                      .branch!,
                     targetBranch: 'main',
                     commitMessage: 'feat: add managed worker output',
                     actions: ['push', 'merge_request'] as Array<'push' | 'merge_request'>,
@@ -2146,7 +2222,7 @@ describe('managed Change execution production composition', () => {
             : {}),
         };
         vi.spyOn(application.context.delivery, 'validateArchiveIntent').mockResolvedValue();
-        let preparedArchive = await application.context.commandRouter.execute<
+        const preparedArchive = await application.context.commandRouter.execute<
           { runId: string; attemptId: string; intent: DeliveryIntentV3; policy: DeliveryPolicy },
           RuntimeResult<RunStatusView>
         >('run.archive.prepare', {
@@ -2155,27 +2231,40 @@ describe('managed Change execution production composition', () => {
           intent,
           policy,
         });
-        if (preparedArchive.value.changeLifecycle?.phase === 'verify') {
-          for (let step = 0; step < 4; step += 1) {
-            const refreshed = await next();
-            if (
-              refreshed.value.changeLifecycle?.phase === 'archive' &&
-              refreshed.value.changeLifecycle.currentWork === null
-            ) {
-              break;
-            }
-          }
-          const refreshedStatus = await status();
-          const refreshedAttemptId = refreshedStatus.changeLifecycle?.evidence.latestAttemptId;
-          if (!refreshedAttemptId) throw new Error('missing refreshed verification attempt');
-          preparedArchive = await application.context.commandRouter.execute('run.archive.prepare', {
-            runId,
-            attemptId: refreshedAttemptId,
-            intent,
-            policy,
-          });
-        }
+        expect(
+          preparedArchive.value.changeLifecycle?.phase,
+          'committing Runtime task completion must preserve the accepted Verify evidence',
+        ).toBe('archive');
+        expect(preparedArchive.value.state.acceptedEvidenceBundleIds).toEqual(
+          recovered.value.state.acceptedEvidenceBundleIds,
+        );
+        expect(preparedArchive.value.changeLifecycle?.evidence.latestAttemptId).toBe(
+          acceptedAttemptId,
+        );
         await next();
+        if (derivedCloseDrift) {
+          const before = await application.context.evidenceCoordinator.plan('verify', runId);
+          await writeFile(path.join(appRepository, 'evidence-dist', 'value.txt'), 'tampered');
+          const after = await application.context.evidenceCoordinator.plan('verify', runId);
+          expect(after.fingerprint.digest).toBe(before.fingerprint.digest);
+          const prepare = vi.spyOn(application.context.specification, 'prepareClosure');
+          const result = await application.context.workflowRuns.executeArchiveDelivery({
+            runId,
+            project,
+            policy,
+            executor: {
+              actorId: 'managed-test-user',
+              runnerId: 'managed-test-runner',
+              source: 'runner',
+              authenticated: true,
+            },
+          });
+          expect(result.value.stage).toBe('reverify-required');
+          expect(result.value.run.changeLifecycle?.phase).toBe('verify');
+          expect(result.value.run.changeLifecycle?.currentWork?.kind).toBe('evidence.verify');
+          expect(prepare).not.toHaveBeenCalled();
+          return;
+        }
         const closed = await application.context.commandRouter.execute<
           {
             runId: string;
@@ -2320,7 +2409,6 @@ describe('managed Change execution production composition', () => {
           'build.check',
           'evidence.verify',
           ...(!multiRepository && executionMode === 'autonomous' ? ['evidence.verify'] : []),
-          'evidence.verify',
           'specification.close',
           'delivery.publish',
         ]);
@@ -2356,7 +2444,9 @@ describe('managed Change execution production composition', () => {
         }
       }
     },
-    240_000,
+    // The expanded matrix includes three independent cold CLI restores after
+    // Verify; the previous 240s budget expired during the added Archive path.
+    360_000,
   );
 
   it('recovers one persisted Run from current to worktree across process restarts', async () => {

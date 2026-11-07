@@ -4,6 +4,7 @@ import { decide, recordOutcome, startRun } from '../engine/loop.js';
 import type { ActionOutcome, EngineAction, RunState, RunTriggerSnapshot } from '../engine/types.js';
 import { reconcileProjectSnapshots } from '../project/snapshot.js';
 import type { BuildWorkspaceRecovery } from './build-workspace-recovery.js';
+import type { EvidenceWorkspaceRecovery } from './evidence-workspace-recovery.js';
 import type { ProjectSnapshot } from '../project/types.js';
 import type {
   DesktopActivationFact,
@@ -240,6 +241,27 @@ function event(options: {
 }
 
 export class WorkflowRunCoordinator {
+  /** Keep lifecycle authorization stable while its owner performs an external effect. */
+  withArchiveEffectAuthority<T>(
+    expected: RunState,
+    effect: (latest: RunState) => Promise<T>,
+  ): Promise<T> {
+    return this.store.commitGuarded(expected.runId, async ({ state: latest }) => {
+      if (
+        latest.status !== 'running' ||
+        latest.reconciliationRequired ||
+        latest.changeLifecycle?.phase !== 'archive' ||
+        latest.changeLifecycle.currentWork?.workId !==
+          expected.changeLifecycle?.currentWork?.workId ||
+        latest.changeLifecycle.checkEpoch !== expected.changeLifecycle?.checkEpoch ||
+        latest.changeLifecycle.archiveDeliveryInput?.digest !==
+          expected.changeLifecycle?.archiveDeliveryInput?.digest
+      )
+        throw new Error('Archive effect authority changed before execution');
+      return { value: await effect(latest) };
+    });
+  }
+
   constructor(
     private readonly store: RunStorePort,
     private readonly telemetry: TelemetryPort,
@@ -491,6 +513,7 @@ export class WorkflowRunCoordinator {
     runId: string,
     observation: ChangeLifecycleObservation,
     options?: {
+      reobserve?: (state: RunState) => Promise<void>;
       authorizedRebind?: {
         entrypoint: 'next' | 'resume';
         evidence: AuthorizedProtectedBranchRebind;
@@ -498,10 +521,10 @@ export class WorkflowRunCoordinator {
     },
   ): Promise<RuntimeResult<RunStatusView>> {
     await this.recoverChangeLifecycleDefinition(runId);
-    await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+    await this.store.commitGuarded(runId, async ({ state, trajectory }) => {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
       if (
-        state.changeLifecycle.phase === 'build' &&
+        ['build', 'verify', 'archive'].includes(state.changeLifecycle.phase) &&
         state.reconciliationRequired &&
         !options?.authorizedRebind
       ) {
@@ -518,6 +541,7 @@ export class WorkflowRunCoordinator {
               canonicalJson(entry.data.observation) === canonicalJson(observation))),
       );
       if (replayed) return { value: undefined };
+      await options?.reobserve?.(state);
       const authorizedRebind = options?.authorizedRebind;
       if (authorizedRebind) {
         if (observation.kind !== 'build-binding-revalidation-required') {
@@ -677,7 +701,10 @@ export class WorkflowRunCoordinator {
     await this.recoverChangeLifecycleDefinition(runId);
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
-      if (state.changeLifecycle.phase === 'build' && state.reconciliationRequired) {
+      if (
+        ['build', 'verify', 'archive'].includes(state.changeLifecycle.phase) &&
+        state.reconciliationRequired
+      ) {
         throw new Error('Build workspace requires reconciliation before applying recovery');
       }
       if (decision.runId !== runId) throw new Error('Recovery decision Run identity is invalid');
@@ -1155,11 +1182,30 @@ export class WorkflowRunCoordinator {
     runId: string,
     observation: BuildWorkspaceRecovery,
   ): Promise<RuntimeResult<ResumeView>> {
+    return this.reconcileBoundWorkspace(runId, observation, 'buildWorkspaceRecovery');
+  }
+
+  async reconcileEvidenceWorkspace(
+    runId: string,
+    observation: EvidenceWorkspaceRecovery,
+  ): Promise<RuntimeResult<ResumeView>> {
+    return this.reconcileBoundWorkspace(runId, observation, 'evidenceWorkspaceRecovery');
+  }
+
+  private async reconcileBoundWorkspace(
+    runId: string,
+    observation: BuildWorkspaceRecovery | EvidenceWorkspaceRecovery,
+    recoveryKind: 'buildWorkspaceRecovery' | 'evidenceWorkspaceRecovery',
+  ): Promise<RuntimeResult<ResumeView>> {
     const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       this.assertWritableComposition(state);
       const protocol = state.changeLifecycle?.buildProtocol;
       if (
         state.stateVersion !== observation.expectedStateVersion ||
+        ('phase' in observation
+          ? state.changeLifecycle?.phase !== observation.phase ||
+            state.changeLifecycle.verificationInput?.digest !== observation.verificationInputDigest
+          : state.changeLifecycle?.phase !== 'build') ||
         protocol?.binding?.bindingId !== observation.bindingId ||
         protocol.workspaceCheckpoint?.digest !== observation.checkpointDigest
       ) {
@@ -1170,7 +1216,7 @@ export class WorkflowRunCoordinator {
       const previous = trajectory.findLast((entry) =>
         ['recovery.reconciled', 'run.resumed'].includes(entry.type),
       );
-      const previousRecovery = previous?.data.buildWorkspaceRecovery as
+      const previousRecovery = previous?.data[recoveryKind] as
         | { observationDigest: string; ownsBlocker: boolean }
         | undefined;
       const matchingSnapshotConflict =
@@ -1201,7 +1247,7 @@ export class WorkflowRunCoordinator {
         event: event({
           eventId: stableEventId(
             runId,
-            'build-workspace-recovery',
+            recoveryKind,
             previous?.eventId ?? 'initial',
             observation.observationDigest,
           ),
@@ -1211,7 +1257,7 @@ export class WorkflowRunCoordinator {
           state: nextState,
           data: {
             reconciliation: observation.reconciliation,
-            buildWorkspaceRecovery: {
+            [recoveryKind]: {
               ...observation,
               ownsBlocker: requiresReconciliation && ownedBlocker,
             },

@@ -108,6 +108,7 @@ Archive 在任何远端 MR 发布前调用 `prepareClosure`，把以下事实绑
 - change 语义摘要和 Specification Provider 身份；
 - 已通过的 Verify Evidence 与 Delivery plan 摘要；
 - 目标规格基线摘要；
+- 发布预检冻结的 `sourceOid`；隔离 checkout 从该 OID 创建，不随主工作树 HEAD 前移；
 - 受影响能力和允许修改的规格路径。
 
 `close` 会在执行前重新生成计划并比较摘要。OpenSpec Provider 只通过官方 `archive --yes --json` 生命周期同步主规格并归档 change。成功结果写入 `.repoctopus/specification/closures/`；相同计划重放时返回原结果，不重复归档。
@@ -116,7 +117,7 @@ Archive 在任何远端 MR 发布前调用 `prepareClosure`，把以下事实绑
 
 ## 替换 Provider
 
-一个 project composition 必须恰好提供一个 `specification` Service。零个 Provider 会触发缺少服务诊断；两个 Provider 会触发权威冲突。兼容 Provider 必须实现 `inspect`、`validate`、`prepareClosure` 和 `close`，并返回 `repoctopus.specification/v1alpha1` 类型。
+一个 project composition 必须恰好提供一个 `specification` Service。零个 Provider 会触发缺少服务诊断；两个 Provider 会触发权威冲突。兼容 Provider 必须实现 `inspect`、`validate`、`evidenceProjection`、`closureExecutionStarted`、`prepareClosure` 和 `close`，并返回 `repoctopus.specification/v1alpha1` 类型。
 
 OpenSpec 是首个内置 Provider，不是 Workflow 写死的规格体系。Provider 可以使用不同的规格工具，并把自己的产物规范化为稳定领域契约；专有目录、文件名和 CLI 输出不得成为 Workflow 分支条件。更换 Provider 只影响新 Run，已有 Run 保留原 Provider 快照；如果新 Provider 无法兼容旧快照，Runtime 必须停止并进入迁移诊断。
 

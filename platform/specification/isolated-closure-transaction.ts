@@ -133,7 +133,7 @@ export class IsolatedSpecificationClosureTransaction {
       }
       return this.recover(existing, signal);
     }
-    const checkout = await this.checkouts.create(checkoutId(plan));
+    const checkout = await this.checkouts.create(checkoutId(plan), plan.sourceOid);
     const prepared = createSpecificationClosureJournal({
       changeId: plan.changeId,
       checkoutId: checkout.checkoutId,

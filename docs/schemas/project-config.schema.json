@@ -6,15 +6,25 @@
   "additionalProperties": false,
   "required": ["apiVersion", "kind", "workspace", "repositories", "profiles"],
   "properties": {
-    "apiVersion": { "const": "repoctopus/v1alpha1" },
-    "kind": { "const": "RepoctopusWorkspace" },
+    "apiVersion": {
+      "const": "repoctopus/v1alpha1"
+    },
+    "kind": {
+      "const": "RepoctopusWorkspace"
+    },
     "workspace": {
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "repositoryId"],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "repositoryId": { "type": "string", "minLength": 1 }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repositoryId": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "repositories": {
@@ -25,8 +35,14 @@
         "additionalProperties": false,
         "required": ["id", "path"],
         "properties": {
-          "id": { "type": "string", "minLength": 1 },
-          "path": { "type": "string", "minLength": 1 }
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     },
@@ -38,18 +54,33 @@
         "additionalProperties": false,
         "required": ["id", "nodes"],
         "properties": {
-          "id": { "type": "string", "minLength": 1 },
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
           "nodes": {
             "type": "array",
             "minItems": 1,
             "items": {
               "oneOf": [
-                { "$ref": "#/$defs/commandNode" },
-                { "$ref": "#/$defs/managedServiceNode" },
-                { "$ref": "#/$defs/attachedServiceNode" },
-                { "$ref": "#/$defs/browserNode" },
-                { "$ref": "#/$defs/visualNode" },
-                { "$ref": "#/$defs/specificationNode" }
+                {
+                  "$ref": "#/$defs/commandNode"
+                },
+                {
+                  "$ref": "#/$defs/managedServiceNode"
+                },
+                {
+                  "$ref": "#/$defs/attachedServiceNode"
+                },
+                {
+                  "$ref": "#/$defs/browserNode"
+                },
+                {
+                  "$ref": "#/$defs/visualNode"
+                },
+                {
+                  "$ref": "#/$defs/specificationNode"
+                }
               ]
             }
           }
@@ -81,9 +112,18 @@
             "additionalProperties": false,
             "required": ["id", "descriptor", "module"],
             "properties": {
-              "id": { "type": "string", "minLength": 1 },
-              "descriptor": { "type": "string", "minLength": 1 },
-              "module": { "type": "string", "minLength": 1 },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "descriptor": {
+                "type": "string",
+                "minLength": 1
+              },
+              "module": {
+                "type": "string",
+                "minLength": 1
+              },
               "config": {}
             }
           }
@@ -98,8 +138,14 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "maxAgeDays": { "type": "integer", "minimum": 1 },
-            "minRecentSuccesses": { "type": "integer", "minimum": 1 }
+            "maxAgeDays": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "minRecentSuccesses": {
+              "type": "integer",
+              "minimum": 1
+            }
           }
         }
       }
@@ -114,18 +160,28 @@
           "additionalProperties": false,
           "required": ["automatic", "protectedBranches", "commitMessagePattern", "quickChecks"],
           "properties": {
-            "automatic": { "type": "boolean" },
+            "automatic": {
+              "type": "boolean"
+            },
             "protectedBranches": {
               "type": "array",
               "minItems": 1,
-              "items": { "type": "string", "minLength": 1 }
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
             },
-            "commitMessagePattern": { "type": "string", "minLength": 1 },
+            "commitMessagePattern": {
+              "type": "string",
+              "minLength": 1
+            },
             "quickChecks": {
               "type": "object",
               "additionalProperties": {
                 "type": "array",
-                "items": { "$ref": "#/$defs/quickCheck" }
+                "items": {
+                  "$ref": "#/$defs/quickCheck"
+                }
               }
             }
           }
@@ -141,12 +197,28 @@
             "mrBodyTemplate"
           ],
           "properties": {
-            "remote": { "type": "string", "minLength": 1 },
-            "provider": { "const": "github" },
-            "githubApiBaseUrl": { "type": "string", "format": "uri" },
-            "mrTitleTemplate": { "type": "string", "minLength": 1 },
-            "mrBodyTemplate": { "type": "string", "minLength": 1 },
-            "apiCredential": { "$ref": "#/$defs/credentialReference" }
+            "remote": {
+              "type": "string",
+              "minLength": 1
+            },
+            "provider": {
+              "const": "github"
+            },
+            "githubApiBaseUrl": {
+              "type": "string",
+              "format": "uri"
+            },
+            "mrTitleTemplate": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mrBodyTemplate": {
+              "type": "string",
+              "minLength": 1
+            },
+            "apiCredential": {
+              "$ref": "#/$defs/credentialReference"
+            }
           }
         }
       }
@@ -155,15 +227,21 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "$ref": "#/$defs/providerReference" }
+      "items": {
+        "$ref": "#/$defs/providerReference"
+      }
     },
-    "specificationProvider": { "$ref": "#/$defs/specificationProviderReference" },
+    "specificationProvider": {
+      "$ref": "#/$defs/specificationProviderReference"
+    },
     "lifecycle": {
       "type": "object",
       "additionalProperties": false,
       "required": ["skillBindings"],
       "properties": {
-        "skillBindings": { "$ref": "#/$defs/teamSkillBindings" }
+        "skillBindings": {
+          "$ref": "#/$defs/teamSkillBindings"
+        }
       }
     }
   },
@@ -176,21 +254,32 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["id"],
-      "properties": { "id": { "$ref": "#/$defs/stableIdentifier" } }
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableIdentifier"
+        }
+      }
     },
     "specificationProviderReference": {
       "type": "object",
       "additionalProperties": false,
       "required": ["id"],
       "properties": {
-        "id": { "$ref": "#/$defs/stableIdentifier" },
+        "id": {
+          "$ref": "#/$defs/stableIdentifier"
+        },
         "store": {
           "type": "object",
           "additionalProperties": false,
           "required": ["id", "repositoryId"],
           "properties": {
-            "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
-            "repositoryId": { "$ref": "#/$defs/stableIdentifier" }
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            },
+            "repositoryId": {
+              "$ref": "#/$defs/stableIdentifier"
+            }
           }
         }
       }
@@ -200,8 +289,13 @@
       "additionalProperties": false,
       "required": ["provider", "variable"],
       "properties": {
-        "provider": { "const": "environment" },
-        "variable": { "type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$" }
+        "provider": {
+          "const": "environment"
+        },
+        "variable": {
+          "type": "string",
+          "pattern": "^[A-Z_][A-Z0-9_]*$"
+        }
       }
     },
     "teamSkillBindings": {
@@ -209,14 +303,20 @@
       "additionalProperties": false,
       "required": ["schemaVersion", "bindings"],
       "properties": {
-        "schemaVersion": { "const": 1 },
+        "schemaVersion": {
+          "const": 1
+        },
         "bindings": {
           "type": "array",
           "minItems": 1,
           "items": {
             "oneOf": [
-              { "$ref": "#/$defs/teamSkillGuidanceBinding" },
-              { "$ref": "#/$defs/teamSkillReplacementBinding" }
+              {
+                "$ref": "#/$defs/teamSkillGuidanceBinding"
+              },
+              {
+                "$ref": "#/$defs/teamSkillReplacementBinding"
+              }
             ]
           }
         }
@@ -226,31 +326,55 @@
       "type": "object",
       "required": ["id", "target", "role", "skill", "order"],
       "properties": {
-        "id": { "$ref": "#/$defs/stableIdentifier" },
-        "target": { "$ref": "#/$defs/stableIdentifier" },
-        "role": { "enum": ["guidance", "augmentation-replacement"] },
-        "skill": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
-        "order": { "type": "integer", "minimum": 0 }
+        "id": {
+          "$ref": "#/$defs/stableIdentifier"
+        },
+        "target": {
+          "$ref": "#/$defs/stableIdentifier"
+        },
+        "role": {
+          "enum": ["guidance", "augmentation-replacement"]
+        },
+        "skill": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "teamSkillGuidanceBinding": {
       "allOf": [
-        { "$ref": "#/$defs/teamSkillBindingBase" },
+        {
+          "$ref": "#/$defs/teamSkillBindingBase"
+        },
         {
           "unevaluatedProperties": false,
-          "properties": { "role": { "const": "guidance" } }
+          "properties": {
+            "role": {
+              "const": "guidance"
+            }
+          }
         }
       ]
     },
     "teamSkillReplacementBinding": {
       "allOf": [
-        { "$ref": "#/$defs/teamSkillBindingBase" },
+        {
+          "$ref": "#/$defs/teamSkillBindingBase"
+        },
         {
           "unevaluatedProperties": false,
           "required": ["slot"],
           "properties": {
-            "role": { "const": "augmentation-replacement" },
-            "slot": { "$ref": "#/$defs/stableIdentifier" }
+            "role": {
+              "const": "augmentation-replacement"
+            },
+            "slot": {
+              "$ref": "#/$defs/stableIdentifier"
+            }
           }
         }
       ]
@@ -260,8 +384,16 @@
       "additionalProperties": false,
       "required": ["command", "args"],
       "properties": {
-        "command": { "type": "string", "minLength": 1 },
-        "args": { "type": "array", "items": { "type": "string" } }
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "acceptanceSelectors": {
@@ -271,10 +403,18 @@
         "type": "string",
         "minLength": 1,
         "anyOf": [
-          { "const": "*" },
-          { "pattern": "^acceptance-[a-f0-9]{64}$" },
-          { "pattern": "^task:[0-9]+(?:\\.[0-9]+)*$" },
-          { "pattern": "^requirement:\\S+$" }
+          {
+            "const": "*"
+          },
+          {
+            "pattern": "^acceptance-[a-f0-9]{64}$"
+          },
+          {
+            "pattern": "^task:[0-9]+(?:\\.[0-9]+)*$"
+          },
+          {
+            "pattern": "^requirement:\\S+$"
+          }
         ]
       }
     },
@@ -283,29 +423,87 @@
       "additionalProperties": false,
       "required": ["id", "type", "repository", "executable"],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "type": { "const": "command" },
-        "repository": { "type": "string", "minLength": 1 },
-        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-        "required": { "type": "boolean" },
-        "covers": { "$ref": "#/$defs/acceptanceSelectors" },
-        "executable": { "type": "string", "minLength": 1 },
-        "args": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-        "cwd": { "type": "string" },
-        "timeoutMs": { "type": "integer", "minimum": 1 },
-        "cache": { "type": "boolean" },
-        "cacheTtlMs": { "type": "integer", "minimum": 1 },
-        "zeroTests": { "enum": ["ignore", "warning", "blocking"] }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "const": "command"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "covers": {
+          "$ref": "#/$defs/acceptanceSelectors"
+        },
+        "executable": {
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "cwd": {
+          "type": "string"
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cache": {
+          "type": "boolean"
+        },
+        "cacheTtlMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "zeroTests": {
+          "enum": ["ignore", "warning", "blocking"]
+        },
+        "inputs": {
+          "$ref": "#/$defs/evidenceInputs"
+        }
       }
     },
     "nodeBase": {
       "type": "object",
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "repository": { "type": "string", "minLength": 1 },
-        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-        "required": { "type": "boolean" },
-        "covers": { "$ref": "#/$defs/acceptanceSelectors" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "covers": {
+          "$ref": "#/$defs/acceptanceSelectors"
+        }
       }
     },
     "readiness": {
@@ -315,9 +513,18 @@
           "additionalProperties": false,
           "required": ["type", "host", "port"],
           "properties": {
-            "type": { "const": "tcp" },
-            "host": { "type": "string", "minLength": 1 },
-            "port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+            "type": {
+              "const": "tcp"
+            },
+            "host": {
+              "type": "string",
+              "minLength": 1
+            },
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            }
           }
         },
         {
@@ -325,14 +532,26 @@
           "additionalProperties": false,
           "required": ["type", "url"],
           "properties": {
-            "type": { "const": "http" },
-            "url": { "type": "string", "format": "uri" },
+            "type": {
+              "const": "http"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
             "statusCodes": {
               "type": "array",
               "minItems": 1,
-              "items": { "type": "integer", "minimum": 100, "maximum": 599 }
+              "items": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 599
+              }
             },
-            "jsonPath": { "type": "string", "minLength": 1 },
+            "jsonPath": {
+              "type": "string",
+              "minLength": 1
+            },
             "equals": {}
           }
         },
@@ -341,9 +560,16 @@
           "additionalProperties": false,
           "required": ["type", "pattern"],
           "properties": {
-            "type": { "const": "log" },
-            "pattern": { "type": "string", "minLength": 1 },
-            "stream": { "enum": ["stdout", "stderr", "combined"] }
+            "type": {
+              "const": "log"
+            },
+            "pattern": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stream": {
+              "enum": ["stdout", "stderr", "combined"]
+            }
           }
         }
       ]
@@ -353,20 +579,68 @@
       "additionalProperties": false,
       "required": ["id", "type", "mode", "repository", "executable", "readiness"],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "type": { "const": "service" },
-        "mode": { "const": "managed" },
-        "repository": { "type": "string", "minLength": 1 },
-        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-        "required": { "type": "boolean" },
-        "covers": { "$ref": "#/$defs/acceptanceSelectors" },
-        "executable": { "type": "string", "minLength": 1 },
-        "args": { "type": "array", "items": { "type": "string" } },
-        "cwd": { "type": "string" },
-        "readiness": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/readiness" } },
-        "startupTimeoutMs": { "type": "integer", "minimum": 1 },
-        "probeIntervalMs": { "type": "integer", "minimum": 1 },
-        "resourceKeys": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "const": "service"
+        },
+        "mode": {
+          "const": "managed"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "covers": {
+          "$ref": "#/$defs/acceptanceSelectors"
+        },
+        "executable": {
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cwd": {
+          "type": "string"
+        },
+        "readiness": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/readiness"
+          }
+        },
+        "startupTimeoutMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "probeIntervalMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "resourceKeys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
       }
     },
     "attachedServiceNode": {
@@ -374,23 +648,61 @@
       "additionalProperties": false,
       "required": ["id", "type", "mode", "repository", "readiness"],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "type": { "const": "service" },
-        "mode": { "const": "attached" },
-        "repository": { "type": "string", "minLength": 1 },
-        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-        "required": { "type": "boolean" },
-        "covers": { "$ref": "#/$defs/acceptanceSelectors" },
-        "readiness": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/readiness" } },
-        "startupTimeoutMs": { "type": "integer", "minimum": 1 },
-        "probeIntervalMs": { "type": "integer", "minimum": 1 },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "const": "service"
+        },
+        "mode": {
+          "const": "attached"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "covers": {
+          "$ref": "#/$defs/acceptanceSelectors"
+        },
+        "readiness": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/readiness"
+          }
+        },
+        "startupTimeoutMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "probeIntervalMs": {
+          "type": "integer",
+          "minimum": 1
+        },
         "buildIdentity": {
           "type": "object",
           "additionalProperties": false,
           "required": ["url", "jsonPath"],
           "properties": {
-            "url": { "type": "string", "format": "uri" },
-            "jsonPath": { "type": "string", "minLength": 1 }
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "jsonPath": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         }
       }
@@ -400,21 +712,46 @@
       "additionalProperties": false,
       "required": ["apiVersion", "kind", "journeyId", "viewport", "timeoutMs", "actions"],
       "properties": {
-        "apiVersion": { "const": "repoctopus/v1alpha1" },
-        "kind": { "const": "BrowserJourney" },
-        "journeyId": { "type": "string", "minLength": 1 },
+        "apiVersion": {
+          "const": "repoctopus/v1alpha1"
+        },
+        "kind": {
+          "const": "BrowserJourney"
+        },
+        "journeyId": {
+          "type": "string",
+          "minLength": 1
+        },
         "viewport": {
           "type": "object",
           "additionalProperties": false,
           "required": ["width", "height"],
           "properties": {
-            "width": { "type": "integer", "minimum": 1 },
-            "height": { "type": "integer", "minimum": 1 },
-            "deviceScaleFactor": { "type": "number", "exclusiveMinimum": 0 }
+            "width": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "deviceScaleFactor": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
           }
         },
-        "timeoutMs": { "type": "integer", "minimum": 1 },
-        "actions": { "type": "array", "minItems": 1, "items": { "type": "object" } }
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object"
+          }
+        }
       }
     },
     "browserNode": {
@@ -422,14 +759,36 @@
       "additionalProperties": false,
       "required": ["id", "type", "repository", "source", "journey"],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "type": { "const": "browser" },
-        "repository": { "type": "string", "minLength": 1 },
-        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-        "required": { "type": "boolean" },
-        "covers": { "$ref": "#/$defs/acceptanceSelectors" },
-        "source": { "enum": ["managed", "system"] },
-        "journey": { "$ref": "#/$defs/browserJourney" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "const": "browser"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "covers": {
+          "$ref": "#/$defs/acceptanceSelectors"
+        },
+        "source": {
+          "enum": ["managed", "system"]
+        },
+        "journey": {
+          "$ref": "#/$defs/browserJourney"
+        }
       }
     },
     "specificationNode": {
@@ -437,14 +796,37 @@
       "additionalProperties": false,
       "required": ["id", "type", "repository", "changeId"],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "type": { "const": "specification" },
-        "repository": { "type": "string", "minLength": 1 },
-        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-        "required": { "type": "boolean" },
-        "covers": { "$ref": "#/$defs/acceptanceSelectors" },
-        "changeId": { "type": "string", "minLength": 1 },
-        "strict": { "type": "boolean" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "const": "specification"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "covers": {
+          "$ref": "#/$defs/acceptanceSelectors"
+        },
+        "changeId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "strict": {
+          "type": "boolean"
+        }
       }
     },
     "visualNode": {
@@ -452,15 +834,42 @@
       "additionalProperties": false,
       "required": ["id", "type", "repository", "changeId", "browserNode", "pageUrl", "criteria"],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "type": { "const": "visual" },
-        "repository": { "type": "string", "minLength": 1 },
-        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-        "required": { "type": "boolean" },
-        "covers": { "$ref": "#/$defs/acceptanceSelectors" },
-        "changeId": { "type": "string", "minLength": 1 },
-        "browserNode": { "type": "string", "minLength": 1 },
-        "pageUrl": { "type": "string", "format": "uri" },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "const": "visual"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "covers": {
+          "$ref": "#/$defs/acceptanceSelectors"
+        },
+        "changeId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "browserNode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pageUrl": {
+          "type": "string",
+          "format": "uri"
+        },
         "criteria": {
           "type": "array",
           "minItems": 1,
@@ -469,9 +878,78 @@
             "additionalProperties": false,
             "required": ["id", "text"],
             "properties": {
-              "id": { "type": "string", "minLength": 1 },
-              "text": { "type": "string", "minLength": 1 },
-              "sourceRef": { "type": "string", "minLength": 1 }
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sourceRef": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "evidenceInputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion"],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "git": {
+          "enum": ["none", "all"],
+          "default": "none"
+        },
+        "taskCheckboxes": {
+          "enum": ["ignore", "include"],
+          "default": "ignore"
+        },
+        "env": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          }
+        },
+        "repositories": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["repository"],
+            "properties": {
+              "repository": {
+                "$ref": "#/$defs/stableIdentifier"
+              },
+              "files": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Portable repository-relative literal path or *, ?, ** glob; no parent traversal, backslash, negation or shell expansion."
+                }
+              },
+              "outputs": {
+                "type": "array",
+                "minItems": 0,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Portable repository-relative literal path or *, ?, ** glob; no parent traversal, backslash, negation or shell expansion."
+                }
+              }
             }
           }
         }

@@ -1,9 +1,8 @@
+import { verificationInputFixture } from '../helpers/evidence-inputs.js';
+import { createArchiveInputFixture as createArchiveDeliveryInput } from '../helpers/evidence-inputs.js';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  createArchiveDeliveryInput,
-  type ArchiveDeliveryInput,
-} from '../../domains/change-lifecycle/archive-input.js';
+import { type ArchiveDeliveryInput } from '../../domains/change-lifecycle/archive-input.js';
 import {
   ArchiveCompletionTracer,
   type ArchiveTracerPorts,
@@ -131,10 +130,16 @@ describe('single-repository Archive production tracer', () => {
   it.each(['runtime-created', 'human-created'] as const)(
     'finishes from %s MRs without listeners, merge polling, or Post-merge workflow',
     async (provenance) => {
+      const verificationInput = verificationInputFixture('run-tracer', 0, {
+        profileId: 'verify',
+        fingerprintDigest: digest('6'),
+        projectConfigDigest: digest('3'),
+        compositionDigest: digest('4'),
+      });
       const archive = createArchiveDeliveryInput({
         runId: 'run-tracer',
         changeId: 'single-tracer',
-        verificationInputDigest: digest('1'),
+        verificationInputDigest: verificationInput.digest,
         acceptedEvidenceBundleIds: ['bundle'],
         evidenceBundleId: 'bundle',
         verificationReport: {
@@ -161,25 +166,7 @@ describe('single-repository Archive production tracer', () => {
         }),
         phase: 'archive' as const,
         status: 'running' as const,
-        verificationInput: {
-          schemaVersion: 3 as const,
-          runId: 'run-tracer',
-          checkEpoch: 0,
-          taskRevisions: [],
-          acceptanceCriteria: [],
-          acceptanceSetHash: digest('a'),
-          acceptanceCoverage: [],
-          repositories: [],
-          projectConfigDigest: digest('3'),
-          compositionDigest: digest('4'),
-          skills: [],
-          evidenceProfile: {
-            id: 'verify',
-            planDigest: digest('5'),
-            fingerprintDigest: digest('6'),
-          },
-          digest: digest('1'),
-        },
+        verificationInput,
       };
       const { ports, calls } = fixture(provenance);
       const result = await new ArchiveCompletionTracer(ports).trace({

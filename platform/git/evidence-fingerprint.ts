@@ -74,7 +74,10 @@ function sameFileSnapshot(left: BigIntStats, right: BigIntStats): boolean {
   );
 }
 
-async function fingerprintFile(root: string, relativePath: string): Promise<DirtyFileFingerprint> {
+export async function fingerprintFile(
+  root: string,
+  relativePath: string,
+): Promise<DirtyFileFingerprint> {
   const normalized = relativePath.replaceAll('\\', '/');
   const target = containedPath(root, normalized);
   try {
@@ -157,7 +160,11 @@ async function captureSelection(
       }),
       runExternalCommandAsync('git', ['ls-files', '-z'], { cwd: root }),
       runExternalCommandAsync('git', ['ls-tree', '-r', '--name-only', '-z', 'HEAD'], { cwd: root }),
-      Promise.all(policy.rules.map((rule) => filesForRule(root, rule))),
+      Promise.all(
+        policy.rules
+          .filter((rule) => rule.untracked !== 'runtime-output')
+          .map((rule) => filesForRule(root, rule)),
+      ),
     ]);
   const trackedPaths = [...nulPaths(indexPaths), ...nulPaths(headPaths)];
   const tracked = new Set(trackedPaths.map((item) => item.toLocaleLowerCase('en-US')));
@@ -181,7 +188,7 @@ async function captureSelection(
       );
     }
     if (classification.kind === 'control-plane') controlPlanePaths.add(candidate);
-    else dirtyPaths.push(candidate);
+    else if (classification.kind !== 'runtime-output') dirtyPaths.push(candidate);
   }
   for (const candidate of explicitCandidates.flat()) {
     const isTracked = tracked.has(candidate.toLocaleLowerCase('en-US'));

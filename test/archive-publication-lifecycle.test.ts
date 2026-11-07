@@ -1,3 +1,5 @@
+import { verificationInputFixture } from './helpers/evidence-inputs.js';
+import { createArchiveInputFixture as createArchiveDeliveryInput } from './helpers/evidence-inputs.js';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -6,7 +8,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { bootProjectComposition } from '../app/boot/bootstrap.js';
 
 import {
-  createArchiveDeliveryInput,
   createDeliveryPublishWork,
   createSpecificationCloseWork,
 } from '../domains/change-lifecycle/archive-input.js';
@@ -166,10 +167,16 @@ function archivePhaseContext(provider: SpecificationClosureResult['provider']) {
 }
 
 function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
+  const verificationInput = verificationInputFixture('run-terminal', 0, {
+    profileId: 'verification',
+    fingerprintDigest: digest('8'),
+    projectConfigDigest: digest('5'),
+    compositionDigest: digest('6'),
+  });
   const archive = createArchiveDeliveryInput({
     runId: 'run-terminal',
     changeId: 'terminal-archive',
-    verificationInputDigest: digest('3'),
+    verificationInputDigest: verificationInput.digest,
     acceptedEvidenceBundleIds: ['bundle-1'],
     evidenceBundleId: 'bundle-1',
     verificationReport: {
@@ -219,25 +226,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
         requirementRefs: [],
       },
     ],
-    verificationInput: {
-      schemaVersion: 3 as const,
-      runId: 'run-terminal',
-      checkEpoch: 0,
-      taskRevisions: [],
-      acceptanceCriteria: [],
-      acceptanceSetHash: digest('a'),
-      acceptanceCoverage: [],
-      repositories: [],
-      projectConfigDigest: digest('5'),
-      compositionDigest: digest('6'),
-      skills: [],
-      evidenceProfile: {
-        id: 'verification',
-        planDigest: digest('7'),
-        fingerprintDigest: digest('8'),
-      },
-      digest: digest('3'),
-    },
+    verificationInput,
   };
   const closeWork = createSpecificationCloseWork({
     definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
@@ -289,7 +278,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
     changeId: 'terminal-archive',
     runId: 'run-terminal',
     deliverySnapshotDigest: digest('b'),
-    verificationInputDigest: digest('3'),
+    verificationInputDigest: verificationInput.digest,
     evidenceBundleIds: ['bundle-1'],
     specificationClosure: { closureId: closure.closureId, planDigest: closure.planDigest },
     items: [
@@ -387,15 +376,11 @@ describe('Archive publication terminal lifecycle', () => {
 
   it('returns a frozen specification.close Work to Verify before closure side effects', () => {
     const { preflight } = archiveState();
-    const verificationInput = {
-      ...preflight.verificationInput!,
-      checkEpoch: preflight.checkEpoch + 1,
-      evidenceProfile: {
-        ...preflight.verificationInput!.evidenceProfile,
-        fingerprintDigest: digest('c'),
-      },
-      digest: digest('d'),
-    };
+    const verificationInput = verificationInputFixture(
+      preflight.identity.runId,
+      preflight.checkEpoch + 1,
+      { fingerprintDigest: digest('c') },
+    );
     const work = createVerifyWork({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       checkEpoch: preflight.checkEpoch + 1,
@@ -483,6 +468,7 @@ describe('Archive publication terminal lifecycle', () => {
     });
 
     const identityCorrectedArchive = createArchiveDeliveryInput({
+      publicationCheckpoint: archive.publicationCheckpoint,
       runId: archive.runId,
       changeId: archive.changeId,
       verificationInputDigest: archive.verificationInputDigest,
@@ -707,156 +693,188 @@ describe('Archive publication terminal lifecycle', () => {
     expect(status.changeLifecycle?.nextActions).toEqual([]);
   });
 
-  it('revalidates a frozen specification.close Work before consulting its Host outcome', async () => {
-    const root = await temporaryDirectory('repoctopus-archive-close-stale-');
-    cleanup.push(root);
-    const workspace = await createGitRepository(root, 'workspace');
-    await writeFile(
-      path.join(workspace, 'repoctopus.yaml'),
-      JSON.stringify({
-        apiVersion: 'repoctopus/v1alpha1',
-        kind: 'RepoctopusWorkspace',
-        workspace: { id: 'archive-close-stale', repositoryId: 'workspace' },
-        repositories: [{ id: 'workspace', path: '.' }],
-        profiles: [
-          {
-            id: 'verification',
-            nodes: [
-              {
-                id: 'check',
-                type: 'command',
-                repository: 'workspace',
-                executable: process.execPath,
-                args: ['-e', 'process.exit(0)'],
-                covers: ['*'],
-              },
-            ],
-          },
-        ],
-      }),
-    );
-    const app = await bootProjectComposition(path.resolve(import.meta.dirname, '..'), workspace);
-    try {
-      const archiveDefinition = await app.context.skills.get('repoctopus-archive-change', {
-        cwd: workspace,
-      });
-      if (!archiveDefinition) throw new Error('Expected Archive Skill');
-      const boundArchiveSkill = await snapshotSkillDefinition(archiveDefinition);
-      const { preflight, closure } = archiveState();
-      const project = {
-        ...projectFixture(),
-        root: workspace,
-        repositories: [
-          {
-            ...projectFixture().repositories[0]!,
-            id: 'workspace',
-            name: 'workspace',
-            path: workspace,
-            remoteIdentity: 'team/workspace',
-          },
-        ],
-      };
-      const runtime = new WorkflowRunCoordinator(
-        app.context.runStore,
-        { export: () => Promise.resolve() },
-        app.context.compositionIdentity.current(),
+  it.each(['source', 'derived'])(
+    'revalidates %s inputs before consulting the frozen Close Host outcome',
+    async (driftKind) => {
+      const root = await temporaryDirectory('repoctopus-archive-close-stale-');
+      cleanup.push(root);
+      const workspace = await createGitRepository(root, 'workspace');
+      await writeFile(
+        path.join(workspace, 'repoctopus.yaml'),
+        JSON.stringify({
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'RepoctopusWorkspace',
+          workspace: { id: 'archive-close-stale', repositoryId: 'workspace' },
+          repositories: [{ id: 'workspace', path: '.' }],
+          profiles: [
+            {
+              id: 'verification',
+              nodes: [
+                {
+                  id: 'check',
+                  type: 'command',
+                  repository: 'workspace',
+                  executable: process.execPath,
+                  args: ['-e', 'process.exit(0)'],
+                  covers: ['*'],
+                },
+              ],
+            },
+          ],
+        }),
       );
-      await runtime.start({
-        workflow: workflowFixture(),
-        projectSnapshot: project,
-        runId: preflight.identity.runId,
-        trigger: {
-          schemaVersion: 1,
-          kind: 'change',
-          identityDigest: digest('4'),
-          facts: {
-            projectConfigDigest: digest('5'),
-            specificationRoot: { repositoryId: 'workspace' },
+      const app = await bootProjectComposition(path.resolve(import.meta.dirname, '..'), workspace);
+      try {
+        // These focused protocol fixtures begin at Archive without a Build binding.
+        // The real binding boundary is exercised by managed-change-execution.e2e.
+        vi.spyOn(
+          app.context.workflowRuns as unknown as {
+            assertEvidenceWorkspaceAuthorityCurrent: () => Promise<void>;
           },
-        },
-        changeLifecycle: {
-          ...preflight,
-          currentWork: { ...preflight.currentWork!, actionSkill: boundArchiveSkill },
-        },
-      });
-      await runtime.bindSkill(preflight.identity.runId, boundArchiveSkill);
-      vi.spyOn(app.context.specification, 'phaseContext').mockResolvedValue(
-        archivePhaseContext(closure.provider),
-      );
-      const staleWorkId = preflight.currentWork!.workId;
-      const claim = await app.context.managedWorkExecutor.claimExternal({
-        runId: preflight.identity.runId,
-        adapter: 'specification',
-        hostCapabilities: archiveHostCapabilities,
-        executor: {
-          actorId: 'archive-user',
-          runnerId: 'archive-runner',
-          source: 'runner',
-          authenticated: true,
-        },
-      });
-      await app.context.managedWorkExecutor.acceptExternalOutcome({
-        schemaVersion: 3,
-        runId: preflight.identity.runId,
-        submissionId: 'stale-specification-close-submission',
-        invocationId: claim.invocation.invocationId,
-        hostId: claim.invocation.host.id,
-        packetDigest: claim.packet.identity.packetDigest,
-        status: 'succeeded',
-        summary: 'Stale close protocol consumed',
-        consumedLayerDigests: claim.packet.context.layers
-          .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
-          .map((layer) => layer.digest),
-      });
-      await app.context.workExecutionAuthority.markValidated({
-        intent: await app.context.workExecutionAuthority.loadIntent(preflight.identity.runId),
-        validatorId: preflight.currentWork!.validatorProfile.id,
-        continuation: 'execute',
-      });
-      expect(
-        (await app.context.runStore.loadRun(preflight.identity.runId)).workExecution,
-      ).toMatchObject({ workId: staleWorkId, status: 'validated' });
-      const prepareClosure = vi.spyOn(app.context.specification, 'prepareClosure');
-      const close = vi.spyOn(app.context.specification, 'close');
-
-      const result = await app.context.workflowRuns.executeArchiveDelivery({
-        runId: preflight.identity.runId,
-        project,
-        policy,
-        executor: {
-          actorId: 'archive-user',
-          runnerId: 'archive-runner',
-          source: 'runner',
-          authenticated: true,
-        },
-      });
-
-      expect(result.value).toMatchObject({
-        stage: 'reverify-required',
-        publication: null,
-        receipt: null,
-        run: {
+          'assertEvidenceWorkspaceAuthorityCurrent',
+        ).mockResolvedValue();
+        const archiveDefinition = await app.context.skills.get('repoctopus-archive-change', {
+          cwd: workspace,
+        });
+        if (!archiveDefinition) throw new Error('Expected Archive Skill');
+        const boundArchiveSkill = await snapshotSkillDefinition(archiveDefinition);
+        const { preflight, closure } = archiveState();
+        const coordinateProject = projectFixture({
+          root: workspace,
+          repositories: preflight.archiveDeliveryInput!.publicationCheckpoint.repositories.map(
+            (repo) => ({
+              id: repo.repositoryId,
+              name: repo.repositoryId,
+              path: workspace,
+              remoteIdentity: repo.remoteIdentity,
+              branch: repo.branch,
+              head: repo.head,
+              worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
+            }),
+          ),
+        });
+        vi.spyOn(app.context.project, 'snapshot').mockResolvedValue(coordinateProject);
+        const project = {
+          ...projectFixture(),
+          root: workspace,
+          repositories: [
+            {
+              ...projectFixture().repositories[0]!,
+              id: 'workspace',
+              name: 'workspace',
+              path: workspace,
+              remoteIdentity: 'team/workspace',
+            },
+          ],
+        };
+        const runtime = new WorkflowRunCoordinator(
+          app.context.runStore,
+          { export: () => Promise.resolve() },
+          app.context.compositionIdentity.current(),
+        );
+        await runtime.start({
+          workflow: workflowFixture(),
+          projectSnapshot: project,
+          runId: preflight.identity.runId,
+          trigger: {
+            schemaVersion: 1,
+            kind: 'change',
+            identityDigest: digest('4'),
+            facts: {
+              projectConfigDigest: digest('5'),
+              specificationRoot: { repositoryId: 'workspace' },
+            },
+          },
           changeLifecycle: {
-            phase: 'verify',
-            currentWork: { kind: 'evidence.verify' },
+            ...preflight,
+            currentWork: { ...preflight.currentWork!, actionSkill: boundArchiveSkill },
           },
-        },
-      });
-      expect(result.value.run.changeLifecycle?.archiveDeliveryInput).toBeUndefined();
-      expect(
-        (await app.context.runStore.loadRun(preflight.identity.runId)).workExecution,
-      ).toBeUndefined();
-      expect(
-        (await app.context.runStore.inspect(preflight.identity.runId)).trajectory.some(
-          (event) => event.type === 'work.outcome-accepted' && event.data.workId === staleWorkId,
-        ),
-      ).toBe(true);
-      expect(prepareClosure).not.toHaveBeenCalled();
-      expect(close).not.toHaveBeenCalled();
-    } finally {
-      await app.close();
-    }
-  });
+        });
+        await runtime.bindSkill(preflight.identity.runId, boundArchiveSkill);
+        vi.spyOn(app.context.specification, 'phaseContext').mockResolvedValue(
+          archivePhaseContext(closure.provider),
+        );
+        const observedEvidence = await app.context.evidenceCoordinator.plan('verification');
+        if (driftKind === 'derived')
+          observedEvidence.fingerprint.digest =
+            preflight.verificationInput!.evidenceProfile.fingerprintDigest;
+        vi.spyOn(app.context.evidenceCoordinator, 'assessBundleInputs').mockResolvedValue('drift');
+        vi.spyOn(app.context.evidenceCoordinator, 'plan').mockResolvedValue(observedEvidence);
+        const staleWorkId = preflight.currentWork!.workId;
+        const claim = await app.context.managedWorkExecutor.claimExternal({
+          runId: preflight.identity.runId,
+          adapter: 'specification',
+          hostCapabilities: archiveHostCapabilities,
+          executor: {
+            actorId: 'archive-user',
+            runnerId: 'archive-runner',
+            source: 'runner',
+            authenticated: true,
+          },
+        });
+        await app.context.managedWorkExecutor.acceptExternalOutcome({
+          schemaVersion: 3,
+          runId: preflight.identity.runId,
+          submissionId: 'stale-specification-close-submission',
+          invocationId: claim.invocation.invocationId,
+          hostId: claim.invocation.host.id,
+          packetDigest: claim.packet.identity.packetDigest,
+          status: 'succeeded',
+          summary: 'Stale close protocol consumed',
+          consumedLayerDigests: claim.packet.context.layers
+            .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+            .map((layer) => layer.digest),
+        });
+        await app.context.workExecutionAuthority.markValidated({
+          intent: await app.context.workExecutionAuthority.loadIntent(preflight.identity.runId),
+          validatorId: preflight.currentWork!.validatorProfile.id,
+          continuation: 'execute',
+        });
+        expect(
+          (await app.context.runStore.loadRun(preflight.identity.runId)).workExecution,
+        ).toMatchObject({ workId: staleWorkId, status: 'validated' });
+        const prepareClosure = vi.spyOn(app.context.specification, 'prepareClosure');
+        const close = vi.spyOn(app.context.specification, 'close');
+
+        const result = await app.context.workflowRuns.executeArchiveDelivery({
+          runId: preflight.identity.runId,
+          project,
+          policy,
+          executor: {
+            actorId: 'archive-user',
+            runnerId: 'archive-runner',
+            source: 'runner',
+            authenticated: true,
+          },
+        });
+
+        expect(result.value).toMatchObject({
+          stage: 'reverify-required',
+          publication: null,
+          receipt: null,
+          run: {
+            changeLifecycle: {
+              phase: 'verify',
+              currentWork: { kind: 'evidence.verify' },
+            },
+          },
+        });
+        expect(result.value.run.changeLifecycle?.archiveDeliveryInput).toBeUndefined();
+        expect(
+          (await app.context.runStore.loadRun(preflight.identity.runId)).workExecution,
+        ).toBeUndefined();
+        expect(
+          (await app.context.runStore.inspect(preflight.identity.runId)).trajectory.some(
+            (event) => event.type === 'work.outcome-accepted' && event.data.workId === staleWorkId,
+          ),
+        ).toBe(true);
+        expect(prepareClosure).not.toHaveBeenCalled();
+        expect(close).not.toHaveBeenCalled();
+      } finally {
+        await app.close();
+      }
+    },
+  );
 
   it('requires managed Host outcomes for specification.close before creating delivery.publish', async () => {
     const root = await temporaryDirectory('repoctopus-archive-close-managed-');
@@ -887,12 +905,38 @@ describe('Archive publication terminal lifecycle', () => {
     );
     const app = await bootProjectComposition(path.resolve(import.meta.dirname, '..'), workspace);
     try {
+      const assessBundleInputs = vi
+        .spyOn(app.context.evidenceCoordinator, 'assessBundleInputs')
+        .mockResolvedValue('same');
+      // These focused protocol fixtures begin at Archive without a Build binding.
+      // The real binding boundary is exercised by managed-change-execution.e2e.
+      vi.spyOn(
+        app.context.workflowRuns as unknown as {
+          assertEvidenceWorkspaceAuthorityCurrent: () => Promise<void>;
+        },
+        'assertEvidenceWorkspaceAuthorityCurrent',
+      ).mockResolvedValue();
       const archiveDefinition = await app.context.skills.get('repoctopus-archive-change', {
         cwd: workspace,
       });
       if (!archiveDefinition) throw new Error('Expected Archive Skill');
       const boundArchiveSkill = await snapshotSkillDefinition(archiveDefinition);
       const { preflight, closure } = archiveState();
+      const coordinateProject = projectFixture({
+        root: workspace,
+        repositories: preflight.archiveDeliveryInput!.publicationCheckpoint.repositories.map(
+          (repo) => ({
+            id: repo.repositoryId,
+            name: repo.repositoryId,
+            path: workspace,
+            remoteIdentity: repo.remoteIdentity,
+            branch: repo.branch,
+            head: repo.head,
+            worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
+          }),
+        ),
+      });
+      vi.spyOn(app.context.project, 'snapshot').mockResolvedValue(coordinateProject);
       const project = {
         ...projectFixture(),
         root: workspace,
@@ -932,6 +976,7 @@ describe('Archive publication terminal lifecycle', () => {
       vi.spyOn(app.context.specification, 'prepareClosure').mockResolvedValue({
         apiVersion: 'repoctopus.specification/v1alpha1',
         kind: 'SpecificationClosurePlan',
+        sourceOid: 'a'.repeat(40),
         changeId: closure.changeId,
         provider: closure.provider,
         mergeFactsDigest: digest('d'),
@@ -983,6 +1028,40 @@ describe('Archive publication terminal lifecycle', () => {
           .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
           .map((layer) => layer.digest),
       });
+      // A commit after the outer preflight must be rejected inside the effect fence.
+      const frozenState = await app.context.runStore.loadRun(preflight.identity.runId);
+      const effect = vi.fn(() => Promise.resolve());
+      vi.spyOn(app.context.project, 'snapshot').mockResolvedValueOnce({
+        ...coordinateProject,
+        repositories: coordinateProject.repositories.map((repo) => ({
+          ...repo,
+          head: 'f'.repeat(40),
+        })),
+      });
+      await expect(
+        (
+          app.context.workflowRuns as unknown as {
+            withArchiveEffectAuthority: (
+              state: typeof frozenState,
+              effect: () => Promise<void>,
+            ) => Promise<void>;
+          }
+        ).withArchiveEffectAuthority(frozenState, effect),
+      ).rejects.toThrow(/checkpoint changed/u);
+      expect(effect).not.toHaveBeenCalled();
+      // Drift after the outer observation is fenced immediately before the effect.
+      assessBundleInputs.mockResolvedValueOnce('drift');
+      await expect(
+        (
+          app.context.workflowRuns as unknown as {
+            withArchiveEffectAuthority: (
+              state: typeof frozenState,
+              effect: () => Promise<void>,
+            ) => Promise<void>;
+          }
+        ).withArchiveEffectAuthority(frozenState, effect),
+      ).rejects.toThrow(/derived inputs changed/u);
+      expect(effect).not.toHaveBeenCalled();
       const result = await app.context.workflowRuns.executeArchiveDelivery({
         runId: preflight.identity.runId,
         project,
@@ -1035,6 +1114,14 @@ describe('Archive publication terminal lifecycle', () => {
     const productRoot = path.resolve(import.meta.dirname, '..');
     const app = await bootProjectComposition(productRoot, workspace);
     try {
+      // This protocol fixture supplies no Build binding; the production boundary
+      // is covered by the real multi-repository managed execution test.
+      vi.spyOn(
+        app.context.workflowRuns as unknown as {
+          assertEvidenceWorkspaceAuthorityCurrent: () => Promise<void>;
+        },
+        'assertEvidenceWorkspaceAuthorityCurrent',
+      ).mockResolvedValue();
       const prDefinition = await app.context.skills.get('pr', { cwd: workspace });
       if (!prDefinition) throw new Error('Expected the pr Skill in the production composition');
       const actionSkill = await snapshotSkillDefinition(prDefinition);

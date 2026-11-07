@@ -1,3 +1,4 @@
+import { createEvidenceReceipt } from '../domains/evidence/receipt.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { canReuseReceipt } from '../domains/evidence/lifecycle.js';
@@ -134,10 +135,7 @@ describe('evidence lifecycle', () => {
   });
 
   it('does not reuse expired command receipts', () => {
-    const receipt: EvidenceReceipt = {
-      apiVersion: 'repoctopus/v1alpha1',
-      kind: 'EvidenceReceipt',
-      receiptId: 'receipt',
+    const receipt: EvidenceReceipt = createEvidenceReceipt({
       compositionDigest: TEST_COMPOSITION_DIGEST,
       attemptId: 'attempt',
       nodeId: 'build',
@@ -151,7 +149,7 @@ describe('evidence lifecycle', () => {
       validUntil: '2026-01-01T00:01:00.000Z',
       artifacts: [],
       findings: [],
-    };
+    });
     expect(
       canReuseReceipt(receipt, {
         nodeId: 'build',

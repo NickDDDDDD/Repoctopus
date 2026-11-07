@@ -19,6 +19,12 @@ import {
 } from '../platform/specification/openspec-process.js';
 import { Specification, type SpecificationRoot } from '../services/specification.js';
 import { assertSpecificationPlanningManifest } from '../domains/specification/planning-manifest.js';
+import {
+  createEvidenceNodeInputSnapshot,
+  evidenceInputDigest,
+} from '../domains/evidence/input-snapshot.js';
+import { DEFAULT_EVIDENCE_INPUT_POLICY } from '../domains/evidence/input-policy.js';
+import { collectEvidenceInputFiles } from '../platform/git/evidence-input-snapshot.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
 const productRoot = path.resolve(import.meta.dirname, '..');
@@ -175,6 +181,65 @@ The system MUST add behavior.
 }
 
 describe('Specification authority', () => {
+  it('normalizes only official Tasks when checkbox dependencies are ignored, and binds include to real bytes', async () => {
+    const fixture = await openSpecFixture();
+    const context = new Context();
+    await context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
+    try {
+      const tasksPath = 'openspec/changes/sample/tasks.md';
+      await write('ordinary-notes.md', '- [ ] ordinary checkbox\n', fixture.workspace);
+      const snapshots = async () => {
+        const projection = await context.specification.evidenceProjection('sample');
+        const files = await collectEvidenceInputFiles({
+          root: fixture.workspace,
+          files: [tasksPath, 'ordinary-notes.md'],
+        });
+        return Object.fromEntries(
+          (['ignore', 'include'] as const).map((taskCheckboxes) => [
+            taskCheckboxes,
+            createEvidenceNodeInputSnapshot({
+              node: {
+                id: 'check',
+                type: 'command',
+                repository: 'workspace',
+                repositoryPath: fixture.workspace,
+                dependsOn: [],
+                required: true,
+                executable: process.execPath,
+                args: [],
+                timeoutMs: 5000,
+                cache: false,
+                cacheTtlMs: 1000,
+                zeroTests: 'ignore',
+              },
+              policy: { ...DEFAULT_EVIDENCE_INPUT_POLICY, taskCheckboxes },
+              repositories: [{ repositoryId: 'workspace', files }],
+              projection,
+              executionIdentity: {},
+              environmentDigest: evidenceInputDigest([]),
+              derivedFrom: [],
+              outputs: [],
+            }).fingerprint,
+          ]),
+        );
+      };
+      const first = await snapshots();
+      const original = await readFile(path.join(fixture.workspace, tasksPath), 'utf8');
+      await write(tasksPath, original.replace('[x]', '[ ]'), fixture.workspace);
+      const toggled = await snapshots();
+      expect(toggled.ignore).toBe(first.ignore);
+      expect(toggled.include).not.toBe(first.include);
+      await write('ordinary-notes.md', '- [x] ordinary checkbox\n', fixture.workspace);
+      expect((await snapshots()).ignore).not.toBe(toggled.ignore);
+    } finally {
+      await context.fiber.dispose();
+    }
+  }, 60_000);
+
   it('ignores undeclared implementation notes instead of inventing a fifth OpenSpec artifact', async () => {
     const process: SpecificationProcessPort = {
       execute(args) {

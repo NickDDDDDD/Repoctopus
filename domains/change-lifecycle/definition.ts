@@ -54,7 +54,7 @@ function validatorProfile(id: string) {
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
-  version: '4.9.0',
+  version: '4.10.0',
   phases: [
     {
       phase: 'open',
@@ -1165,13 +1165,13 @@ export function recoverChangeLifecycleSnapshot(options: {
     options.persisted.verificationInput as unknown as { schemaVersion?: number } | undefined
   )?.schemaVersion;
   if (
-    verificationSchemaVersion !== undefined &&
-    verificationSchemaVersion !== 3 &&
+    options.persisted.verificationInput &&
+    verificationSchemaVersion !== 4 &&
     options.persisted.status !== 'completed'
   ) {
     const evidenceIds = [
       `verification-input:v${verificationSchemaVersion}`,
-      'verification-input:v3',
+      'verification-input:v4',
     ];
     const alreadyStopped =
       options.persisted.status === 'migration_required' &&

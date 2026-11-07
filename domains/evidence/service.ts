@@ -1,7 +1,15 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 
-import type { ArtifactStore, EvidenceJournal, EvidenceStore } from './ports.js';
+import type {
+  ArtifactStore,
+  EvidenceJournal,
+  EvidenceStore,
+  EvidenceInputProofPort,
+} from './ports.js';
+import { createEvidenceReceipt, type EvidenceReceiptFacts } from './receipt.js';
+import { createEvidenceDependencyRecord, invalidateEvidenceDependencies } from './dependencies.js';
+import { evidenceInputDigest, type EvidenceNodeInputSnapshot } from './input-snapshot.js';
 import type { BrowserAdapter, BrowserJourneyResult } from '../feedback/browser.js';
 import type { CommandAdapter } from '../feedback/ports.js';
 import type { EvidenceExecutionPlan, PlannedEvidenceNode } from '../feedback/profile.js';
@@ -49,12 +57,19 @@ export interface EvidenceRunOptions {
   attemptId?: string;
   reusableReceipts?: readonly EvidenceReceipt[];
   captureEndingFingerprint?: () => Promise<string>;
+  captureEndingNodeInputs?: () => Promise<readonly EvidenceNodeInputSnapshot[]>;
   maxOutputBytes?: number;
   sensitiveValues?: readonly string[];
   redactionPatterns?: readonly RegExp[];
   afterNodeCommitted?: (receipt: EvidenceReceipt) => void | Promise<void>;
   maxParallel?: number;
   acceptanceContext?: EvidenceAcceptanceContext;
+  nodeInputs?: readonly EvidenceNodeInputSnapshot[];
+  inputProofs?: EvidenceInputProofPort;
+  /** Internal execution context, populated from the frozen node snapshot and predecessor receipts. */
+  nodeSnapshot?: EvidenceNodeInputSnapshot;
+  predecessorReceipts?: ReadonlyMap<string, EvidenceReceipt>;
+  derivedInputs?: EvidenceReceipt['derivedInputs'];
 }
 
 export interface EvidenceClock {
@@ -80,10 +95,6 @@ interface NodeExecution {
 }
 
 const systemClock: EvidenceClock = { now: () => new Date() };
-
-function digest(value: unknown): string {
-  return createHash('sha256').update(canonicalJson(value)).digest('hex');
-}
 
 function resolveNodeCwd(repositoryPath: string, configuredCwd?: string): string {
   const resolved = path.resolve(repositoryPath, configuredCwd ?? '.');
@@ -113,19 +124,49 @@ export class EvidenceService {
   }
 
   private receipt(
-    base: Omit<EvidenceReceipt, 'apiVersion' | 'kind' | 'receiptId' | 'compositionDigest'>,
+    base: Omit<EvidenceReceiptFacts, 'compositionDigest'>,
     compositionDigest: string,
   ): EvidenceReceipt {
-    return {
-      apiVersion: EVIDENCE_API_VERSION,
-      kind: 'EvidenceReceipt',
-      receiptId: digest({ ...base, compositionDigest }),
-      compositionDigest,
-      ...base,
-    };
+    return createEvidenceReceipt({ ...base, compositionDigest });
   }
 
   private async persist(receipt: EvidenceReceipt, options: EvidenceRunOptions): Promise<void> {
+    if (options.nodeSnapshot) {
+      const snapshot = options.nodeSnapshot;
+      const outputManifest =
+        snapshot.outputs.length && receipt.status === 'passed'
+          ? await options.inputProofs!.captureOutputs(snapshot)
+          : null;
+      const proofArtifacts = [
+        ...(options.derivedInputs ?? []).map((entry) => entry.manifest),
+        ...(outputManifest ? [outputManifest] : []),
+      ];
+      const artifacts = [
+        ...new Map(
+          [...receipt.artifacts, ...proofArtifacts].map((entry) => [entry.sha256, entry]),
+        ).values(),
+      ];
+      Object.assign(
+        receipt,
+        createEvidenceReceipt(
+          {
+            ...receipt,
+            sourceFingerprint: snapshot.fingerprint,
+            derivedInputs: options.derivedInputs ?? [],
+            outputManifest,
+            artifacts,
+          },
+          [
+            ...snapshot.dependencies,
+            ...(options.derivedInputs ?? []).map((input) => ({
+              partition: 'implementation-content' as const,
+              identity: input.contentDigest,
+            })),
+          ],
+          [...(options.predecessorReceipts?.values() ?? [])].map((entry) => entry.receiptId),
+        ),
+      );
+    }
     await this.store.saveReceipt(receipt);
     await this.journal?.recordCompletion(
       receipt.attemptId,
@@ -143,17 +184,25 @@ export class EvidenceService {
     options: EvidenceRunOptions,
   ): Promise<NodeExecution> {
     const startedAt = this.clock.now().toISOString();
-    const reusable = node.cache
-      ? options.reusableReceipts?.find((candidate) =>
-          canReuseReceipt(candidate, {
-            nodeId: node.id,
-            inputFingerprint,
-            now: startedAt,
-            adapterKind: 'command',
-            compositionDigest: options.compositionDigest,
-          }),
-        )
-      : undefined;
+    let reusable =
+      node.cache && options.nodeSnapshot?.cacheable !== false
+        ? options.reusableReceipts?.find((candidate) =>
+            canReuseReceipt(candidate, {
+              nodeId: node.id,
+              inputFingerprint,
+              now: startedAt,
+              adapterKind: 'command',
+              compositionDigest: options.compositionDigest,
+            }),
+          )
+        : undefined;
+    if (
+      reusable &&
+      options.nodeSnapshot &&
+      options.inputProofs &&
+      !(await options.inputProofs.outputsCurrent(options.nodeSnapshot, reusable))
+    )
+      reusable = undefined;
     await this.journal?.recordIntent(attemptId, node.id, startedAt);
     if (reusable) {
       const receipt = reuseReceipt({
@@ -657,6 +706,7 @@ export class EvidenceService {
     const attemptId = options.attemptId ?? randomUUID();
     const startedAt = this.clock.now().toISOString();
     const attempt: EvidenceAttempt = {
+      schemaVersion: 1,
       apiVersion: EVIDENCE_API_VERSION,
       kind: 'EvidenceAttempt',
       attemptId,
@@ -666,6 +716,13 @@ export class EvidenceService {
       startedAt,
       receiptIds: [],
       status: 'running',
+      dependencies: createEvidenceDependencyRecord({
+        subjectKind: 'attempt',
+        subjectId: attemptId,
+        dependencies: [
+          { partition: 'implementation-content', identity: evidenceInputDigest(inputFingerprint) },
+        ],
+      }),
     };
     await this.store.saveAttempt(attempt);
 
@@ -703,9 +760,39 @@ export class EvidenceService {
         }
         for (const nodeId of ready) pending.delete(nodeId);
         const layer = await Promise.all(
-          ready.map((nodeId) =>
-            this.execute(nodes.get(nodeId)!, plan, byNode, attemptId, inputFingerprint, options),
-          ),
+          ready.map(async (nodeId) => {
+            const snapshot = options.nodeInputs?.find((entry) => entry.nodeId === nodeId);
+            const derivedInputs = snapshot?.derivedFrom.length
+              ? await options.inputProofs!.captureDerived(snapshot, byNode)
+              : [];
+            const fingerprint = snapshot
+              ? derivedInputs.length
+                ? evidenceInputDigest({
+                    source: snapshot.fingerprint,
+                    derived: derivedInputs.map(({ producerId, contentDigest }) => ({
+                      producerId,
+                      contentDigest,
+                    })),
+                  }).slice(7)
+                : snapshot.fingerprint
+              : inputFingerprint;
+            return this.execute(nodes.get(nodeId)!, plan, byNode, attemptId, fingerprint, {
+              ...options,
+              ...(snapshot
+                ? {
+                    nodeSnapshot: snapshot,
+                    derivedInputs,
+                    predecessorReceipts: new Map(
+                      [...byNode].filter(
+                        ([id]) =>
+                          nodes.get(nodeId)!.dependsOn.includes(id) ||
+                          snapshot.derivedFrom.some((claim) => claim.producerId === id),
+                      ),
+                    ),
+                  }
+                : {}),
+            });
+          }),
         );
         for (const [index, execution] of layer.entries()) {
           const nodeId = ready[index]!;
@@ -733,14 +820,76 @@ export class EvidenceService {
       .map((nodeId) => byNode.get(nodeId))
       .filter((value): value is EvidenceReceipt => value !== undefined);
     attempt.receiptIds = receipts.map((receipt) => receipt.receiptId);
+    attempt.dependencies = createEvidenceDependencyRecord({
+      ...attempt.dependencies,
+      dependsOnEvidenceIds: attempt.receiptIds,
+    });
     const completedAt = this.clock.now().toISOString();
     const endingFingerprint = options.captureEndingFingerprint
       ? await options.captureEndingFingerprint()
       : inputFingerprint;
     const superseded = endingFingerprint !== inputFingerprint;
+    const invalidated = new Set<string>();
+    if (options.nodeInputs && options.captureEndingNodeInputs) {
+      const endingNodes = await options.captureEndingNodeInputs();
+      const changedDependencies = options.nodeInputs.flatMap((source) =>
+        source.dependencies.filter(
+          (dependency) =>
+            !endingNodes
+              .find((node) => node.nodeId === source.nodeId)
+              ?.dependencies.some(
+                (entry) =>
+                  entry.partition === dependency.partition &&
+                  entry.identity === dependency.identity,
+              ),
+        ),
+      );
+      const invalidation = invalidateEvidenceDependencies({
+        records: receipts.map((receipt) => receipt.dependencies),
+        changedDependencies,
+        providerAvailable: true,
+      });
+      for (const receipt of receipts)
+        if (invalidation.invalidatedEvidenceIds.includes(receipt.receiptId))
+          invalidated.add(receipt.nodeId);
+      for (const source of options.nodeInputs) {
+        if (
+          endingNodes.find((node) => node.nodeId === source.nodeId)?.fingerprint !==
+          source.fingerprint
+        )
+          invalidated.add(source.nodeId);
+      }
+    } else if (superseded) plan.nodes.forEach((node) => invalidated.add(node.id));
+    if (options.inputProofs && options.nodeInputs)
+      for (const receipt of receipts.filter((entry) => entry.status === 'passed')) {
+        const snapshot = options.nodeInputs.find((entry) => entry.nodeId === receipt.nodeId)!;
+        if (!(await options.inputProofs.outputsCurrent(snapshot, receipt)))
+          invalidated.add(receipt.nodeId);
+        if (snapshot.derivedFrom.length) {
+          try {
+            if (
+              canonicalJson(await options.inputProofs.captureDerived(snapshot, byNode)) !==
+              canonicalJson(receipt.derivedInputs)
+            )
+              invalidated.add(receipt.nodeId);
+          } catch {
+            invalidated.add(receipt.nodeId);
+          }
+        }
+      }
+    let grew = true;
+    while (grew) {
+      grew = false;
+      for (const node of plan.nodes)
+        if (!invalidated.has(node.id) && node.dependsOn.some((id) => invalidated.has(id))) {
+          invalidated.add(node.id);
+          grew = true;
+        }
+    }
     const orderedChecks = plan.order.map((nodeId) => {
       const check = checks.get(nodeId)!;
-      return superseded && check.status === 'passed'
+      return (invalidated.has(nodeId) || (superseded && !invalidated.size)) &&
+        check.status === 'passed'
         ? { ...check, freshness: 'superseded' as const }
         : check;
     });
@@ -765,10 +914,11 @@ export class EvidenceService {
             checks: orderedChecks,
             receipts,
             inputFingerprint,
+            ...(options.nodeInputs ? { nodeInputs: options.nodeInputs } : {}),
           })
         : null,
     };
-    const preliminary = createEvidenceBundle({ bundleId: digest(bundleBase), ...bundleBase });
+    const preliminary = createEvidenceBundle(bundleBase);
     const verificationReport = createVerificationReport({
       plan,
       receipts,
@@ -788,9 +938,9 @@ export class EvidenceService {
       artifactDigests: [...evidenceArtifactDigests, reportArtifact.sha256].sort(),
       verificationReport: reportArtifact,
     };
-    const bundle = createEvidenceBundle({ bundleId: digest(finalBase), ...finalBase });
+    const bundle = createEvidenceBundle(finalBase);
     attempt.completedAt = completedAt;
-    attempt.status = superseded ? 'superseded' : 'completed';
+    attempt.status = superseded || invalidated.size ? 'superseded' : 'completed';
     await this.store.saveAttempt(attempt);
     await this.store.saveBundle(bundle);
     return { attempt, receipts, bundle, decisionRequests };

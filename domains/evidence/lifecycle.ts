@@ -1,7 +1,5 @@
-import { createHash } from 'node:crypto';
-
-import { canonicalJson } from '../workflow-contract/canonical.js';
-import { EVIDENCE_API_VERSION, type EvidenceReceipt } from './types.js';
+import type { EvidenceReceipt } from './types.js';
+import { createEvidenceReceipt } from './receipt.js';
 
 export interface ReceiptReuseRequest {
   nodeId: string;
@@ -43,11 +41,9 @@ export function reuseReceipt(input: {
     completedAt: input.completedAt,
     sourceReceiptId: input.receipt.receiptId,
   };
-  const identity = Object.fromEntries(Object.entries(base).filter(([key]) => key !== 'receiptId'));
-  return {
-    ...base,
-    apiVersion: EVIDENCE_API_VERSION,
-    kind: 'EvidenceReceipt',
-    receiptId: createHash('sha256').update(canonicalJson(identity)).digest('hex'),
-  };
+  return createEvidenceReceipt(
+    base,
+    input.receipt.dependencies.dependencies,
+    input.receipt.dependencies.dependsOnEvidenceIds,
+  );
 }

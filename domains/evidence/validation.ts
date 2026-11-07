@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto';
 
 import { canonicalJson } from '../workflow-contract/canonical.js';
+import { assertEvidenceDependencyRecord, createEvidenceDependencyRecord } from './dependencies.js';
+import { evidenceInputDigest } from './input-snapshot.js';
+import { validateEvidenceReceiptIdentity } from './receipt.js';
+import { aggregateGateOutcome, createEvidenceBundle } from './gate.js';
 import {
   EVIDENCE_API_VERSION,
   type ArtifactRef,
@@ -49,6 +53,17 @@ export function parseEvidenceReceipt(value: unknown): EvidenceReceipt {
   }
   if (!Array.isArray(item.artifacts)) throw new Error('EvidenceReceipt.artifacts must be an array');
   item.artifacts.forEach(parseArtifactRef);
+  if (
+    item.schemaVersion !== 1 ||
+    typeof item.sourceFingerprint !== 'string' ||
+    !Array.isArray(item.derivedInputs) ||
+    !('outputManifest' in item)
+  )
+    throw new Error('Unsupported EvidenceReceipt schemaVersion or input proof');
+  assertEvidenceDependencyRecord(item.dependencies, 'receipt', item.receiptId);
+  if (!validateEvidenceReceiptIdentity(item as unknown as EvidenceReceipt))
+    throw new Error('EvidenceReceipt identity does not match its facts and dependencies');
+  if (item.outputManifest !== null) parseArtifactRef(item.outputManifest);
   return structuredClone(item) as unknown as EvidenceReceipt;
 }
 
@@ -59,6 +74,8 @@ export function parseEvidenceAttempt(value: unknown): EvidenceAttempt {
   if (item.kind !== 'EvidenceAttempt' || typeof item.attemptId !== 'string') {
     throw new Error('Invalid EvidenceAttempt');
   }
+  if (item.schemaVersion !== 1) throw new Error('Unsupported EvidenceAttempt schemaVersion');
+  assertEvidenceDependencyRecord(item.dependencies, 'attempt', item.attemptId);
   return structuredClone(item) as unknown as EvidenceAttempt;
 }
 
@@ -69,7 +86,7 @@ export function parseEvidenceBundle(value: unknown): EvidenceBundle {
   if (item.kind !== 'EvidenceBundle' || typeof item.bundleId !== 'string') {
     throw new Error('Invalid EvidenceBundle');
   }
-  if (item.schemaVersion !== 2 || !('acceptanceTrace' in item)) {
+  if (item.schemaVersion !== 3 || !('acceptanceTrace' in item)) {
     throw new Error('Unsupported EvidenceBundle schemaVersion');
   }
   if (
@@ -80,6 +97,17 @@ export function parseEvidenceBundle(value: unknown): EvidenceBundle {
     throw new Error('Invalid EvidenceBundle collections');
   }
   const receiptIds = item.receiptIds as string[];
+  assertEvidenceDependencyRecord(item.dependencies, 'bundle', item.bundleId);
+  const expectedDependencies = createEvidenceDependencyRecord({
+    subjectKind: 'bundle',
+    subjectId: item.bundleId,
+    dependencies: [
+      { partition: 'implementation-content', identity: evidenceInputDigest(item.inputFingerprint) },
+    ],
+    dependsOnEvidenceIds: receiptIds,
+  });
+  if (canonicalJson(item.dependencies) !== canonicalJson(expectedDependencies))
+    throw new Error('EvidenceBundle dependencies do not match its receipts');
   if (item.acceptanceTrace !== null) {
     const trace = record(item.acceptanceTrace, 'EvidenceBundle.acceptanceTrace');
     if (
@@ -111,5 +139,23 @@ export function parseEvidenceBundle(value: unknown): EvidenceBundle {
     if (digest !== expected) throw new Error('EvidenceBundle Acceptance Trace digest mismatch');
   }
   if (item.verificationReport !== undefined) parseArtifactRef(item.verificationReport);
+  const bundle = item as unknown as EvidenceBundle;
+  const trace = bundle.acceptanceTrace;
+  if (
+    trace &&
+    (trace.total !== trace.entries.length ||
+      trace.passed !== trace.entries.filter((entry) => entry.status === 'passed').length ||
+      trace.failed !== trace.entries.filter((entry) => entry.status === 'failed').length ||
+      trace.missing !== trace.entries.filter((entry) => entry.status === 'missing').length)
+  ) {
+    throw new Error('EvidenceBundle Acceptance Trace counters are invalid');
+  }
+  const aggregate = aggregateGateOutcome(bundle.checks, bundle.findings);
+  const outcome =
+    trace && trace.passed !== trace.total ? (trace.failed ? 'failed' : 'incomplete') : aggregate;
+  if (bundle.outcome !== outcome)
+    throw new Error('EvidenceBundle outcome does not match its current proof');
+  if (canonicalJson(createEvidenceBundle(bundle)) !== canonicalJson(bundle))
+    throw new Error('EvidenceBundle identity does not match its facts and dependencies');
   return structuredClone(item) as unknown as EvidenceBundle;
 }

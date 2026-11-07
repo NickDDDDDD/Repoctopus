@@ -22,7 +22,7 @@ export interface WorkExecutionRecovery {
   workId: string | null;
   attempt: number | null;
   checkEpoch: number | null;
-  observationStage?: 'provider-validation' | 'planning-gate';
+  observationStage?: 'provider-validation' | 'planning-gate' | 'evidence-inputs';
   reason:
     | 'terminal'
     | 'human-decision'
@@ -43,6 +43,8 @@ export interface WorkExecutionRecovery {
     | 'open-gate-pending'
     | 'content-missing-or-corrupt'
     | 'open-observation-unavailable'
+    | 'evidence-observation-unavailable'
+    | 'publication-checkpoint-stale'
     | 'migration-required'
     | 'project-drift';
 }

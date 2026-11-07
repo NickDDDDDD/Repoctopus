@@ -5,6 +5,8 @@ import type {
   EvidenceGateProjection,
   GateOutcome,
 } from './types.js';
+import { createEvidenceDependencyRecord, evidenceDependencySetDigest } from './dependencies.js';
+import { evidenceInputDigest } from './input-snapshot.js';
 
 export function aggregateGateOutcome(
   checks: readonly EvidenceCheck[],
@@ -32,7 +34,13 @@ export function aggregateGateOutcome(
 export function createEvidenceBundle(
   input: Omit<
     EvidenceBundle,
-    'schemaVersion' | 'apiVersion' | 'kind' | 'outcome' | 'acceptanceTrace'
+    | 'schemaVersion'
+    | 'apiVersion'
+    | 'kind'
+    | 'outcome'
+    | 'acceptanceTrace'
+    | 'dependencies'
+    | 'bundleId'
   > &
     Partial<Pick<EvidenceBundle, 'acceptanceTrace'>>,
 ): EvidenceBundle {
@@ -44,13 +52,41 @@ export function createEvidenceBundle(
         ? 'failed'
         : 'incomplete'
       : aggregate;
-  return {
-    schemaVersion: 2,
+  const body = Object.fromEntries(
+    Object.entries(input).filter(
+      ([key]) =>
+        !['schemaVersion', 'apiVersion', 'kind', 'outcome', 'dependencies', 'bundleId'].includes(
+          key,
+        ),
+    ),
+  ) as typeof input;
+  const facts = {
+    schemaVersion: 3,
     apiVersion: 'repoctopus/v1alpha1',
     kind: 'EvidenceBundle',
-    ...input,
+    ...body,
     acceptanceTrace,
     outcome,
+  } as const;
+  const dependencies = [
+    {
+      partition: 'implementation-content' as const,
+      identity: evidenceInputDigest(input.inputFingerprint),
+    },
+  ];
+  const bundleId = evidenceInputDigest({
+    ...facts,
+    dependencySetDigest: evidenceDependencySetDigest(dependencies, input.receiptIds),
+  }).slice(7);
+  return {
+    ...facts,
+    bundleId,
+    dependencies: createEvidenceDependencyRecord({
+      subjectKind: 'bundle',
+      subjectId: bundleId,
+      dependencies,
+      dependsOnEvidenceIds: input.receiptIds,
+    }),
   };
 }
 
@@ -82,7 +118,7 @@ export function projectEvidenceGate(
             binding.acceptanceContext.acceptanceSetHash)));
   const gateSatisfied = satisfied && traceMatchesBinding;
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     kind: 'EvidenceGateProjection',
     workflowRunId: binding?.workflowRunId ?? null,
     workflowActionId: binding?.workflowActionId ?? null,
@@ -97,10 +133,26 @@ export function projectEvidenceGate(
     acceptanceSetHash: bundle.acceptanceTrace?.acceptanceSetHash ?? null,
     outcome: bundle.outcome,
     status: gateSatisfied ? 'satisfied' : 'blocked',
+    failureKind: gateSatisfied
+      ? 'none'
+      : !traceMatchesBinding ||
+          bundle.findings.some((finding) =>
+            ['evidence-not-collected', 'recovery-uncertain-side-effect'].includes(finding.code),
+          )
+        ? 'unavailable'
+        : bundle.checks.some((check) => check.freshness === 'superseded')
+          ? 'input-drift'
+          : 'implementation',
     reason: gateSatisfied
       ? `Evidence profile ${bundle.profileId} satisfied the current input fingerprint`
       : traceMatchesBinding
         ? `Evidence profile ${bundle.profileId} is ${bundle.outcome}`
         : `Evidence profile ${bundle.profileId} has no matching Acceptance Trace`,
+    dependencies: createEvidenceDependencyRecord({
+      subjectKind: 'gate',
+      subjectId: evidenceInputDigest({ bundleId: bundle.bundleId, binding }),
+      dependencies: bundle.dependencies.dependencies,
+      dependsOnEvidenceIds: [bundle.bundleId],
+    }),
   };
 }

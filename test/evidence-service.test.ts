@@ -85,7 +85,7 @@ describe('evidence command vertical slice', () => {
     });
 
     expect(result.bundle).toMatchObject({
-      schemaVersion: 2,
+      schemaVersion: 3,
       outcome: 'passed',
       acceptanceTrace: {
         total: 1,

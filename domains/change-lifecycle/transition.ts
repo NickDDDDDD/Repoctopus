@@ -3,7 +3,7 @@ import type { EffectiveWorkSkillComposition } from '../skill/composition.js';
 import type { SpecificationArtifactKind } from '../specification/types.js';
 import type { SpecificationTask } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
-import type { VerificationInput } from './verification-input.js';
+import { assertVerificationInput, type VerificationInput } from './verification-input.js';
 import type { ArchiveDeliveryInput } from './archive-input.js';
 import type { PublicationReceipt } from '../delivery/publication-receipt.js';
 import { assertPublicationReceipt } from '../delivery/publication-receipt.js';
@@ -593,7 +593,7 @@ export type ChangeLifecycleObservation =
       attemptId: string;
       bundleId: string | null;
       reason: string;
-      result: 'implementation-failure' | 'evidence-unavailable';
+      result: 'implementation-failure' | 'evidence-unavailable' | 'evidence-drift';
       checkEpoch: number;
       tasks?: readonly SpecificationTask[];
       invalidation?: BuildInvalidation;
@@ -610,6 +610,7 @@ export type ChangeLifecycleObservation =
       kind: 'archive-preflight-ready';
       archiveInput: ArchiveDeliveryInput;
       work: WorkDescriptor;
+      priorArchiveInputDigest?: `sha256:${string}`;
     }
   | {
       kind: 'archive-specification-closed';
@@ -710,6 +711,8 @@ export function assertChangeLifecycleSnapshot(
   ) {
     throw new Error('Verify phase requires a Work bound to the immutable verification input');
   }
+  if (snapshot.verificationInput?.schemaVersion === 4)
+    assertVerificationInput(snapshot.verificationInput);
   if (
     snapshot.verificationInvalidation &&
     (snapshot.phase !== 'build' ||
@@ -899,6 +902,12 @@ export function evolveChangeLifecycle(options: {
   observation: ChangeLifecycleObservation;
 }): ChangeLifecycleReduction {
   const { current, observation } = options;
+  if (
+    current.verificationInput &&
+    current.status !== 'completed' &&
+    current.status !== 'migration_required'
+  )
+    assertVerificationInput(current.verificationInput);
   if (observation.kind === 'open-repair-required') {
     if (
       current.phase === 'open' &&
@@ -1768,7 +1777,7 @@ export function evolveChangeLifecycle(options: {
     if (observation.checkEpoch !== current.checkEpoch) {
       throw new Error('Verify rejection belongs to a stale checkEpoch');
     }
-    if (observation.result === 'evidence-unavailable') {
+    if (observation.result !== 'implementation-failure') {
       const retryInput = observation.verificationInput;
       if (
         !retryInput ||
@@ -1873,10 +1882,36 @@ export function evolveChangeLifecycle(options: {
     });
   }
   if (observation.kind === 'archive-preflight-ready') {
+    const replacement =
+      current.currentWork?.kind === 'specification.close' &&
+      current.archiveDeliveryInput &&
+      !current.specificationClosure &&
+      !current.publicationReceipt &&
+      observation.priorArchiveInputDigest === current.archiveDeliveryInput.digest;
+    if (replacement) {
+      const stable = (archive: ArchiveDeliveryInput) => ({
+        runId: archive.runId,
+        changeId: archive.changeId,
+        verificationInputDigest: archive.verificationInputDigest,
+        evidenceBundleId: archive.evidenceBundleId,
+        verificationReport: archive.verificationReport,
+        changeBranch: { ...archive.changeBranch, remoteOid: 'publication-coordinate' },
+        businessDeliveries: archive.businessDeliveries,
+        businessSplitReason: archive.businessSplitReason,
+        publicationPolicyDigest: archive.publicationPolicyDigest,
+        planningCompositionDigest: archive.planningCompositionDigest,
+        evidenceCompositionDigest: archive.evidenceCompositionDigest,
+      });
+      if (
+        canonicalJson(stable(current.archiveDeliveryInput!)) !==
+        canonicalJson(stable(observation.archiveInput))
+      )
+        throw new Error('Archive preflight replacement cannot expand publication authority');
+    }
     if (
       current.phase !== 'archive' ||
       current.status !== 'running' ||
-      current.currentWork !== null
+      (current.currentWork !== null && !replacement)
     ) {
       throw new Error(`Archive preflight is not valid from ${current.phase}/${current.status}`);
     }
@@ -1946,6 +1981,7 @@ export function evolveChangeLifecycle(options: {
       businessSplitReason: archive.businessSplitReason,
       publicationPolicyDigest: archive.publicationPolicyDigest,
       actionAuthorization: archive.actionAuthorization,
+      publicationCheckpoint: archive.publicationCheckpoint,
     });
     if (
       current.phase !== 'archive' ||

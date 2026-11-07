@@ -25,6 +25,7 @@ import {
   type SpecificationFollowUpChange,
   type SpecificationFollowUpChangeInput,
   type SpecificationPhaseContext,
+  type SpecificationEvidenceProjection,
 } from '../../domains/specification/types.js';
 import {
   assertSpecificationTaskAcceptance,
@@ -57,6 +58,7 @@ import {
   type SpecificationProcessPort,
 } from './openspec-process.js';
 import { FileSpecificationClosureJournalStore } from './file-closure-journal-store.js';
+import { readFileRaceSafe } from '../filesystem/race-safe-read.js';
 import { IsolatedSpecificationClosureTransaction } from './isolated-closure-transaction.js';
 
 interface OpenSpecProviderConfig {
@@ -459,6 +461,88 @@ export class OpenSpecProvider extends Specification {
     return this.taskSetFromPaths(workspace, id, status.artifactPaths?.tasks?.existingOutputPaths);
   }
 
+  override evidenceProjection(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationEvidenceProjection> {
+    return this.evidenceProjectionAt(this.workspace, changeId, signal);
+  }
+
+  override closureExecutionStarted(changeId: string): Promise<boolean> {
+    return new FileSpecificationClosureJournalStore(this.workspace).hasExecution(changeId);
+  }
+
+  private async evidenceProjectionAt(
+    workspace: string,
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationEvidenceProjection> {
+    const status = await this.json<StatusResult>(
+      workspace,
+      ['status', '--change', changeId],
+      signal,
+    );
+    const schema = await this.planningInstructionsAt(workspace, changeId, signal);
+    let tasks: SpecificationTaskSet | undefined;
+    const files: SpecificationEvidenceProjection['files'][number][] = [];
+    for (const [artifactId, artifact] of Object.entries(status.artifactPaths ?? {}).sort()) {
+      if (!artifactKind(artifactId) || artifactId === 'verification') continue;
+      const paths = artifact.existingOutputPaths;
+      if (!Array.isArray(paths) || paths.some((file) => typeof file !== 'string')) {
+        throw new Error('OpenSpec Evidence projection requires official artifact paths');
+      }
+      for (const file of paths as string[]) {
+        const absolute = path.resolve(workspace, file);
+        const relative = path.relative(workspace, absolute).split(path.sep).join('/');
+        if (!relative || relative.startsWith('../') || path.isAbsolute(relative)) {
+          throw new Error('OpenSpec Evidence artifact path escapes workspace');
+        }
+        const captured = await readFileRaceSafe(absolute, 4 * 1024 * 1024, { bigint: true });
+        const realRelative = path.relative(await realpath(workspace), captured.realPath);
+        if (
+          realRelative === '..' ||
+          realRelative.startsWith(`..${path.sep}`) ||
+          path.isAbsolute(realRelative)
+        ) {
+          throw new Error('OpenSpec Evidence artifact resolves outside workspace');
+        }
+        const rawDigest =
+          `sha256:${createHash('sha256').update(captured.bytes).digest('hex')}` as const;
+        if (artifactId === 'tasks') {
+          if (tasks || paths.length !== 1)
+            throw new Error('OpenSpec Tasks must have exactly one official document');
+          tasks = await this.taskSetFromContents(
+            workspace,
+            changeId,
+            captured.bytes.toString('utf8'),
+          );
+        }
+        // Completion is a separate Runtime fact, not part of the approved task semantics.
+        files.push({
+          path: relative,
+          artifactId,
+          rawDigest,
+          semanticDigest: artifactId === 'tasks' ? tasks!.digest : rawDigest,
+        });
+      }
+    }
+    if (!tasks) throw new Error('OpenSpec Evidence projection requires official Tasks');
+    if (new Set(files.map((file) => file.path)).size !== files.length) {
+      throw new Error('OpenSpec Evidence projection contains duplicate official paths');
+    }
+    const stable = {
+      schemaVersion: 1 as const,
+      changeId,
+      provider: this.identity(),
+      root: this.root(),
+      schemaDigest: schema.digest,
+      policy: 'official-planning/v1' as const,
+      files: files.sort((a, b) => a.path.localeCompare(b.path)),
+      tasks,
+    };
+    return { ...stable, digest: sha256(stable) };
+  }
+
   private async taskSetFromPaths(
     workspace: string,
     changeId: string,
@@ -477,7 +561,15 @@ export class OpenSpecProvider extends Specification {
     ) {
       throw new Error('OpenSpec Tasks path escapes the workspace');
     }
-    const parsedTasks = parseSpecificationTasks(changeId, await readFile(absolute, 'utf8'));
+    return this.taskSetFromContents(workspace, changeId, await readFile(absolute, 'utf8'));
+  }
+
+  private async taskSetFromContents(
+    workspace: string,
+    changeId: string,
+    contents: string,
+  ): Promise<SpecificationTaskSet> {
+    const parsedTasks = parseSpecificationTasks(changeId, contents);
     const requirements = await this.requirementAuthorityAt(workspace, changeId);
     const tasks = resolveTaskRequirementIdentities(parsedTasks, requirements);
     const receiptFile = this.taskReceiptFile(workspace, changeId);
@@ -941,6 +1033,20 @@ export class OpenSpecProvider extends Specification {
     workspace: string,
     input: PrepareSpecificationClosureInput,
   ): Promise<SpecificationClosurePlan> {
+    const frozen = await new FileSpecificationClosureJournalStore(workspace).planForChange(
+      input.changeId,
+    );
+    if (frozen) {
+      if (
+        frozen.mergeFactsDigest !== input.mergeFactsDigest ||
+        frozen.targetBaselineDigest !== input.targetBaselineDigest ||
+        (input.expectedSourceOid !== undefined && frozen.sourceOid !== input.expectedSourceOid)
+      )
+        throw new Error(
+          'Specification closure has an existing frozen execution; reconcile its original plan',
+        );
+      return frozen;
+    }
     const [change, validation] = await Promise.all([
       this.inspectAt(workspace, input.changeId, input.signal),
       this.validateAt(workspace, input.changeId, {
@@ -961,6 +1067,9 @@ export class OpenSpecProvider extends Specification {
         .sort((left, right) => left.file.localeCompare(right.file)),
     );
     const base = {
+      sourceOid:
+        input.expectedSourceOid ??
+        (await execute('git', ['rev-parse', 'HEAD'], { cwd: workspace })).stdout.trim(),
       apiVersion: SPECIFICATION_API_VERSION,
       kind: 'SpecificationClosurePlan' as const,
       changeId: change.changeId,
@@ -1239,6 +1348,7 @@ ${references}
       changeId: plan.changeId,
       mergeFactsDigest: plan.mergeFactsDigest,
       targetBaselineDigest: plan.targetBaselineDigest,
+      expectedSourceOid: plan.sourceOid,
       ...(signal ? { signal } : {}),
     });
     if (current.planDigest !== plan.planDigest) {
@@ -1289,6 +1399,7 @@ ${references}
       changeId: plan.changeId,
       mergeFactsDigest: plan.mergeFactsDigest,
       targetBaselineDigest: plan.targetBaselineDigest,
+      expectedSourceOid: plan.sourceOid,
       ...(signal ? { signal } : {}),
     });
     if (current.planDigest !== plan.planDigest) {
@@ -1424,6 +1535,10 @@ ${references}
         return createSpecificationPlanningManifest({ change, specificationRoot, schema });
       },
       tasks: (changeId, signal) => this.tasksAt(workspace, changeId, signal),
+      evidenceProjection: (changeId, signal) =>
+        this.evidenceProjectionAt(workspace, changeId, signal),
+      closureExecutionStarted: (changeId) =>
+        new FileSpecificationClosureJournalStore(workspace).hasExecution(changeId),
       completeTask: (input) => this.completeTaskAt(workspace, input),
       inspect: (changeId, signal) => this.inspectAt(workspace, changeId, signal),
       validate: (changeId, options) => this.validateAt(workspace, changeId, options),

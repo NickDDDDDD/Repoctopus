@@ -1,3 +1,5 @@
+import { evidenceDependencyFixture } from './helpers/evidence-inputs.js';
+import { createEvidenceReceipt } from '../domains/evidence/receipt.js';
 import { utimes } from 'node:fs/promises';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -36,10 +38,7 @@ describe('evidence retention', () => {
       mediaType: 'text/plain',
       redacted: true,
     });
-    const receipt: EvidenceReceipt = {
-      apiVersion: 'repoctopus/v1alpha1',
-      kind: 'EvidenceReceipt',
-      receiptId: 'active-receipt',
+    const receipt: EvidenceReceipt = createEvidenceReceipt({
       compositionDigest: TEST_COMPOSITION_DIGEST,
       attemptId: 'active-attempt',
       nodeId: 'build',
@@ -52,11 +51,13 @@ describe('evidence retention', () => {
       completedAt: '2026-01-01T00:00:01.000Z',
       artifacts: [active],
       findings: [],
-    };
+    });
     await store.saveReceipt(receipt);
     const attempt: EvidenceAttempt = {
       apiVersion: 'repoctopus/v1alpha1',
       kind: 'EvidenceAttempt',
+      schemaVersion: 1,
+      dependencies: evidenceDependencyFixture('attempt', 'active-attempt'),
       attemptId: 'active-attempt',
       compositionDigest: TEST_COMPOSITION_DIGEST,
       profileId: 'verify',
@@ -68,7 +69,6 @@ describe('evidence retention', () => {
     await store.saveAttempt(attempt);
     const bundle = createEvidenceBundle({
       compositionDigest: TEST_COMPOSITION_DIGEST,
-      bundleId: 'approved-bundle',
       attemptId: 'approved-attempt',
       profileId: 'verify',
       inputFingerprint: 'fingerprint',

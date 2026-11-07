@@ -1,3 +1,4 @@
+import builtinHostInputPolicy from '../plugins/evidence/builtin-host-input-policy.js';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -95,6 +96,7 @@ describe('Evidence telemetry outbox', () => {
     new FileRunStoreProvider(context, { workspaceRoot: workspace });
     new EvidenceAdapters(context);
     new RepositoryInputPolicies(context);
+    await context.plugin(builtinHostInputPolicy);
     await context.plugin(localCommandContributor);
     await context.plugin(localServiceContributor, { workspaceRoot: workspace });
     await context.plugin(localBrowserContributor, { workspaceRoot: workspace });
