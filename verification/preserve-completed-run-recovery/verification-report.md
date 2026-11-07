@@ -6,7 +6,7 @@
 - Package content SHA-256: `0621d6bbeb13767f70aa4e415b8a550e5e8a194675d4d8f737c729618bc43e0f`
 - Tarball SHA-256: `08ed4da46acf90ad44e9d3c443efc934a9c2f6e02b40278d37ad9096a63b4999`
 
-当前记录仍在 Build：真实安装包多仓验收、最终集成审查和正式 Comet Guard 尚未完成，不声明整个 Change 验证通过。上述身份来自本次实际独立安装包；不是旧包或旧报告的身份。
+当前记录仍在 Build：真实安装包多仓验收已通过，最终集成审查和正式 Comet Guard 尚未完成，不声明整个 Change 验证通过。上述身份来自本次实际独立安装包；不是旧包或旧报告的身份。
 
 ## 根因与采用方案
 
@@ -33,14 +33,14 @@ Cordis Service 在活动恢复前调用 coordinator 的可信终态读取；coor
 
 ## 验收要求映射
 
-| 要求                                        | 当前证据                                                                            |
-| ------------------------------------------- | ----------------------------------------------------------------------------------- |
-| completed + 历史 reconciliation 仍返回 done | 完整 status 与 CLI 历史标志矩阵，原字段保留                                         |
-| 两种恢复顺序保留完成事实                    | Service/coordinator/CLI 比较完整 Run、Checkpoint、轨迹长度及 execution/next actions |
-| 持久终态不能绕过完整性                      | 9 项异常场景逐一调用 status、next、resume；原项目快照重算摘要                       |
-| 原中断事务可恢复，副作用不重复              | 两处 Journal 写入中断；仅补发原遥测，重复恢复不再次导出                             |
-| 活动未授权与未知执行仍阻断                  | 既有 Build workspace、Evidence recovery、Work execution recovery 回归               |
-| 实际 Close、发布和终态冷恢复                | 独立新五仓验收进行中，不以 coordinator fixture 代替远端证明                         |
+| 要求                                        | 当前证据                                                                             |
+| ------------------------------------------- | ------------------------------------------------------------------------------------ |
+| completed + 历史 reconciliation 仍返回 done | 完整 status 与 CLI 历史标志矩阵，原字段保留                                          |
+| 两种恢复顺序保留完成事实                    | Service/coordinator/CLI 比较完整 Run、Checkpoint、轨迹长度及 execution/next actions  |
+| 持久终态不能绕过完整性                      | 9 项异常场景逐一调用 status、next、resume；原项目快照重算摘要                        |
+| 原中断事务可恢复，副作用不重复              | 两处 Journal 写入中断；仅补发原遥测，重复恢复不再次导出                              |
+| 活动未授权与未知执行仍阻断                  | 既有 Build workspace、Evidence recovery、Work execution recovery 回归                |
+| 实际 Close、发布和终态冷恢复                | 新五仓完成实际 Close、三个唯一 MR、8 次终态恢复；另对旧失败副本执行 4 次恢复，均通过 |
 
 ## 真实多仓包的连续使用
 
@@ -49,6 +49,16 @@ Cordis Service 在活动恢复前调用 coordinator 的可信终态读取；coor
 最终包安装到独立新 prefix，通过公开 resume 接续原 Run，保留原 Binding、Plan、check epoch 8 和同一待决定提案；没有编辑产品 Store 或重新创建 Run。两个 README 工作包及后继验证使用最终包执行。两个候选的原始包和角色分别保留，不混称为从头到尾同一个 tarball。
 
 实际安装包的源码提交为 `d8c99f8690b2edb501f5b65ace66c1fc43b40fc8`。上列验证提交 `eb019d2` 只增加 composition 测试期望摘要和本报告，打包产品文件未改变；包复现检查继续核对同一规范化内容摘要，不能将提交号不同当作无需核对字节的依据。
+
+## 实际终态与历史现场验证
+
+新 Run 完成全流程后，8 个新进程分别在合法 source 和完成后的其他 checkout 上执行两种恢复顺序；每次额外读取 status，均为 completed、done/terminal、空 next actions。完整 Run、Checkpoint、Trajectory 的字节与完成事实不变，stateVersion 244、check epoch 17、10 个 Host Work、2 个验证命令均不增加。
+
+旧 F1 的实际持久记录复制后逐文件验 SHA256，再经独立 registry 的公开 register 绑定副本。4 次 resume/next 同样完成，原 `reconciliationRequired=true` 保留，副本 Run、Checkpoint、Trajectory 摘要不变。未在原路径执行写入口，未调用副本的 Evidence、Close 或 Publish。
+
+7 个旧 Store 的 425 文件及 10 份旧报告哈希全部不变；新五仓干净且与 upstream 同步。远端 backend #5、web-front #9、Workspace #3 均唯一、OPEN、面向 `acceptance/terminal-20261108`，head/base/OID 与实际 Receipt 完全一致；本轮没有合入实验 MR。
+
+原始独立报告 `lab-terminal-1108/verification-report.md` 的 SHA256 为 `982071711871f05249cb9bf7b1ed00562e913eb4e340485360e8b95a0825d167`，父任务已独立复核。完整命令、实际两轴审查、归档布局、远端核对、终态矩阵与历史哈希清单均保留在同目录 evidence；不将协调器 fixture 当作这项远端证明。
 
 ## 范围边界
 

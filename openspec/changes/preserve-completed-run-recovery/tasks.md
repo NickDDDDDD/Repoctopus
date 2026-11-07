@@ -10,9 +10,9 @@
 ## 2. 多仓冷恢复验收与完整验证
 
 - [x] 2.1 在生产 CLI 验收中加入真实多仓 Git 和 completed 发布事实的两个新进程恢复顺序；验收为每一步同时核对 status、continuation、execution、next actions、Closure、PublicationReceipt、Bundle、Package Completion、check epoch 及副作用次数，且重新引入原通用 reconciliation 路径会使回归失败。 <!-- comet-task:febd29aa-0a2a-42ec-8811-02bed759014b -->
-- [ ] 2.2 用本 change 构建的独立安装包复验小型真实多仓任务，从正式接入、审批、实施和 Evidence 到 Close、发布及终态冷恢复；验收为整个过程仅使用公开 CLI，分支与提交及时 push、远端 MR 唯一且 head/base/OID 正确，旧失败 Store 和报告保持原哈希，新报告明确区分本次结果与历史证据。 <!-- comet-task:9fdc85bf-d195-4f80-b38e-716ddde41be0 -->
-- [ ] 2.3 完成与本次改动匹配的 Runtime、生命周期、活动 Build/Evidence 恢复、CLI 和完整性回归，以及类型、格式、构建/生成物、架构/来源和严格规格检查；验收为实际命令及退出码被正式验证证据记录，未执行、失败或未知项不计为通过。 <!-- comet-task:6917c193-28ac-4b98-a9b0-2710ce46e4c9 -->
-- [ ] 2.4 对最终差异完成独立审查并形成正式验证报告，逐条映射本 change 验收要求、上游采用规则和真实失败/修复结果；验收为无未解决的重要缺陷，报告同时列明终态新进程结果、保留的历史诊断与未纳入范围的问题。 <!-- comet-task:8221a7e6-a84b-48c0-894f-093c56a3371d -->
+- [x] 2.2 用本 change 构建的独立安装包复验小型真实多仓任务，从正式接入、审批、实施和 Evidence 到 Close、发布及终态冷恢复；验收为整个过程仅使用公开 CLI，分支与提交及时 push、远端 MR 唯一且 head/base/OID 正确，旧失败 Store 和报告保持原哈希，新报告明确区分本次结果与历史证据。 <!-- comet-task:9fdc85bf-d195-4f80-b38e-716ddde41be0 -->
+- [x] 2.3 完成与本次改动匹配的 Runtime、生命周期、活动 Build/Evidence 恢复、CLI 和完整性回归，以及类型、格式、构建/生成物、架构/来源和严格规格检查；验收为实际命令及退出码被正式验证证据记录，未执行、失败或未知项不计为通过。 <!-- comet-task:6917c193-28ac-4b98-a9b0-2710ce46e4c9 -->
+- [x] 2.4 对最终差异完成独立审查并形成正式验证报告，逐条映射本 change 验收要求、上游采用规则和真实失败/修复结果；验收为无未解决的重要缺陷，报告同时列明终态新进程结果、保留的历史诊断与未纳入范围的问题。 <!-- comet-task:8221a7e6-a84b-48c0-894f-093c56a3371d -->
 
 ## Workflow follow-up
 
