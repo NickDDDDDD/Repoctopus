@@ -2,6 +2,8 @@
 comet_change: repair-evidence-input-identity
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-07-repair-evidence-input-identity
+status: final
 ---
 
 # Design

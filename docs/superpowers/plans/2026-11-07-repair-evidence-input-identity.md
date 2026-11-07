@@ -2,6 +2,7 @@
 change: repair-evidence-input-identity
 design-doc: openspec/changes/repair-evidence-input-identity/design.md
 base-ref: 5a92ebc945a54b9dea6db2094ac20ee6ed55aaa0
+archived-with: 2026-11-07-repair-evidence-input-identity
 ---
 
 # Evidence 输入身份实施计划
