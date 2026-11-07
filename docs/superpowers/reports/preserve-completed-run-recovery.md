@@ -153,6 +153,14 @@ Runtime 已接受同一 Run 的 complete-build，并派发 full.build.check。�
 
 当前完整 Verify 将执行 policy 已声明的 `npm.cmd run verify`、cwd `.`、`VITEST_MAX_WORKERS=2`，通过同版本 Node CLI 的正式 Guard 绑定本报告和真实检查收据。完整日志 stdout/stderr 分开保留；本报告在执行前固定，不预先写成功结论，检查结果以同一 Run 的后续实际收据为准。
 
-## 不在本次修复范围
+## 首次正式 Windows Verify 失败与并发诊断
+
+首次正式 Verify 的精确 `npm.cmd run verify` 返回 exit 1：198 文件通过、1 文件失败、1 文件跳过；1085 项通过、4 项失败、5 项跳过。四个失败全部来自 `managed-change-execution.e2e.test.ts` 的完整流程场景，各触及原有 360 秒预算；不是断言失败。Runtime 正式返回同一 Run 的 Build Plan，保留配置、原任务完成事实和前述实际验收，没有手改 Store 或重复审批。该失败日志与原 SDK 检查收据保留，不声明首次 Windows 全量通过。
+
+仓外诊断副本保持测试断言、360 秒预算和相同产品源码，增加调用耗时观察后仅选择最重的单仓 autonomous 场景；单文件 worker=1 时 exit 0，1 项通过、6 项未选择，测试耗时 319.54 秒，完整 Open→Design→Build→Verify→Archive 仍推进完成。CI 中原测试首项约 244.49 秒通过。此结果支持 Windows 并发负载使重流程超时的假设，不能代替原测试和正式门禁。
+
+后续正式检查继续使用原 `npm.cmd run verify`、原全部测试、原超时与断言，只将 policy 已声明的 `VITEST_MAX_WORKERS` 从 2 设为 1，值由真实检查输入绑定。产品源代码仍为 f22e29f，当前包、C3 实际验收和唯一最终 reviewer 的源码结论不变。此处在重跑前记录失败与诊断，第二次正式结果仍以同一 Run 的后续真实收据为准；未修改默认测试配置或扩大产品范围。
+
+## 保留的独立事项与清理边界
 
 Windows Git 长路径使用实验 checkout 的局部前置配置，未改全局 Git；发行包 doctor 的源码布局依赖、消费者桌面激活与 PR Skill 正文交接仍为独立事项。已消费的临时 Comet 输入文件已清理；实际验收 Store、安装包和审计证据保留。自动审批审查以 blocked by policy 拒绝外部 Vitest 缓存的递归删除及随后更窄的单文件清理，未给出进一步原因；该生成缓存保留，不改用其他工具绕过拒绝，且不影响产品源码或实际 Store。
