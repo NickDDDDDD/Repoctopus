@@ -18,6 +18,8 @@ const validManifest = {
       ['archive-evidence-preflight', 'domains/comet-classic/classic-sdk-archive-preflight.ts'],
       ['archive-frozen-publication', 'domains/comet-classic/classic-sdk-archive.ts'],
       ['archive-publication-outcome', 'domains/comet-classic/classic-sdk-application.ts'],
+      ['completed-run-boundary', 'domains/engine/runtime-service.ts'],
+      ['archived-change-selection', 'domains/comet-classic/classic-current-change.ts'],
     ].map(([role, source]) => ({
       role,
       source,

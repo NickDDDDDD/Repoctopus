@@ -17,5 +17,7 @@ classic:
   context_compression: off
   review_mode: thorough
   auto_transition: true
-  # The full suite includes five real multi-repository lifecycle/CLI matrices.
-  check_timeout_ms: 1800000
+  # Windows full verification includes real multirepository/CLI matrices and
+  # exceeded 30 minutes even with bounded workers. Keep a finite outer budget;
+  # individual tests retain their own stricter deadlines and assertions.
+  check_timeout_ms: 2700000

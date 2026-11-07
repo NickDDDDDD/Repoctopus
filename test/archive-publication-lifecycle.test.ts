@@ -1,6 +1,8 @@
 import { verificationInputFixture } from './helpers/evidence-inputs.js';
 import { createArchiveInputFixture as createArchiveDeliveryInput } from './helpers/evidence-inputs.js';
-import { writeFile } from 'node:fs/promises';
+import { readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import path from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -27,6 +29,9 @@ import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types
 import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 import type { SpecificationClosureResult } from '../domains/specification/types.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
+import type { ResumeView, RunStatusView, RunStorePort } from '../domains/runtime/types.js';
+import type { Checkpoint } from '../domains/trajectory/types.js';
+import type { RunState } from '../domains/engine/types.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import { createSpecificationPhaseContext } from '../services/specification.js';
 import { snapshotSkillDefinition } from '../platform/skill/snapshot.js';
@@ -38,9 +43,41 @@ import {
   temporaryDirectory,
   workflowFixture,
 } from './helpers/fixtures.js';
+import { runCli } from './e2e/cli.js';
 
 const cleanup: string[] = [];
+const git = promisify(execFile);
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
+
+async function recordHistoricalReconciliation(
+  store: Pick<RunStorePort, 'commitGuarded'>,
+  runId: string,
+) {
+  // Frozen historical fixture for the formerly faulty completed-resume write.
+  // Product recovery must keep this fact while projecting the terminal authority.
+  await store.commitGuarded(runId, ({ state, trajectory }) => {
+    const historical = {
+      ...state,
+      reconciliationRequired: true,
+      stateVersion: state.stateVersion + 1,
+    };
+    return {
+      state: historical,
+      event: {
+        schemaVersion: 1,
+        sequence: trajectory.length + 1,
+        eventId: 'historical-terminal-drift',
+        timestamp: state.updatedAt,
+        type: 'recovery.reconciled',
+        runId,
+        stateVersion: historical.stateVersion,
+        compositionDigest: state.composition.compositionDigest,
+        data: { historicalProjectDrift: true },
+      },
+      value: undefined,
+    };
+  });
+}
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
@@ -332,6 +369,378 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
 }
 
 describe('Archive publication terminal lifecycle', () => {
+  it('keeps completed status terminal despite a historical reconciliation flag', async () => {
+    const workspace = await temporaryDirectory('repoctopus-terminal-status-');
+    cleanup.push(workspace);
+    const store = new FileRuntimeStore(workspace);
+    const runtime = new WorkflowRunCoordinator(
+      store,
+      { export: () => Promise.resolve() },
+      compositionFixture(),
+    );
+    const { closed, receipt } = archiveState();
+    const runId = closed.identity.runId;
+    await runtime.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture(),
+      runId,
+      changeLifecycle: closed,
+    });
+    await runtime.acceptChangeObservation(runId, {
+      kind: 'archive-publication-receipt-accepted',
+      receipt,
+    });
+    await recordHistoricalReconciliation(store, runId);
+    const before = await store.loadRun(runId);
+    const status = await runtime.status(runId);
+    expect(status.continuation).toMatchObject({
+      continuation: 'done',
+      reason: 'terminal',
+      workId: null,
+      attempt: null,
+    });
+    expect(status.changeLifecycle?.nextActions).toEqual([]);
+    expect(await store.loadRun(runId)).toEqual(before);
+  });
+
+  it.each(['resume-next', 'next-resume'] as const)(
+    'preserves terminal coordinator facts in %s order',
+    async (order) => {
+      const workspace = await temporaryDirectory('repoctopus-terminal-resume-');
+      cleanup.push(workspace);
+      const store = new FileRuntimeStore(workspace);
+      const runtime = new WorkflowRunCoordinator(
+        store,
+        { export: () => Promise.resolve() },
+        compositionFixture(),
+      );
+      const { closed, receipt } = archiveState();
+      const runId = closed.identity.runId;
+      const initial = projectFixture({
+        root: workspace,
+        repositories: [
+          {
+            id: 'app',
+            name: 'app',
+            path: path.join(workspace, 'app'),
+            remoteIdentity: 'example.com/team/app',
+            branch: 'main',
+            head: 'a'.repeat(40),
+            worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
+          },
+        ],
+      });
+      await runtime.start({
+        workflow: workflowFixture(),
+        projectSnapshot: initial,
+        runId,
+        changeLifecycle: closed,
+      });
+      await runtime.acceptChangeObservation(runId, {
+        kind: 'archive-publication-receipt-accepted',
+        receipt,
+      });
+      const before = await runtime.status(runId);
+      const current = projectFixture({
+        repositories: initial.repositories.map((repository) => ({
+          ...repository,
+          branch: 'feature/completed',
+          head: 'f'.repeat(40),
+        })),
+      });
+      for (const entry of order.split('-')) {
+        const response =
+          entry === 'resume'
+            ? await runtime.resume({ runId, currentProjectSnapshot: current })
+            : await runtime.next(runId);
+        expect(response.value.continuation).toMatchObject({
+          continuation: 'done',
+          reason: 'terminal',
+        });
+        expect(response.value.state).toEqual(before.state);
+        expect(response.value.checkpoint).toEqual(before.checkpoint);
+        expect(response.value.trajectoryLength).toBe(before.trajectoryLength);
+      }
+    },
+  );
+
+  it.each(['after-trajectory', 'after-run'] as const)(
+    'recovers the original completed transition interrupted %s and exports it once',
+    async (point) => {
+      const workspace = await temporaryDirectory('repoctopus-terminal-journal-');
+      cleanup.push(workspace);
+      let interrupt = false;
+      const fault = () => {
+        if (interrupt) {
+          interrupt = false;
+          throw new Error('terminal write interrupted');
+        }
+      };
+      const store = new FileRuntimeStore(workspace, {
+        ...(point === 'after-trajectory'
+          ? { afterTrajectoryWritten: fault }
+          : { afterRunWritten: fault }),
+      });
+      const telemetry = { export: vi.fn(() => Promise.resolve()) };
+      const runtime = new WorkflowRunCoordinator(store, telemetry, compositionFixture());
+      const { closed, receipt } = archiveState();
+      const runId = closed.identity.runId;
+      await runtime.start({
+        workflow: workflowFixture(),
+        projectSnapshot: projectFixture(),
+        runId,
+        changeLifecycle: closed,
+      });
+      telemetry.export.mockClear();
+      interrupt = true;
+      await expect(
+        runtime.acceptChangeObservation(runId, {
+          kind: 'archive-publication-receipt-accepted',
+          receipt,
+        }),
+      ).rejects.toThrow('terminal write interrupted');
+      const fresh = new WorkflowRunCoordinator(
+        new FileRuntimeStore(workspace),
+        telemetry,
+        compositionFixture(),
+      );
+      const resumed = await fresh.resume({ runId, currentProjectSnapshot: projectFixture() });
+      expect(resumed.value).toMatchObject({
+        state: { status: 'completed' },
+        continuation: { continuation: 'done' },
+      });
+      expect(resumed.value.state.changeLifecycle?.publicationReceipt).toEqual(receipt);
+      expect(telemetry.export).toHaveBeenCalledTimes(1);
+      const before = await fresh.status(runId);
+      await fresh.next(runId);
+      await fresh.resume({ runId, currentProjectSnapshot: projectFixture() });
+      expect(telemetry.export).toHaveBeenCalledTimes(1);
+      expect(await fresh.status(runId)).toEqual(before);
+    },
+  );
+
+  it.each([
+    'missing-checkpoint',
+    'missing-trajectory',
+    'invalid-run',
+    'stale-checkpoint',
+    'wrong-checkpoint-status',
+    'missing-snapshot',
+    'invalid-snapshot',
+    'mismatched-snapshot',
+    'wrong-run-status',
+    'invalid-workflow-definition',
+    'mismatched-workflow-definition',
+  ] as const)('rejects unverified completed persistence: %s', async (fault) => {
+    const workspace = await temporaryDirectory('repoctopus-terminal-integrity-');
+    cleanup.push(workspace);
+    const store = new FileRuntimeStore(workspace);
+    const runtime = new WorkflowRunCoordinator(
+      store,
+      { export: () => Promise.resolve() },
+      compositionFixture(),
+    );
+    const { closed, receipt } = archiveState();
+    const runId = closed.identity.runId;
+    await runtime.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture(),
+      runId,
+      changeLifecycle: closed,
+    });
+    await runtime.acceptChangeObservation(runId, {
+      kind: 'archive-publication-receipt-accepted',
+      receipt,
+    });
+    const files = store.paths(runId);
+    if (fault === 'missing-checkpoint') await unlink(files.checkpoint);
+    else if (fault === 'missing-trajectory') await unlink(files.trajectory);
+    else if (fault === 'invalid-run') await writeFile(files.run, '{invalid');
+    else if (fault === 'missing-snapshot') await unlink(files.projectSnapshot);
+    else if (fault === 'invalid-snapshot') await writeFile(files.projectSnapshot, '{invalid');
+    else if (fault === 'mismatched-snapshot')
+      await writeFile(
+        files.projectSnapshot,
+        JSON.stringify({ ...projectFixture(), digest: 'wrong' }),
+      );
+    else if (fault === 'wrong-run-status') {
+      const state = JSON.parse(await readFile(files.run, 'utf8')) as RunState;
+      state.status = 'running';
+      await writeFile(files.run, JSON.stringify(state));
+    } else if (fault === 'invalid-workflow-definition')
+      await writeFile(files.workflow, JSON.stringify({ ...workflowFixture(), definition: null }));
+    else if (fault === 'mismatched-workflow-definition')
+      await writeFile(
+        files.workflow,
+        JSON.stringify({
+          ...workflowFixture(),
+          definition: { ...workflowFixture().definition, name: 'damaged' },
+        }),
+      );
+    else {
+      const checkpoint = JSON.parse(await readFile(files.checkpoint, 'utf8')) as Checkpoint;
+      if (fault === 'stale-checkpoint') checkpoint.stateVersion -= 1;
+      else checkpoint.runStatus = 'running';
+      await writeFile(files.checkpoint, JSON.stringify(checkpoint));
+    }
+    for (const recover of [
+      () => runtime.status(runId),
+      () => runtime.next(runId),
+      () => runtime.resume({ runId, currentProjectSnapshot: projectFixture() }),
+    ])
+      await expect(recover()).rejects.toThrow(/checkpoint|trajectory|JSON|ENOENT/iu);
+  });
+
+  it.each([
+    ['resume-next', 'service', false, false],
+    ['next-resume', 'service', false, false],
+    ['resume-next', 'cli', false, false],
+    ['next-resume', 'cli', false, false],
+    ['resume-next', 'cli', true, false],
+    ['next-resume', 'cli', true, false],
+    ['resume-next', 'cli', false, true],
+    ['next-resume', 'cli', false, true],
+  ] as const)(
+    'keeps completed recovery terminal in %s order via %s (historical flag: %s, retired checkout: %s)',
+    async (order, entrypoint, historicalFlag, retiredCheckout) => {
+      const root = await temporaryDirectory('repoctopus-terminal-service-');
+      cleanup.push(root);
+      const workspace = await createGitRepository(root, 'workspace');
+      const business = await createGitRepository(root, 'app');
+      await writeFile(
+        path.join(workspace, 'repoctopus.yaml'),
+        JSON.stringify({
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'RepoctopusWorkspace',
+          workspace: { id: 'team', repositoryId: 'workspace' },
+          repositories: [
+            { id: 'workspace', path: '.' },
+            { id: 'app', path: '../app' },
+          ],
+          profiles: [
+            {
+              id: 'verification',
+              nodes: [
+                {
+                  id: 'check',
+                  type: 'command',
+                  repository: 'app',
+                  executable: process.execPath,
+                  args: ['-e', 'process.exit(0)'],
+                  covers: ['*'],
+                },
+              ],
+            },
+          ],
+        }),
+      );
+      const app = await bootProjectComposition(path.resolve(import.meta.dirname, '..'), workspace);
+      try {
+        const snapshotInput = {
+          workspaceId: 'team',
+          workspaceRoot: workspace,
+          workspaceRepositoryId: 'workspace',
+          repositories: [
+            { id: 'workspace', path: workspace },
+            { id: 'app', path: business },
+          ],
+        };
+        const initial = await app.context.project.snapshot(snapshotInput);
+        const runtime = new WorkflowRunCoordinator(
+          app.context.runStore,
+          { export: () => Promise.resolve() },
+          app.context.compositionIdentity.current(),
+        );
+        const { closed, receipt } = archiveState();
+        const runId = closed.identity.runId;
+        await runtime.start({
+          workflow: workflowFixture(),
+          projectSnapshot: initial,
+          runId,
+          changeLifecycle: closed,
+        });
+        const retiredBusiness = path.join(root, 'retired-app');
+        if (retiredCheckout) {
+          const active = await app.context.runStore.loadRun(runId);
+          await rename(business, retiredBusiness);
+          await expect(
+            runCli({
+              packageRoot: path.resolve(import.meta.dirname, '..'),
+              cwd: workspace,
+              args: ['run', 'resume', '--workspace', workspace, '--run', runId],
+            }),
+          ).rejects.toThrow(/Configured repository is unreadable/u);
+          expect(await app.context.runStore.loadRun(runId)).toEqual(active);
+          await rename(retiredBusiness, business);
+        }
+        await runtime.acceptChangeObservation(runId, {
+          kind: 'archive-publication-receipt-accepted',
+          receipt,
+        });
+        if (historicalFlag) await recordHistoricalReconciliation(app.context.runStore, runId);
+        const before = await runtime.status(runId);
+        await git('git', ['switch', '-c', 'feature/completed'], { cwd: business });
+        await writeFile(
+          path.join(business, 'completed.txt'),
+          'Authorized implementation completed.\n',
+        );
+        await git('git', ['add', 'completed.txt'], { cwd: business });
+        await git('git', ['commit', '-m', 'test: completed implementation'], { cwd: business });
+        const current = await app.context.project.snapshot(snapshotInput);
+        if (retiredCheckout) await rename(business, retiredBusiness);
+        const observeProject = vi.spyOn(app.context.project, 'snapshot');
+        const getSkill = vi.spyOn(app.context.skills, 'get');
+        const close = vi.spyOn(app.context.specification, 'close');
+        const publish = vi.spyOn(app.context.delivery, 'publishArchive');
+        for (const entry of order.split('-')) {
+          const response = await (async () => {
+            if (entrypoint === 'service')
+              return entry === 'resume'
+                ? app.context.workflowRuns.resume({ runId, currentProjectSnapshot: current })
+                : app.context.workflowRuns.next(runId);
+            const envelope = await runCli<ResumeView | RunStatusView>({
+              packageRoot: path.resolve(import.meta.dirname, '..'),
+              cwd: workspace,
+              args: ['run', entry, '--workspace', workspace, '--run', runId],
+            });
+            expect(envelope.ok).toBe(true);
+            expect(envelope.nextActions).toEqual([]);
+            return { value: envelope.result!, diagnostics: envelope.diagnostics };
+          })();
+          expect(response.value.continuation).toMatchObject({
+            continuation: 'done',
+            reason: 'terminal',
+          });
+          expect(response.value.state).toEqual(before.state);
+          expect(response.value.checkpoint).toEqual(before.checkpoint);
+          expect(response.value.trajectoryLength).toBe(before.trajectoryLength);
+          if (entry === 'resume')
+            expect(response.value).toMatchObject({
+              execution: { continuation: 'done', reason: 'terminal' },
+            });
+          if (entry === 'resume' && entrypoint === 'cli')
+            expect(response.value).not.toHaveProperty('reconciliation');
+          if (entry === 'resume' && entrypoint === 'service')
+            expect(response.value).toMatchObject({
+              reconciliation: {
+                changed: true,
+                currentDigest: current.digest,
+                previousDigest: initial.digest,
+                requiresReconciliation: false,
+              },
+            });
+        }
+        expect(observeProject).not.toHaveBeenCalled();
+        expect(getSkill).not.toHaveBeenCalled();
+        expect(close).not.toHaveBeenCalled();
+        expect(publish).not.toHaveBeenCalled();
+      } finally {
+        vi.restoreAllMocks();
+        await app.close();
+      }
+    },
+  );
+
   it('returns an unstarted Archive checkpoint directly to a revision-bound Design Work', () => {
     const { initial } = archiveState();
     const work = createLifecyclePhaseWork({
@@ -1126,8 +1535,7 @@ describe('Archive publication terminal lifecycle', () => {
       if (!prDefinition) throw new Error('Expected the pr Skill in the production composition');
       const actionSkill = await snapshotSkillDefinition(prDefinition);
       const { closed, closure, receipt } = archiveState(actionSkill);
-      const project = {
-        ...projectFixture(),
+      const project = projectFixture({
         root: workspace,
         repositories: [
           {
@@ -1145,7 +1553,7 @@ describe('Archive publication terminal lifecycle', () => {
             remoteIdentity: 'team/app',
           },
         ],
-      };
+      });
       const runtime = new WorkflowRunCoordinator(
         app.context.runStore,
         { export: () => Promise.resolve() },

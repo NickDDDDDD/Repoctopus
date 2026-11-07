@@ -47,7 +47,7 @@ export interface RunStatusView {
 }
 
 export interface ResumeView extends RunStatusView {
-  reconciliation: ProjectReconciliation;
+  reconciliation?: ProjectReconciliation;
   execution?: WorkExecutionRecovery;
 }
 

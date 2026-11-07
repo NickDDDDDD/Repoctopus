@@ -49,3 +49,9 @@
 - Comet Native Evidence、Receipt、Retention 与 Checkpoint 文件没有整块复制。依赖闭包显示它们同时引用 Change、Transaction、Portable、Doctor 和 Comet Native 配置等产品域；Repoctopus 按独立 Evidence 领域重新实现。Snapshot 和 Lock 仍不整块复制，但其通用 Fence、文件身份和所有权算法已经按目标文件登记为实质改写。详细分析见 `implementation-feedback-adoption.md`。
 
 这些决定保留上游成熟算法，又避免把无关模块和耦合一并带入。后续采用新的上游文件时，必须先更新来源清单、许可证评估、采用报告和行为测试。
+
+## 已完成 Run 的恢复边界
+
+固定参考 Comet 0.5.1（35c9860b77b42bafa0c2d80d8d695889f888a924）的 domains/engine/runtime-service.ts 和 domains/comet-classic/classic-current-change.ts，来源摘要登记在 source-manifest.json。执行循环先停止 completed，普通命令不能隐式重新激活完成 Run，Classic 先识别归档再检查活动分支。
+
+Repoctopus 将这些规则应用于现有 continuation、完整 Runtime status、coordinator、Cordis Service 和 CLI 输出；保留 RunStore/Journal 的完整性边界和活动多仓授权校验，不引入 Comet SDK 或第二份状态。终态保留原 Closure、PublicationReceipt、Evidence 和历史诊断，只补发原 Cursor 尚未确认的已提交遥测。验收覆盖完整状态与两个新进程顺序，记录在 preserve-completed-run-recovery 的规格、任务和验证报告中。

@@ -52,7 +52,15 @@ Design 返工会把现有 Build Protocol 标记为 `suspended-for-design`。该�
 }
 ```
 
-终态具有绝对优先级：只要持久 Run 已是 `completed`，投影固定返回 `done/terminal`、空 Work/attempt 和空 next actions。历史 `continuation.selected` 不能覆盖终态。非终态 replay 必须同时匹配当前 Run、state version、Work、attempt 与 check epoch；旧 revision 或旧 epoch 的 null-work 事实只保留为审计历史，不再参与 CLI、Desktop 或 Runtime status 的当前投影。
+终态具有绝对优先级：可验证的持久 Change Run 与 Checkpoint 已是 `completed` 时，完整状态、`run resume`、`run next` 和 CLI envelope 固定返回 `done/terminal`、空 Work/attempt 和空 next actions。历史 `continuation.selected` 或 `reconciliationRequired` 标志不能覆盖终态；旧标志可以保留为审计事实，恢复不会删除它、改写启动快照或重新生成完成回执。正常完成后产生的 branch、HEAD 或远端 MR 变化不再激活原 Run 的开发恢复，交付影响由独立的 `change reconcile` 处理。
+
+终态恢复先读取必要持久事实并完成原 Journal 的恢复，再核对 Run、Checkpoint 和轨迹属于同一提交。文件缺失、损坏或版本不一致仍明确报错，不能仅凭一个 `completed` 字段跳过完整性检查。重复恢复不增加 Run 状态版本或 Work 执行；若中断前已有提交的遥测尚未发出，仍按原 Cursor 补发，不产生新的开发事件。
+
+CLI 不在 Runtime 判断终态前探测当前业务 checkout；已完成后移走业务目录不会阻止 `resume`。没有实际项目观察时，恢复结果省略可选的 `reconciliation`，表示未观察，而非仓库没有变化；调用者明确提供了当前 snapshot 时，仍返回真实差异。活动 Run 继续由 Service 真实采集当前项目，缺失或不可读的 checkout 仍阻断执行。
+
+可信终态同时重算持久 Workflow 正文与原始项目 snapshot 的摘要。损坏正文但保留原 digest 标签同样报错，不能只通过两个标签相等来推断事实完整。
+
+非终态 replay 必须同时匹配当前 Run、state version、Work、attempt 与 check epoch；旧 revision 或旧 epoch 的 null-work 事实只保留为审计历史，不再参与 CLI、Desktop 或 Runtime status 的当前投影。活动 Run 的未授权 branch、path、remote、ownership 或未知外部结果仍按原规则拦截，终态优先不构成新的执行授权。
 
 `reobserve` 表示 Host Outcome 已知且保持不变，只需重试 Specification Provider/Store 观察；它保留原 Work、attempt、check epoch、invocation、Outcome、Receipt 与 Skill consumption，绝不调用 Host reconciliation。Open 的严格 Provider 校验成功后，Work 进入 `validated`，纯 continuation classifier 将其投影为 `reobserve/open-gate-pending`，下一次 `run next` 直接继续 planning gate。某次观测失败仍返回 `reobserve/open-observation-unavailable`，并以 `provider-validation | planning-gate` 标识失败位置。`reconcile` 只表示 Host 或外部副作用结果未知。`reconcile`、`awaiting-correction` 和 `ask` 同时产生有界 CLI diagnostic code；`reason` 只能取公开枚举，不能包含路径、Provider 正文或自由错误消息。真正的 `next` 或 `resume` 才执行 packet/Host 动态核验；Runtime 先把选择提交为 trajectory fact，再让 CLI、Desktop 与 OTLP 读取同一结果。
 

@@ -1448,19 +1448,20 @@ async function runResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
   const runId = stringFlag(parsed, 'run', { required: true })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const currentProjectSnapshot = await currentWorkspaceSnapshot(app, workspace);
     const result = await app.context.commandRouter.execute<
-      { runId: string; currentProjectSnapshot: ProjectSnapshot },
+      { runId: string },
       RuntimeResult<ResumeView>
-    >('run.resume', { runId, currentProjectSnapshot });
+    >('run.resume', { runId });
     return successEnvelope({
       command: 'run resume',
       runId,
       result: result.value,
       diagnostics: result.diagnostics,
-      nextActions: result.value.state.reconciliationRequired
-        ? ['restore the bound repository state and resume the same Run']
-        : nextActions(result.value),
+      nextActions:
+        result.value.continuation?.continuation !== 'done' &&
+        result.value.state.reconciliationRequired
+          ? ['restore the bound repository state and resume the same Run']
+          : nextActions(result.value),
     });
   } finally {
     await app.close();

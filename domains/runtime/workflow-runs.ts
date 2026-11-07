@@ -2,10 +2,11 @@ import { createHash, randomUUID } from 'node:crypto';
 
 import { decide, recordOutcome, startRun } from '../engine/loop.js';
 import type { ActionOutcome, EngineAction, RunState, RunTriggerSnapshot } from '../engine/types.js';
-import { reconcileProjectSnapshots } from '../project/snapshot.js';
+import { hashProjectSnapshot, reconcileProjectSnapshots } from '../project/snapshot.js';
+import { hashWorkflowDefinition } from '../workflow-contract/hash.js';
 import type { BuildWorkspaceRecovery } from './build-workspace-recovery.js';
 import type { EvidenceWorkspaceRecovery } from './evidence-workspace-recovery.js';
-import type { ProjectSnapshot } from '../project/types.js';
+import type { ProjectReconciliation, ProjectSnapshot } from '../project/types.js';
 import type {
   DesktopActivationFact,
   TrajectoryEvent,
@@ -43,6 +44,7 @@ import {
 } from '../change-lifecycle/transition.js';
 import type { RecoveryDecision } from './recovery.js';
 import {
+  isCompletedChangeRun,
   projectCommittedContinuation,
   projectLifecycleNextActions,
 } from '../change-lifecycle/continuation.js';
@@ -366,6 +368,15 @@ export class WorkflowRunCoordinator {
     }
   }
 
+  async completedChangeStatus(runId: string): Promise<RunStatusView | null> {
+    const state = await this.store.loadRun(runId);
+    const checkpoint = await this.store.loadCheckpoint(runId);
+    return isCompletedChangeRun(state) ||
+      (checkpoint.runStatus === 'completed' && checkpoint.changeLifecycle !== undefined)
+      ? this.status(runId)
+      : null;
+  }
+
   async status(runId: string): Promise<RunStatusView> {
     const [state, workflow, checkpoint, trajectory] = await Promise.all([
       this.store.loadRun(runId),
@@ -373,6 +384,36 @@ export class WorkflowRunCoordinator {
       this.store.loadCheckpoint(runId),
       this.store.loadTrajectory(runId),
     ]);
+    if (
+      isCompletedChangeRun(state) ||
+      (checkpoint.runStatus === 'completed' && checkpoint.changeLifecycle !== undefined)
+    ) {
+      const originalSnapshot = await this.store.loadProjectSnapshot(runId);
+      const lastEvent = trajectory.at(-1);
+      if (
+        !isCompletedChangeRun(state) ||
+        state.runId !== runId ||
+        checkpoint.runId !== runId ||
+        checkpoint.stateVersion !== state.stateVersion ||
+        checkpoint.runStatus !== 'completed' ||
+        checkpoint.workflowDigest !== state.workflowDigest ||
+        workflow.digest !== state.workflowDigest ||
+        hashWorkflowDefinition(workflow.definition) !== state.workflowDigest ||
+        checkpoint.compositionDigest !== state.composition.compositionDigest ||
+        checkpoint.projectSnapshotDigest !== state.projectSnapshotDigest ||
+        originalSnapshot.digest !== state.projectSnapshotDigest ||
+        hashProjectSnapshot(originalSnapshot) !== state.projectSnapshotDigest ||
+        checkpoint.trajectoryOffset !== trajectory.length ||
+        lastEvent?.runId !== runId ||
+        lastEvent.stateVersion !== state.stateVersion ||
+        state.changeLifecycle!.currentWork !== null ||
+        canonicalJson(checkpoint.changeLifecycle) !== canonicalJson(state.changeLifecycle) ||
+        canonicalJson(checkpoint.acceptedEvidenceBundleIds) !==
+          canonicalJson(state.acceptedEvidenceBundleIds)
+      ) {
+        throw new Error(`Completed Change Run checkpoint is inconsistent: ${runId}`);
+      }
+    }
     const preview = state.changeLifecycle ? null : decide(workflow, state, state.updatedAt);
     const pendingStep = state.pendingActionId
       ? workflow.definition.steps.find((step) => step.id === state.currentStep)
@@ -405,7 +446,7 @@ export class WorkflowRunCoordinator {
       ? projectCommittedContinuation(checkpoint, trajectory)
       : undefined;
     const continuation =
-      state.changeLifecycle && state.reconciliationRequired
+      state.changeLifecycle && state.reconciliationRequired && !isCompletedChangeRun(state)
         ? {
             schemaVersion: 2 as const,
             continuation: 'reconcile' as const,
@@ -1043,6 +1084,11 @@ export class WorkflowRunCoordinator {
     runId: string,
     confirmations: ReadonlySet<string> = new Set(),
   ): Promise<RuntimeResult<RunStatusView>> {
+    const completed = await this.completedChangeStatus(runId);
+    if (completed) {
+      const value = completed;
+      return { value, diagnostics: await this.flushTelemetry(runId) };
+    }
     await this.prepareWritableComposition(runId);
     const [state, workflow, trajectory] = await Promise.all([
       this.store.loadRun(runId),
@@ -1181,14 +1227,14 @@ export class WorkflowRunCoordinator {
   async reconcileBuildWorkspace(
     runId: string,
     observation: BuildWorkspaceRecovery,
-  ): Promise<RuntimeResult<ResumeView>> {
+  ): Promise<RuntimeResult<ResumeView & { reconciliation: ProjectReconciliation }>> {
     return this.reconcileBoundWorkspace(runId, observation, 'buildWorkspaceRecovery');
   }
 
   async reconcileEvidenceWorkspace(
     runId: string,
     observation: EvidenceWorkspaceRecovery,
-  ): Promise<RuntimeResult<ResumeView>> {
+  ): Promise<RuntimeResult<ResumeView & { reconciliation: ProjectReconciliation }>> {
     return this.reconcileBoundWorkspace(runId, observation, 'evidenceWorkspaceRecovery');
   }
 
@@ -1196,7 +1242,7 @@ export class WorkflowRunCoordinator {
     runId: string,
     observation: BuildWorkspaceRecovery | EvidenceWorkspaceRecovery,
     recoveryKind: 'buildWorkspaceRecovery' | 'evidenceWorkspaceRecovery',
-  ): Promise<RuntimeResult<ResumeView>> {
+  ): Promise<RuntimeResult<ResumeView & { reconciliation: ProjectReconciliation }>> {
     const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       this.assertWritableComposition(state);
       const protocol = state.changeLifecycle?.buildProtocol;
@@ -1287,7 +1333,7 @@ export class WorkflowRunCoordinator {
 
   async resume(options: {
     runId: string;
-    currentProjectSnapshot: ProjectSnapshot;
+    currentProjectSnapshot?: ProjectSnapshot;
     authorizedReconciliation?: {
       kind: 'authorized-protected-branch-rebind';
       authorizationDigest: `sha256:${string}`;
@@ -1295,12 +1341,33 @@ export class WorkflowRunCoordinator {
     };
   }): Promise<RuntimeResult<ResumeView>> {
     const recovered = await this.store.recover(options.runId);
+    const completed = await this.completedChangeStatus(options.runId);
+    if (completed) {
+      const value = completed;
+      const reconciliation = options.currentProjectSnapshot
+        ? {
+            ...reconcileProjectSnapshots(
+              await this.store.loadProjectSnapshot(options.runId),
+              options.currentProjectSnapshot,
+            ),
+            requiresReconciliation: false,
+          }
+        : undefined;
+      return {
+        value: {
+          ...value,
+          ...(reconciliation ? { reconciliation } : {}),
+          ...(value.continuation ? { execution: value.continuation } : {}),
+        },
+        diagnostics: await this.flushTelemetry(options.runId),
+      };
+    }
+    const currentProjectSnapshot = options.currentProjectSnapshot;
+    if (!currentProjectSnapshot)
+      throw new Error('Active Run resume requires a current Project snapshot');
     await this.prepareWritableComposition(options.runId);
     const previousSnapshot = await this.store.loadProjectSnapshot(options.runId);
-    const reconciliation = reconcileProjectSnapshots(
-      previousSnapshot,
-      options.currentProjectSnapshot,
-    );
+    const reconciliation = reconcileProjectSnapshots(previousSnapshot, currentProjectSnapshot);
     const requestedAuthorizedReconciliation =
       options.authorizedReconciliation?.projectReconciliationDigest ===
       projectReconciliationDigest(reconciliation)
@@ -1331,7 +1398,7 @@ export class WorkflowRunCoordinator {
       const resumeEventId = stableEventId(
         options.runId,
         resumeBasis?.eventId ?? 'run-start',
-        options.currentProjectSnapshot.digest,
+        currentProjectSnapshot.digest,
         requiresReconciliation ? 'recovery.reconciled' : 'run.resumed',
       );
       if (trajectory.some((entry) => entry.eventId === resumeEventId)) {

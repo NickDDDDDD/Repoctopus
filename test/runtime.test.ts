@@ -1283,7 +1283,7 @@ describe('Repoctopus runtime', () => {
         currentProjectSnapshot: current,
       }),
     ]);
-    expect(resumed.value.reconciliation.changed).toBe(true);
+    expect(resumed.value.reconciliation).toMatchObject({ changed: true });
     expect(resumed.value.state.reconciliationRequired).toBe(true);
     expect(resumed.value.nextAction).toBeNull();
     expect(replayedResume.value.trajectoryLength).toBe(resumed.value.trajectoryLength);
