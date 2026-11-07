@@ -2,7 +2,7 @@
 change_id: 68e84351-f2bf-4dd4-9f67-d95065c651f2
 workflow: full
 language: zh-CN
-phase: build
+phase: verify
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -30,8 +30,8 @@ handoff_hash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: 1b54665ff5a83d74a8e7730e234e4a3b65e37807448f21cf726ed6f1e4c769c9
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 80b4af5295b2a5de01568f2eee3660ecfa6bcc1747cb7ee89759373cb470fce5
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 3
+      checkEpoch: 4
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,7 +69,7 @@ run_checkpoint:
       handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
       isolation: branch
       language: zh-CN
-      phase: build
+      phase: verify
       plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
       reviewMode: thorough
       subagentDispatch: null
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 20
+    sequence: 23
     actions:
       - attempt: 1
         claim:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/unify-build-workspace-recovery
             workspaceBaseline:
               ref: ed489e70-b325-4386-b548-351e1984b8af
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-            full.open.evidence:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
+          outputs: {}
         inputHash: 714f4bb9ed544bba1b590625243d49619d54a9614602c9be88b162588b6335a3
         outcome:
           actionId: unify-build-workspace-recovery:4
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/unify-build-workspace-recovery
             workspaceBaseline:
               ref: ed489e70-b325-4386-b548-351e1984b8af
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-            full.open.evidence:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-            full.open.revalidate:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          outputs: {}
         inputHash: a572c3c19701f0dc8971772d5b01b5828aa523da737a34cc157d308a4157548f
         outcome:
           actionId: unify-build-workspace-recovery:5
@@ -278,89 +238,7 @@ run_checkpoint:
             changeDir: openspec/changes/unify-build-workspace-recovery
             workspaceBaseline:
               ref: ed489e70-b325-4386-b548-351e1984b8af
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-                    proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                      workspace intent、当前 ExecutionBinding 和最近已接受的
-                      BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                      写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
-                      前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
-                      invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance
-                      协议处理，恢复不能自行提升
-                      checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原
-                      checkout 后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                      managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected
-                      Plan correction 路径。公开 CLI 的 nextActions 与 continuation
-                      取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
-                      的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受
-                      HEAD，在真实四业务仓加 Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用
-                      Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前 Cordis
-                      架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
-                      acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立
-                      Builder Check 已确认无实质规划缺口。
-                    requirementsEvidence:
-                      contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                      ref: openspec/changes/unify-build-workspace-recovery
-            full.design.handoff:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                workspace intent、当前 ExecutionBinding 和最近已接受的
-                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
-                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
-                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
-                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
-                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
-                correction 路径。公开 CLI 的 nextActions 与 continuation
-                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
-                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
-                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
-                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
-                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
-                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
-              requirementsEvidence:
-                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                ref: openspec/changes/unify-build-workspace-recovery
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-            full.open.evidence:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-            full.open.revalidate:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          outputs: {}
         inputHash: 70a503c54dbb48f5fd43351b060042ba6970ccf562ef1b3aa5a7831758251eef
         outcome:
           actionId: unify-build-workspace-recovery:7
@@ -399,94 +277,7 @@ run_checkpoint:
             changeDir: openspec/changes/unify-build-workspace-recovery
             workspaceBaseline:
               ref: ed489e70-b325-4386-b548-351e1984b8af
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-                    proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                      workspace intent、当前 ExecutionBinding 和最近已接受的
-                      BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                      写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
-                      前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
-                      invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance
-                      协议处理，恢复不能自行提升
-                      checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原
-                      checkout 后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                      managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected
-                      Plan correction 路径。公开 CLI 的 nextActions 与 continuation
-                      取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
-                      的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受
-                      HEAD，在真实四业务仓加 Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用
-                      Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前 Cordis
-                      架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
-                      acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立
-                      Builder Check 已确认无实质规划缺口。
-                    requirementsEvidence:
-                      contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                      ref: openspec/changes/unify-build-workspace-recovery
-            full.design.document:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-            full.design.evidence:
-              contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                workspace intent、当前 ExecutionBinding 和最近已接受的
-                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
-                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
-                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
-                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
-                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
-                correction 路径。公开 CLI 的 nextActions 与 continuation
-                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
-                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
-                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
-                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
-                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
-                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
-              requirementsEvidence:
-                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                ref: openspec/changes/unify-build-workspace-recovery
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-            full.open.evidence:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-            full.open.revalidate:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          outputs: {}
         inputHash: bb10aa3e6a9883c67f498e1d48cc91c9c0a0ca22008ecbb3b1dbd3b9b515c0d8
         outcome:
           actionId: unify-build-workspace-recovery:9
@@ -531,119 +322,7 @@ run_checkpoint:
             changeDir: openspec/changes/unify-build-workspace-recovery
             workspaceBaseline:
               ref: ed489e70-b325-4386-b548-351e1984b8af
-          outputs:
-            full.build.configure:
-              boundBranch: comet/unify-build-workspace-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/unify-build-workspace-recovery
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: branch
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-                    proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                      workspace intent、当前 ExecutionBinding 和最近已接受的
-                      BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                      写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
-                      前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
-                      invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance
-                      协议处理，恢复不能自行提升
-                      checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原
-                      checkout 后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                      managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected
-                      Plan correction 路径。公开 CLI 的 nextActions 与 continuation
-                      取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
-                      的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受
-                      HEAD，在真实四业务仓加 Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用
-                      Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前 Cordis
-                      架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
-                      acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立
-                      Builder Check 已确认无实质规划缺口。
-                    requirementsEvidence:
-                      contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                      ref: openspec/changes/unify-build-workspace-recovery
-            full.design.document:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-            full.design.evidence:
-              contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                workspace intent、当前 ExecutionBinding 和最近已接受的
-                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
-                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
-                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
-                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
-                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
-                correction 路径。公开 CLI 的 nextActions 与 continuation
-                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
-                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
-                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
-                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
-                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
-                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
-              requirementsEvidence:
-                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                ref: openspec/changes/unify-build-workspace-recovery
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-            full.open.evidence:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-            full.open.revalidate:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          outputs: {}
         inputHash: ba418e915fadaf37307b8c86f97e82a4c916624c116736cebad9d8672c3d521e
         outcome:
           actionId: unify-build-workspace-recovery:11
@@ -681,131 +360,7 @@ run_checkpoint:
             changeDir: openspec/changes/unify-build-workspace-recovery
             workspaceBaseline:
               ref: ed489e70-b325-4386-b548-351e1984b8af
-          outputs:
-            full.build.configure:
-              boundBranch: comet/unify-build-workspace-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/unify-build-workspace-recovery
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: branch
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
-                ref: openspec/changes/unify-build-workspace-recovery/design.md
-              plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              planEvidence:
-                contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-                ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
-            full.build.plan.evidence:
-              contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-              ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-                    proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                      workspace intent、当前 ExecutionBinding 和最近已接受的
-                      BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                      写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
-                      前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
-                      invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance
-                      协议处理，恢复不能自行提升
-                      checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原
-                      checkout 后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                      managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected
-                      Plan correction 路径。公开 CLI 的 nextActions 与 continuation
-                      取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
-                      的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受
-                      HEAD，在真实四业务仓加 Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用
-                      Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前 Cordis
-                      架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
-                      acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立
-                      Builder Check 已确认无实质规划缺口。
-                    requirementsEvidence:
-                      contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                      ref: openspec/changes/unify-build-workspace-recovery
-            full.design.document:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-            full.design.evidence:
-              contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                workspace intent、当前 ExecutionBinding 和最近已接受的
-                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
-                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
-                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
-                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
-                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
-                correction 路径。公开 CLI 的 nextActions 与 continuation
-                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
-                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
-                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
-                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
-                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
-                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
-              requirementsEvidence:
-                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                ref: openspec/changes/unify-build-workspace-recovery
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-            full.open.evidence:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-            full.open.revalidate:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          outputs: {}
         inputHash: 4b1e818eb43b9e58d3ca1d0193a6850219a1e83754b099a4dcffd7884e1f9798
         protocolVersion: 1
         reason: 命令 revise-design 已取代待执行 Action
@@ -889,46 +444,7 @@ run_checkpoint:
             changeDir: openspec/changes/unify-build-workspace-recovery
             workspaceBaseline:
               ref: ed489e70-b325-4386-b548-351e1984b8af
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-                    proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                      Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                      checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                      保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                      requirement
-                      中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-                    requirementsEvidence:
-                      contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                      ref: openspec/changes/unify-build-workspace-recovery
-            full.design.handoff:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-              proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                requirement
-                中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-              requirementsEvidence:
-                contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                ref: openspec/changes/unify-build-workspace-recovery
+          outputs: {}
         inputHash: e29e493d992fb5a40525e34585304acaabd898582a5d266bb990b34a5b4ce2a2
         outcome:
           actionId: unify-build-workspace-recovery:16
@@ -967,51 +483,7 @@ run_checkpoint:
             changeDir: openspec/changes/unify-build-workspace-recovery
             workspaceBaseline:
               ref: ed489e70-b325-4386-b548-351e1984b8af
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-                    proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                      Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                      checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                      保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                      requirement
-                      中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-                    requirementsEvidence:
-                      contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                      ref: openspec/changes/unify-build-workspace-recovery
-            full.design.document:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-            full.design.evidence:
-              contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-              proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                requirement
-                中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-              requirementsEvidence:
-                contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                ref: openspec/changes/unify-build-workspace-recovery
+          outputs: {}
         inputHash: c3a70adf1ffe11b9a43d0f834f382481838a7a346592490d82ddc14d36e4da8c
         outcome:
           actionId: unify-build-workspace-recovery:18
@@ -1042,6 +514,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: repoctopus-unify-build-workspace-recovery-root
+          token: portable-6800c16bfaabc61609d3fe18bd90ce0b339a3b369b44cf8557f1e5ce96822640
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
         id: unify-build-workspace-recovery:20
         input:
           input:
@@ -1049,73 +530,106 @@ run_checkpoint:
             changeDir: openspec/changes/unify-build-workspace-recovery
             workspaceBaseline:
               ref: ed489e70-b325-4386-b548-351e1984b8af
-          outputs:
-            full.build.plan:
-              designEvidence:
-                contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
-                ref: openspec/changes/unify-build-workspace-recovery/design.md
-              plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              planEvidence:
-                contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-                ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
-            full.build.plan.evidence:
-              contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-              ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-                    proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                      Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                      checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                      保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                      requirement
-                      中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-                    requirementsEvidence:
-                      contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                      ref: openspec/changes/unify-build-workspace-recovery
-            full.design.document:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-            full.design.evidence:
-              contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-              proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                requirement
-                中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-              requirementsEvidence:
-                contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                ref: openspec/changes/unify-build-workspace-recovery
+          outputs: {}
         inputHash: b9a45b1e35cde4f8d0b2f124b87e9a4e50dc469fb5607797298ce626ea013312
+        outcome:
+          actionId: unify-build-workspace-recovery:20
+          attempt: 1
+          claimToken: portable-6800c16bfaabc61609d3fe18bd90ce0b339a3b369b44cf8557f1e5ce96822640
+          inputHash: b9a45b1e35cde4f8d0b2f124b87e9a4e50dc469fb5607797298ce626ea013312
+          outcomeId: 0aaecfb1-e22b-4a87-b9a0-f8f392bd25e4
+          output:
+            event: build-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 19b16b0080e103b3a7303f2fc706194df26569561cdf105d7ddfbb31494936bc
+            outcomeId: 0aaecfb1-e22b-4a87-b9a0-f8f392bd25e4
         reconciliations: []
         ref: comet-build
         requiredCapabilities: []
         retry: manual
         runId: unify-build-workspace-recovery
-        status: pending
+        status: succeeded
         stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-1b9052834f7673a0acd47168bf86b25610fbaac49c8ca2d54ec23e111cf8d49d
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:21
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 1de8dd976c8ff14e49fa260c732a58ea2d016dff5d40776e4bbf1dc4e77bb0e8
+        outcome:
+          actionId: unify-build-workspace-recovery:21
+          attempt: 1
+          claimToken: portable-1b9052834f7673a0acd47168bf86b25610fbaac49c8ca2d54ec23e111cf8d49d
+          inputHash: 1de8dd976c8ff14e49fa260c732a58ea2d016dff5d40776e4bbf1dc4e77bb0e8
+          outcomeId: f79880a4-d63e-458a-8ecf-509de10d51b9
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+            cwd: .
+            environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+            exitCode: 0
+            inputAfter: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+            inputBefore: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+            manifestHash: ab3ea4d25594f83423025226b3ea0b3d7d73c3218236bd332ff6a9aa1b0f47c1
+            manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/7c8b26d3-02a9-4453-a04a-2e9be128332d.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 038d25a368689ab524e3b0ee28b1b5d31973ae8fface4649ee5a887d4f4d1a81
+            outcomeId: f79880a4-d63e-458a-8ecf-509de10d51b9
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        id: unify-build-workspace-recovery:23
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 70759d7785b87ba3d0464a0d5be5c588c9f8cc028666acf05e8e24e02ca4140f
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: pending
+        stepId: full.verify.run
         type: invoke_skill
     commands:
       - id: 10256a8a07796482ee1abc83ed7b1cb905ec00abe1123c007e94c44b5a48278f
@@ -1127,728 +641,40 @@ run_checkpoint:
         results: {}
         sequence: 1
       unify-build-workspace-recovery:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/unify-build-workspace-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/unify-build-workspace-recovery
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: branch
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-                    proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                      workspace intent、当前 ExecutionBinding 和最近已接受的
-                      BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                      写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
-                      前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
-                      invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance
-                      协议处理，恢复不能自行提升
-                      checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原
-                      checkout 后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                      managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected
-                      Plan correction 路径。公开 CLI 的 nextActions 与 continuation
-                      取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
-                      的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受
-                      HEAD，在真实四业务仓加 Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用
-                      Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前 Cordis
-                      架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
-                      acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立
-                      Builder Check 已确认无实质规划缺口。
-                    requirementsEvidence:
-                      contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                workspace intent、当前 ExecutionBinding 和最近已接受的
-                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
-                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
-                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
-                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
-                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
-                correction 路径。公开 CLI 的 nextActions 与 continuation
-                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
-                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
-                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
-                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
-                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
-                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
-              requirementsEvidence:
-                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                ref: openspec/changes/unify-build-workspace-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        results: {}
         sequence: 11
       unify-build-workspace-recovery:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/unify-build-workspace-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/unify-build-workspace-recovery
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: branch
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
-                ref: openspec/changes/unify-build-workspace-recovery/design.md
-              plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              planEvidence:
-                contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-                ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-              ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-                    proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                      workspace intent、当前 ExecutionBinding 和最近已接受的
-                      BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                      写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
-                      前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
-                      invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance
-                      协议处理，恢复不能自行提升
-                      checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原
-                      checkout 后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                      managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected
-                      Plan correction 路径。公开 CLI 的 nextActions 与 continuation
-                      取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
-                      的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受
-                      HEAD，在真实四业务仓加 Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用
-                      Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前 Cordis
-                      架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
-                      acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立
-                      Builder Check 已确认无实质规划缺口。
-                    requirementsEvidence:
-                      contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                workspace intent、当前 ExecutionBinding 和最近已接受的
-                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
-                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
-                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
-                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
-                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
-                correction 路径。公开 CLI 的 nextActions 与 continuation
-                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
-                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
-                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
-                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
-                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
-                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
-              requirementsEvidence:
-                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                ref: openspec/changes/unify-build-workspace-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        results: {}
         sequence: 13
       unify-build-workspace-recovery:14:
         results: {}
         sequence: 14
       unify-build-workspace-recovery:16:
-        results:
-          full.design.confirm:
-            sequence: 15
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-                    proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                      Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                      checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                      保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                      requirement
-                      中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-                    requirementsEvidence:
-                      contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.handoff:
-            sequence: 14
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-              proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                requirement
-                中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-              requirementsEvidence:
-                contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                ref: openspec/changes/unify-build-workspace-recovery
+        results: {}
         sequence: 16
       unify-build-workspace-recovery:18:
-        results:
-          full.design.confirm:
-            sequence: 15
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-                    proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                      Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                      checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                      保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                      requirement
-                      中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-                    requirementsEvidence:
-                      contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.document:
-            sequence: 16
-            value:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.evidence:
-            sequence: 17
-            value:
-              contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.handoff:
-            sequence: 14
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-              proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                requirement
-                中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-              requirementsEvidence:
-                contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                ref: openspec/changes/unify-build-workspace-recovery
+        results: {}
         sequence: 18
       unify-build-workspace-recovery:20:
-        results:
-          full.build.plan:
-            sequence: 18
-            value:
-              designEvidence:
-                contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
-                ref: openspec/changes/unify-build-workspace-recovery/design.md
-              plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              planEvidence:
-                contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-                ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
-          full.build.plan.evidence:
-            sequence: 19
-            value:
-              contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-              ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-          full.design.confirm:
-            sequence: 15
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-                    proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                      Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                      checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                      保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                      requirement
-                      中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-                    requirementsEvidence:
-                      contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.document:
-            sequence: 16
-            value:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.evidence:
-            sequence: 17
-            value:
-              contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.handoff:
-            sequence: 14
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-              proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                requirement
-                中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-              requirementsEvidence:
-                contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                ref: openspec/changes/unify-build-workspace-recovery
+        results: {}
         sequence: 20
+      unify-build-workspace-recovery:21:
+        results: {}
+        sequence: 21
+      unify-build-workspace-recovery:23:
+        results: {}
+        sequence: 23
       unify-build-workspace-recovery:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
+        results: {}
         sequence: 4
       unify-build-workspace-recovery:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        results: {}
         sequence: 5
       unify-build-workspace-recovery:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-                    proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                      workspace intent、当前 ExecutionBinding 和最近已接受的
-                      BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                      写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
-                      前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
-                      invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance
-                      协议处理，恢复不能自行提升
-                      checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原
-                      checkout 后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                      managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected
-                      Plan correction 路径。公开 CLI 的 nextActions 与 continuation
-                      取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
-                      的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受
-                      HEAD，在真实四业务仓加 Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用
-                      Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前 Cordis
-                      架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
-                      acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立
-                      Builder Check 已确认无实质规划缺口。
-                    requirementsEvidence:
-                      contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                workspace intent、当前 ExecutionBinding 和最近已接受的
-                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
-                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
-                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
-                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
-                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
-                correction 路径。公开 CLI 的 nextActions 与 continuation
-                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
-                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
-                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
-                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
-                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
-                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
-              requirementsEvidence:
-                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                ref: openspec/changes/unify-build-workspace-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        results: {}
         sequence: 7
       unify-build-workspace-recovery:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-                    proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                      workspace intent、当前 ExecutionBinding 和最近已接受的
-                      BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                      写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
-                      前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
-                      invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance
-                      协议处理，恢复不能自行提升
-                      checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原
-                      checkout 后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                      managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected
-                      Plan correction 路径。公开 CLI 的 nextActions 与 continuation
-                      取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
-                      的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受
-                      HEAD，在真实四业务仓加 Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用
-                      Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前 Cordis
-                      架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
-                      acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立
-                      Builder Check 已确认无实质规划缺口。
-                    requirementsEvidence:
-                      contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                workspace intent、当前 ExecutionBinding 和最近已接受的
-                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
-                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
-                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
-                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
-                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
-                correction 路径。公开 CLI 的 nextActions 与 continuation
-                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
-                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
-                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
-                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
-                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
-                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
-              requirementsEvidence:
-                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                ref: openspec/changes/unify-build-workspace-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        results: {}
         sequence: 9
     waits:
       - id: unify-build-workspace-recovery:3
@@ -1871,16 +697,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
+        results: {}
         decision:
           id: classic-open-e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
           choice: approved
@@ -1925,63 +742,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                workspace intent、当前 ExecutionBinding 和最近已接受的
-                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
-                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
-                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
-                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
-                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
-                correction 路径。公开 CLI 的 nextActions 与 continuation
-                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
-                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
-                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
-                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
-                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
-                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
-              requirementsEvidence:
-                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                ref: openspec/changes/unify-build-workspace-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        results: {}
         decision:
           id: classic-design-302295fd6c49bcdf4185a533a00d50b99cf4dd59331494b4bdf5a31585d38351-approved
           choice: approved
@@ -2009,120 +770,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/unify-build-workspace-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-                    proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                      workspace intent、当前 ExecutionBinding 和最近已接受的
-                      BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                      写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
-                      前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
-                      invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance
-                      协议处理，恢复不能自行提升
-                      checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原
-                      checkout 后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                      managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected
-                      Plan correction 路径。公开 CLI 的 nextActions 与 continuation
-                      取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
-                      的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受
-                      HEAD，在真实四业务仓加 Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用
-                      Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前 Cordis
-                      架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
-                      acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立
-                      Builder Check 已确认无实质规划缺口。
-                    requirementsEvidence:
-                      contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                workspace intent、当前 ExecutionBinding 和最近已接受的
-                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
-                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
-                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
-                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
-                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
-                correction 路径。公开 CLI 的 nextActions 与 continuation
-                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
-                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
-                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
-                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
-                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
-                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
-              requirementsEvidence:
-                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                ref: openspec/changes/unify-build-workspace-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        results: {}
         decision:
           id: 99ed86bc-9bdf-4037-810c-da16fed985cc
           choice: approved
@@ -2157,24 +805,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 14
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-              proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                requirement
-                中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-              requirementsEvidence:
-                contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                ref: openspec/changes/unify-build-workspace-recovery
+        results: {}
         decision:
           id: classic-design-5444605225edeaa51d377e045e33034bb010a0ce87fdc581f0a1b6566bffbfc4-approved
           choice: approved
@@ -2185,11 +816,7 @@ run_checkpoint:
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/unify-build-workspace-recovery
           contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
@@ -2199,105 +826,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-                    proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                      workspace intent、当前 ExecutionBinding 和最近已接受的
-                      BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                      写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
-                      前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
-                      invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance
-                      协议处理，恢复不能自行提升
-                      checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原
-                      checkout 后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                      managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected
-                      Plan correction 路径。公开 CLI 的 nextActions 与 continuation
-                      取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
-                      的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受
-                      HEAD，在真实四业务仓加 Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用
-                      Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前 Cordis
-                      架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
-                      acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立
-                      Builder Check 已确认无实质规划缺口。
-                    requirementsEvidence:
-                      contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                workspace intent、当前 ExecutionBinding 和最近已接受的
-                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
-                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
-                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
-                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
-                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
-                correction 路径。公开 CLI 的 nextActions 与 continuation
-                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
-                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
-                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
-                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
-                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
-                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
-              requirementsEvidence:
-                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                ref: openspec/changes/unify-build-workspace-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        results: {}
         receipt:
           ref: openspec/changes/unify-build-workspace-recovery/design.md
           contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
@@ -2307,97 +836,77 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/unify-build-workspace-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/unify-build-workspace-recovery
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: branch
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
-                ref: openspec/changes/unify-build-workspace-recovery/design.md
-              plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              planEvidence:
-                contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-                ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
-                    proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
-                      workspace intent、当前 ExecutionBinding 和最近已接受的
-                      BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
-                      写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
-                      前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
-                      invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance
-                      协议处理，恢复不能自行提升
-                      checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原
-                      checkout 后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
-                      managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected
-                      Plan correction 路径。公开 CLI 的 nextActions 与 continuation
-                      取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
-                      的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受
-                      HEAD，在真实四业务仓加 Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用
-                      Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前 Cordis
-                      架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
-                      acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立
-                      Builder Check 已确认无实质规划缺口。
-                    requirementsEvidence:
-                      contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+          submissionId: 30d8d83c-86dc-419e-a8cb-0ce0c7ade293
+      - id: unify-build-workspace-recovery:17
+        stepId: full.design.evidence
+        sequence: 17
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/unify-build-workspace-recovery/design.md
+          contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+          submissionId: 9dd7cb35-19ee-4ff2-af01-a4ea5e67a9d3
+      - id: unify-build-workspace-recovery:19
+        stepId: full.build.plan.evidence
+        sequence: 19
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+          submissionId: 39e45491-7cf4-42d8-a371-5ff726cf687f
+      - id: unify-build-workspace-recovery:22
+        stepId: full.build.check.evidence
+        sequence: 22
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+          contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+          submissionId: 33a190be-7781-4886-90ed-e20d1999cba4
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 34
+  sourceHash: a1d60b2f7307547e84fe24b02b75d07042360032bbbccdb2e06880599a416b86
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+              ref: openspec/changes/unify-build-workspace-recovery
+      - contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        ref: openspec/changes/unify-build-workspace-recovery
+      - contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+      - choice: approved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
               handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
               proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
@@ -2422,151 +931,73 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
                 ref: openspec/changes/unify-build-workspace-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                    ref: openspec/changes/unify-build-workspace-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-              ref: openspec/changes/unify-build-workspace-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-        receipt:
-          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-          contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-          submissionId: 30d8d83c-86dc-419e-a8cb-0ce0c7ade293
-      - id: unify-build-workspace-recovery:17
-        stepId: full.design.evidence
-        sequence: 17
-        kind: classic-design-document
-        status: resolved
-        results:
-          full.design.confirm:
-            sequence: 15
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-                    proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                      Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                      checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                      保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                      requirement
-                      中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-                    requirementsEvidence:
-                      contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.document:
-            sequence: 16
-            value:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.handoff:
-            sequence: 14
-            value:
-              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-              handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-              proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                requirement
-                中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-              requirementsEvidence:
-                contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                ref: openspec/changes/unify-build-workspace-recovery
-              sourceEvidence:
-                contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                ref: openspec/changes/unify-build-workspace-recovery
-        receipt:
+      - handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+        handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+        proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+          workspace intent、当前 ExecutionBinding 和最近已接受的
+          BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation 写入阻塞前使用该判定，next
+          在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
+          Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD 进度仍由原
+          Work 执行和 acceptance 协议处理，恢复不能自行提升
+          checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+          后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在 managed-work-execution
+          中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan correction 路径。公开 CLI 的
+          nextActions 与 continuation 取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
+          的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受 HEAD，在真实四业务仓加 Workspace
+          的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前
+          Cordis 架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance
+          权威和 revision-bound 更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
+        requirementsEvidence:
+          contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+          ref: openspec/changes/unify-build-workspace-recovery
+        sourceEvidence:
+          contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+          ref: openspec/changes/unify-build-workspace-recovery
+      - designDoc: openspec/changes/unify-build-workspace-recovery/design.md
+      - contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
+        ref: openspec/changes/unify-build-workspace-recovery/design.md
+      - boundBranch: comet/unify-build-workspace-recovery
+        buildMode: autonomous
+        directOverride: false
+        isolation: branch
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.build.configure:
+              boundBranch: comet/unify-build-workspace-recovery
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
           ref: openspec/changes/unify-build-workspace-recovery/design.md
-          contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
-          submissionId: 9dd7cb35-19ee-4ff2-af01-a4ea5e67a9d3
-      - id: unify-build-workspace-recovery:19
-        stepId: full.build.plan.evidence
-        sequence: 19
-        kind: classic-build-plan
-        status: resolved
-        results:
-          full.build.plan:
-            sequence: 18
-            value:
-              designEvidence:
-                contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
-                ref: openspec/changes/unify-build-workspace-recovery/design.md
-              plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              planEvidence:
-                contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-                ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-              taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
-          full.design.confirm:
-            sequence: 15
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: unify-build-workspace-recovery
-                  changeDir: openspec/changes/unify-build-workspace-recovery
-                  workspaceBaseline:
-                    ref: ed489e70-b325-4386-b548-351e1984b8af
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
-                    handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
-                    proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
-                      Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
-                      checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
-                      保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
-                      requirement
-                      中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
-                    requirementsEvidence:
-                      contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
-                      ref: openspec/changes/unify-build-workspace-recovery
-                    sourceEvidence:
-                      contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
-                      ref: openspec/changes/unify-build-workspace-recovery
-          full.design.document:
-            sequence: 16
-            value:
-              designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.evidence:
-            sequence: 17
-            value:
-              contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
-              ref: openspec/changes/unify-build-workspace-recovery/design.md
-          full.design.handoff:
-            sequence: 14
-            value:
+        plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+        planEvidence:
+          contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+        taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+      - contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+        ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+      - choice: approved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
               handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
               proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
@@ -2581,15 +1012,53 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
                 ref: openspec/changes/unify-build-workspace-recovery
-        receipt:
-          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+      - handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+        handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
+        proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
+          Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权 checkout
+          变化统一阻断，切回后续跑，已授权 protected Plan correction
+          保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED requirement
+          中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
+        requirementsEvidence:
+          contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
+          ref: openspec/changes/unify-build-workspace-recovery
+        sourceEvidence:
+          contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
+          ref: openspec/changes/unify-build-workspace-recovery
+      - contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+        ref: openspec/changes/unify-build-workspace-recovery/design.md
+      - designEvidence:
+          contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+          ref: openspec/changes/unify-build-workspace-recovery/design.md
+        plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+        planEvidence:
           contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
-          submissionId: 39e45491-7cf4-42d8-a371-5ff726cf687f
-    ready: []
-    joins: {}
-    outputs:
-      full.build.configure:
-        sequence: 9
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+        taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+        cwd: .
+        environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+        exitCode: 0
+        inputAfter: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+        inputBefore: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+        manifestHash: ab3ea4d25594f83423025226b3ea0b3d7d73c3218236bd332ff6a9aa1b0f47c1
+        manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/7c8b26d3-02a9-4453-a04a-2e9be128332d.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+        ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+      - sequence: 9
         value:
           boundBranch: comet/unify-build-workspace-recovery
           buildMode: autonomous
@@ -2598,8 +1067,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -2617,24 +1085,113 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.plan:
-        sequence: 18
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: unify-build-workspace-recovery
+              changeDir: openspec/changes/unify-build-workspace-recovery
+              workspaceBaseline:
+                ref: ed489e70-b325-4386-b548-351e1984b8af
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+                handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+                proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+                  workspace intent、当前 ExecutionBinding 和最近已接受的
+                  BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
+                  写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
+                  前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
+                  invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
+                  checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+                  后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
+                  managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
+                  correction 路径。公开 CLI 的 nextActions 与 continuation
+                  取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
+                  的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受 HEAD，在真实四业务仓加
+                  Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与
+                  checkpoint 恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
+                  进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
+                  更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
+                requirementsEvidence:
+                  contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+                  ref: openspec/changes/unify-build-workspace-recovery
+                sourceEvidence:
+                  contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+                  ref: openspec/changes/unify-build-workspace-recovery
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/unify-build-workspace-recovery/design.md
+      - sequence: 8
+        value:
+          contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
+          ref: openspec/changes/unify-build-workspace-recovery/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+          handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+          proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+            workspace intent、当前 ExecutionBinding 和最近已接受的
+            BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation 写入阻塞前使用该判定，next
+            在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
+            Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
+            进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
+            checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+            后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在 managed-work-execution
+            中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan correction 路径。公开 CLI 的
+            nextActions 与 continuation 取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
+            的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受 HEAD，在真实四业务仓加
+            Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
+            恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
+            acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立 Builder Check
+            已确认无实质规划缺口。
+          requirementsEvidence:
+            contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+            ref: openspec/changes/unify-build-workspace-recovery
+          sourceEvidence:
+            contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+            ref: openspec/changes/unify-build-workspace-recovery
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: unify-build-workspace-recovery
+              changeDir: openspec/changes/unify-build-workspace-recovery
+              workspaceBaseline:
+                ref: ed489e70-b325-4386-b548-351e1984b8af
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+                ref: openspec/changes/unify-build-workspace-recovery
+      - sequence: 2
+        value:
+          contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          ref: openspec/changes/unify-build-workspace-recovery
+      - sequence: 4
+        value:
+          contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+      - sequence: 11
         value:
           designEvidence:
-            contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+            contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
             ref: openspec/changes/unify-build-workspace-recovery/design.md
           plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
           planEvidence:
             contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
             ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
           taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
-      full.build.plan.evidence:
-        sequence: 19
+      - sequence: 12
         value:
           contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
           ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
-      full.design.confirm:
-        sequence: 15
+      - sequence: 15
         value:
           choice: approved
           proposal:
@@ -2659,17 +1216,7 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
                   ref: openspec/changes/unify-build-workspace-recovery
-      full.design.document:
-        sequence: 16
-        value:
-          designDoc: openspec/changes/unify-build-workspace-recovery/design.md
-      full.design.evidence:
-        sequence: 17
-        value:
-          contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
-          ref: openspec/changes/unify-build-workspace-recovery/design.md
-      full.design.handoff:
-        sequence: 14
+      - sequence: 14
         value:
           handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
           handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
@@ -2684,37 +1231,1053 @@ run_checkpoint:
           sourceEvidence:
             contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
             ref: openspec/changes/unify-build-workspace-recovery
-      full.open:
-        sequence: 1
+      - sequence: 16
         value:
-          event: open-complete
-      full.open.confirm:
-        sequence: 3
+          designDoc: openspec/changes/unify-build-workspace-recovery/design.md
+      - sequence: 17
         value:
-          choice: approved
-          proposal:
-            input:
-              change: unify-build-workspace-recovery
-              changeDir: openspec/changes/unify-build-workspace-recovery
-              workspaceBaseline:
-                ref: ed489e70-b325-4386-b548-351e1984b8af
-            outputs:
-              full.open:
-                event: open-complete
-              full.open.evidence:
-                contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-                ref: openspec/changes/unify-build-workspace-recovery
-      full.open.evidence:
-        sequence: 2
+          contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+          ref: openspec/changes/unify-build-workspace-recovery/design.md
+      - sequence: 18
         value:
-          contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-          ref: openspec/changes/unify-build-workspace-recovery
-      full.open.revalidate:
-        sequence: 4
+          designEvidence:
+            contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+            ref: openspec/changes/unify-build-workspace-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          planEvidence:
+            contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+            ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+      - sequence: 19
         value:
-          contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
-    children: []
-    lineage: []
-  sourceRevision: 29
-  sourceHash: 667156679ad252ef367640b0ec25ccc424ff5e004b235a12fa9f21a394c0f610
-check_epoch: 3
+          contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+      - sequence: 20
+        value:
+          event: build-complete
+      - sequence: 21
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+          cwd: .
+          environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+          exitCode: 0
+          inputAfter: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+          inputBefore: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+          manifestHash: ab3ea4d25594f83423025226b3ea0b3d7d73c3218236bd332ff6a9aa1b0f47c1
+          manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/7c8b26d3-02a9-4453-a04a-2e9be128332d.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 22
+        value:
+          contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+          ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.design.handoff
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 12
+        left: null
+        right: 27
+        height: 2
+      - key: full.design.confirm
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 14
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 13
+        left: 30
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 29
+        right: 31
+        height: 3
+      - key: full.build.plan
+        value: 15
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 33
+        right: 34
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 35
+        right: 31
+        height: 3
+      - key: full.build.execute
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 15
+        left: 37
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: 38
+        right: 34
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 39
+        right: 31
+        height: 4
+      - key: full.build.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 17
+        left: null
+        right: 41
+        height: 2
+      - key: full.build.plan
+        value: 15
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 43
+        right: 34
+        height: 2
+      - key: full.build.execute
+        value: 16
+        left: 42
+        right: 44
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 45
+        right: 31
+        height: 4
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 47
+        right: 48
+        height: 2
+      - key: full.design.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: 50
+        right: 51
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: 53
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 52
+        right: 54
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 49
+        right: 55
+        height: 4
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: 57
+        right: 58
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 47
+        right: 59
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 60
+        right: 55
+        height: 4
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 31
+        left: null
+        right: 62
+        height: 2
+      - key: full.design.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 65
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 33
+        left: 64
+        right: 66
+        height: 3
+      - key: full.build.plan
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 36
+        left: 68
+        right: 69
+        height: 2
+      - key: full.design.document
+        value: 33
+        left: 70
+        right: 66
+        height: 3
+      - key: full.build.execute
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 35
+        left: 72
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 36
+        left: 73
+        right: 69
+        height: 3
+      - key: full.design.document
+        value: 33
+        left: 74
+        right: 66
+        height: 4
+      - key: full.build.check.evidence
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 38
+        left: null
+        right: 76
+        height: 2
+      - key: full.build.plan
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 36
+        left: 78
+        right: 69
+        height: 2
+      - key: full.build.execute
+        value: 37
+        left: 77
+        right: 79
+        height: 3
+      - key: full.design.document
+        value: 33
+        left: 80
+        right: 66
+        height: 4
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 26
+        left: 82
+        right: 83
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: 85
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 82
+        right: 86
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: 88
+        right: 89
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 90
+        right: 86
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: 92
+        right: 93
+        height: 2
+      - key: full.design.handoff
+        value: 24
+        left: 94
+        right: 89
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 95
+        right: 86
+        height: 4
+      - key: full.build.check
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 39
+        left: 97
+        right: 98
+        height: 2
+      - key: full.build.execute
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 31
+        left: 101
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 35
+        left: 100
+        right: 102
+        height: 3
+      - key: full.build.confirm
+        value: 20
+        left: 99
+        right: 103
+        height: 4
+      - key: full.design.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 105
+        right: 89
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 106
+        right: 86
+        height: 3
+      - key: full.design.document
+        value: 33
+        left: 104
+        right: 107
+        height: 5
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: 109
+        height: 2
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 112
+        right: 113
+        height: 2
+      - key: full.open
+        value: 25
+        left: 111
+        right: 114
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: 117
+        right: 118
+        height: 2
+      - key: full.design.confirm
+        value: 21
+        left: 116
+        right: 119
+        height: 3
+      - key: full.open
+        value: 25
+        left: 120
+        right: 114
+        height: 4
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: 124
+        right: 125
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 127
+        right: 128
+        height: 2
+      - key: full.open
+        value: 25
+        left: 126
+        right: 129
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 131
+        right: 132
+        height: 2
+      - key: full.design.document
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: 134
+        right: 135
+        height: 2
+      - key: full.design.confirm
+        value: 21
+        left: 133
+        right: 136
+        height: 3
+      - key: full.open
+        value: 25
+        left: 137
+        right: 129
+        height: 4
+      - key: full.design.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 33
+        left: 139
+        right: 140
+        height: 2
+      - key: full.build.plan
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 31
+        left: 142
+        right: null
+        height: 2
+      - key: full.design.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 144
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 33
+        left: 143
+        right: 145
+        height: 3
+      - key: full.build.execute
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 38
+        left: null
+        right: 147
+        height: 2
+      - key: full.build.plan.evidence
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 31
+        left: 149
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 35
+        left: 148
+        right: 150
+        height: 3
+      - key: full.design.document
+        value: 33
+        left: 151
+        right: 145
+        height: 4
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 28
+      - 32
+      - 36
+      - 40
+      - 46
+      - 56
+      - 61
+      - 63
+      - 67
+      - 71
+      - 75
+      - 81
+      - 84
+      - 87
+      - 91
+      - 96
+      - 108
+      - 110
+      - 115
+      - 121
+      - 122
+      - 123
+      - 130
+      - 138
+      - 141
+      - 146
+      - 152
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:11
+          - results
+        map: 12
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:13
+          - results
+        map: 13
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:14
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:16
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:18
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:20
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:21
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:23
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:4
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:5
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:7
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:9
+          - results
+        map: 22
+      - path:
+          - outputs
+        map: 23
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 24
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 25
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 26
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 27
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 28
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 29
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 31
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 33
+  storageHash: f4b5e90976d469d245f34ee9089bf5acef8a194468a3821e3a8a8e4694216edf
+check_epoch: 4

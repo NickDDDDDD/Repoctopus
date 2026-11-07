@@ -6,7 +6,7 @@
 
 ## 候选技术方案
 
-采用用户指定的共用恢复判定。服务协调实时观察和受保护更新，领域层校验当前 Binding 和已接受的工作区 checkpoint。保留原工作包、计划及执行证据，未知 invocation 走已有恢复协议。判定覆盖两个入口返回当前 Work 或开始执行之前的边界。候选方案详见同一 Change 的 `design.md`，当前待 Design Wait 确认。
+采用用户指定并已批准的共用恢复判定。服务协调实时观察和受保护更新，领域层校验当前 Binding 和已接受的工作区 checkpoint。保留原工作包、计划及执行证据，未知 invocation 走已有恢复协议。判定覆盖两个入口返回当前 Work 或开始执行之前的边界。正式方案详见同一 Change 的 `design.md`，当前按用户批准的 autonomous、TDD、thorough 配置实施和验证。
 
 ## 方案取舍
 
