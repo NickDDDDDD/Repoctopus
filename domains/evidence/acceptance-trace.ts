@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 
 import { canonicalJson } from '../workflow-contract/canonical.js';
+import type { EvidenceNodeInputSnapshot } from './input-snapshot.js';
+import { evidenceReceiptInputCurrent } from './receipt.js';
 import type {
   AcceptanceTrace,
   AcceptanceTraceEntry,
@@ -18,6 +20,7 @@ export function createAcceptanceTrace(input: {
   checks: readonly EvidenceCheck[];
   receipts: readonly EvidenceReceipt[];
   inputFingerprint: string;
+  nodeInputs?: readonly EvidenceNodeInputSnapshot[];
 }): AcceptanceTrace {
   const acceptanceIds = [...input.context.acceptanceIds].sort();
   if (acceptanceIds.length === 0 || new Set(acceptanceIds).size !== acceptanceIds.length) {
@@ -63,7 +66,13 @@ export function createAcceptanceTrace(input: {
       if (
         !receipt ||
         receipt.nodeId !== nodeId ||
-        receipt.inputFingerprint !== input.inputFingerprint
+        (input.nodeInputs
+          ? !input.nodeInputs.some(
+              (snapshot) =>
+                snapshot.nodeId === nodeId &&
+                evidenceReceiptInputCurrent(receipt, snapshot, input.receipts),
+            )
+          : receipt.inputFingerprint !== input.inputFingerprint)
       ) {
         missing = true;
         continue;

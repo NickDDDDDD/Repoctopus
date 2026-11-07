@@ -1,3 +1,4 @@
+import { evidenceDependencyFixture } from './helpers/evidence-inputs.js';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
@@ -1460,7 +1461,8 @@ describe('Repoctopus runtime', () => {
       evaluate(input) {
         evaluations.push(input);
         return Promise.resolve({
-          schemaVersion: 2,
+          schemaVersion: 3,
+          dependencies: evidenceDependencyFixture('gate', 'gate-fixture'),
           kind: 'EvidenceGateProjection',
           workflowRunId: input.workflowRunId,
           workflowActionId: input.workflowActionId,
@@ -1529,7 +1531,8 @@ describe('Repoctopus runtime', () => {
     const gate: EvidenceGatePort = {
       evaluate(input) {
         return Promise.resolve({
-          schemaVersion: 2,
+          schemaVersion: 3,
+          dependencies: evidenceDependencyFixture('gate', 'gate-fixture'),
           kind: 'EvidenceGateProjection',
           workflowRunId: input.workflowRunId,
           workflowActionId: input.workflowActionId,

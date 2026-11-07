@@ -15,6 +15,8 @@ export interface EvidenceDependency {
 }
 
 export type EvidenceDependencySubjectKind =
+  | 'attempt'
+  | 'plan-evidence'
   | 'receipt'
   | 'bundle'
   | 'gate'
@@ -32,6 +34,60 @@ export interface EvidenceDependencyRecord {
 
 function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
+}
+
+/** Compute this before the subject ID; the enclosing object never hashes its own record. */
+export function evidenceDependencySetDigest(
+  dependencies: readonly EvidenceDependency[],
+  dependsOnEvidenceIds: readonly string[] = [],
+): `sha256:${string}` {
+  const record = createEvidenceDependencyRecord({
+    subjectKind: 'receipt',
+    subjectId: 'dependency-set',
+    dependencies,
+    dependsOnEvidenceIds,
+  });
+  return sha256({
+    dependencies: record.dependencies,
+    dependsOnEvidenceIds: record.dependsOnEvidenceIds,
+  });
+}
+
+export function assertEvidenceDependencyRecord(
+  value: unknown,
+  kind: EvidenceDependencySubjectKind,
+  subjectId: string,
+): asserts value is EvidenceDependencyRecord {
+  if (!value || typeof value !== 'object')
+    throw new Error('Evidence dependency record is required');
+  const record = value as EvidenceDependencyRecord;
+  const partitions = [
+    'implementation-content',
+    'planning-semantic',
+    'execution-control',
+    'git-identity',
+    'publication-provenance',
+  ];
+  if (
+    record.schemaVersion !== 1 ||
+    record.subjectKind !== kind ||
+    record.subjectId !== subjectId ||
+    !Array.isArray(record.dependencies) ||
+    !record.dependencies.length ||
+    !Array.isArray(record.dependsOnEvidenceIds) ||
+    record.dependsOnEvidenceIds.some((id) => typeof id !== 'string' || !id.trim()) ||
+    record.dependencies.some(
+      (entry) =>
+        !entry ||
+        !partitions.includes(entry.partition) ||
+        !/^sha256:[a-f0-9]{64}$/u.test(entry.identity),
+    )
+  ) {
+    throw new Error('Evidence dependency record has invalid identity or shape');
+  }
+  const expected = createEvidenceDependencyRecord(record);
+  if (canonicalJson(expected) !== canonicalJson(record))
+    throw new Error('Evidence dependency record digest or canonical ordering mismatch');
 }
 
 export function createEvidenceDependencyRecord(input: {

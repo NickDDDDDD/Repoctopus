@@ -1,3 +1,4 @@
+import { evidenceDependencyFixture } from '../helpers/evidence-inputs.js';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -162,7 +163,7 @@ describe('single-repository Archive production tracer', () => {
         phase: 'archive' as const,
         status: 'running' as const,
         verificationInput: {
-          schemaVersion: 3 as const,
+          schemaVersion: 4 as const,
           runId: 'run-tracer',
           checkEpoch: 0,
           taskRevisions: [],
@@ -179,6 +180,7 @@ describe('single-repository Archive production tracer', () => {
             fingerprintDigest: digest('6'),
           },
           digest: digest('1'),
+          dependencies: evidenceDependencyFixture('verification-input', digest('1')),
         },
       };
       const { ports, calls } = fixture(provenance);

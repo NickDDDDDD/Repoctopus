@@ -1,3 +1,4 @@
+import { evidenceNodeInputFixture, evidenceDependencyFixture } from './helpers/evidence-inputs.js';
 import { describe, expect, it } from 'vitest';
 
 import { createVerificationInput } from '../domains/change-lifecycle/verification-input.js';
@@ -56,7 +57,7 @@ const fingerprint: EvidenceFingerprint = {
   algorithm: 'sha256',
   digest: 'fingerprint-1',
   manifest: {
-    schemaVersion: 2,
+    schemaVersion: 3,
     profileId: 'verify',
     sharedConfigDigest: 'shared-1',
     localConfigDigest: null,
@@ -72,6 +73,7 @@ const fingerprint: EvidenceFingerprint = {
     ],
     tools: {},
     adapters: {},
+    nodeInputs: [evidenceNodeInputFixture()],
     inputArtifactDigests: [],
   },
 };
@@ -142,7 +144,7 @@ describe('Verification input', () => {
   it('freezes Task, repository, configuration, composition, Skill, and Evidence identities', () => {
     const input = create();
     expect(input).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       taskRevisions: [{ taskId: '1.1', taskRevision: tasks[0]!.taskRevision }],
       acceptanceCriteria: [
         { taskId: '1.1', text: 'The implementation works', requirementRefs: ['runtime#works'] },
@@ -196,7 +198,8 @@ describe('Verification input', () => {
       verificationInput: verification,
     };
     const gate: EvidenceGateProjection = {
-      schemaVersion: 2,
+      schemaVersion: 3,
+      dependencies: evidenceDependencyFixture('gate', 'gate-fixture'),
       kind: 'EvidenceGateProjection',
       workflowRunId: 'run-1',
       workflowActionId: work.workId,

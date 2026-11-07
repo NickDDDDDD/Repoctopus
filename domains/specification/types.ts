@@ -63,6 +63,24 @@ export interface SpecificationTaskSet {
   digest: `sha256:${string}`;
 }
 
+/** Provider-authoritative files; raw bytes remain independently checked by the collector. */
+export interface SpecificationEvidenceProjection {
+  schemaVersion: 1;
+  changeId: string;
+  provider: SpecificationProviderIdentity;
+  root: PlanningSpecificationRoot;
+  schemaDigest: `sha256:${string}`;
+  policy: 'official-planning/v1';
+  files: readonly {
+    path: string;
+    artifactId: string;
+    rawDigest: `sha256:${string}`;
+    semanticDigest: `sha256:${string}`;
+  }[];
+  tasks: SpecificationTaskSet;
+  digest: `sha256:${string}`;
+}
+
 export interface CompleteSpecificationTaskInput {
   changeId: string;
   taskId: string;

@@ -491,6 +491,7 @@ export class WorkflowRunCoordinator {
     runId: string,
     observation: ChangeLifecycleObservation,
     options?: {
+      reobserve?: (state: RunState) => Promise<void>;
       authorizedRebind?: {
         entrypoint: 'next' | 'resume';
         evidence: AuthorizedProtectedBranchRebind;
@@ -498,7 +499,7 @@ export class WorkflowRunCoordinator {
     },
   ): Promise<RuntimeResult<RunStatusView>> {
     await this.recoverChangeLifecycleDefinition(runId);
-    await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+    await this.store.commitGuarded(runId, async ({ state, trajectory }) => {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
       if (
         state.changeLifecycle.phase === 'build' &&
@@ -518,6 +519,7 @@ export class WorkflowRunCoordinator {
               canonicalJson(entry.data.observation) === canonicalJson(observation))),
       );
       if (replayed) return { value: undefined };
+      await options?.reobserve?.(state);
       const authorizedRebind = options?.authorizedRebind;
       if (authorizedRebind) {
         if (observation.kind !== 'build-binding-revalidation-required') {

@@ -1,4 +1,15 @@
 import type { ArtifactRef, EvidenceAttempt, EvidenceBundle, EvidenceReceipt } from './types.js';
+import type { EvidenceNodeInputSnapshot } from './input-snapshot.js';
+import type { EvidenceDerivedInput } from './types.js';
+
+export interface EvidenceInputProofPort {
+  captureDerived(
+    snapshot: EvidenceNodeInputSnapshot,
+    predecessors: ReadonlyMap<string, EvidenceReceipt>,
+  ): Promise<EvidenceDerivedInput[]>;
+  captureOutputs(snapshot: EvidenceNodeInputSnapshot): Promise<ArtifactRef | null>;
+  outputsCurrent(snapshot: EvidenceNodeInputSnapshot, receipt: EvidenceReceipt): Promise<boolean>;
+}
 
 export interface PutArtifactOptions {
   artifactType: string;

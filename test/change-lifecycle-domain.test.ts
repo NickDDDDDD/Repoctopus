@@ -1,3 +1,4 @@
+import { evidenceDependencyFixture } from './helpers/evidence-inputs.js';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -285,7 +286,7 @@ function phaseWork(
 
 function verificationInput(checkEpoch: number, value: string): VerificationInput {
   return {
-    schemaVersion: 3,
+    schemaVersion: 4 as const,
     runId: initialSnapshot().identity.runId,
     checkEpoch,
     taskRevisions: [{ taskId: buildTask.taskId, taskRevision: buildTask.taskRevision }],
@@ -311,6 +312,7 @@ function verificationInput(checkEpoch: number, value: string): VerificationInput
       fingerprintDigest: `fingerprint-${value}`,
     },
     digest: digest(value),
+    dependencies: evidenceDependencyFixture('verification-input', digest(value)),
   };
 }
 

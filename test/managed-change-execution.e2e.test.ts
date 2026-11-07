@@ -2146,7 +2146,7 @@ describe('managed Change execution production composition', () => {
             : {}),
         };
         vi.spyOn(application.context.delivery, 'validateArchiveIntent').mockResolvedValue();
-        let preparedArchive = await application.context.commandRouter.execute<
+        const preparedArchive = await application.context.commandRouter.execute<
           { runId: string; attemptId: string; intent: DeliveryIntentV3; policy: DeliveryPolicy },
           RuntimeResult<RunStatusView>
         >('run.archive.prepare', {
@@ -2155,38 +2155,16 @@ describe('managed Change execution production composition', () => {
           intent,
           policy,
         });
-        if (multiRepository && executionMode === 'autonomous' && !protectedWriteRepositories) {
-          expect(
-            preparedArchive.value.changeLifecycle?.phase,
-            'committing Runtime task completion must preserve the accepted Verify evidence',
-          ).toBe('archive');
-          expect(preparedArchive.value.state.acceptedEvidenceBundleIds).toEqual(
-            recovered.value.state.acceptedEvidenceBundleIds,
-          );
-          expect(preparedArchive.value.changeLifecycle?.evidence.latestAttemptId).toBe(
-            acceptedAttemptId,
-          );
-        }
-        if (preparedArchive.value.changeLifecycle?.phase === 'verify') {
-          for (let step = 0; step < 4; step += 1) {
-            const refreshed = await next();
-            if (
-              refreshed.value.changeLifecycle?.phase === 'archive' &&
-              refreshed.value.changeLifecycle.currentWork === null
-            ) {
-              break;
-            }
-          }
-          const refreshedStatus = await status();
-          const refreshedAttemptId = refreshedStatus.changeLifecycle?.evidence.latestAttemptId;
-          if (!refreshedAttemptId) throw new Error('missing refreshed verification attempt');
-          preparedArchive = await application.context.commandRouter.execute('run.archive.prepare', {
-            runId,
-            attemptId: refreshedAttemptId,
-            intent,
-            policy,
-          });
-        }
+        expect(
+          preparedArchive.value.changeLifecycle?.phase,
+          'committing Runtime task completion must preserve the accepted Verify evidence',
+        ).toBe('archive');
+        expect(preparedArchive.value.state.acceptedEvidenceBundleIds).toEqual(
+          recovered.value.state.acceptedEvidenceBundleIds,
+        );
+        expect(preparedArchive.value.changeLifecycle?.evidence.latestAttemptId).toBe(
+          acceptedAttemptId,
+        );
         await next();
         const closed = await application.context.commandRouter.execute<
           {
@@ -2332,7 +2310,6 @@ describe('managed Change execution production composition', () => {
           'build.check',
           'evidence.verify',
           ...(!multiRepository && executionMode === 'autonomous' ? ['evidence.verify'] : []),
-          'evidence.verify',
           'specification.close',
           'delivery.publish',
         ]);

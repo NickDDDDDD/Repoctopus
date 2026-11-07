@@ -2847,7 +2847,7 @@ export class WorkflowRuns extends Service {
               if (typeof profileId !== 'string' || !profileId.trim()) {
                 throw new Error('Verification Evidence Profile identity is missing');
               }
-              const refreshed = await this.ctx.evidenceCoordinator.plan(profileId);
+              const refreshed = await this.ctx.evidenceCoordinator.plan(profileId, runId);
               if (
                 refreshed.fingerprint.digest ===
                 lifecycle.verificationInvalidation.evidenceInputFingerprint
@@ -4325,7 +4325,7 @@ export class WorkflowRuns extends Service {
               if (typeof profileId !== 'string' || !profileId.trim()) {
                 throw new Error('Verification Evidence Profile identity is missing');
               }
-              const evidencePlan = await this.ctx.evidenceCoordinator.plan(profileId);
+              const evidencePlan = await this.ctx.evidenceCoordinator.plan(profileId, runId);
               const verifySkills = await this.resolveLifecycleWorkSkills(
                 'evidence.verify',
                 signal,
@@ -4396,8 +4396,10 @@ export class WorkflowRuns extends Service {
                       refreshedProjectSnapshot,
                       protocol.workspaceCheckpoint!,
                     );
-                    const refreshedEvidencePlan =
-                      await this.ctx.evidenceCoordinator.plan(profileId);
+                    const refreshedEvidencePlan = await this.ctx.evidenceCoordinator.plan(
+                      profileId,
+                      runId,
+                    );
                     const refreshedVerificationInput = createVerificationInput({
                       runId,
                       checkEpoch: lifecycle.checkEpoch + 1,
@@ -5087,6 +5089,7 @@ export class WorkflowRuns extends Service {
     }
     const refreshed = await this.ctx.evidenceCoordinator.plan(
       lifecycle.verificationInput.evidenceProfile.id,
+      runId,
     );
     if (
       refreshed.fingerprint.digest === lifecycle.verificationInput.evidenceProfile.fingerprintDigest

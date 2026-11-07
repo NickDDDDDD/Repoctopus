@@ -72,4 +72,21 @@ export class FileEvidenceStore implements EvidenceStore {
     }
     return matches[0] ?? null;
   }
+
+  async reusableReceipts(nodeIds: readonly string[]): Promise<EvidenceReceipt[]> {
+    const directory = this.root('receipts');
+    const entries = await readdir(directory, { withFileTypes: true }).catch(
+      (error: NodeJS.ErrnoException) => {
+        if (error.code === 'ENOENT') return [];
+        throw error;
+      },
+    );
+    const candidates: EvidenceReceipt[] = [];
+    for (const entry of entries) {
+      if (!entry.isFile() || entry.isSymbolicLink() || !entry.name.endsWith('.json')) continue;
+      const receipt = parseEvidenceReceipt(await readJson(path.join(directory, entry.name)));
+      if (nodeIds.includes(receipt.nodeId) && receipt.status === 'passed') candidates.push(receipt);
+    }
+    return candidates.sort((a, b) => b.completedAt.localeCompare(a.completedAt));
+  }
 }

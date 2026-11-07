@@ -1,4 +1,5 @@
 import type { DeliveryPolicy } from '../delivery/types.js';
+import type { EvidenceInputPolicy } from '../evidence/input-policy.js';
 import type { BrowserJourney } from '../feedback/browser.js';
 import type { ReadinessCondition } from '../feedback/service.js';
 
@@ -23,6 +24,7 @@ export interface CommandNodeConfig {
   cache: boolean;
   cacheTtlMs?: number;
   zeroTests?: 'ignore' | 'warning' | 'blocking';
+  inputs?: EvidenceInputPolicy;
 }
 
 interface EvidenceNodeBase {

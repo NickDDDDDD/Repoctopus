@@ -9,9 +9,14 @@ import type {
 } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { resolveAcceptanceCoverage } from './acceptance-coverage.js';
+import {
+  createEvidenceDependencyRecord,
+  type EvidenceDependencyRecord,
+} from '../evidence/dependencies.js';
+import { evidenceInputDigest } from '../evidence/input-snapshot.js';
 
 export interface VerificationInput {
-  schemaVersion: 3;
+  schemaVersion: 4;
   runId: string;
   checkEpoch: number;
   taskRevisions: readonly { taskId: string; taskRevision: `sha256:${string}` }[];
@@ -38,6 +43,7 @@ export interface VerificationInput {
     fingerprintDigest: string;
   };
   digest: `sha256:${string}`;
+  dependencies: EvidenceDependencyRecord;
 }
 
 function sha256(value: unknown): `sha256:${string}` {
@@ -70,8 +76,8 @@ export function createVerificationInput(input: {
   if (input.plan.profileId !== input.fingerprint.manifest.profileId) {
     throw new Error('Verification Evidence Profile and fingerprint do not match');
   }
-  if (input.fingerprint.manifest.schemaVersion !== 2) {
-    throw new Error('Verification input requires Evidence fingerprint schema v2');
+  if (input.fingerprint.manifest.schemaVersion !== 3) {
+    throw new Error('Verification input requires Evidence fingerprint schema v3');
   }
   if (input.plan.nodes.length === 0) {
     throw new Error(`Verification Evidence Profile has no nodes: ${input.plan.profileId}`);
@@ -86,7 +92,7 @@ export function createVerificationInput(input: {
   }
   const acceptance = resolveAcceptanceCoverage(input.tasks, input.plan);
   const stable = {
-    schemaVersion: 3 as const,
+    schemaVersion: 4 as const,
     runId: input.runId,
     checkEpoch: input.checkEpoch,
     taskRevisions: input.tasks
@@ -125,7 +131,23 @@ export function createVerificationInput(input: {
       fingerprintDigest: input.fingerprint.digest,
     },
   };
-  return { ...stable, digest: sha256(stable) };
+  const { repositories: _provenance, ...semantic } = stable;
+  void _provenance;
+  const digest = sha256(semantic);
+  return {
+    ...stable,
+    digest,
+    dependencies: createEvidenceDependencyRecord({
+      subjectKind: 'verification-input',
+      subjectId: digest,
+      dependencies: [
+        {
+          partition: 'implementation-content',
+          identity: evidenceInputDigest(input.fingerprint.digest),
+        },
+      ],
+    }),
+  };
 }
 
 export function rebaseVerificationInput(
@@ -135,8 +157,21 @@ export function rebaseVerificationInput(
   if (!Number.isSafeInteger(checkEpoch) || checkEpoch < 0) {
     throw new Error('Verification input rebase requires a non-negative checkEpoch');
   }
-  const { digest: _digest, ...stable } = input;
+  const { digest: _digest, dependencies: _dependencies, ...stable } = input;
   void _digest;
+  void _dependencies;
   const rebased = { ...structuredClone(stable), checkEpoch };
-  return { ...rebased, digest: sha256(rebased) };
+  const { repositories: _provenance, ...semantic } = rebased;
+  void _provenance;
+  const digest = sha256(semantic);
+  return {
+    ...rebased,
+    digest,
+    dependencies: createEvidenceDependencyRecord({
+      subjectKind: 'verification-input',
+      subjectId: digest,
+      dependencies: input.dependencies.dependencies,
+      dependsOnEvidenceIds: input.dependencies.dependsOnEvidenceIds,
+    }),
+  };
 }

@@ -1,3 +1,5 @@
+import type { EvidenceDependencyRecord } from './dependencies.js';
+
 export const EVIDENCE_API_VERSION = 'repoctopus/v1alpha1' as const;
 
 export type EvidenceTrust = 'verified' | 'observed';
@@ -23,6 +25,7 @@ export interface EvidenceFinding {
 }
 
 export interface EvidenceReceipt {
+  schemaVersion: 1;
   apiVersion: typeof EVIDENCE_API_VERSION;
   kind: 'EvidenceReceipt';
   receiptId: string;
@@ -42,9 +45,21 @@ export interface EvidenceReceipt {
   sourceReceiptId?: string;
   artifacts: ArtifactRef[];
   findings: EvidenceFinding[];
+  dependencies: EvidenceDependencyRecord;
+  sourceFingerprint: string;
+  derivedInputs: EvidenceDerivedInput[];
+  outputManifest: ArtifactRef | null;
+}
+
+export interface EvidenceDerivedInput {
+  producerId: string;
+  producerReceiptId: string;
+  manifest: ArtifactRef;
+  contentDigest: `sha256:${string}`;
 }
 
 export interface EvidenceAttempt {
+  schemaVersion: 1;
   apiVersion: typeof EVIDENCE_API_VERSION;
   kind: 'EvidenceAttempt';
   attemptId: string;
@@ -55,6 +70,7 @@ export interface EvidenceAttempt {
   completedAt?: string;
   receiptIds: string[];
   status: 'running' | 'completed' | 'superseded';
+  dependencies: EvidenceDependencyRecord;
 }
 
 export interface EvidenceCheck {
@@ -97,7 +113,7 @@ export interface AcceptanceTrace {
 }
 
 export interface EvidenceBundle {
-  schemaVersion: 2;
+  schemaVersion: 3;
   apiVersion: typeof EVIDENCE_API_VERSION;
   kind: 'EvidenceBundle';
   bundleId: string;
@@ -113,10 +129,11 @@ export interface EvidenceBundle {
   artifactDigests: string[];
   verificationReport?: ArtifactRef;
   findings: EvidenceFinding[];
+  dependencies: EvidenceDependencyRecord;
 }
 
 export interface EvidenceGateProjection {
-  schemaVersion: 2;
+  schemaVersion: 3;
   kind: 'EvidenceGateProjection';
   workflowRunId: string | null;
   workflowActionId: string | null;
@@ -132,4 +149,5 @@ export interface EvidenceGateProjection {
   outcome: GateOutcome;
   status: 'satisfied' | 'blocked';
   reason: string;
+  dependencies: EvidenceDependencyRecord;
 }

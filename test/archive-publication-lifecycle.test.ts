@@ -1,3 +1,4 @@
+import { evidenceDependencyFixture } from './helpers/evidence-inputs.js';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -220,7 +221,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
       },
     ],
     verificationInput: {
-      schemaVersion: 3 as const,
+      schemaVersion: 4 as const,
       runId: 'run-terminal',
       checkEpoch: 0,
       taskRevisions: [],
@@ -237,6 +238,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
         fingerprintDigest: digest('8'),
       },
       digest: digest('3'),
+      dependencies: evidenceDependencyFixture('verification-input', digest('3')),
     },
   };
   const closeWork = createSpecificationCloseWork({

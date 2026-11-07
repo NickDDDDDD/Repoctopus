@@ -1,3 +1,4 @@
+import { createEvidenceReceipt } from '../domains/evidence/receipt.js';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -9,10 +10,7 @@ import { EVIDENCE_API_VERSION, type EvidenceReceipt } from '../domains/evidence/
 import { parseEvidenceBundle, parseEvidenceReceipt } from '../domains/evidence/validation.js';
 import { TEST_COMPOSITION_DIGEST } from './helpers/fixtures.js';
 
-const receipt: EvidenceReceipt = {
-  apiVersion: EVIDENCE_API_VERSION,
-  kind: 'EvidenceReceipt',
-  receiptId: 'receipt-1',
+const receipt: EvidenceReceipt = createEvidenceReceipt({
   compositionDigest: TEST_COMPOSITION_DIGEST,
   attemptId: 'attempt-1',
   nodeId: 'build',
@@ -26,7 +24,7 @@ const receipt: EvidenceReceipt = {
   exitCode: 0,
   artifacts: [],
   findings: [],
-};
+});
 
 describe('evidence contracts', () => {
   it('round-trips versioned receipts and bundles', () => {

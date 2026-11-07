@@ -1,3 +1,4 @@
+import { evidenceNodeInputFixture, evidenceDependencyFixture } from './helpers/evidence-inputs.js';
 import { execFile } from 'node:child_process';
 import { link, mkdir, rm, symlink, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -302,7 +303,7 @@ describe('evidence fingerprint', () => {
       root: repository,
     });
     const base = {
-      schemaVersion: 2 as const,
+      schemaVersion: 3 as const,
       profileId: 'verify',
       sharedConfigDigest: 'shared',
       localConfigDigest: 'local',
@@ -311,6 +312,7 @@ describe('evidence fingerprint', () => {
       adapters: { command: '1' },
       browser: { name: 'chromium', version: '1', revision: '100' },
       journeyDigest: 'journey',
+      nodeInputs: [evidenceNodeInputFixture()],
       inputArtifactDigests: ['artifact'],
     };
     const original = createEvidenceFingerprint(base);
@@ -321,7 +323,7 @@ describe('evidence fingerprint', () => {
       { ...base, adapters: { command: '2' } },
       { ...base, browser: { ...base.browser, revision: '101' } },
       { ...base, journeyDigest: 'changed' },
-      { ...base, inputArtifactDigests: ['changed'] },
+      { ...base, nodeInputs: [evidenceNodeInputFixture()], inputArtifactDigests: ['changed'] },
     ]) {
       expect(createEvidenceFingerprint(changed).digest).not.toBe(original.digest);
     }
@@ -347,13 +349,14 @@ describe('evidence fingerprint', () => {
       }),
     ]);
     const manifest = {
-      schemaVersion: 2 as const,
+      schemaVersion: 3 as const,
       profileId: 'verify',
       sharedConfigDigest: 'shared',
       localConfigDigest: null,
       repositories,
       tools: {},
       adapters: {},
+      nodeInputs: [evidenceNodeInputFixture()],
       inputArtifactDigests: [],
     };
     expect(createEvidenceFingerprint(manifest).digest).toBe(

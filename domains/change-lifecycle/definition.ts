@@ -1166,12 +1166,12 @@ export function recoverChangeLifecycleSnapshot(options: {
   )?.schemaVersion;
   if (
     verificationSchemaVersion !== undefined &&
-    verificationSchemaVersion !== 3 &&
+    verificationSchemaVersion !== 4 &&
     options.persisted.status !== 'completed'
   ) {
     const evidenceIds = [
       `verification-input:v${verificationSchemaVersion}`,
-      'verification-input:v3',
+      'verification-input:v4',
     ];
     const alreadyStopped =
       options.persisted.status === 'migration_required' &&

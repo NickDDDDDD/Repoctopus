@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { parseSharedProjectConfig } from '../domains/project-configuration/config.js';
+import { evidenceInputPatternsOverlap } from '../domains/evidence/input-policy.js';
 
 function project(inputs: unknown) {
   return {
@@ -30,6 +31,13 @@ function project(inputs: unknown) {
 }
 
 describe('Evidence command input declarations', () => {
+  it('intersects glob languages rather than representative filenames', () => {
+    expect(evidenceInputPatternsOverlap('dist/*/config.json', 'dist/prod/*.json')).toBe(true);
+    expect(evidenceInputPatternsOverlap('src/**', 'dist/**')).toBe(false);
+    expect(evidenceInputPatternsOverlap('dist/**/config.json', 'dist/config.json')).toBe(true);
+    expect(evidenceInputPatternsOverlap('src/[id].ts', 'src/id.ts')).toBe(false);
+    expect(evidenceInputPatternsOverlap('src/[id].ts', 'src/*.ts')).toBe(true);
+  });
   it('accepts a versioned declaration and makes its defaults explicit', () => {
     expect(() =>
       parseSharedProjectConfig(
