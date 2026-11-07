@@ -1,3 +1,9 @@
+---
+comet_change: unify-build-workspace-recovery
+role: technical-design
+canonical_spec: openspec
+---
+
 # Build 工作区恢复设计
 
 ## Context
