@@ -2,7 +2,7 @@
 
 ### Requirement: Archive 关闭前必须重验冻结输入
 
-Repoctopus MUST 在执行 `specification.close` 或 publication 副作用前，使用与 Verify 相同的输入依赖权威比较当前事实与冻结 Verification Input。等价收尾 MUST 保留有效证据和当前 Archive Work。声明的证据依赖确实漂移且尚无 Closure 或 Publication Receipt 时，Runtime MUST 退役失效 close execution、清除相应 Archive input 并返回 Verify，只重采受影响证据；规划授权同时失效时 MUST 按既有最高受影响权威规则直接恢复 Design。副作用已经开始后 MUST 使用既有 journal/reconciliation，不得回滚或伪造重验。
+Repoctopus MUST 在执行 `specification.close` 或 publication 副作用前，使用与 Verify 相同的输入依赖权威比较当前事实与冻结 Verification Input。等价收尾 MUST 保留有效验证证据，发布坐标仍由独立 preflight 核对。声明的证据依赖确实漂移且尚无 Closure 或 Publication Receipt 时，Runtime MUST 退役失效 close execution、清除相应 Archive input 并返回 Verify，只重采受影响证据；规划授权同时失效时 MUST 按既有最高受影响权威规则直接恢复 Design。副作用已经开始后 MUST 使用既有 journal/reconciliation，不得回滚或伪造重验。
 
 #### Scenario: Close Work 冻结后源树漂移
 
@@ -22,7 +22,12 @@ Repoctopus MUST 在执行 `specification.close` 或 publication 副作用前，�
 #### Scenario: Verify 后只提交完成复选框
 
 - **WHEN** 当前 Run 已合法完成 Task 并通过 Verify，随后 Workspace 仅暂存和提交相同完成状态，Provider 证明规划语义未变，检查也未声明消费该 Git 身份或 checkbox
-- **THEN** 新进程的恢复和 Archive preflight 保留同一已接受 Gate、Bundle、完成事实和 Archive Work，不递增执行 epoch、不创建新的 Verify Work，也不重跑检查
+- **THEN** 新进程的恢复和 Archive preflight 保留已接受的有效 Gate、Bundle 和完成事实，不创建额外的 Verify Work或重跑检查；发布坐标未变时保持当前 Archive Work，首次准备或合法更新发布 checkpoint 的正常 transition 仍可递增 epoch
+
+#### Scenario: 等价收尾改变已冻结发布坐标
+
+- **WHEN** 验证依赖仍有效，但实际发布提交与已冻结 Archive input 不同，且关闭或发布副作用尚未开始
+- **THEN** Runtime 阻断使用旧发布输入，重新执行受保护 preflight，核对批准的分支、远端、提交范围、当前发布坐标及验证证据；只有重验通过才建立匹配的发布 checkpoint，不因发布来源变化使有效 Verify Evidence 失效
 
 #### Scenario: 收尾提交影响显式 Git 依赖
 
