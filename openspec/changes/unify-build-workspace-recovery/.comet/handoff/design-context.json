@@ -1,0 +1,17 @@
+{
+  "change": "unify-build-workspace-recovery",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d",
+  "files": [
+    { "path": "openspec/changes/unify-build-workspace-recovery/proposal.md", "sha256": "f04651a4f0372c41e8c5f49dd2418ce254f03d49b1de0275e52e13d38338aa2f" },
+    { "path": "openspec/changes/unify-build-workspace-recovery/design.md", "sha256": "01d90b8b7d2e9482eb495875971a761bbd3a75ec84dccfc1a362f740b8e99fe5" },
+    { "path": "openspec/changes/unify-build-workspace-recovery/tasks.md", "sha256": "1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65" },
+    { "path": "openspec/changes/unify-build-workspace-recovery/.openspec.yaml", "sha256": "cb72bd9217510d5461ddb5384ca197195a83da2d8dfbd237178f7ed662291c68" },
+    { "path": "openspec/changes/unify-build-workspace-recovery/specs/managed-work-execution/spec.md", "sha256": "581bd09f0f19e71838390e064b6ecb4f38b041eaa9cb3c8754ee8fdf89bf30ce" },
+    { "path": "openspec/changes/unify-build-workspace-recovery/specs/multi-repository-probe/spec.md", "sha256": "5ddf9505b219ad17f199d92b2c56711cd38a8c30f581fdf082f98d62d62bc750" }
+  ]
+}

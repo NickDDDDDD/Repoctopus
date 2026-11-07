@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: comet/unify-build-workspace-recovery
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+handoff_hash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: dd582da12f59f63184e3514422a8ac6af01f71a7494c09a62cfbd9b9a58ff36a
+  hash: da6899d557bb15e56c05359c016ce1f43730978cc6c1105d5e244da54e4616f2
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -65,8 +65,8 @@ run_checkpoint:
       createdAt: 2026-11-06
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+      handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
       isolation: branch
       language: zh-CN
       phase: design
@@ -80,8 +80,8 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 5
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
         claim:
@@ -181,6 +181,14 @@ run_checkpoint:
         stepId: full.open.revalidate
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-37c4e6f48065b5584fc5bfde8d7437caa436e470fc8f9c216132bbc4ed40d754
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: unify-build-workspace-recovery:5
         input:
           input:
@@ -211,14 +219,47 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
         inputHash: a572c3c19701f0dc8971772d5b01b5828aa523da737a34cc157d308a4157548f
+        outcome:
+          actionId: unify-build-workspace-recovery:5
+          attempt: 1
+          claimToken: portable-37c4e6f48065b5584fc5bfde8d7437caa436e470fc8f9c216132bbc4ed40d754
+          inputHash: a572c3c19701f0dc8971772d5b01b5828aa523da737a34cc157d308a4157548f
+          outcomeId: 0edb5450-5739-4022-9df3-d1be605d8332
+          output:
+            handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+            handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+            proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+              workspace intent、当前 ExecutionBinding 和最近已接受的
+              BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
+              写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
+              Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
+              进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
+              checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+              后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在 managed-work-execution
+              中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan correction 路径。公开 CLI 的
+              nextActions 与 continuation 取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
+              的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受 HEAD，在真实四业务仓加
+              Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与
+              checkpoint 恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
+              进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound 更新控制。详见当前
+              design.md，独立 Builder Check 已确认无实质规划缺口。
+            requirementsEvidence:
+              contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+              ref: openspec/changes/unify-build-workspace-recovery
+            sourceEvidence:
+              contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+              ref: openspec/changes/unify-build-workspace-recovery
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: e1a12f2152149d2cb000149af590b14bf7162d2192d942d0aa9b8bd0cc5e7f44
+            outcomeId: 0edb5450-5739-4022-9df3-d1be605d8332
         reconciliations: []
         ref: comet-design
         requiredCapabilities: []
         retry: manual
         runId: unify-build-workspace-recovery
-        status: pending
+        status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
@@ -320,6 +361,103 @@ run_checkpoint:
           id: classic-open-e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
           choice: approved
           proposalHash: 5b7c666744618c7402e6640f3788aa89eca6a7db3b5ff816fd8c81e419df7917
+      - id: unify-build-workspace-recovery:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+                workspace intent、当前 ExecutionBinding 和最近已接受的
+                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
+                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
+                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
+                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
+                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
+                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
+                correction 路径。公开 CLI 的 nextActions 与 continuation
+                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
+                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
+                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
+                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
+                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
+                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
+              requirementsEvidence:
+                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+                ref: openspec/changes/unify-build-workspace-recovery
+              sourceEvidence:
+                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+                ref: openspec/changes/unify-build-workspace-recovery
+        proposalHash: 302295fd6c49bcdf4185a533a00d50b99cf4dd59331494b4bdf5a31585d38351
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+                workspace intent、当前 ExecutionBinding 和最近已接受的
+                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
+                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
+                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
+                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
+                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
+                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
+                correction 路径。公开 CLI 的 nextActions 与 continuation
+                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
+                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
+                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
+                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
+                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
+                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
+              requirementsEvidence:
+                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+                ref: openspec/changes/unify-build-workspace-recovery
+              sourceEvidence:
+                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+                ref: openspec/changes/unify-build-workspace-recovery
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: unify-build-workspace-recovery
+                  changeDir: openspec/changes/unify-build-workspace-recovery
+                  workspaceBaseline:
+                    ref: ed489e70-b325-4386-b548-351e1984b8af
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+                    ref: openspec/changes/unify-build-workspace-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+              ref: openspec/changes/unify-build-workspace-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
     evidenceWaits:
       - id: unify-build-workspace-recovery:2
         stepId: full.open.evidence
@@ -338,6 +476,32 @@ run_checkpoint:
     ready: []
     joins: {}
     outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+          handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+          proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+            workspace intent、当前 ExecutionBinding 和最近已接受的
+            BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation 写入阻塞前使用该判定，next
+            在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
+            Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
+            进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
+            checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+            后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在 managed-work-execution
+            中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan correction 路径。公开 CLI 的
+            nextActions 与 continuation 取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
+            的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受 HEAD，在真实四业务仓加
+            Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
+            恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
+            acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立 Builder Check
+            已确认无实质规划缺口。
+          requirementsEvidence:
+            contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+            ref: openspec/changes/unify-build-workspace-recovery
+          sourceEvidence:
+            contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+            ref: openspec/changes/unify-build-workspace-recovery
       full.open:
         sequence: 1
         value:
@@ -369,6 +533,6 @@ run_checkpoint:
           contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
     children: []
     lineage: []
-  sourceRevision: 7
-  sourceHash: 99d42552995e21011a9c3bf3befe4404a9dce4044e9a5332b5feee598dc3429b
+  sourceRevision: 9
+  sourceHash: 9cba1a61bdb9e141ef5b4450dd68d9d3b38a4ebba54ea566c371612ec0c41e98
 check_epoch: 1
