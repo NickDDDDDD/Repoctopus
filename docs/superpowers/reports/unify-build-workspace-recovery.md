@@ -1,5 +1,7 @@
 # Build 工作区恢复验证
 
+发布包身份与可复现输入见 [产品包验证报告](../../../verification/unify-build-workspace-recovery/verification-report.md)。本文件作为 Comet Verify 入口，产品包报告供仓库既有包内容检查使用，共用同一组原始验收证据。
+
 ## TDD 失败证据
 
 2026-11-07，从主线 `9da1d47` 加入生产组合回归。实验场景通过公开 CLI 创建 Run，随后准备业务分支，完成 Configure、Plan 和第一个工作包，关闭当前应用后在新进程执行公开 `run resume`。
@@ -28,7 +30,7 @@ TypeScript、定向 ESLint、架构边界、第三方来源和生成物校验通
 
 | 核对项         | 实际结果                                                                                                                                                                        |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Run            | `change-agent-lab-v010-workspace-verify-build-workspace-recovery-20261107-r2-fdfbcf36b8971b4a`                                                                                  |
+| Run            | `verify-build-workspace-recovery-20261107-r2`，唯一标识后缀 `fdfbcf36b8971b4a`；完整标识保存在外部原始报告及命令记录中                                                          |
 | Binding        | `execution-binding:e368421704a4a93ba68b040b`，revision 1                                                                                                                        |
 | Plan           | `build-plan:c8ff44f51476afe7141e592e`，revision 1                                                                                                                               |
 | 新进程正常恢复 | 首包后六次独立 CLI 进程，覆盖 resume/next 调换顺序与重复调用，完整 Strategy、Binding、Plan、checkpoint、completion 和下一 Work 保持一致，进度仍为 1/2                           |
@@ -42,12 +44,14 @@ TypeScript、定向 ESLint、架构边界、第三方来源和生成物校验通
 
 该真实专项停在尚未领取的 `build.check:f6a70813b606`，保留后续复验现场。上述 Evidence profile 结果没有被当作这个测试 Run 已通过 lifecycle Verify 或 Archive 的证明。完整五阶段链路另由生产组合回归验证。
 
-详细证据保存在独立验收目录 `agent-lab-build-recovery-acceptance-20261107/round2/evidence`，包含 command-ledger、新进程恢复矩阵、published refs、accepted-authority-summary、package-no-replay-events 和 original-site-integrity。首次夹具错误使用了不支持的 `git grep -x`，exit 129 已保留并判为无效 RED；改用 Node 断言后创建全新 Run 重跑，旧 Run 不作为成功基线。首包一次 GitHub 连接失败通过重试原 push 恢复，未重做已完成改动。
+详细证据保存在外部独立验收目录的 `round2/evidence`，包含 command-ledger、新进程恢复矩阵、published refs、accepted-authority-summary、package-no-replay-events 和 original-site-integrity。同目录的 `verification-report.md` SHA256 为 `f7ed529ed76ed3b770293f4393fa55ea8c63c356f3fe8874b59316ce29ec2bc5`，记录完整 Run 标识和证据路径。首次夹具错误使用了不支持的 `git grep -x`，exit 129 已保留并判为无效 RED；改用 Node 断言后创建全新 Run 重跑，旧 Run 不作为成功基线。首包一次 GitHub 连接失败通过重试原 push 恢复，未重做已完成改动。
 
 ## 规格与设计核对
 
 两个 MODIFIED requirement 的全部场景均已对应实现或现有回归。当前绑定与进度判定、精确授权的 Configure 路径、未授权分支阻断和原执行断点恢复分别由领域、生产组合和真实安装包验收交叉验证。独立代码审查的 CRITICAL/IMPORTANT 问题为零，当前范围的检查结论合格。
 
 正式集成检查命令为 `npm.cmd run verify`，最终结果以同一 Comet Run 的 Verify Guard 真实检查收据为准。
+
+首轮正式检查通过 196 个测试文件、1025 项测试，另有 1 个文件、3 项测试按既有条件跳过。随后架构检查发现本报告中的外部实验仓名称命中了旧工作流名称禁用规则，命令返回 1。报告改用唯一 Run 后缀和原始报告哈希定位外部证据，原记录未修改，架构规则未放宽；修正后重新执行正式检查。
 
 Windows 的 Guard 使用公开 `comet.cmd` 入口传递完整命令参数。可选的实验 npm 内部缓存日志清理被自动审批检查以 `blocked by policy` 拒绝，未执行删除；缓存日志与全部验收证据保留，产品和原现场没有新增 scratch 或调试日志。
