@@ -44,7 +44,7 @@ TypeScript、定向 ESLint、架构边界、第三方来源和生成物校验通
 
 该真实专项停在尚未领取的 `build.check:f6a70813b606`，保留后续复验现场。上述 Evidence profile 结果没有被当作这个测试 Run 已通过 lifecycle Verify 或 Archive 的证明。完整五阶段链路另由生产组合回归验证。
 
-详细证据保存在外部独立验收目录的 `round2/evidence`，包含 command-ledger、新进程恢复矩阵、published refs、accepted-authority-summary、package-no-replay-events 和 original-site-integrity。同目录的 `verification-report.md` SHA256 为 `f7ed529ed76ed3b770293f4393fa55ea8c63c356f3fe8874b59316ce29ec2bc5`，记录完整 Run 标识和证据路径。首次夹具错误使用了不支持的 `git grep -x`，exit 129 已保留并判为无效 RED；改用 Node 断言后创建全新 Run 重跑，旧 Run 不作为成功基线。首包一次 GitHub 连接失败通过重试原 push 恢复，未重做已完成改动。
+详细证据保存在外部独立验收目录的 `round2/evidence`，包含 command-ledger、新进程恢复矩阵、published refs、accepted-authority-summary、package-no-replay-events 和 original-site-integrity。原始报告 `round2/verification-report.md` SHA256 为 `f7ed529ed76ed3b770293f4393fa55ea8c63c356f3fe8874b59316ce29ec2bc5`，记录完整 Run 标识和证据路径。首次夹具错误使用了不支持的 `git grep -x`，exit 129 已保留并判为无效 RED；改用 Node 断言后创建全新 Run 重跑，旧 Run 不作为成功基线。首包一次 GitHub 连接失败通过重试原 push 恢复，未重做已完成改动。
 
 ## 规格与设计核对
 
