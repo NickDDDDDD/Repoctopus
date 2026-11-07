@@ -2155,6 +2155,18 @@ describe('managed Change execution production composition', () => {
           intent,
           policy,
         });
+        if (multiRepository && executionMode === 'autonomous' && !protectedWriteRepositories) {
+          expect(
+            preparedArchive.value.changeLifecycle?.phase,
+            'committing Runtime task completion must preserve the accepted Verify evidence',
+          ).toBe('archive');
+          expect(preparedArchive.value.state.acceptedEvidenceBundleIds).toEqual(
+            recovered.value.state.acceptedEvidenceBundleIds,
+          );
+          expect(preparedArchive.value.changeLifecycle?.evidence.latestAttemptId).toBe(
+            acceptedAttemptId,
+          );
+        }
         if (preparedArchive.value.changeLifecycle?.phase === 'verify') {
           for (let step = 0; step < 4; step += 1) {
             const refreshed = await next();
