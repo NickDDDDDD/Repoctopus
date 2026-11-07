@@ -21,7 +21,7 @@ base-ref: c25e2ab
 - `domains/runtime/workflow-runs.ts` 使用当前 Run revision 和绑定检查恢复观察，原子记录事件与可归属的工作区阻塞，不改写启动 snapshot。
 - `app/cli/main.ts` 从实际恢复 continuation 生成续行提示。
 - `test/managed-change-execution.e2e.test.ts` 扩展现有生产组合用例，在首包 acceptance 后用新进程 CLI 验证入口一致性和未授权分支。
-- `test/build-workspace-recovery.test.ts` 覆盖领域边界，`verification/` 的本次报告保存真实多仓、TDD 和独立审查结果。
+- `test/build-workspace-recovery.test.ts` 覆盖领域边界，`docs/superpowers/reports/unify-build-workspace-recovery.md` 保存真实多仓、TDD 和独立审查结果。
 
 ## 1. 固定失败回归
 
