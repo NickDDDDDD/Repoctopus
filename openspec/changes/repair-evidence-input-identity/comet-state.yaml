@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 4ef3cd85-a1de-48f7-87df-a5fe1f018a50
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: branch
+verify_mode: null
+auto_transition: true
+base_ref: 22b5cd069194f777ba366f60275f211edf97bda8
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-07
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/repair-evidence-input-identity
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 2d74411806426449fafb60c51b0178de222049f53ac1f77802173e4fa50d5309
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: repair-evidence-input-identity
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 93afc25e01e8dffdf7164432907bceb608191227250cf8d03653503b7b5f7334
+    input:
+      change: repair-evidence-input-identity
+      changeDir: openspec/changes/repair-evidence-input-identity
+      workspaceBaseline:
+        ref: 38102e37-146a-444a-b61e-af48da010bf7
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 22b5cd069194f777ba366f60275f211edf97bda8
+      boundBranch: comet/repair-evidence-input-identity
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-07
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: branch
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: repair-evidence-input-identity:1
+        input:
+          input:
+            change: repair-evidence-input-identity
+            changeDir: openspec/changes/repair-evidence-input-identity
+            workspaceBaseline:
+              ref: 38102e37-146a-444a-b61e-af48da010bf7
+          outputs: {}
+        inputHash: f6db2a1a5b8609ff90e774c3857c581c43f5a29406879d3721e148d658ba4259
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-evidence-input-identity
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      repair-evidence-input-identity:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: ae9470e9fa2e0badd508bce15df0433880f1151e089900c53646d08b6082497b
