@@ -2,7 +2,7 @@
 change_id: e836973c-7b1b-4d8e-9158-a85b4dfcd0fe
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 33b95c72ea14441ed88aff14ced2e139ea528dc10727e55711b5c837d4622cc6
+  hash: ff53e6aebde64ed96067ce7d6fd87570850198f8edb62462f3712da3bb273cbb
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,6 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 1
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -68,7 +69,7 @@ run_checkpoint:
       handoffHash: null
       isolation: worktree
       language: zh-CN
-      phase: open
+      phase: design
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -80,9 +81,17 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 1
+    sequence: 5
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-f3fe0743cca73ef214d37b38a580184104cbb127c33f61cd791633714a33fc93
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: '1'
         id: preserve-completed-run-recovery:1
         input:
           input:
@@ -92,25 +101,274 @@ run_checkpoint:
               ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
           outputs: {}
         inputHash: d231c4072a7c237b93b88292fffd933093773ca60a0977ba922a02368570378d
+        outcome:
+          actionId: preserve-completed-run-recovery:1
+          attempt: 1
+          claimToken: portable-f3fe0743cca73ef214d37b38a580184104cbb127c33f61cd791633714a33fc93
+          inputHash: d231c4072a7c237b93b88292fffd933093773ca60a0977ba922a02368570378d
+          outcomeId: 16068bec-c41c-4c53-ad90-30fe422f4b48
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 507ea03aa1f204f48ad222ca77f706b94398d4edc1782fbbaee721b94c6fe913
+            outcomeId: 16068bec-c41c-4c53-ad90-30fe422f4b48
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: preserve-completed-run-recovery
-        status: pending
+        status: succeeded
         stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-ab06d7f691b0976db1a586092812a537f75b1ea236a05a9403dec079cbc75704
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: '1'
+        id: preserve-completed-run-recovery:4
+        input:
+          input:
+            change: preserve-completed-run-recovery
+            changeDir: openspec/changes/preserve-completed-run-recovery
+            workspaceBaseline:
+              ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: preserve-completed-run-recovery
+                  changeDir: openspec/changes/preserve-completed-run-recovery
+                  workspaceBaseline:
+                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+                    ref: openspec/changes/preserve-completed-run-recovery
+            full.open.evidence:
+              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+              ref: openspec/changes/preserve-completed-run-recovery
+        inputHash: 31ac964ed1282192d57edeffef1efd51f4c3971404b5ad29a48ed4ae84e704f4
+        outcome:
+          actionId: preserve-completed-run-recovery:4
+          attempt: 1
+          claimToken: portable-ab06d7f691b0976db1a586092812a537f75b1ea236a05a9403dec079cbc75704
+          inputHash: 31ac964ed1282192d57edeffef1efd51f4c3971404b5ad29a48ed4ae84e704f4
+          outcomeId: preserve-completed-run-recovery:4:1:executor-result
+          output:
+            contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0d2eb1058341e357467023957a65c848ed9b39466f18c725347b862fc1fdb75a
+            outcomeId: preserve-completed-run-recovery:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-completed-run-recovery
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        id: preserve-completed-run-recovery:5
+        input:
+          input:
+            change: preserve-completed-run-recovery
+            changeDir: openspec/changes/preserve-completed-run-recovery
+            workspaceBaseline:
+              ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: preserve-completed-run-recovery
+                  changeDir: openspec/changes/preserve-completed-run-recovery
+                  workspaceBaseline:
+                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+                    ref: openspec/changes/preserve-completed-run-recovery
+            full.open.evidence:
+              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+              ref: openspec/changes/preserve-completed-run-recovery
+            full.open.revalidate:
+              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+        inputHash: b002af00604b76e43e858e73b19ff810ce9cbc32894c3b16ad09cb0728a4634f
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-completed-run-recovery
+        status: pending
+        stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
       preserve-completed-run-recovery:1:
         results: {}
         sequence: 1
-    waits: []
+      preserve-completed-run-recovery:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: preserve-completed-run-recovery
+                  changeDir: openspec/changes/preserve-completed-run-recovery
+                  workspaceBaseline:
+                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+                    ref: openspec/changes/preserve-completed-run-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+              ref: openspec/changes/preserve-completed-run-recovery
+        sequence: 4
+      preserve-completed-run-recovery:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: preserve-completed-run-recovery
+                  changeDir: openspec/changes/preserve-completed-run-recovery
+                  workspaceBaseline:
+                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+                    ref: openspec/changes/preserve-completed-run-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+              ref: openspec/changes/preserve-completed-run-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+        sequence: 5
+    waits:
+      - id: preserve-completed-run-recovery:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: preserve-completed-run-recovery
+            changeDir: openspec/changes/preserve-completed-run-recovery
+            workspaceBaseline:
+              ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+              ref: openspec/changes/preserve-completed-run-recovery
+        proposalHash: 860fceb1cda42c38569c7282a6ea37991fd23166dd94749c8c01dab3376ae34d
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+              ref: openspec/changes/preserve-completed-run-recovery
+        decision:
+          id: classic-open-14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+          choice: approved
+          proposalHash: 860fceb1cda42c38569c7282a6ea37991fd23166dd94749c8c01dab3376ae34d
+    evidenceWaits:
+      - id: preserve-completed-run-recovery:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/preserve-completed-run-recovery
+          contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+          submissionId: a7fcfebf-e93b-4c70-8977-1b71e7e9b5ff
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: preserve-completed-run-recovery
+              changeDir: openspec/changes/preserve-completed-run-recovery
+              workspaceBaseline:
+                ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+                ref: openspec/changes/preserve-completed-run-recovery
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+          ref: openspec/changes/preserve-completed-run-recovery
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: 28d54da9b45196a80e23807c849a70ea0f6dff4a2076e445b540db6044cdd609
+  sourceRevision: 7
+  sourceHash: 986a0b161e018a32aa10386e0501fad86806853930331a1bc62e5535e1f450a7
+check_epoch: 1

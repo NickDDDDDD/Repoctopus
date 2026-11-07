@@ -60,6 +60,31 @@ Engine/domain 只根据传入事实分类；Cordis Service 协调读取和入口
 
 轨迹和现有 OpenTelemetry 对应事件作为验收佐证：完成后恢复不得再产生新的活动 Work、Skill 执行或阶段返工。此次不新增遥测字段或一套计数权威。
 
+### 5. 跨入口的具体落实位置
+
+| 边界                                             | 当前遗漏                                                       | 设计约束                                                                          |
+| ------------------------------------------------ | -------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `domains/runtime/workflow-runs.ts` 的完整 status | 全局标志在纯 terminal projection 之外覆盖继续指令              | 先尊重可信 completed；保留原持久诊断，活动 Run 才由 reconciliation 标志阻断       |
+| coordinator 的 `resume` / `next`                 | 通用恢复仍可能进行写前兼容处理、项目 reconciliation 或事件追加 | 已完成 Change 走现有 Store 读取/必要恢复后的终态路径，不对该 Run 增加开发恢复事件 |
+| `services/workflow-runs.ts` 的 `resume` / `next` | 终态落入活动定义、Skill、workspace 和 Host checkpoint 恢复     | 在这些活动执行步骤之前使用同一终态判定；不修改各阶段自己的授权或失效分类          |
+| `app/cli/main.ts` 的 resume envelope             | 根据原始 reconciliation 标志单独生成恢复指令                   | 使用权威终态和共享 next-actions 渲染，不能重新覆盖 Service 已确定的完成结果       |
+
+终态读取核对 Run 与 Checkpoint 的身份、状态和版本来自同一可验证提交；缺少必要持久文件、损坏 JSON 或不一致且无法由原 Journal 恢复时返回诊断。不要用调用者提供的 completed 字段或只读一个原始 JSON 字段作为成功依据，也不扩展为另一套通用状态校验框架。
+
+已有 ResumeView 若携带项目差异，保留能够证明的观察内容并明确其不要求活动 reconciliation，不伪造“当前快照与原快照相同”。历史 `state.reconciliationRequired` 可以作为原持久诊断保留；执行恢复、公开 next actions 和展示端的继续指令由 terminal authority 决定。
+
+### 6. 验收矩阵与输入固定
+
+| 场景                                                    | 必须同时核对的结果                                                                     |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 正常 completed，多仓已提交且 source branch 不同于启动时 | 两种冷恢复顺序始终 done；不新增 reconciliation 标志，状态版本和执行计数不增加          |
+| 已 completed，保留本次历史错误标志                      | status、Service execution、CLI envelope nextActions 仍一致完成；原标志与原文件不被手改 |
+| completed 后又切换 checkout 或 MR 发生变化              | 不重开该 Run、不创建新发布；独立影响审查保持原职责                                     |
+| Run/Checkpoint 缺失、损坏或完成事务中断                 | 缺失/损坏明确失败；原 Journal 恢复原事务；不能用终态提前返回掩盖错误                   |
+| 尚未 completed 的 Build / Verify / Archive              | 原 Binding、精确 Evidence 与未知副作用规则仍生效；未授权变化不能获得执行授权           |
+
+正式检查从当前 Comet check policy 读取精确 executable、argv、cwd 和输入声明；Windows 使用策略中已有的 `npm.cmd` 命令，不把手写“等价命令”冒充同一份证据。基线与增量回归结果单独记录；实施完成后生成物与正式报告先固定，再取得最终完整检查证据，避免报告提交或元数据提交使 Git 绑定输入在交付时变化。
+
 ## Risks / Trade-offs
 
 - [入口提前返回掩盖损坏] → 终态分派建立在现有持久状态读取/恢复与完整性检查之后；增加损坏和未结 Journal 的负向覆盖。
