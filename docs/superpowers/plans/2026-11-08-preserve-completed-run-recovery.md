@@ -48,4 +48,14 @@ thorough 分段审查覆盖恢复边界，最终 Verify 独立审查只针对完
 
 ## 风险与停止条件
 
+## Verify 反馈的范围内修复
+
+<!-- comet-task-ref:a0c16dfa-ff64-4525-957a-ce30ed37979d -->
+
+真实 CLI 的 resume 不能在 Service 判断终态之前强制探测当前 checkout。将活动观察留给既有 Service 的 projectInput；completed 无需当前观察即可返回持久终态，没有实际观察时省略 reconciliation，不伪造当前与启动快照相同。调用者已提供的实际 snapshot 仍保留真实差异。补齐业务目录移走后的完整 CLI 恢复负例和活动 Run 缺失 checkout 的阻断正反边界。
+
+<!-- comet-task-ref:02df3761-54be-436d-8039-74ba735841cc -->
+
+可信持久终态使用已有 hashWorkflowDefinition 重算存储 Workflow 正文摘要；正文损坏但标签未变必须拒绝，不能只比较两个摘要标签。先执行实际 RED，再修复并由同一最终 reviewer 仅复核这两项和新增风险；不重复建立最终集成审查或要求配置批准。
+
 持久完成事实不可验证、资料冲突、外部结果未知或必须改变已批准范围时停止相应动作，沿当前 Comet Run 处理。不得手改产品 Store、清除旧错误标志、改写启动快照或静默重放远端动作。普通范围内失败先定位并修复；Windows 长路径等独立问题仍保留在范围之外。

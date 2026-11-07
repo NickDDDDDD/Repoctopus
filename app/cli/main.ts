@@ -1448,11 +1448,10 @@ async function runResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
   const runId = stringFlag(parsed, 'run', { required: true })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const currentProjectSnapshot = await currentWorkspaceSnapshot(app, workspace);
     const result = await app.context.commandRouter.execute<
-      { runId: string; currentProjectSnapshot: ProjectSnapshot },
+      { runId: string },
       RuntimeResult<ResumeView>
-    >('run.resume', { runId, currentProjectSnapshot });
+    >('run.resume', { runId });
     return successEnvelope({
       command: 'run resume',
       runId,

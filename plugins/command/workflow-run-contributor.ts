@@ -99,7 +99,7 @@ const plugin = ((context: Context) => {
         name: 'run.resume',
         execute: ({ input, signal }) =>
           context.workflowRuns.resume(
-            input as { runId: string; currentProjectSnapshot: ProjectSnapshot },
+            input as { runId: string; currentProjectSnapshot?: ProjectSnapshot },
             signal,
           ),
       }),

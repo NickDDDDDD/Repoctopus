@@ -6377,13 +6377,19 @@ export class WorkflowRuns extends Service {
   resume(
     options: {
       runId: string;
-      currentProjectSnapshot: ProjectSnapshot;
+      currentProjectSnapshot?: ProjectSnapshot;
     },
     signal?: AbortSignal,
   ): Promise<RuntimeResult<ResumeView>> {
     return this.operations.run({ cancellable: false, signal }, async () => {
       if (await this.coordinator.completedChangeStatus(options.runId)) {
         return this.coordinator.resume(options);
+      }
+      let currentProjectSnapshot = options.currentProjectSnapshot;
+      if (!currentProjectSnapshot) {
+        if (!this.projectInput)
+          throw new Error('Run resume requires a configured Workspace snapshot input');
+        currentProjectSnapshot = await this.ctx.project.snapshot(this.projectInput);
       }
       await this.coordinator.recoverChangeLifecycleDefinition(options.runId);
       const [skillCompatibility, specificationCompatibility, previousProjectSnapshot] =
@@ -6404,7 +6410,7 @@ export class WorkflowRuns extends Service {
         }
         const reconciliation = reconcileProjectSnapshots(
           previousProjectSnapshot,
-          options.currentProjectSnapshot,
+          currentProjectSnapshot,
         );
         const status = await this.coordinator.status(options.runId);
         return {
@@ -6456,14 +6462,15 @@ export class WorkflowRuns extends Service {
         };
       const priorAuthorization = await this.priorAuthorizedBranchRebind(
         currentState,
-        options.currentProjectSnapshot,
+        currentProjectSnapshot,
       );
       const result = await this.coordinator.resume({
         ...options,
+        currentProjectSnapshot,
         ...(priorAuthorization ? { authorizedReconciliation: priorAuthorization } : {}),
       });
       let execution = await this.ctx.workExecutionAuthority.recovery(options.runId);
-      if (result.value.reconciliation.requiresReconciliation) {
+      if (result.value.reconciliation?.requiresReconciliation) {
         execution = { ...execution, continuation: 'reconcile', reason: 'project-drift' };
       } else if (
         execution.continuation === 'execute' &&

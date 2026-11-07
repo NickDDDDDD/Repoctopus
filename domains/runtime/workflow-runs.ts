@@ -3,9 +3,10 @@ import { createHash, randomUUID } from 'node:crypto';
 import { decide, recordOutcome, startRun } from '../engine/loop.js';
 import type { ActionOutcome, EngineAction, RunState, RunTriggerSnapshot } from '../engine/types.js';
 import { hashProjectSnapshot, reconcileProjectSnapshots } from '../project/snapshot.js';
+import { hashWorkflowDefinition } from '../workflow-contract/hash.js';
 import type { BuildWorkspaceRecovery } from './build-workspace-recovery.js';
 import type { EvidenceWorkspaceRecovery } from './evidence-workspace-recovery.js';
-import type { ProjectSnapshot } from '../project/types.js';
+import type { ProjectReconciliation, ProjectSnapshot } from '../project/types.js';
 import type {
   DesktopActivationFact,
   TrajectoryEvent,
@@ -397,6 +398,7 @@ export class WorkflowRunCoordinator {
         checkpoint.runStatus !== 'completed' ||
         checkpoint.workflowDigest !== state.workflowDigest ||
         workflow.digest !== state.workflowDigest ||
+        hashWorkflowDefinition(workflow.definition) !== state.workflowDigest ||
         checkpoint.compositionDigest !== state.composition.compositionDigest ||
         checkpoint.projectSnapshotDigest !== state.projectSnapshotDigest ||
         originalSnapshot.digest !== state.projectSnapshotDigest ||
@@ -1225,14 +1227,14 @@ export class WorkflowRunCoordinator {
   async reconcileBuildWorkspace(
     runId: string,
     observation: BuildWorkspaceRecovery,
-  ): Promise<RuntimeResult<ResumeView>> {
+  ): Promise<RuntimeResult<ResumeView & { reconciliation: ProjectReconciliation }>> {
     return this.reconcileBoundWorkspace(runId, observation, 'buildWorkspaceRecovery');
   }
 
   async reconcileEvidenceWorkspace(
     runId: string,
     observation: EvidenceWorkspaceRecovery,
-  ): Promise<RuntimeResult<ResumeView>> {
+  ): Promise<RuntimeResult<ResumeView & { reconciliation: ProjectReconciliation }>> {
     return this.reconcileBoundWorkspace(runId, observation, 'evidenceWorkspaceRecovery');
   }
 
@@ -1240,7 +1242,7 @@ export class WorkflowRunCoordinator {
     runId: string,
     observation: BuildWorkspaceRecovery | EvidenceWorkspaceRecovery,
     recoveryKind: 'buildWorkspaceRecovery' | 'evidenceWorkspaceRecovery',
-  ): Promise<RuntimeResult<ResumeView>> {
+  ): Promise<RuntimeResult<ResumeView & { reconciliation: ProjectReconciliation }>> {
     const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       this.assertWritableComposition(state);
       const protocol = state.changeLifecycle?.buildProtocol;
@@ -1331,7 +1333,7 @@ export class WorkflowRunCoordinator {
 
   async resume(options: {
     runId: string;
-    currentProjectSnapshot: ProjectSnapshot;
+    currentProjectSnapshot?: ProjectSnapshot;
     authorizedReconciliation?: {
       kind: 'authorized-protected-branch-rebind';
       authorizationDigest: `sha256:${string}`;
@@ -1342,25 +1344,30 @@ export class WorkflowRunCoordinator {
     const completed = await this.completedChangeStatus(options.runId);
     if (completed) {
       const value = completed;
-      const previous = await this.store.loadProjectSnapshot(options.runId);
+      const reconciliation = options.currentProjectSnapshot
+        ? {
+            ...reconcileProjectSnapshots(
+              await this.store.loadProjectSnapshot(options.runId),
+              options.currentProjectSnapshot,
+            ),
+            requiresReconciliation: false,
+          }
+        : undefined;
       return {
         value: {
           ...value,
-          reconciliation: {
-            ...reconcileProjectSnapshots(previous, options.currentProjectSnapshot),
-            requiresReconciliation: false,
-          },
+          ...(reconciliation ? { reconciliation } : {}),
           ...(value.continuation ? { execution: value.continuation } : {}),
         },
         diagnostics: await this.flushTelemetry(options.runId),
       };
     }
+    const currentProjectSnapshot = options.currentProjectSnapshot;
+    if (!currentProjectSnapshot)
+      throw new Error('Active Run resume requires a current Project snapshot');
     await this.prepareWritableComposition(options.runId);
     const previousSnapshot = await this.store.loadProjectSnapshot(options.runId);
-    const reconciliation = reconcileProjectSnapshots(
-      previousSnapshot,
-      options.currentProjectSnapshot,
-    );
+    const reconciliation = reconcileProjectSnapshots(previousSnapshot, currentProjectSnapshot);
     const requestedAuthorizedReconciliation =
       options.authorizedReconciliation?.projectReconciliationDigest ===
       projectReconciliationDigest(reconciliation)
@@ -1391,7 +1398,7 @@ export class WorkflowRunCoordinator {
       const resumeEventId = stableEventId(
         options.runId,
         resumeBasis?.eventId ?? 'run-start',
-        options.currentProjectSnapshot.digest,
+        currentProjectSnapshot.digest,
         requiresReconciliation ? 'recovery.reconciled' : 'run.resumed',
       );
       if (trajectory.some((entry) => entry.eventId === resumeEventId)) {

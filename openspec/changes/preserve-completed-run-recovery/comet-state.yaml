@@ -15,8 +15,8 @@ auto_transition: true
 base_ref: c872b4080d8336d2440410e28e482fce98423464
 design_doc: openspec/changes/preserve-completed-run-recovery/design.md
 plan: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-verify_result: pending
-verify_failures: 0
+verify_result: fail
+verify_failures: 1
 verification_report: null
 branch_status: pending
 created_at: 2026-11-07
@@ -30,8 +30,8 @@ handoff_hash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: 2e2d679c33682ef887cc3a8f59222514f697c93a474e62d071b92c8676c8c8bd
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 9b7a3cf55c843b2d7d07ecd5e3ea50ce081e94eb7932b81435b5bab9256d6e07
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -39,7 +39,7 @@ run_checkpoint:
     revision: 1
     workflow:
       id: comet-classic-full
-      version: '1'
+      version: "1"
       hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
     definitionHashes:
       '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 2
+      checkEpoch: 4
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -76,12 +76,12 @@ run_checkpoint:
       tddMode: tdd
       verificationReport: null
       verifiedAt: null
-      verifyFailures: 0
+      verifyFailures: 1
       verifyMode: null
-      verifyResult: pending
+      verifyResult: fail
       workflow: full
     status: running
-    sequence: 13
+    sequence: 19
     actions:
       - attempt: 1
         claim:
@@ -91,7 +91,7 @@ run_checkpoint:
           workflow:
             hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
             id: comet-classic-full
-            version: '1'
+            version: "1"
         id: preserve-completed-run-recovery:1
         input:
           input:
@@ -130,7 +130,7 @@ run_checkpoint:
           workflow:
             hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
             id: comet-classic-full
-            version: '1'
+            version: "1"
         id: preserve-completed-run-recovery:4
         input:
           input:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/preserve-completed-run-recovery
             workspaceBaseline:
               ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-            full.open.evidence:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
+          outputs: {}
         inputHash: 31ac964ed1282192d57edeffef1efd51f4c3971404b5ad29a48ed4ae84e704f4
         outcome:
           actionId: preserve-completed-run-recovery:4
@@ -188,7 +169,7 @@ run_checkpoint:
           workflow:
             hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
             id: comet-classic-full
-            version: '1'
+            version: "1"
         id: preserve-completed-run-recovery:5
         input:
           input:
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/preserve-completed-run-recovery
             workspaceBaseline:
               ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-            full.open.evidence:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-            full.open.revalidate:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+          outputs: {}
         inputHash: b002af00604b76e43e858e73b19ff810ce9cbc32894c3b16ad09cb0728a4634f
         outcome:
           actionId: preserve-completed-run-recovery:5
@@ -268,7 +228,7 @@ run_checkpoint:
           workflow:
             hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
             id: comet-classic-full
-            version: '1'
+            version: "1"
         id: preserve-completed-run-recovery:7
         input:
           input:
@@ -276,83 +236,7 @@ run_checkpoint:
             changeDir: openspec/changes/preserve-completed-run-recovery
             workspaceBaseline:
               ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-                    handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-                    proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                      Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                      Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                      Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                      Work/attempt/next
-                      actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
-                      reconciliation。历史全局标志保留为诊断，不手改
-                      Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的
-                      Binding、能力、精确 Evidence 失效和未知外部结果仍 fail
-                      closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实 RED/GREEN、完整
-                      Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
-                      next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持
-                      Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows
-                      长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                      worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-                    requirementsEvidence:
-                      contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                      ref: openspec/changes/preserve-completed-run-recovery
-                    sourceEvidence:
-                      contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                      ref: openspec/changes/preserve-completed-run-recovery
-            full.design.handoff:
-              handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-              handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-              proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                Work/attempt/next actions，不再走活动定义、Skill、workspace、Evidence、Host
-                或通用项目 reconciliation。历史全局标志保留为诊断，不手改
-                Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确
-                Evidence 失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI
-                的方案。验收覆盖真实 RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的
-                resume→next 与 next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout
-                和损坏持久状态负向回归。保持 Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无
-                Windows 长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-              requirementsEvidence:
-                contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                ref: openspec/changes/preserve-completed-run-recovery
-              sourceEvidence:
-                contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                ref: openspec/changes/preserve-completed-run-recovery
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-            full.open.evidence:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-            full.open.revalidate:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+          outputs: {}
         inputHash: 62627ec918233bf6d46750ed76f6e1d5d0619387c5c711dcdb6f64c8e1cd0a13
         outcome:
           actionId: preserve-completed-run-recovery:7
@@ -383,7 +267,7 @@ run_checkpoint:
           workflow:
             hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
             id: comet-classic-full
-            version: '1'
+            version: "1"
         id: preserve-completed-run-recovery:9
         input:
           input:
@@ -391,88 +275,7 @@ run_checkpoint:
             changeDir: openspec/changes/preserve-completed-run-recovery
             workspaceBaseline:
               ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-                    handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-                    proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                      Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                      Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                      Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                      Work/attempt/next
-                      actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
-                      reconciliation。历史全局标志保留为诊断，不手改
-                      Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的
-                      Binding、能力、精确 Evidence 失效和未知外部结果仍 fail
-                      closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实 RED/GREEN、完整
-                      Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
-                      next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持
-                      Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows
-                      长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                      worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-                    requirementsEvidence:
-                      contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                      ref: openspec/changes/preserve-completed-run-recovery
-                    sourceEvidence:
-                      contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                      ref: openspec/changes/preserve-completed-run-recovery
-            full.design.document:
-              designDoc: openspec/changes/preserve-completed-run-recovery/design.md
-            full.design.evidence:
-              contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
-              ref: openspec/changes/preserve-completed-run-recovery/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-              handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-              proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                Work/attempt/next actions，不再走活动定义、Skill、workspace、Evidence、Host
-                或通用项目 reconciliation。历史全局标志保留为诊断，不手改
-                Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确
-                Evidence 失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI
-                的方案。验收覆盖真实 RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的
-                resume→next 与 next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout
-                和损坏持久状态负向回归。保持 Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无
-                Windows 长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-              requirementsEvidence:
-                contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                ref: openspec/changes/preserve-completed-run-recovery
-              sourceEvidence:
-                contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                ref: openspec/changes/preserve-completed-run-recovery
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-            full.open.evidence:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-            full.open.revalidate:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+          outputs: {}
         inputHash: 8e293712a814b38067b5eb4093df27489d0a2199d3734f04e2902be4c5e143b0
         outcome:
           actionId: preserve-completed-run-recovery:9
@@ -509,7 +312,7 @@ run_checkpoint:
           workflow:
             hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
             id: comet-classic-full
-            version: '1'
+            version: "1"
         id: preserve-completed-run-recovery:11
         input:
           input:
@@ -517,113 +320,7 @@ run_checkpoint:
             changeDir: openspec/changes/preserve-completed-run-recovery
             workspaceBaseline:
               ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-          outputs:
-            full.build.configure:
-              boundBranch: comet/preserve-completed-run-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/preserve-completed-run-recovery
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-                    handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-                    proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                      Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                      Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                      Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                      Work/attempt/next
-                      actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
-                      reconciliation。历史全局标志保留为诊断，不手改
-                      Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的
-                      Binding、能力、精确 Evidence 失效和未知外部结果仍 fail
-                      closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实 RED/GREEN、完整
-                      Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
-                      next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持
-                      Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows
-                      长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                      worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-                    requirementsEvidence:
-                      contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                      ref: openspec/changes/preserve-completed-run-recovery
-                    sourceEvidence:
-                      contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                      ref: openspec/changes/preserve-completed-run-recovery
-            full.design.document:
-              designDoc: openspec/changes/preserve-completed-run-recovery/design.md
-            full.design.evidence:
-              contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
-              ref: openspec/changes/preserve-completed-run-recovery/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-              handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-              proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                Work/attempt/next actions，不再走活动定义、Skill、workspace、Evidence、Host
-                或通用项目 reconciliation。历史全局标志保留为诊断，不手改
-                Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确
-                Evidence 失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI
-                的方案。验收覆盖真实 RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的
-                resume→next 与 next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout
-                和损坏持久状态负向回归。保持 Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无
-                Windows 长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-              requirementsEvidence:
-                contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                ref: openspec/changes/preserve-completed-run-recovery
-              sourceEvidence:
-                contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                ref: openspec/changes/preserve-completed-run-recovery
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-            full.open.evidence:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-            full.open.revalidate:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+          outputs: {}
         inputHash: fa3090cf2fdd7b8871502ad546d0a761e899239a48ece30f334f4a3a8bc1cb13
         outcome:
           actionId: preserve-completed-run-recovery:11
@@ -654,6 +351,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-preserve-completed-run-recovery-root
+          token: portable-88409508792243cf311c0918f85498548c4a4ce8c28bff35ae1e83348cb30466
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: preserve-completed-run-recovery:13
         input:
           input:
@@ -661,126 +367,186 @@ run_checkpoint:
             changeDir: openspec/changes/preserve-completed-run-recovery
             workspaceBaseline:
               ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-          outputs:
-            full.build.configure:
-              boundBranch: comet/preserve-completed-run-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/preserve-completed-run-recovery
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
-                ref: openspec/changes/preserve-completed-run-recovery/design.md
-              plan: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-              planEvidence:
-                contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
-                ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-              taskRevision: dd1a651ebddd1ec94dfb3bb096fc68afb3e554e96ef144ee4b91c71aebd15ee5
-            full.build.plan.evidence:
-              contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
-              ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-                    handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-                    proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                      Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                      Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                      Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                      Work/attempt/next
-                      actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
-                      reconciliation。历史全局标志保留为诊断，不手改
-                      Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的
-                      Binding、能力、精确 Evidence 失效和未知外部结果仍 fail
-                      closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实 RED/GREEN、完整
-                      Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
-                      next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持
-                      Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows
-                      长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                      worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-                    requirementsEvidence:
-                      contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                      ref: openspec/changes/preserve-completed-run-recovery
-                    sourceEvidence:
-                      contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                      ref: openspec/changes/preserve-completed-run-recovery
-            full.design.document:
-              designDoc: openspec/changes/preserve-completed-run-recovery/design.md
-            full.design.evidence:
+          outputs: {}
+        inputHash: 003eb573812233db5fda467910d3504c97cdaf8d54b16ea65f40690be1dbdf72
+        outcome:
+          actionId: preserve-completed-run-recovery:13
+          attempt: 1
+          claimToken: portable-88409508792243cf311c0918f85498548c4a4ce8c28bff35ae1e83348cb30466
+          inputHash: 003eb573812233db5fda467910d3504c97cdaf8d54b16ea65f40690be1dbdf72
+          outcomeId: 5bf04ca9-55d5-4f56-8786-035f8aef0aac
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 63642a8e8351617a96866552a2718462e6e52e90ae81194ca52feeafd001fb3e
+            outcomeId: 5bf04ca9-55d5-4f56-8786-035f8aef0aac
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-completed-run-recovery
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-e1fd58fc4728ea31ca818497c7cbbe51e6011a1e0e75734a9c0d03ce1b364fe2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-completed-run-recovery:14
+        input:
+          input:
+            change: preserve-completed-run-recovery
+            changeDir: openspec/changes/preserve-completed-run-recovery
+            workspaceBaseline:
+              ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+          outputs: {}
+        inputHash: c058e82571b38bd8dc2e180046f85c42d9e804c784a624bec237ec7eab0846bf
+        outcome:
+          actionId: preserve-completed-run-recovery:14
+          attempt: 1
+          claimToken: portable-e1fd58fc4728ea31ca818497c7cbbe51e6011a1e0e75734a9c0d03ce1b364fe2
+          inputHash: c058e82571b38bd8dc2e180046f85c42d9e804c784a624bec237ec7eab0846bf
+          outcomeId: ca45376a-554e-47eb-818d-5fae7e1da7b3
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 9879e65c4dc3f3154d86ff468b8c80253c161c9ae2c207118ae5629f71480318
+            cwd: .
+            environment: e2c66c974475b8a4252a611fc50a2800c7e7b8a4e31b61dc85e6a6157fc71a79
+            exitCode: 0
+            inputAfter: de0ac7dc70bc8a69eea7b91ad3bd4a758f9e1242b8b2cbbd826431702e4bccc7
+            inputBefore: de0ac7dc70bc8a69eea7b91ad3bd4a758f9e1242b8b2cbbd826431702e4bccc7
+            manifestHash: 773f44680300dc83088f35eb3a6fb418f1ab4b79581debb80ea50594e3e277ff
+            manifestRef: .comet/runtime/classic-sdk-checks/6fa11f7ea23a572ee2c6348997e319ed62ed4de30482c10db4c0c354357122ac/b87219d4-c13c-4704-8b7e-f3916e47519d.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/6fa11f7ea23a572ee2c6348997e319ed62ed4de30482c10db4c0c354357122ac/872c7a3f-2b0c-4b34-bca5-dfdd08f0aceb.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 1800000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f266dbe5df3c9ccd555d0471d3a843b3e731fca8736cabf1a0833c7a794d8cac
+            outcomeId: ca45376a-554e-47eb-818d-5fae7e1da7b3
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-completed-run-recovery
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d752eb4949250879be8c62615d7786ed6238416ad793a40b1f80b130a625b306
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-completed-run-recovery:16
+        input:
+          input:
+            change: preserve-completed-run-recovery
+            changeDir: openspec/changes/preserve-completed-run-recovery
+            workspaceBaseline:
+              ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+          outputs: {}
+        inputHash: e383a1ace34311fc3ad0465118b2e4bf9c1ff217fb903d18836839e8b687462a
+        outcome:
+          actionId: preserve-completed-run-recovery:16
+          attempt: 1
+          claimToken: portable-d752eb4949250879be8c62615d7786ed6238416ad793a40b1f80b130a625b306
+          inputHash: e383a1ace34311fc3ad0465118b2e4bf9c1ff217fb903d18836839e8b687462a
+          outcomeId: c6a61f18-f5f4-4c17-8c09-be43b0fe09b7
+          output:
+            event: verify-fail
+            reason: "Final independent review: completed CLI resume must remain terminal
+              when a business checkout becomes unreadable; completed persistence
+              must verify Workflow definition content against its pinned digest,
+              not only compare digest labels."
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 71bdaf419d245749491614b19d6f8095d4b06cfd5af7af0dfb9aa583aca725af
+            outcomeId: c6a61f18-f5f4-4c17-8c09-be43b0fe09b7
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-completed-run-recovery
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-a644a1ab4f2db779a23c39f17410a3e857a443c3ada6b9b79734bbdd744475a9
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-completed-run-recovery:17
+        input:
+          input:
+            change: preserve-completed-run-recovery
+            changeDir: openspec/changes/preserve-completed-run-recovery
+            workspaceBaseline:
+              ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+          outputs: {}
+        inputHash: 3ef59d945e7b1a9464796a899553baba9146efe4867f2ebe54dc3ce9976b37d2
+        outcome:
+          actionId: preserve-completed-run-recovery:17
+          attempt: 1
+          claimToken: portable-a644a1ab4f2db779a23c39f17410a3e857a443c3ada6b9b79734bbdd744475a9
+          inputHash: 3ef59d945e7b1a9464796a899553baba9146efe4867f2ebe54dc3ce9976b37d2
+          outcomeId: 762b15d5-59e4-4894-b118-5366a90b68d1
+          output:
+            designEvidence:
               contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
               ref: openspec/changes/preserve-completed-run-recovery/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-              handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-              proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                Work/attempt/next actions，不再走活动定义、Skill、workspace、Evidence、Host
-                或通用项目 reconciliation。历史全局标志保留为诊断，不手改
-                Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确
-                Evidence 失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI
-                的方案。验收覆盖真实 RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的
-                resume→next 与 next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout
-                和损坏持久状态负向回归。保持 Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无
-                Windows 长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-              requirementsEvidence:
-                contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                ref: openspec/changes/preserve-completed-run-recovery
-              sourceEvidence:
-                contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                ref: openspec/changes/preserve-completed-run-recovery
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-            full.open.evidence:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-            full.open.revalidate:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-        inputHash: 003eb573812233db5fda467910d3504c97cdaf8d54b16ea65f40690be1dbdf72
+            plan: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+            planEvidence:
+              contentHash: 73ec5bea6a7764f99512363e08e2bfa03be1825905920aff87f9d91e3079ae36
+              ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+            taskRevision: dd1a651ebddd1ec94dfb3bb096fc68afb3e554e96ef144ee4b91c71aebd15ee5
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e76ffa595142e22cd9d865fccb74d8aa52fe906b8d0d9dee12981bf89ecfb757
+            outcomeId: 762b15d5-59e4-4894-b118-5366a90b68d1
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-completed-run-recovery
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: preserve-completed-run-recovery:19
+        input:
+          input:
+            change: preserve-completed-run-recovery
+            changeDir: openspec/changes/preserve-completed-run-recovery
+            workspaceBaseline:
+              ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+          outputs: {}
+        inputHash: c9d31ddfd885f5be105850ae0b7798cd45835a7bc27c7b3b2c6a1b2aa1df4bfd
         protocolVersion: 1
         receipts: []
         reconciliations: []
@@ -796,529 +562,34 @@ run_checkpoint:
         results: {}
         sequence: 1
       preserve-completed-run-recovery:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/preserve-completed-run-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/preserve-completed-run-recovery
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-                    handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-                    proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                      Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                      Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                      Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                      Work/attempt/next
-                      actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
-                      reconciliation。历史全局标志保留为诊断，不手改
-                      Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的
-                      Binding、能力、精确 Evidence 失效和未知外部结果仍 fail
-                      closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实 RED/GREEN、完整
-                      Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
-                      next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持
-                      Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows
-                      长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                      worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-                    requirementsEvidence:
-                      contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                      ref: openspec/changes/preserve-completed-run-recovery
-                    sourceEvidence:
-                      contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                      ref: openspec/changes/preserve-completed-run-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/preserve-completed-run-recovery/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
-              ref: openspec/changes/preserve-completed-run-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-              handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-              proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                Work/attempt/next actions，不再走活动定义、Skill、workspace、Evidence、Host
-                或通用项目 reconciliation。历史全局标志保留为诊断，不手改
-                Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确
-                Evidence 失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI
-                的方案。验收覆盖真实 RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的
-                resume→next 与 next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout
-                和损坏持久状态负向回归。保持 Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无
-                Windows 长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-              requirementsEvidence:
-                contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                ref: openspec/changes/preserve-completed-run-recovery
-              sourceEvidence:
-                contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                ref: openspec/changes/preserve-completed-run-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+        results: {}
         sequence: 11
       preserve-completed-run-recovery:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/preserve-completed-run-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/preserve-completed-run-recovery
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
-                ref: openspec/changes/preserve-completed-run-recovery/design.md
-              plan: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-              planEvidence:
-                contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
-                ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-              taskRevision: dd1a651ebddd1ec94dfb3bb096fc68afb3e554e96ef144ee4b91c71aebd15ee5
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
-              ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-                    handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-                    proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                      Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                      Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                      Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                      Work/attempt/next
-                      actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
-                      reconciliation。历史全局标志保留为诊断，不手改
-                      Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的
-                      Binding、能力、精确 Evidence 失效和未知外部结果仍 fail
-                      closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实 RED/GREEN、完整
-                      Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
-                      next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持
-                      Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows
-                      长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                      worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-                    requirementsEvidence:
-                      contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                      ref: openspec/changes/preserve-completed-run-recovery
-                    sourceEvidence:
-                      contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                      ref: openspec/changes/preserve-completed-run-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/preserve-completed-run-recovery/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
-              ref: openspec/changes/preserve-completed-run-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-              handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-              proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                Work/attempt/next actions，不再走活动定义、Skill、workspace、Evidence、Host
-                或通用项目 reconciliation。历史全局标志保留为诊断，不手改
-                Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确
-                Evidence 失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI
-                的方案。验收覆盖真实 RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的
-                resume→next 与 next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout
-                和损坏持久状态负向回归。保持 Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无
-                Windows 长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-              requirementsEvidence:
-                contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                ref: openspec/changes/preserve-completed-run-recovery
-              sourceEvidence:
-                contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                ref: openspec/changes/preserve-completed-run-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+        results: {}
         sequence: 13
+      preserve-completed-run-recovery:14:
+        results: {}
+        sequence: 14
+      preserve-completed-run-recovery:16:
+        results: {}
+        sequence: 16
+      preserve-completed-run-recovery:17:
+        results: {}
+        sequence: 17
+      preserve-completed-run-recovery:19:
+        results: {}
+        sequence: 19
       preserve-completed-run-recovery:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
+        results: {}
         sequence: 4
       preserve-completed-run-recovery:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+        results: {}
         sequence: 5
       preserve-completed-run-recovery:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-                    handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-                    proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                      Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                      Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                      Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                      Work/attempt/next
-                      actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
-                      reconciliation。历史全局标志保留为诊断，不手改
-                      Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的
-                      Binding、能力、精确 Evidence 失效和未知外部结果仍 fail
-                      closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实 RED/GREEN、完整
-                      Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
-                      next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持
-                      Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows
-                      长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                      worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-                    requirementsEvidence:
-                      contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                      ref: openspec/changes/preserve-completed-run-recovery
-                    sourceEvidence:
-                      contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                      ref: openspec/changes/preserve-completed-run-recovery
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-              handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-              proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                Work/attempt/next actions，不再走活动定义、Skill、workspace、Evidence、Host
-                或通用项目 reconciliation。历史全局标志保留为诊断，不手改
-                Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确
-                Evidence 失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI
-                的方案。验收覆盖真实 RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的
-                resume→next 与 next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout
-                和损坏持久状态负向回归。保持 Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无
-                Windows 长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-              requirementsEvidence:
-                contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                ref: openspec/changes/preserve-completed-run-recovery
-              sourceEvidence:
-                contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                ref: openspec/changes/preserve-completed-run-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+        results: {}
         sequence: 7
       preserve-completed-run-recovery:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-                    handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-                    proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                      Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                      Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                      Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                      Work/attempt/next
-                      actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
-                      reconciliation。历史全局标志保留为诊断，不手改
-                      Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的
-                      Binding、能力、精确 Evidence 失效和未知外部结果仍 fail
-                      closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实 RED/GREEN、完整
-                      Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
-                      next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持
-                      Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows
-                      长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                      worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-                    requirementsEvidence:
-                      contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                      ref: openspec/changes/preserve-completed-run-recovery
-                    sourceEvidence:
-                      contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                      ref: openspec/changes/preserve-completed-run-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/preserve-completed-run-recovery/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
-              ref: openspec/changes/preserve-completed-run-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-              handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-              proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                Work/attempt/next actions，不再走活动定义、Skill、workspace、Evidence、Host
-                或通用项目 reconciliation。历史全局标志保留为诊断，不手改
-                Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确
-                Evidence 失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI
-                的方案。验收覆盖真实 RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的
-                resume→next 与 next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout
-                和损坏持久状态负向回归。保持 Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无
-                Windows 长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-              requirementsEvidence:
-                contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                ref: openspec/changes/preserve-completed-run-recovery
-              sourceEvidence:
-                contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                ref: openspec/changes/preserve-completed-run-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+        results: {}
         sequence: 9
     waits:
       - id: preserve-completed-run-recovery:3
@@ -1341,16 +612,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
+        results: {}
         decision:
           id: classic-open-14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
           choice: approved
@@ -1392,60 +654,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-              handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-              proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                Work/attempt/next actions，不再走活动定义、Skill、workspace、Evidence、Host
-                或通用项目 reconciliation。历史全局标志保留为诊断，不手改
-                Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确
-                Evidence 失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI
-                的方案。验收覆盖真实 RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的
-                resume→next 与 next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout
-                和损坏持久状态负向回归。保持 Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无
-                Windows 长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-              requirementsEvidence:
-                contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                ref: openspec/changes/preserve-completed-run-recovery
-              sourceEvidence:
-                contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                ref: openspec/changes/preserve-completed-run-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+        results: {}
         decision:
           id: classic-design-66ab30e3b66768d88e3e8c70e9c0839657a0dbbb7ee2b8a3b165fa80b6fcb53c-approved
           choice: approved
@@ -1473,114 +682,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/preserve-completed-run-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-                    handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-                    proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                      Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                      Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                      Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                      Work/attempt/next
-                      actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
-                      reconciliation。历史全局标志保留为诊断，不手改
-                      Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的
-                      Binding、能力、精确 Evidence 失效和未知外部结果仍 fail
-                      closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实 RED/GREEN、完整
-                      Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
-                      next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持
-                      Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows
-                      长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                      worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-                    requirementsEvidence:
-                      contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                      ref: openspec/changes/preserve-completed-run-recovery
-                    sourceEvidence:
-                      contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                      ref: openspec/changes/preserve-completed-run-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/preserve-completed-run-recovery/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
-              ref: openspec/changes/preserve-completed-run-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-              handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-              proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                Work/attempt/next actions，不再走活动定义、Skill、workspace、Evidence、Host
-                或通用项目 reconciliation。历史全局标志保留为诊断，不手改
-                Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确
-                Evidence 失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI
-                的方案。验收覆盖真实 RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的
-                resume→next 与 next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout
-                和损坏持久状态负向回归。保持 Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无
-                Windows 长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-              requirementsEvidence:
-                contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                ref: openspec/changes/preserve-completed-run-recovery
-              sourceEvidence:
-                contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                ref: openspec/changes/preserve-completed-run-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+        results: {}
         decision:
           id: d06def45-3fbe-41f0-ae9e-ce02b97d072c
           choice: approved
@@ -1591,11 +693,7 @@ run_checkpoint:
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/preserve-completed-run-recovery
           contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
@@ -1605,99 +703,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-                    handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-                    proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                      Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                      Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                      Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                      Work/attempt/next
-                      actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
-                      reconciliation。历史全局标志保留为诊断，不手改
-                      Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的
-                      Binding、能力、精确 Evidence 失效和未知外部结果仍 fail
-                      closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实 RED/GREEN、完整
-                      Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
-                      next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持
-                      Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows
-                      长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                      worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-                    requirementsEvidence:
-                      contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                      ref: openspec/changes/preserve-completed-run-recovery
-                    sourceEvidence:
-                      contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                      ref: openspec/changes/preserve-completed-run-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/preserve-completed-run-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-              handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-              proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                Work/attempt/next actions，不再走活动定义、Skill、workspace、Evidence、Host
-                或通用项目 reconciliation。历史全局标志保留为诊断，不手改
-                Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确
-                Evidence 失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI
-                的方案。验收覆盖真实 RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的
-                resume→next 与 next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout
-                和损坏持久状态负向回归。保持 Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无
-                Windows 长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-              requirementsEvidence:
-                contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                ref: openspec/changes/preserve-completed-run-recovery
-              sourceEvidence:
-                contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                ref: openspec/changes/preserve-completed-run-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+        results: {}
         receipt:
           ref: openspec/changes/preserve-completed-run-recovery/design.md
           contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
@@ -1707,94 +713,67 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/preserve-completed-run-recovery
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/preserve-completed-run-recovery
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
-                ref: openspec/changes/preserve-completed-run-recovery/design.md
-              plan: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-              planEvidence:
-                contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
-                ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-              taskRevision: dd1a651ebddd1ec94dfb3bb096fc68afb3e554e96ef144ee4b91c71aebd15ee5
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
-                    handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
-                    proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
-                      Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和
-                      Run/Checkpoint 一致性取得可信完成事实，再在 coordinator、WorkflowRuns
-                      Service、完整 status 和 CLI envelope 统一返回 done/terminal、空
-                      Work/attempt/next
-                      actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
-                      reconciliation。历史全局标志保留为诊断，不手改
-                      Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的
-                      Binding、能力、精确 Evidence 失效和未知外部结果仍 fail
-                      closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实 RED/GREEN、完整
-                      Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
-                      next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持
-                      Open 已批准的 8 项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows
-                      长路径等额外修复。Build 配置建议 autonomous + TDD + thorough，沿用已批准
-                      worktree；配置尚待本次用户明确批准。唯一正式设计位于当前 Change 的 design.md。
-                    requirementsEvidence:
-                      contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
-                      ref: openspec/changes/preserve-completed-run-recovery
-                    sourceEvidence:
-                      contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
-                      ref: openspec/changes/preserve-completed-run-recovery
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/preserve-completed-run-recovery/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
-              ref: openspec/changes/preserve-completed-run-recovery/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+          contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
+          submissionId: aeb4b3dc-0d74-467d-b413-51dd8799f63f
+      - id: preserve-completed-run-recovery:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/6fa11f7ea23a572ee2c6348997e319ed62ed4de30482c10db4c0c354357122ac/872c7a3f-2b0c-4b34-bca5-dfdd08f0aceb.log
+          contentHash: 9879e65c4dc3f3154d86ff468b8c80253c161c9ae2c207118ae5629f71480318
+          submissionId: 66717717-6a28-4e36-8ab0-7ad6ea454955
+      - id: preserve-completed-run-recovery:18
+        stepId: full.build.plan.evidence
+        sequence: 18
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+          contentHash: 73ec5bea6a7764f99512363e08e2bfa03be1825905920aff87f9d91e3079ae36
+          submissionId: 027314b5-4e51-4b83-a158-9da8982212c9
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 29
+  sourceHash: 9df0b2996629847e16530663a55e26ba26d8941c5c7b4daf44481792b5db50a8
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: preserve-completed-run-recovery
+            changeDir: openspec/changes/preserve-completed-run-recovery
+            workspaceBaseline:
+              ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+              ref: openspec/changes/preserve-completed-run-recovery
+      - contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+        ref: openspec/changes/preserve-completed-run-recovery
+      - contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
+      - choice: approved
+        proposal:
+          input:
+            change: preserve-completed-run-recovery
+            changeDir: openspec/changes/preserve-completed-run-recovery
+            workspaceBaseline:
+              ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
               handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
               proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
@@ -1816,44 +795,102 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
                 ref: openspec/changes/preserve-completed-run-recovery
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: preserve-completed-run-recovery
-                  changeDir: openspec/changes/preserve-completed-run-recovery
-                  workspaceBaseline:
-                    ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-                    ref: openspec/changes/preserve-completed-run-recovery
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-              ref: openspec/changes/preserve-completed-run-recovery
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-        receipt:
-          ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+      - handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
+        handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
+        proposal: 采用 Comet 0.5.1 的 completed 优先原则，并保持 Repoctopus 的
+          Cordis/Service/RunStore 架构。先通过原 Store 读取、Journal 恢复和 Run/Checkpoint
+          一致性取得可信完成事实，再在 coordinator、WorkflowRuns Service、完整 status 和 CLI
+          envelope 统一返回 done/terminal、空 Work/attempt/next
+          actions，不再走活动定义、Skill、workspace、Evidence、Host 或通用项目
+          reconciliation。历史全局标志保留为诊断，不手改
+          Store、不伪造快照或重写完成记录；缺失、损坏、未结事务仍由原持久边界处理。活动 Run 的 Binding、能力、精确 Evidence
+          失效和未知外部结果仍 fail closed。拒绝回写启动快照、增设终态 Work 或只修 UI 的方案。验收覆盖真实
+          RED/GREEN、完整 Runtime/Service/CLI、多仓实际 Close/发布后的 resume→next 与
+          next→resume、全部原回执和事件/调用计数，以及活动未授权 checkout 和损坏持久状态负向回归。保持 Open 已批准的 8
+          项任务，无 Spec Patch，无新 schema/API/依赖，无 Windows 长路径等额外修复。Build 配置建议
+          autonomous + TDD + thorough，沿用已批准 worktree；配置尚待本次用户明确批准。唯一正式设计位于当前
+          Change 的 design.md。
+        requirementsEvidence:
+          contentHash: 7529efe3ebee12e208a08f948bc55ee5f9ba4b945568ae8eac3f74f43676329e
+          ref: openspec/changes/preserve-completed-run-recovery
+        sourceEvidence:
+          contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
+          ref: openspec/changes/preserve-completed-run-recovery
+      - designDoc: openspec/changes/preserve-completed-run-recovery/design.md
+      - contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
+        ref: openspec/changes/preserve-completed-run-recovery/design.md
+      - boundBranch: comet/preserve-completed-run-recovery
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: preserve-completed-run-recovery
+            changeDir: openspec/changes/preserve-completed-run-recovery
+            workspaceBaseline:
+              ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+          outputs:
+            full.build.configure:
+              boundBranch: comet/preserve-completed-run-recovery
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
+          ref: openspec/changes/preserve-completed-run-recovery/design.md
+        plan: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+        planEvidence:
           contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
-          submissionId: aeb4b3dc-0d74-467d-b413-51dd8799f63f
-    ready: []
-    joins: {}
-    outputs:
-      full.build.configure:
-        sequence: 9
+          ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+        taskRevision: dd1a651ebddd1ec94dfb3bb096fc68afb3e554e96ef144ee4b91c71aebd15ee5
+      - contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
+        ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 9879e65c4dc3f3154d86ff468b8c80253c161c9ae2c207118ae5629f71480318
+        cwd: .
+        environment: e2c66c974475b8a4252a611fc50a2800c7e7b8a4e31b61dc85e6a6157fc71a79
+        exitCode: 0
+        inputAfter: de0ac7dc70bc8a69eea7b91ad3bd4a758f9e1242b8b2cbbd826431702e4bccc7
+        inputBefore: de0ac7dc70bc8a69eea7b91ad3bd4a758f9e1242b8b2cbbd826431702e4bccc7
+        manifestHash: 773f44680300dc83088f35eb3a6fb418f1ab4b79581debb80ea50594e3e277ff
+        manifestRef: .comet/runtime/classic-sdk-checks/6fa11f7ea23a572ee2c6348997e319ed62ed4de30482c10db4c0c354357122ac/b87219d4-c13c-4704-8b7e-f3916e47519d.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/6fa11f7ea23a572ee2c6348997e319ed62ed4de30482c10db4c0c354357122ac/872c7a3f-2b0c-4b34-bca5-dfdd08f0aceb.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 1800000
+      - contentHash: 9879e65c4dc3f3154d86ff468b8c80253c161c9ae2c207118ae5629f71480318
+        ref: .comet/runtime/classic-sdk-checks/6fa11f7ea23a572ee2c6348997e319ed62ed4de30482c10db4c0c354357122ac/872c7a3f-2b0c-4b34-bca5-dfdd08f0aceb.log
+      - event: verify-fail
+        reason: "Final independent review: completed CLI resume must remain terminal
+          when a business checkout becomes unreadable; completed persistence
+          must verify Workflow definition content against its pinned digest, not
+          only compare digest labels."
+      - designEvidence:
+          contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
+          ref: openspec/changes/preserve-completed-run-recovery/design.md
+        plan: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+        planEvidence:
+          contentHash: 73ec5bea6a7764f99512363e08e2bfa03be1825905920aff87f9d91e3079ae36
+          ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+        taskRevision: dd1a651ebddd1ec94dfb3bb096fc68afb3e554e96ef144ee4b91c71aebd15ee5
+      - contentHash: 73ec5bea6a7764f99512363e08e2bfa03be1825905920aff87f9d91e3079ae36
+        ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+      - sequence: 9
         value:
           boundBranch: comet/preserve-completed-run-recovery
           buildMode: autonomous
@@ -1862,8 +899,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -1881,24 +917,7 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.plan:
-        sequence: 11
-        value:
-          designEvidence:
-            contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
-            ref: openspec/changes/preserve-completed-run-recovery/design.md
-          plan: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-          planEvidence:
-            contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
-            ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-          taskRevision: dd1a651ebddd1ec94dfb3bb096fc68afb3e554e96ef144ee4b91c71aebd15ee5
-      full.build.plan.evidence:
-        sequence: 12
-        value:
-          contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
-          ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
-      full.design.confirm:
-        sequence: 6
+      - sequence: 6
         value:
           choice: approved
           proposal:
@@ -1931,17 +950,14 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
                   ref: openspec/changes/preserve-completed-run-recovery
-      full.design.document:
-        sequence: 7
+      - sequence: 7
         value:
           designDoc: openspec/changes/preserve-completed-run-recovery/design.md
-      full.design.evidence:
-        sequence: 8
+      - sequence: 8
         value:
           contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
           ref: openspec/changes/preserve-completed-run-recovery/design.md
-      full.design.handoff:
-        sequence: 5
+      - sequence: 5
         value:
           handoffContext: openspec/changes/preserve-completed-run-recovery/.comet/handoff/design-context.json
           handoffHash: be99934c311dfbb308ed83f0e73d80653cfde086fbd9c436694ba5f422671917
@@ -1964,12 +980,10 @@ run_checkpoint:
           sourceEvidence:
             contentHash: bb96aa1265b9cbae2ed35e09bd1078cfc8e58e6b40e91ce751ae665ede044f10
             ref: openspec/changes/preserve-completed-run-recovery
-      full.open:
-        sequence: 1
+      - sequence: 1
         value:
           event: open-complete
-      full.open.confirm:
-        sequence: 3
+      - sequence: 3
         value:
           choice: approved
           proposal:
@@ -1984,17 +998,982 @@ run_checkpoint:
               full.open.evidence:
                 contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
                 ref: openspec/changes/preserve-completed-run-recovery
-      full.open.evidence:
-        sequence: 2
+      - sequence: 2
         value:
           contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
           ref: openspec/changes/preserve-completed-run-recovery
-      full.open.revalidate:
-        sequence: 4
+      - sequence: 4
         value:
           contentHash: 14729a3b4ed7bf3201d83f552f0961b2fae713bc826677a56536beaa38b44d23
-    children: []
-    lineage: []
-  sourceRevision: 19
-  sourceHash: a76c9a8a4dd10b031f63e90bcdcac1c725cf0a2316aca912f589e0f37e20e86e
-check_epoch: 2
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
+            ref: openspec/changes/preserve-completed-run-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+          planEvidence:
+            contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
+            ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+          taskRevision: dd1a651ebddd1ec94dfb3bb096fc68afb3e554e96ef144ee4b91c71aebd15ee5
+      - sequence: 12
+        value:
+          contentHash: a91c2cadd21d6bfafe15dd87d2f025434411c1c03b06fffbcbb1b1c7ba58762d
+          ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 9879e65c4dc3f3154d86ff468b8c80253c161c9ae2c207118ae5629f71480318
+          cwd: .
+          environment: e2c66c974475b8a4252a611fc50a2800c7e7b8a4e31b61dc85e6a6157fc71a79
+          exitCode: 0
+          inputAfter: de0ac7dc70bc8a69eea7b91ad3bd4a758f9e1242b8b2cbbd826431702e4bccc7
+          inputBefore: de0ac7dc70bc8a69eea7b91ad3bd4a758f9e1242b8b2cbbd826431702e4bccc7
+          manifestHash: 773f44680300dc83088f35eb3a6fb418f1ab4b79581debb80ea50594e3e277ff
+          manifestRef: .comet/runtime/classic-sdk-checks/6fa11f7ea23a572ee2c6348997e319ed62ed4de30482c10db4c0c354357122ac/b87219d4-c13c-4704-8b7e-f3916e47519d.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/6fa11f7ea23a572ee2c6348997e319ed62ed4de30482c10db4c0c354357122ac/872c7a3f-2b0c-4b34-bca5-dfdd08f0aceb.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 1800000
+      - sequence: 15
+        value:
+          contentHash: 9879e65c4dc3f3154d86ff468b8c80253c161c9ae2c207118ae5629f71480318
+          ref: .comet/runtime/classic-sdk-checks/6fa11f7ea23a572ee2c6348997e319ed62ed4de30482c10db4c0c354357122ac/872c7a3f-2b0c-4b34-bca5-dfdd08f0aceb.log
+      - sequence: 16
+        value:
+          event: verify-fail
+          reason: "Final independent review: completed CLI resume must remain terminal
+            when a business checkout becomes unreadable; completed persistence
+            must verify Workflow definition content against its pinned digest,
+            not only compare digest labels."
+      - sequence: 17
+        value:
+          designEvidence:
+            contentHash: a93a0dc165175c9a2f36d3dd72da7081bd173b938797d7cd32fdd5f4de2d44d8
+            ref: openspec/changes/preserve-completed-run-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+          planEvidence:
+            contentHash: 73ec5bea6a7764f99512363e08e2bfa03be1825905920aff87f9d91e3079ae36
+            ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+          taskRevision: dd1a651ebddd1ec94dfb3bb096fc68afb3e554e96ef144ee4b91c71aebd15ee5
+      - sequence: 18
+        value:
+          contentHash: 73ec5bea6a7764f99512363e08e2bfa03be1825905920aff87f9d91e3079ae36
+          ref: docs/superpowers/plans/2026-11-08-preserve-completed-run-recovery.md
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 15
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 39
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 40
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 41
+        height: 5
+      - key: full.build.plan.evidence
+        value: 17
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 16
+        left: 35
+        right: 43
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 44
+        right: 41
+        height: 5
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 46
+        right: 47
+        height: 2
+      - key: full.design.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: 49
+        right: 50
+        height: 2
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: 52
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: 51
+        right: 53
+        height: 3
+      - key: full.design.document
+        value: 21
+        left: 48
+        right: 54
+        height: 4
+      - key: full.build.plan
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 29
+        left: 56
+        right: 57
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 46
+        right: 58
+        height: 3
+      - key: full.design.document
+        value: 21
+        left: 59
+        right: 54
+        height: 4
+      - key: full.build.execute
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 46
+        right: 61
+        height: 2
+      - key: full.build.plan.evidence
+        value: 29
+        left: null
+        right: 57
+        height: 2
+      - key: full.build.plan
+        value: 28
+        left: 62
+        right: 63
+        height: 3
+      - key: full.design.document
+        value: 21
+        left: 64
+        right: 54
+        height: 4
+      - key: full.build.check
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 32
+        left: 66
+        right: 67
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 68
+        right: 61
+        height: 3
+      - key: full.build.plan
+        value: 28
+        left: 69
+        right: 63
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 70
+        right: 54
+        height: 5
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 27
+        left: 72
+        right: 73
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: 51
+        right: 74
+        height: 3
+      - key: full.design.document
+        value: 21
+        left: 70
+        right: 75
+        height: 5
+      - key: full.build.plan.evidence
+        value: 35
+        left: null
+        right: 57
+        height: 2
+      - key: full.build.plan
+        value: 34
+        left: 69
+        right: 77
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 78
+        right: 75
+        height: 5
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 25
+        left: 80
+        right: 81
+        height: 2
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: 83
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: 80
+        right: 84
+        height: 3
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: 86
+        right: 87
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: 88
+        right: 84
+        height: 3
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 21
+        left: 90
+        right: 91
+        height: 2
+      - key: full.design.handoff
+        value: 23
+        left: 92
+        right: 87
+        height: 3
+      - key: full.open.confirm
+        value: 25
+        left: 93
+        right: 84
+        height: 4
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 24
+        left: null
+        right: 95
+        height: 2
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: 98
+        right: 99
+        height: 2
+      - key: full.open
+        value: 24
+        left: 97
+        right: 100
+        height: 3
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 22
+        left: 103
+        right: 104
+        height: 2
+      - key: full.design.confirm
+        value: 20
+        left: 102
+        right: 105
+        height: 3
+      - key: full.open
+        value: 24
+        left: 106
+        right: 100
+        height: 4
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 21
+        left: 109
+        right: 110
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: 112
+        right: 113
+        height: 2
+      - key: full.open
+        value: 24
+        left: 111
+        right: 114
+        height: 3
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 116
+        right: 117
+        height: 2
+      - key: full.design.document
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 22
+        left: 119
+        right: 120
+        height: 2
+      - key: full.design.confirm
+        value: 20
+        left: 118
+        right: 121
+        height: 3
+      - key: full.open
+        value: 24
+        left: 122
+        right: 114
+        height: 4
+      - key: full.build.check
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 18
+        left: 124
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 28
+        left: 126
+        right: 127
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 125
+        right: 128
+        height: 3
+      - key: full.open
+        value: 24
+        left: 121
+        right: 114
+        height: 3
+      - key: full.design.confirm
+        value: 20
+        left: 129
+        right: 130
+        height: 4
+      - key: full.build.check
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 32
+        left: 132
+        right: 133
+        height: 2
+      - key: full.build.plan
+        value: 34
+        left: 126
+        right: 127
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 134
+        right: 135
+        height: 3
+      - key: full.verify.run
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: 137
+        height: 2
+      - key: full.open.evidence
+        value: 26
+        left: 112
+        right: 138
+        height: 3
+      - key: full.open
+        value: 24
+        left: 121
+        right: 139
+        height: 4
+      - key: full.design.confirm
+        value: 20
+        left: 136
+        right: 140
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 42
+      - 45
+      - 55
+      - 60
+      - 65
+      - 71
+      - 76
+      - 79
+      - 82
+      - 85
+      - 89
+      - 94
+      - 96
+      - 101
+      - 107
+      - 108
+      - 115
+      - 123
+      - 131
+      - 141
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actionContexts
+          - preserve-completed-run-recovery:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - preserve-completed-run-recovery:11
+          - results
+        map: 11
+      - path:
+          - actionContexts
+          - preserve-completed-run-recovery:13
+          - results
+        map: 12
+      - path:
+          - actionContexts
+          - preserve-completed-run-recovery:14
+          - results
+        map: 13
+      - path:
+          - actionContexts
+          - preserve-completed-run-recovery:16
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - preserve-completed-run-recovery:17
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - preserve-completed-run-recovery:19
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - preserve-completed-run-recovery:4
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - preserve-completed-run-recovery:5
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - preserve-completed-run-recovery:7
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - preserve-completed-run-recovery:9
+          - results
+        map: 20
+      - path:
+          - outputs
+        map: 16
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 21
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 22
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 23
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 24
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 25
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 26
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 27
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 28
+  storageHash: 9ea2564455db48a0d4b5ad276ba48cb1863a63c5b451b244365a566841bf7b72
+check_epoch: 4

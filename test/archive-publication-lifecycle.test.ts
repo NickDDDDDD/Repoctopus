@@ -1,6 +1,6 @@
 import { verificationInputFixture } from './helpers/evidence-inputs.js';
 import { createArchiveInputFixture as createArchiveDeliveryInput } from './helpers/evidence-inputs.js';
-import { readFile, unlink, writeFile } from 'node:fs/promises';
+import { readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import path from 'node:path';
@@ -529,6 +529,8 @@ describe('Archive publication terminal lifecycle', () => {
     'invalid-snapshot',
     'mismatched-snapshot',
     'wrong-run-status',
+    'invalid-workflow-definition',
+    'mismatched-workflow-definition',
   ] as const)('rejects unverified completed persistence: %s', async (fault) => {
     const workspace = await temporaryDirectory('repoctopus-terminal-integrity-');
     cleanup.push(workspace);
@@ -565,7 +567,17 @@ describe('Archive publication terminal lifecycle', () => {
       const state = JSON.parse(await readFile(files.run, 'utf8')) as RunState;
       state.status = 'running';
       await writeFile(files.run, JSON.stringify(state));
-    } else {
+    } else if (fault === 'invalid-workflow-definition')
+      await writeFile(files.workflow, JSON.stringify({ ...workflowFixture(), definition: null }));
+    else if (fault === 'mismatched-workflow-definition')
+      await writeFile(
+        files.workflow,
+        JSON.stringify({
+          ...workflowFixture(),
+          definition: { ...workflowFixture().definition, name: 'damaged' },
+        }),
+      );
+    else {
       const checkpoint = JSON.parse(await readFile(files.checkpoint, 'utf8')) as Checkpoint;
       if (fault === 'stale-checkpoint') checkpoint.stateVersion -= 1;
       else checkpoint.runStatus = 'running';
@@ -580,15 +592,17 @@ describe('Archive publication terminal lifecycle', () => {
   });
 
   it.each([
-    ['resume-next', 'service', false],
-    ['next-resume', 'service', false],
-    ['resume-next', 'cli', false],
-    ['next-resume', 'cli', false],
-    ['resume-next', 'cli', true],
-    ['next-resume', 'cli', true],
+    ['resume-next', 'service', false, false],
+    ['next-resume', 'service', false, false],
+    ['resume-next', 'cli', false, false],
+    ['next-resume', 'cli', false, false],
+    ['resume-next', 'cli', true, false],
+    ['next-resume', 'cli', true, false],
+    ['resume-next', 'cli', false, true],
+    ['next-resume', 'cli', false, true],
   ] as const)(
-    'keeps completed recovery terminal in %s order via %s (historical flag: %s)',
-    async (order, entrypoint, historicalFlag) => {
+    'keeps completed recovery terminal in %s order via %s (historical flag: %s, retired checkout: %s)',
+    async (order, entrypoint, historicalFlag, retiredCheckout) => {
       const root = await temporaryDirectory('repoctopus-terminal-service-');
       cleanup.push(root);
       const workspace = await createGitRepository(root, 'workspace');
@@ -645,6 +659,20 @@ describe('Archive publication terminal lifecycle', () => {
           runId,
           changeLifecycle: closed,
         });
+        const retiredBusiness = path.join(root, 'retired-app');
+        if (retiredCheckout) {
+          const active = await app.context.runStore.loadRun(runId);
+          await rename(business, retiredBusiness);
+          await expect(
+            runCli({
+              packageRoot: path.resolve(import.meta.dirname, '..'),
+              cwd: workspace,
+              args: ['run', 'resume', '--workspace', workspace, '--run', runId],
+            }),
+          ).rejects.toThrow(/Configured repository is unreadable/u);
+          expect(await app.context.runStore.loadRun(runId)).toEqual(active);
+          await rename(retiredBusiness, business);
+        }
         await runtime.acceptChangeObservation(runId, {
           kind: 'archive-publication-receipt-accepted',
           receipt,
@@ -659,6 +687,7 @@ describe('Archive publication terminal lifecycle', () => {
         await git('git', ['add', 'completed.txt'], { cwd: business });
         await git('git', ['commit', '-m', 'test: completed implementation'], { cwd: business });
         const current = await app.context.project.snapshot(snapshotInput);
+        if (retiredCheckout) await rename(business, retiredBusiness);
         const observeProject = vi.spyOn(app.context.project, 'snapshot');
         const getSkill = vi.spyOn(app.context.skills, 'get');
         const close = vi.spyOn(app.context.specification, 'close');
@@ -688,6 +717,17 @@ describe('Archive publication terminal lifecycle', () => {
           if (entry === 'resume')
             expect(response.value).toMatchObject({
               execution: { continuation: 'done', reason: 'terminal' },
+            });
+          if (entry === 'resume' && entrypoint === 'cli')
+            expect(response.value).not.toHaveProperty('reconciliation');
+          if (entry === 'resume' && entrypoint === 'service')
+            expect(response.value).toMatchObject({
+              reconciliation: {
+                changed: true,
+                currentDigest: current.digest,
+                previousDigest: initial.digest,
+                requiresReconciliation: false,
+              },
             });
         }
         expect(observeProject).not.toHaveBeenCalled();
