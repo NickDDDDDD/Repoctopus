@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: e836973c-7b1b-4d8e-9158-a85b4dfcd0fe
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: c872b4080d8336d2440410e28e482fce98423464
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-07
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/preserve-completed-run-recovery
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 33b95c72ea14441ed88aff14ced2e139ea528dc10727e55711b5c837d4622cc6
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: preserve-completed-run-recovery
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: '1'
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 22aac3eae6d96092710afbe0dcc429f6c70115f2ace1588034ee4ea6ef966ac2
+    input:
+      change: preserve-completed-run-recovery
+      changeDir: openspec/changes/preserve-completed-run-recovery
+      workspaceBaseline:
+        ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: c872b4080d8336d2440410e28e482fce98423464
+      boundBranch: comet/preserve-completed-run-recovery
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-07
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: preserve-completed-run-recovery:1
+        input:
+          input:
+            change: preserve-completed-run-recovery
+            changeDir: openspec/changes/preserve-completed-run-recovery
+            workspaceBaseline:
+              ref: 71ffb7d9-96c6-495b-bb69-2467118c1461
+          outputs: {}
+        inputHash: d231c4072a7c237b93b88292fffd933093773ca60a0977ba922a02368570378d
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-completed-run-recovery
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      preserve-completed-run-recovery:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 28d54da9b45196a80e23807c849a70ea0f6dff4a2076e445b540db6044cdd609
