@@ -1,6 +1,6 @@
 # 已完成 Run 恢复验证记录
 
-本报告记录 Build 验收与正式 Verify；首轮 Build 通过后，最终审查发现两处缺口，已通过正式 verify-fail 返回同一 Run 的 Build 并完成代码修复。当前最终包全流程与最终源码 Linux CI 已通过，本机正式 Verify 尚未通过，不把现场验收或 CI 解释为本机门禁收据。
+本报告记录 Build 验收与正式 Verify；首轮 Build 通过后，最终审查发现两处缺口，已通过正式 verify-fail 返回同一 Run 的 Build 并完成代码修复。当前候选再次通过 Build Guard，最终包全流程及独立终检、最终源码 Linux CI 均已通过。本机完整 Verify 尚待正式执行，不把现场验收或 CI 解释为本机门禁收据。
 
 唯一最终集成 reviewer 为 `/root/completed_recovery_final_verify_review`，独立会话 `codex-completed-recovery-final-review`。审查基线为 `c872b4080d8336d2440410e28e482fce98423464`，候选为 `84fb2c2fc346f4e520503b9a50f40d64d5066e59`；仅生成的 Comet 控制状态在 Build Guard 后更新。Verify 不使用仅允许 Build 的任务协调写入口，最终审查分配与证据在本报告记录，不修改生命周期存储。
 
@@ -110,7 +110,7 @@ Build 期间曾把原待导出遥测的实施说明追加到已封存 Design；�
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | 完整性 | 8/8 tasks；两个 MODIFIED requirement 的工件齐全，所有列出的 contextFiles 均已读取                                                     |
 | 正确性 | 两个 requirement 的终态、历史诊断、两入口恢复、持久异常、Journal、活动授权场景已有相关回归与真实五仓证据；完整集成检查尚待正式 Verify |
-| 一致性 | 实现遵循 approved Design 的可信终态、持久边界与多仓职责分离；未建立第二任务/规划权威；最终独立集成审查进行中                          |
+| 一致性 | 实现遵循 approved Design 的可信终态、持久边界与多仓职责分离；未建立第二任务/规划权威；同一最终独立集成 reviewer 已关闭全部 Important  |
 
 没有把未执行的最终综合检查记为通过，也尚不声明 ready for archive。
 
@@ -144,6 +144,14 @@ Runtime 已接受同一 Run 的 complete-build，并派发 full.build.check。�
 | Workspace #4（URL 见原始报告）                                   | `eac67a67ca61d148f5dd4a5dbb6f5a06e64cc71c` | `acceptance/terminal-final-20261108` |
 
 实际 Receipt `sha256:b7776f946657ea539184dc8b27538cb6082a2350b4f1f9858d333d5fbf7d5c8f`；三个 MR 均唯一且 OPEN，远端 head/base/OID 和归档四类产物/主规格核对通过，没有合入。完整原始报告 `lab-terminal-final-1108/verification-report.md` SHA256 `57fdc6463739536b344d717b1b3428e070e725170b852bd5742cf6e9fe35c6a3`，父任务已复核原文与摘要；与首轮报告各自保留，不静默改写历史。
+
+## 当前候选正式门禁准备
+
+独立 C3 证据 auditor 另行重算最终报告、原 tarball 与规范化内容摘要、9 个旧 Store/545 文件和14份旧记录；逐个解析12个不同 PID的终态响应及12份status，复核真实完整三元组、stderr负例、历史副本与 live REST 三个唯一 MR。结果 PASS，保存为本轮 `reviewer-final-package-acceptance-audit.json` 和简报，没有改写旧现场或产品 Store。
+
+最终 C3 验收和独立终检之后，同一 Run 接受 complete-build，派发 full.build.check Action20；实际精确 `npm.cmd run build` 的 Guard exit code 0，输出 ALL CHECKS PASSED，进入 full.verify.run Action22，入口 healthy=true、无 issue。源码保持 f22e29f，修复后的9文件141项回归、独立review2/2、C3完整现场与当前CI证据都已固定。
+
+当前完整 Verify 将执行 policy 已声明的 `npm.cmd run verify`、cwd `.`、`VITEST_MAX_WORKERS=2`，通过同版本 Node CLI 的正式 Guard 绑定本报告和真实检查收据。完整日志 stdout/stderr 分开保留；本报告在执行前固定，不预先写成功结论，检查结果以同一 Run 的后续实际收据为准。
 
 ## 不在本次修复范围
 

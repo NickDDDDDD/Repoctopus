@@ -6,7 +6,7 @@
 - Package content SHA-256: `13fad2c836df214f2baaac6c08c2ecaeb2a31455ef83f53f9e67e0f2ec5655a2`
 - Tarball SHA-256: `c957d744113f2980f6a6a62f1bb6b22a11d8aabfb0ef7f99f5437fc6019bc866`
 
-最终集成审查发现的两处边界缺陷已修复并由同一 reviewer 复核；当前 C3 单一包的全新五仓完整验收也已通过。Comet 仍在正式 verify-fail 后的 Build，等待当前输入的 Build/Verify Guard；不以旧包结果或 CI 代替正式门禁。
+最终集成审查发现的两处边界缺陷已修复并由同一 reviewer 复核；当前 C3 单一包的全新五仓完整验收也已独立终检通过。Comet 已接受当前候选 Build Guard 并进入 Verify，等待完整 Verify Guard；不以旧包结果或 CI 代替该正式门禁。
 
 ## 根因与采用方案
 
