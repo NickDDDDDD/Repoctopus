@@ -2,6 +2,7 @@
 change: unify-build-workspace-recovery
 design-doc: openspec/changes/unify-build-workspace-recovery/design.md
 base-ref: c25e2ab
+archived-with: 2026-11-07-unify-build-workspace-recovery
 ---
 
 # Build 工作区恢复实施计划

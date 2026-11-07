@@ -256,7 +256,7 @@ Runtime MUST 从已通过 Design Human Decision 的版本化 `BuildStrategy` 读
 
 #### Scenario: 绑定变化但策略未变
 
-- **WHEN** 同isolation intent下coordinator Host、checkout、初始HEAD或本机路径发生兼容变化
+- **WHEN** 批准的执行意图与当前 Run 证据能证明，同isolation intent下coordinator Host、checkout、初始HEAD或本机路径发生已授权的兼容变化
 - **THEN** Runtime生成新Binding identity、使依赖旧Binding-owned输入的Plan/Evidence失效并自动重验，不创建Build Strategy approval
 
 #### Scenario: 下一 Work 暂时没有兼容 Host
@@ -266,8 +266,13 @@ Runtime MUST 从已通过 Design Human Decision 的版本化 `BuildStrategy` 读
 
 #### Scenario: Binding-owned事实变化
 
-- **WHEN** coordinator Host identity、repository topology、branch/worktree ownership、isolation或local overlay发生变化
+- **WHEN** coordinator Host identity、repository topology、branch/worktree ownership、isolation或local overlay发生变化，且批准的执行意图与当前 Run 证据证明变化属于已授权兼容重绑定
 - **THEN** Runtime按现有精确失效规则派发Build Configure revalidation；当前Work capability声明不同本身不得触发该路径
+
+#### Scenario: 未授权 checkout 漂移不得触发重新绑定
+
+- **WHEN** 实际分支、路径、worktree、远端或仓库集合偏离已接受 Binding 的执行边界，且当前 Run 没有可核对的授权证据
+- **THEN** `run resume` 与 `run next` 均保留原 Binding、Plan、已完成工作包和当前执行记录并阻断继续执行，不以 Configure 自动接受当前 checkout
 
 ### Requirement: Runtime BuildPlan 是 OpenSpec Tasks 的执行投影
 

@@ -2,6 +2,8 @@
 comet_change: unify-build-workspace-recovery
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-07-unify-build-workspace-recovery
+status: final
 ---
 
 # Build 工作区恢复设计
