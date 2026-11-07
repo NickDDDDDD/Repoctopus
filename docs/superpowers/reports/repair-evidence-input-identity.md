@@ -72,3 +72,20 @@ node_modules/.bin/vitest.cmd run test/managed-change-execution.e2e.test.ts -t 'a
 独立复现确认旧 Bundle parser 没有重算 Bundle ID：将 freshness 改为 reused，或把 superseded 改为 fresh，并保留原 ID/dependencies，仍被接受，可能影响缓存候选。新增契约回归实际 RED 后，Bundle 创建改为统一计算最终事实及依赖集合摘要，Store parser 重建同一 canonical 对象；业务调用方不再自行提供 Bundle ID。正常采集与中断恢复共用该工厂，不支持旧身份算法的执行 fallback。新增实际 Store 篡改回归同时检查 status 与下一轮缓存选取必须拒绝，旧候选包验收作为历史保留，最终身份算法将另做固定包验收。
 
 当前a71442d候选的非完整managed矩阵回归：198个测试文件、1052项测试通过，另1文件及5项按平台/既有条件跳过，运行300.54秒。完整五阶段矩阵将在正式Verify门禁执行；新Bundle算法的全新独立安装包多仓验收仍在运行，不沿用历史候选成功结论。
+
+## 唯一最终集成审查与范围内修正
+
+独立最终审查发现两项IMPORTANT，已通过公开verify-fail入口返回同一Build，不改Store或重新审批：
+
+- 直接Close只比较源指纹，遗漏被源输入排除的派生产物。定向RED证实派生产物改变后仍进入Provider；修正为从已接受canonical Bundle核对Verification Input绑定，并复用assessInputs的真实逐节点源/派生观察。Close入口和最终副作用fence同时接通；后者还保留冻结发布坐标核对。
+- Verification Input没有在全部实际读取与接受路径强制校验版本、依赖与身份。缺版本恢复及缺依赖Gate的RED均实际失败；工厂和rebase把dependencySetDigest纳入身份，领域Work/Gate/transition及FileRuntimeStore普通读和guarded事务读均校验v4、canonical依赖及事实摘要，不升级旧开发证据。三项实际磁盘损坏回归证明冷恢复拒绝且不调用事务操作、不改原文件。
+
+独立reviewer补充同一最终审查，确认两项产品缺口关闭、未发现新增P1/P2。65项相关回归、类型、lint、架构和固定来源检查通过。新增真实producer→consumer的完整多仓组合首轮因consumer误声明同一output所有权被合法拒绝，该次不记通过；夹具改为只声明消费文件、outputs为空，没有放宽产品所有权规则。完整场景和新身份算法固定包仍待实际结果。
+
+### a71442d真实包历史验收补录
+
+a71442d包从新五仓Run完成Open/Design/两包TDD/BuildCheck/managed Verify。两项Node检查总数2；仅提交完成复选框，四个冷CLI保留完整Input、Gate、Bundle、Plan、Binding、BuildCheck与两包completion。仅发布OID变化经公开prepare刷新Archive checkpoint，随后未授权分支两次阻断、切回两次恢复，合计10个新进程恢复矩阵。真实业务README追加44字节后next返回Verify epoch17，resume保持同一新Verify Work，未执行关闭或新检查；恢复文件原字节不伪造Runtime终态。旧Gate的satisfied是历史事实，不能越过新Work/Input/epoch绑定授权Archive。
+
+正向原报告SHA256：38a7e447e9036e869f902f5020ac570d32baeda0fa9603068adbc58e71c8d7f5；内容负例补充SHA256：5522552f5a1b92084b1ab5a6d69ddb595b8ac6556f69b95390af621b8b82bea2。该包及旧报告全部保留，因当前Verification Input身份算法已增强，不冒充当前最终包验收。
+
+新增真实多仓完整producer→consumer场景已通过，实际216.87秒：消费成功并接受Verify后完成Close Host Outcome，篡改ignored派生产物，源fingerprint仍完全相同；直接run.archive.publish返回reverify-required并建立evidence.verify，prepareClosure未被调用。夹具临时多仓由测试finally清理。

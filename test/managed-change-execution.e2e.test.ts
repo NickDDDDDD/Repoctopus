@@ -71,6 +71,12 @@ describe('managed Change execution production composition', () => {
       multiRepository: true,
     },
     {
+      label: 'derived output drift blocks direct Archive Close',
+      executionMode: 'autonomous' as const,
+      multiRepository: true,
+      derivedCloseDrift: true,
+    },
+    {
       label: 'protected writable repositories fail closed before Execute',
       executionMode: 'autonomous' as const,
       multiRepository: true,
@@ -90,6 +96,7 @@ describe('managed Change execution production composition', () => {
       multiRepository,
       protectedWriteRepositories = false,
       prepoisonedProtectedRecovery = false,
+      derivedCloseDrift = false,
     }) => {
       const root = await temporaryDirectory('repoctopus-managed-change-');
       cleanup.push(root);
@@ -109,6 +116,8 @@ describe('managed Change execution production composition', () => {
       const workspace = await createGitRepository(root, 'workspace', workspaceRemote);
       const appRepository = await createGitRepository(root, 'app', appRemote);
       const workerRepository = await createGitRepository(root, 'worker', workerRemote);
+      if (derivedCloseDrift)
+        await writeFile(path.join(appRepository, '.git', 'info', 'exclude'), 'evidence-dist/\n');
       // Keep portable remote identities stable from Run creation through publication.
       for (const [repository, remote] of [
         [workspace, workspaceRemote],
@@ -192,7 +201,23 @@ describe('managed Change execution production composition', () => {
                   repository: 'app',
                   covers: ['*'],
                   executable: process.execPath,
-                  args: ['-e', 'process.exit(0)'],
+                  args: [
+                    '-e',
+                    derivedCloseDrift
+                      ? "const fs=require('node:fs');fs.mkdirSync('evidence-dist',{recursive:true});fs.writeFileSync('evidence-dist/value.txt','proof')"
+                      : 'process.exit(0)',
+                  ],
+                  ...(derivedCloseDrift
+                    ? {
+                        inputs: {
+                          schemaVersion: 1,
+                          repositories: [{ repository: 'app', outputs: ['evidence-dist/**'] }],
+                          git: 'none',
+                          taskCheckboxes: 'ignore',
+                          env: [],
+                        },
+                      }
+                    : {}),
                 },
                 ...(multiRepository
                   ? [
@@ -202,7 +227,27 @@ describe('managed Change execution production composition', () => {
                         repository: 'worker',
                         covers: ['*'],
                         executable: process.execPath,
-                        args: ['-e', 'process.exit(0)'],
+                        args: [
+                          '-e',
+                          derivedCloseDrift
+                            ? "if(require('node:fs').readFileSync('../app/evidence-dist/value.txt','utf8')!=='proof')process.exit(1)"
+                            : 'process.exit(0)',
+                        ],
+                        ...(derivedCloseDrift
+                          ? {
+                              dependsOn: ['app-check'],
+                              inputs: {
+                                schemaVersion: 1,
+                                repositories: [
+                                  { repository: 'app', files: ['evidence-dist/**'], outputs: [] },
+                                  { repository: 'worker', outputs: [] },
+                                ],
+                                git: 'none',
+                                taskCheckboxes: 'ignore',
+                                env: [],
+                              },
+                            }
+                          : {}),
                       },
                     ]
                   : []),
@@ -2197,6 +2242,29 @@ describe('managed Change execution production composition', () => {
           acceptedAttemptId,
         );
         await next();
+        if (derivedCloseDrift) {
+          const before = await application.context.evidenceCoordinator.plan('verify', runId);
+          await writeFile(path.join(appRepository, 'evidence-dist', 'value.txt'), 'tampered');
+          const after = await application.context.evidenceCoordinator.plan('verify', runId);
+          expect(after.fingerprint.digest).toBe(before.fingerprint.digest);
+          const prepare = vi.spyOn(application.context.specification, 'prepareClosure');
+          const result = await application.context.workflowRuns.executeArchiveDelivery({
+            runId,
+            project,
+            policy,
+            executor: {
+              actorId: 'managed-test-user',
+              runnerId: 'managed-test-runner',
+              source: 'runner',
+              authenticated: true,
+            },
+          });
+          expect(result.value.stage).toBe('reverify-required');
+          expect(result.value.run.changeLifecycle?.phase).toBe('verify');
+          expect(result.value.run.changeLifecycle?.currentWork?.kind).toBe('evidence.verify');
+          expect(prepare).not.toHaveBeenCalled();
+          return;
+        }
         const closed = await application.context.commandRouter.execute<
           {
             runId: string;

@@ -12,7 +12,17 @@ import { createEvidenceFingerprint } from '../../domains/evidence/fingerprint.js
 import { parseSpecificationTasks } from '../../domains/specification/tasks.js';
 import { TEST_COMPOSITION_DIGEST } from './fixtures.js';
 
-export function verificationInputFixture(runId: string, checkEpoch = 0) {
+export function verificationInputFixture(
+  runId: string,
+  checkEpoch = 0,
+  options: {
+    profileId?: string;
+    fingerprintDigest?: string;
+    projectConfigDigest?: `sha256:${string}`;
+    compositionDigest?: string;
+    tasks?: Parameters<typeof createVerificationInput>[0]['tasks'];
+  } = {},
+) {
   const node = {
     id: 'test',
     type: 'command' as const,
@@ -28,14 +38,14 @@ export function verificationInputFixture(runId: string, checkEpoch = 0) {
   };
   const plan = {
     schemaVersion: 1 as const,
-    profileId: 'verify',
+    profileId: options.profileId ?? 'verify',
     configDigest: evidenceInputDigest('config'),
     nodes: [node],
     order: ['test'],
   };
   const fingerprint = createEvidenceFingerprint({
     schemaVersion: 3,
-    profileId: 'verify',
+    profileId: plan.profileId,
     sharedConfigDigest: plan.configDigest,
     localConfigDigest: null,
     repositories: [
@@ -57,12 +67,15 @@ export function verificationInputFixture(runId: string, checkEpoch = 0) {
   return createVerificationInput({
     runId,
     checkEpoch,
-    tasks: parseSpecificationTasks('recovery', '- [x] 1.1 Build.\n  **Acceptance:** It works\n')
-      .tasks,
-    fingerprint,
+    tasks:
+      options.tasks ??
+      parseSpecificationTasks('recovery', '- [x] 1.1 Build.\n  **Acceptance:** It works\n').tasks,
+    fingerprint: options.fingerprintDigest
+      ? { ...fingerprint, digest: options.fingerprintDigest }
+      : fingerprint,
     plan,
-    projectConfigDigest: evidenceInputDigest('config'),
-    compositionDigest: TEST_COMPOSITION_DIGEST,
+    projectConfigDigest: options.projectConfigDigest ?? evidenceInputDigest('config'),
+    compositionDigest: options.compositionDigest ?? TEST_COMPOSITION_DIGEST,
     skills: [
       {
         schemaVersion: 1,

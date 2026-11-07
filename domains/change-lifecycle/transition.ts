@@ -3,7 +3,7 @@ import type { EffectiveWorkSkillComposition } from '../skill/composition.js';
 import type { SpecificationArtifactKind } from '../specification/types.js';
 import type { SpecificationTask } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
-import type { VerificationInput } from './verification-input.js';
+import { assertVerificationInput, type VerificationInput } from './verification-input.js';
 import type { ArchiveDeliveryInput } from './archive-input.js';
 import type { PublicationReceipt } from '../delivery/publication-receipt.js';
 import { assertPublicationReceipt } from '../delivery/publication-receipt.js';
@@ -711,6 +711,8 @@ export function assertChangeLifecycleSnapshot(
   ) {
     throw new Error('Verify phase requires a Work bound to the immutable verification input');
   }
+  if (snapshot.verificationInput?.schemaVersion === 4)
+    assertVerificationInput(snapshot.verificationInput);
   if (
     snapshot.verificationInvalidation &&
     (snapshot.phase !== 'build' ||
@@ -900,6 +902,12 @@ export function evolveChangeLifecycle(options: {
   observation: ChangeLifecycleObservation;
 }): ChangeLifecycleReduction {
   const { current, observation } = options;
+  if (
+    current.verificationInput &&
+    current.status !== 'completed' &&
+    current.status !== 'migration_required'
+  )
+    assertVerificationInput(current.verificationInput);
   if (observation.kind === 'open-repair-required') {
     if (
       current.phase === 'open' &&

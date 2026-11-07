@@ -1021,6 +1021,17 @@ export class EvidenceCoordinator extends Service {
     return 'same';
   }
 
+  async assessBundleInputs(
+    bundleId: string,
+    workflowRunId: string,
+    verificationInputDigest: string,
+  ): Promise<'same' | 'drift'> {
+    const bundle = await this.store.loadBundle(bundleId);
+    if (bundle.acceptanceTrace?.verificationInputDigest !== verificationInputDigest)
+      throw new Error('Archive Evidence Bundle does not match its frozen Verification Input');
+    return this.assessInputs(bundle.attemptId, workflowRunId);
+  }
+
   async flushTelemetry(attemptId: string): Promise<EvidenceTelemetryStatus> {
     const [batch, cursor] = await Promise.all([
       this.telemetryOutbox.load(attemptId),

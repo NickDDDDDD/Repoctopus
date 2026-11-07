@@ -11,6 +11,8 @@ import { canonicalJson } from '../workflow-contract/canonical.js';
 import { resolveAcceptanceCoverage } from './acceptance-coverage.js';
 import {
   createEvidenceDependencyRecord,
+  assertEvidenceDependencyRecord,
+  evidenceDependencySetDigest,
   type EvidenceDependencyRecord,
 } from '../evidence/dependencies.js';
 import { evidenceInputDigest } from '../evidence/input-snapshot.js';
@@ -48,6 +50,55 @@ export interface VerificationInput {
 
 function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
+}
+
+function verificationDependencies(fingerprintDigest: string) {
+  return [
+    {
+      partition: 'implementation-content' as const,
+      identity: evidenceInputDigest(fingerprintDigest),
+    },
+  ];
+}
+
+/** Validates persisted semantics independently of mutable Git audit provenance. */
+export function assertVerificationInput(value: unknown): asserts value is VerificationInput {
+  if (!value || typeof value !== 'object') throw new Error('Verification Input is required');
+  const input = value as VerificationInput;
+  if (input.schemaVersion !== 4) throw new Error('Unsupported Verification Input schemaVersion');
+  if (
+    !input.runId?.trim() ||
+    !Number.isSafeInteger(input.checkEpoch) ||
+    input.checkEpoch < 0 ||
+    !Array.isArray(input.taskRevisions) ||
+    !Array.isArray(input.acceptanceCriteria) ||
+    !Array.isArray(input.acceptanceCoverage) ||
+    !Array.isArray(input.repositories) ||
+    !Array.isArray(input.skills) ||
+    !input.evidenceProfile?.id ||
+    !input.evidenceProfile.fingerprintDigest
+  )
+    throw new Error('Invalid Verification Input facts');
+  assertEvidenceDependencyRecord(input.dependencies, 'verification-input', input.digest);
+  const expected = verificationDependencies(input.evidenceProfile.fingerprintDigest);
+  if (
+    canonicalJson(input.dependencies) !==
+    canonicalJson(
+      createEvidenceDependencyRecord({
+        subjectKind: 'verification-input',
+        subjectId: input.digest,
+        dependencies: expected,
+      }),
+    )
+  )
+    throw new Error('Verification Input dependencies do not match its frozen inputs');
+  const { digest, dependencies: _dependencies, repositories: _provenance, ...semantic } = input;
+  void _dependencies;
+  void _provenance;
+  if (
+    digest !== sha256({ ...semantic, dependencySetDigest: evidenceDependencySetDigest(expected) })
+  )
+    throw new Error('Verification Input identity does not match its facts and dependencies');
 }
 
 export function createVerificationInput(input: {
@@ -133,19 +184,18 @@ export function createVerificationInput(input: {
   };
   const { repositories: _provenance, ...semantic } = stable;
   void _provenance;
-  const digest = sha256(semantic);
+  const dependencies = verificationDependencies(input.fingerprint.digest);
+  const digest = sha256({
+    ...semantic,
+    dependencySetDigest: evidenceDependencySetDigest(dependencies),
+  });
   return {
     ...stable,
     digest,
     dependencies: createEvidenceDependencyRecord({
       subjectKind: 'verification-input',
       subjectId: digest,
-      dependencies: [
-        {
-          partition: 'implementation-content',
-          identity: evidenceInputDigest(input.fingerprint.digest),
-        },
-      ],
+      dependencies,
     }),
   };
 }
@@ -154,6 +204,7 @@ export function rebaseVerificationInput(
   input: VerificationInput,
   checkEpoch: number,
 ): VerificationInput {
+  assertVerificationInput(input);
   if (!Number.isSafeInteger(checkEpoch) || checkEpoch < 0) {
     throw new Error('Verification input rebase requires a non-negative checkEpoch');
   }
@@ -163,7 +214,13 @@ export function rebaseVerificationInput(
   const rebased = { ...structuredClone(stable), checkEpoch };
   const { repositories: _provenance, ...semantic } = rebased;
   void _provenance;
-  const digest = sha256(semantic);
+  const digest = sha256({
+    ...semantic,
+    dependencySetDigest: evidenceDependencySetDigest(
+      input.dependencies.dependencies,
+      input.dependencies.dependsOnEvidenceIds,
+    ),
+  });
   return {
     ...rebased,
     digest,

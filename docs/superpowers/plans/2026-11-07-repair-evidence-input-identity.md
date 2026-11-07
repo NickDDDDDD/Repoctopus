@@ -78,3 +78,9 @@ Run: `node_modules/.bin/vitest.cmd run test/managed-change-execution.e2e.test.ts
 <!-- comet-task-ref:b45389e7-b35d-44dc-b2de-2af481420f4b -->
 
 运行 `npm.cmd run verify`、固定包身份复算与独立最终审查。架构和来源清单随实际新增纯模块更新；规范化 npm 包从独立 node_modules 构建，不能使用共享 Junction 的构建身份。只有正式收据和全部八项真实完成，才提交 complete-build 并进入最终 Verify。
+
+## Verify 发现的范围内修正
+
+最终独立审查发现任务2.1和2.2仍各有入口遗漏：直接Archive Close及最终effect fence只比较源指纹，必须复用assessInputs校验已接受的派生产物；VerificationInput必须在恢复和接受时校验必需版本、规范身份和依赖，不能仅升级类型字面值。沿用已批准设计、原八个Task和本计划base-ref，不重做Open/Design或执行配置。
+
+先补派生产物变更但源指纹不变时Close拒绝，以及从实际v4 Input删版本/依赖的RED；再接入现有观察器和唯一纯校验器。复核执行入口、最终fence、领域恢复与Gate接受的同一规则，独立最终审查只补受影响片段。新候选另做固定包验证，原候选报告保持历史，最后再执行正式Build/Verify Guard。

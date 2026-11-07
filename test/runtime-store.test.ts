@@ -1,5 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { verificationInputFixture } from './helpers/evidence-inputs.js';
+import { createChangeLifecycleSnapshot } from '../domains/change-lifecycle/definition.js';
 
 import { startRun } from '../domains/engine/loop.js';
 import type { ChangeLifecycleSnapshot } from '../domains/change-lifecycle/transition.js';
@@ -80,6 +82,54 @@ describe.each<keyof RuntimeStoreHooks>([
 });
 
 describe('runtime store corruption detection', () => {
+  it.each(['schemaVersion', 'dependencies', 'semantic'] as const)(
+    'rejects persisted Verification Input %s corruption on both cold read paths',
+    async (field) => {
+      const workspace = await temporaryDirectory('repoctopus-verification-protocol-');
+      cleanup.push(workspace);
+      const workflow = workflowFixture();
+      const project = projectFixture();
+      const state = startRun({
+        workflow,
+        runId: 'verification-protocol',
+        projectSnapshotDigest: project.digest,
+        composition: compositionFixture(),
+        timestamp: '2026-01-01T00:00:00.000Z',
+      });
+      state.changeLifecycle = {
+        ...createChangeLifecycleSnapshot({
+          identity: { workspaceId: 'team', changeId: 'verify-protocol', runId: state.runId },
+        }),
+        verificationInput: verificationInputFixture(state.runId),
+      };
+      const store = new FileRuntimeStore(workspace);
+      await store.initialize({
+        state,
+        workflow,
+        projectSnapshot: project,
+        event: startedEvent(state.runId, 0),
+      });
+      await expect(new FileRuntimeStore(workspace).loadRun(state.runId)).resolves.toEqual(state);
+      const broken = JSON.parse(await readFile(store.paths(state.runId).run, 'utf8')) as {
+        changeLifecycle: { verificationInput: Record<string, unknown> };
+      };
+      if (field === 'semantic')
+        broken.changeLifecycle.verificationInput.projectConfigDigest = `sha256:${'f'.repeat(64)}`;
+      else delete broken.changeLifecycle.verificationInput[field];
+      const bytes = JSON.stringify(broken);
+      await writeFile(store.paths(state.runId).run, bytes);
+      const restored = new FileRuntimeStore(workspace);
+      await expect(restored.loadRun(state.runId)).rejects.toThrow(
+        /Verification Input|dependency/iu,
+      );
+      const effect = vi.fn(() => ({ value: 'unsafe' }));
+      await expect(restored.commitGuarded(state.runId, effect)).rejects.toThrow(
+        /Verification Input|dependency/iu,
+      );
+      expect(effect).not.toHaveBeenCalled();
+      expect(await readFile(store.paths(state.runId).run, 'utf8')).toBe(bytes);
+    },
+  );
   it('rejects a truncated trajectory instead of silently discarding it', async () => {
     const workspace = await temporaryDirectory('repoctopus-corruption-');
     cleanup.push(workspace);

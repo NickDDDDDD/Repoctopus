@@ -15,8 +15,8 @@ auto_transition: true
 base_ref: 22b5cd069194f777ba366f60275f211edf97bda8
 design_doc: openspec/changes/repair-evidence-input-identity/design.md
 plan: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-verify_result: pending
-verify_failures: 0
+verify_result: fail
+verify_failures: 1
 verification_report: null
 branch_status: pending
 created_at: 2026-11-07
@@ -30,8 +30,8 @@ handoff_hash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: eb5db200d916118c0f535368146f3995b761c5e6353c3be541d44f91d1765a1a
+  schema: comet.workflow-run-checkpoint.v2
+  hash: d8520088d9cd5d98d7781ddedb72035dc206c665cd55e759a42726130b73b5d1
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 2
+      checkEpoch: 4
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -76,12 +76,12 @@ run_checkpoint:
       tddMode: tdd
       verificationReport: null
       verifiedAt: null
-      verifyFailures: 0
+      verifyFailures: 1
       verifyMode: null
-      verifyResult: pending
+      verifyResult: fail
       workflow: full
     status: running
-    sequence: 13
+    sequence: 19
     actions:
       - attempt: 1
         claim:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/repair-evidence-input-identity
             workspaceBaseline:
               ref: 38102e37-146a-444a-b61e-af48da010bf7
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-            full.open.evidence:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
+          outputs: {}
         inputHash: a9d31bdf6725047d66f94766b30266923d24a22905ca20172570fcfcc9b27358
         outcome:
           actionId: repair-evidence-input-identity:4
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/repair-evidence-input-identity
             workspaceBaseline:
               ref: 38102e37-146a-444a-b61e-af48da010bf7
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-            full.open.evidence:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-            full.open.revalidate:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+          outputs: {}
         inputHash: 3e676ff0bf12f05cce6314b1f296dedcf63cf45eaab1b692f8781e0faa059c97
         outcome:
           actionId: repair-evidence-input-identity:5
@@ -268,65 +228,7 @@ run_checkpoint:
             changeDir: openspec/changes/repair-evidence-input-identity
             workspaceBaseline:
               ref: 38102e37-146a-444a-b61e-af48da010bf7
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-                    handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-                    proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                      command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                      Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                      closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                      SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-                    requirementsEvidence:
-                      contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                      ref: openspec/changes/repair-evidence-input-identity
-                    sourceEvidence:
-                      contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                      ref: openspec/changes/repair-evidence-input-identity
-            full.design.handoff:
-              handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-              handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-              proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-              requirementsEvidence:
-                contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                ref: openspec/changes/repair-evidence-input-identity
-              sourceEvidence:
-                contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                ref: openspec/changes/repair-evidence-input-identity
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-            full.open.evidence:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-            full.open.revalidate:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+          outputs: {}
         inputHash: 54838dbfb1c2230d597fed9848c92e991307693faf6eab3bbe15a3ab104ac55d
         outcome:
           actionId: repair-evidence-input-identity:7
@@ -365,70 +267,7 @@ run_checkpoint:
             changeDir: openspec/changes/repair-evidence-input-identity
             workspaceBaseline:
               ref: 38102e37-146a-444a-b61e-af48da010bf7
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-                    handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-                    proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                      command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                      Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                      closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                      SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-                    requirementsEvidence:
-                      contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                      ref: openspec/changes/repair-evidence-input-identity
-                    sourceEvidence:
-                      contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                      ref: openspec/changes/repair-evidence-input-identity
-            full.design.document:
-              designDoc: openspec/changes/repair-evidence-input-identity/design.md
-            full.design.evidence:
-              contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
-              ref: openspec/changes/repair-evidence-input-identity/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-              handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-              proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-              requirementsEvidence:
-                contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                ref: openspec/changes/repair-evidence-input-identity
-              sourceEvidence:
-                contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                ref: openspec/changes/repair-evidence-input-identity
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-            full.open.evidence:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-            full.open.revalidate:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+          outputs: {}
         inputHash: acde4f76b11fb693a0b4a6a8e7bbdf05ecd9ce09a9c2686399f562775557a25d
         outcome:
           actionId: repair-evidence-input-identity:9
@@ -473,95 +312,7 @@ run_checkpoint:
             changeDir: openspec/changes/repair-evidence-input-identity
             workspaceBaseline:
               ref: 38102e37-146a-444a-b61e-af48da010bf7
-          outputs:
-            full.build.configure:
-              boundBranch: comet/repair-evidence-input-identity
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/repair-evidence-input-identity
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: branch
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-                    handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-                    proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                      command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                      Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                      closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                      SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-                    requirementsEvidence:
-                      contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                      ref: openspec/changes/repair-evidence-input-identity
-                    sourceEvidence:
-                      contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                      ref: openspec/changes/repair-evidence-input-identity
-            full.design.document:
-              designDoc: openspec/changes/repair-evidence-input-identity/design.md
-            full.design.evidence:
-              contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
-              ref: openspec/changes/repair-evidence-input-identity/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-              handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-              proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-              requirementsEvidence:
-                contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                ref: openspec/changes/repair-evidence-input-identity
-              sourceEvidence:
-                contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                ref: openspec/changes/repair-evidence-input-identity
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-            full.open.evidence:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-            full.open.revalidate:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+          outputs: {}
         inputHash: 15860b831983715b9d32fd8b08496b3a2c7c76a28b8b5347fd5991ebee1a8e87
         outcome:
           actionId: repair-evidence-input-identity:11
@@ -592,6 +343,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: repair-evidence-input-root
+          token: portable-45a2b975b9d4adb78cab352daa63c1a0aed54bac1667eb574549e1faa0375216
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: repair-evidence-input-identity:13
         input:
           input:
@@ -599,108 +359,185 @@ run_checkpoint:
             changeDir: openspec/changes/repair-evidence-input-identity
             workspaceBaseline:
               ref: 38102e37-146a-444a-b61e-af48da010bf7
-          outputs:
-            full.build.configure:
-              boundBranch: comet/repair-evidence-input-identity
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/repair-evidence-input-identity
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: branch
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
-                ref: openspec/changes/repair-evidence-input-identity/design.md
-              plan: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-              planEvidence:
-                contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
-                ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-              taskRevision: 1da9cb6a84ec8f676859a57c7cd06cc2441afb31634ec589232fe947ed51f8c4
-            full.build.plan.evidence:
-              contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
-              ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-                    handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-                    proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                      command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                      Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                      closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                      SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-                    requirementsEvidence:
-                      contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                      ref: openspec/changes/repair-evidence-input-identity
-                    sourceEvidence:
-                      contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                      ref: openspec/changes/repair-evidence-input-identity
-            full.design.document:
-              designDoc: openspec/changes/repair-evidence-input-identity/design.md
-            full.design.evidence:
+          outputs: {}
+        inputHash: ee5d88a54b7edd06ec4f3190afb5ba7e09cb7ec959c890167c1ee74319d460f7
+        outcome:
+          actionId: repair-evidence-input-identity:13
+          attempt: 1
+          claimToken: portable-45a2b975b9d4adb78cab352daa63c1a0aed54bac1667eb574549e1faa0375216
+          inputHash: ee5d88a54b7edd06ec4f3190afb5ba7e09cb7ec959c890167c1ee74319d460f7
+          outcomeId: be267d5f-f7b4-4800-9d16-e560f0e45a2b
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 45b54e3f7c42816d5b53137cb9cee73e93ad844314a6ef4e1bccba8beb945f40
+            outcomeId: be267d5f-f7b4-4800-9d16-e560f0e45a2b
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-evidence-input-identity
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-a94cd9add01e3bc7f307a0baa9fc50a2a34c7bdddeb620e3e3eda5d1071f8de4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-evidence-input-identity:14
+        input:
+          input:
+            change: repair-evidence-input-identity
+            changeDir: openspec/changes/repair-evidence-input-identity
+            workspaceBaseline:
+              ref: 38102e37-146a-444a-b61e-af48da010bf7
+          outputs: {}
+        inputHash: ddaaaf293db5c0715873a0b8766b318917a4d25524e4a779174d289dbc94af35
+        outcome:
+          actionId: repair-evidence-input-identity:14
+          attempt: 1
+          claimToken: portable-a94cd9add01e3bc7f307a0baa9fc50a2a34c7bdddeb620e3e3eda5d1071f8de4
+          inputHash: ddaaaf293db5c0715873a0b8766b318917a4d25524e4a779174d289dbc94af35
+          outcomeId: 09c6e22d-9669-44cc-b27d-d2ae0b1eef9f
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: d02dc8b7f7d8c98095a420696eebffbbfedb6349ff9c2856fc6384992858a68f
+            cwd: .
+            environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+            exitCode: 0
+            inputAfter: 7cec72171bdda84ceae2fae638c0f4bf8019fbd416b73431fe3a063865731695
+            inputBefore: 7cec72171bdda84ceae2fae638c0f4bf8019fbd416b73431fe3a063865731695
+            manifestHash: 1090282f41d114d61bf9874d2366c6c13d368d6bb1fff263bf05040e25db1f43
+            manifestRef: .comet/runtime/classic-sdk-checks/12d7bda9cdda71025c54c91713b1dd847aca3347284903777c01aa2d8fc97c31/e97f1fc1-9974-4168-86cc-93b6fb6fd985.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/12d7bda9cdda71025c54c91713b1dd847aca3347284903777c01aa2d8fc97c31/0edfc7a1-c406-4670-9693-e071a4c83248.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 1800000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5c5a97a486a0c19176cb737edb5ddf084baf8a87ce7bff1ddbe33f0e38c5f2f5
+            outcomeId: 09c6e22d-9669-44cc-b27d-d2ae0b1eef9f
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-evidence-input-identity
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-f77f81a8776b66585bbfdce398247a6dccefd95a4efbdb84a424d1dc21103828
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-evidence-input-identity:16
+        input:
+          input:
+            change: repair-evidence-input-identity
+            changeDir: openspec/changes/repair-evidence-input-identity
+            workspaceBaseline:
+              ref: 38102e37-146a-444a-b61e-af48da010bf7
+          outputs: {}
+        inputHash: 25764043a76b3b03e91fdc02ae2a758e2fd183cdfb4252fb9628085e69dcd5c3
+        outcome:
+          actionId: repair-evidence-input-identity:16
+          attempt: 1
+          claimToken: portable-f77f81a8776b66585bbfdce398247a6dccefd95a4efbdb84a424d1dc21103828
+          inputHash: 25764043a76b3b03e91fdc02ae2a758e2fd183cdfb4252fb9628085e69dcd5c3
+          outcomeId: 3a75c4f8-2212-4efb-bafb-6dd618765c0e
+          output:
+            event: verify-fail
+            reason: "Independent final review: direct Archive Close and protected effect
+              recheck source fingerprint but omit accepted derived-output
+              manifests"
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 42ca6340a634425f6d3ab533ec486183a38a19d953d89d7a9fc5758f098d0199
+            outcomeId: 3a75c4f8-2212-4efb-bafb-6dd618765c0e
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-evidence-input-identity
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-63d1c4de6f385136d75b8557e4964c091ac2a3579a7465e36844a1586c8104ac
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-evidence-input-identity:17
+        input:
+          input:
+            change: repair-evidence-input-identity
+            changeDir: openspec/changes/repair-evidence-input-identity
+            workspaceBaseline:
+              ref: 38102e37-146a-444a-b61e-af48da010bf7
+          outputs: {}
+        inputHash: 88fbf333e05c9a79071d3fb816563cac1bab2eec6e6e15fa0c9a6ea1cd9a3590
+        outcome:
+          actionId: repair-evidence-input-identity:17
+          attempt: 1
+          claimToken: portable-63d1c4de6f385136d75b8557e4964c091ac2a3579a7465e36844a1586c8104ac
+          inputHash: 88fbf333e05c9a79071d3fb816563cac1bab2eec6e6e15fa0c9a6ea1cd9a3590
+          outcomeId: a25de543-ac0c-4f99-bd99-d4c9157aca55
+          output:
+            designEvidence:
               contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
               ref: openspec/changes/repair-evidence-input-identity/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-              handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-              proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-              requirementsEvidence:
-                contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                ref: openspec/changes/repair-evidence-input-identity
-              sourceEvidence:
-                contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                ref: openspec/changes/repair-evidence-input-identity
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-            full.open.evidence:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-            full.open.revalidate:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-        inputHash: ee5d88a54b7edd06ec4f3190afb5ba7e09cb7ec959c890167c1ee74319d460f7
+            plan: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+            planEvidence:
+              contentHash: 359021d296c366ef5dd9edb7681008b13bedb5727352a632de180547251173e7
+              ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+            taskRevision: 1da9cb6a84ec8f676859a57c7cd06cc2441afb31634ec589232fe947ed51f8c4
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c3186f045cedc32273b92ff088e5fcfd4ea7a52dbc99a274141ceaf4342733df
+            outcomeId: a25de543-ac0c-4f99-bd99-d4c9157aca55
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-evidence-input-identity
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: repair-evidence-input-identity:19
+        input:
+          input:
+            change: repair-evidence-input-identity
+            changeDir: openspec/changes/repair-evidence-input-identity
+            workspaceBaseline:
+              ref: 38102e37-146a-444a-b61e-af48da010bf7
+          outputs: {}
+        inputHash: b7d76be2d46ef3179bc72f37633984621ae32e9a0b64e04e8e4515c5a49018c5
         protocolVersion: 1
         receipts: []
         reconciliations: []
@@ -716,457 +553,34 @@ run_checkpoint:
         results: {}
         sequence: 1
       repair-evidence-input-identity:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/repair-evidence-input-identity
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/repair-evidence-input-identity
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: branch
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-                    handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-                    proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                      command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                      Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                      closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                      SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-                    requirementsEvidence:
-                      contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                      ref: openspec/changes/repair-evidence-input-identity
-                    sourceEvidence:
-                      contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                      ref: openspec/changes/repair-evidence-input-identity
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-evidence-input-identity/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
-              ref: openspec/changes/repair-evidence-input-identity/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-              handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-              proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-              requirementsEvidence:
-                contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                ref: openspec/changes/repair-evidence-input-identity
-              sourceEvidence:
-                contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                ref: openspec/changes/repair-evidence-input-identity
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+        results: {}
         sequence: 11
       repair-evidence-input-identity:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/repair-evidence-input-identity
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/repair-evidence-input-identity
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: branch
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
-                ref: openspec/changes/repair-evidence-input-identity/design.md
-              plan: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-              planEvidence:
-                contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
-                ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-              taskRevision: 1da9cb6a84ec8f676859a57c7cd06cc2441afb31634ec589232fe947ed51f8c4
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
-              ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-                    handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-                    proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                      command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                      Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                      closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                      SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-                    requirementsEvidence:
-                      contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                      ref: openspec/changes/repair-evidence-input-identity
-                    sourceEvidence:
-                      contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                      ref: openspec/changes/repair-evidence-input-identity
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-evidence-input-identity/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
-              ref: openspec/changes/repair-evidence-input-identity/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-              handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-              proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-              requirementsEvidence:
-                contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                ref: openspec/changes/repair-evidence-input-identity
-              sourceEvidence:
-                contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                ref: openspec/changes/repair-evidence-input-identity
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+        results: {}
         sequence: 13
+      repair-evidence-input-identity:14:
+        results: {}
+        sequence: 14
+      repair-evidence-input-identity:16:
+        results: {}
+        sequence: 16
+      repair-evidence-input-identity:17:
+        results: {}
+        sequence: 17
+      repair-evidence-input-identity:19:
+        results: {}
+        sequence: 19
       repair-evidence-input-identity:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
+        results: {}
         sequence: 4
       repair-evidence-input-identity:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+        results: {}
         sequence: 5
       repair-evidence-input-identity:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-                    handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-                    proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                      command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                      Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                      closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                      SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-                    requirementsEvidence:
-                      contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                      ref: openspec/changes/repair-evidence-input-identity
-                    sourceEvidence:
-                      contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                      ref: openspec/changes/repair-evidence-input-identity
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-              handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-              proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-              requirementsEvidence:
-                contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                ref: openspec/changes/repair-evidence-input-identity
-              sourceEvidence:
-                contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                ref: openspec/changes/repair-evidence-input-identity
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+        results: {}
         sequence: 7
       repair-evidence-input-identity:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-                    handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-                    proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                      command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                      Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                      closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                      SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-                    requirementsEvidence:
-                      contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                      ref: openspec/changes/repair-evidence-input-identity
-                    sourceEvidence:
-                      contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                      ref: openspec/changes/repair-evidence-input-identity
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-evidence-input-identity/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
-              ref: openspec/changes/repair-evidence-input-identity/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-              handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-              proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-              requirementsEvidence:
-                contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                ref: openspec/changes/repair-evidence-input-identity
-              sourceEvidence:
-                contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                ref: openspec/changes/repair-evidence-input-identity
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+        results: {}
         sequence: 9
     waits:
       - id: repair-evidence-input-identity:3
@@ -1189,16 +603,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
+        results: {}
         decision:
           id: classic-open-0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
           choice: approved
@@ -1232,52 +637,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-              handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-              proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-              requirementsEvidence:
-                contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                ref: openspec/changes/repair-evidence-input-identity
-              sourceEvidence:
-                contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                ref: openspec/changes/repair-evidence-input-identity
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+        results: {}
         decision:
           id: classic-design-b9b2ed1d9c6680814803f1354f1b11290e65c0ce2fd972a2c0cbb9cba7106d6d-approved
           choice: approved
@@ -1305,96 +665,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/repair-evidence-input-identity
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-                    handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-                    proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                      command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                      Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                      closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                      SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-                    requirementsEvidence:
-                      contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                      ref: openspec/changes/repair-evidence-input-identity
-                    sourceEvidence:
-                      contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                      ref: openspec/changes/repair-evidence-input-identity
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-evidence-input-identity/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
-              ref: openspec/changes/repair-evidence-input-identity/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-              handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-              proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-              requirementsEvidence:
-                contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                ref: openspec/changes/repair-evidence-input-identity
-              sourceEvidence:
-                contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                ref: openspec/changes/repair-evidence-input-identity
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+        results: {}
         decision:
           id: 30c33df3-009a-4ec7-b167-eefc52b0b672
           choice: approved
@@ -1405,11 +676,7 @@ run_checkpoint:
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/repair-evidence-input-identity
           contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
@@ -1419,81 +686,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-                    handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-                    proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                      command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                      Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                      closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                      SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-                    requirementsEvidence:
-                      contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                      ref: openspec/changes/repair-evidence-input-identity
-                    sourceEvidence:
-                      contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                      ref: openspec/changes/repair-evidence-input-identity
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-evidence-input-identity/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-              handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-              proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-              requirementsEvidence:
-                contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                ref: openspec/changes/repair-evidence-input-identity
-              sourceEvidence:
-                contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                ref: openspec/changes/repair-evidence-input-identity
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+        results: {}
         receipt:
           ref: openspec/changes/repair-evidence-input-identity/design.md
           contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
@@ -1503,84 +696,67 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/repair-evidence-input-identity
-              buildMode: autonomous
-              directOverride: false
-              isolation: branch
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/repair-evidence-input-identity
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: branch
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
-                ref: openspec/changes/repair-evidence-input-identity/design.md
-              plan: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-              planEvidence:
-                contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
-                ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-              taskRevision: 1da9cb6a84ec8f676859a57c7cd06cc2441afb31634ec589232fe947ed51f8c4
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
-                    handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
-                    proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
-                      command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
-                      Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
-                      closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
-                      SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
-                    requirementsEvidence:
-                      contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
-                      ref: openspec/changes/repair-evidence-input-identity
-                    sourceEvidence:
-                      contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
-                      ref: openspec/changes/repair-evidence-input-identity
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-evidence-input-identity/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
-              ref: openspec/changes/repair-evidence-input-identity/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+          contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
+          submissionId: 98c42ce5-e849-404a-b297-d95dc28e1287
+      - id: repair-evidence-input-identity:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/12d7bda9cdda71025c54c91713b1dd847aca3347284903777c01aa2d8fc97c31/0edfc7a1-c406-4670-9693-e071a4c83248.log
+          contentHash: d02dc8b7f7d8c98095a420696eebffbbfedb6349ff9c2856fc6384992858a68f
+          submissionId: 0c02133b-5354-49cd-8f88-78cb58a28370
+      - id: repair-evidence-input-identity:18
+        stepId: full.build.plan.evidence
+        sequence: 18
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+          contentHash: 359021d296c366ef5dd9edb7681008b13bedb5727352a632de180547251173e7
+          submissionId: bfd28663-89f1-4ae9-8239-1563b45e65ca
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 29
+  sourceHash: c574f0593fb5da8986ab8d915c6cac2159f4cf99c9a4e194f2d03e2149c3d96d
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: repair-evidence-input-identity
+            changeDir: openspec/changes/repair-evidence-input-identity
+            workspaceBaseline:
+              ref: 38102e37-146a-444a-b61e-af48da010bf7
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+              ref: openspec/changes/repair-evidence-input-identity
+      - contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+        ref: openspec/changes/repair-evidence-input-identity
+      - contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
+      - choice: approved
+        proposal:
+          input:
+            change: repair-evidence-input-identity
+            changeDir: openspec/changes/repair-evidence-input-identity
+            workspaceBaseline:
+              ref: 38102e37-146a-444a-b61e-af48da010bf7
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
               handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
               proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
@@ -1594,44 +770,92 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
                 ref: openspec/changes/repair-evidence-input-identity
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-evidence-input-identity
-                  changeDir: openspec/changes/repair-evidence-input-identity
-                  workspaceBaseline:
-                    ref: 38102e37-146a-444a-b61e-af48da010bf7
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-                    ref: openspec/changes/repair-evidence-input-identity
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-              ref: openspec/changes/repair-evidence-input-identity
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-        receipt:
-          ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+      - handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
+        handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
+        proposal: 采用固定 Comet 的逐文件内容、Task语义归一化与显式Git依赖；共享Profile
+          command.inputs声明逐仓files/outputs、git、taskCheckboxes和env，Provider证明官方工件与完成语义，Git
+          Adapter采集实际内容。实际Store查询和持久化依赖接通Receipt复用、Bundle/Trace/Gate及Verify/Archive/resume共同观察；缺失协议、未知结果或越权输入fail
+          closed。DAG在Attempt前冻结源输入与producer规则，producer后保存输出manifest，consumer前固定派生内容，真实中断按原Journal恢复。按用户要求参考Comet修正Archive
+          SpecPatch：有效Verify证据保持，发布坐标由独立受保护preflight核对，旧坐标阻断重验后建立合法checkpoint；正常epoch增长允许，不扩大发布授权。升级证据协议，不兼容旧开发证据；通过生产组合、独立安装的多仓CLI和命令计数验证真实接线。独立Builder复核通过；风险为输入误排除、产物时序、过期复用与性能，均设来源证明、前后读取、版本和有界诊断。
+        requirementsEvidence:
+          contentHash: 22596b8d0457fbe6a8971894108fb15b02ac7f927c8b0619748c0b00d6397406
+          ref: openspec/changes/repair-evidence-input-identity
+        sourceEvidence:
+          contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
+          ref: openspec/changes/repair-evidence-input-identity
+      - designDoc: openspec/changes/repair-evidence-input-identity/design.md
+      - contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
+        ref: openspec/changes/repair-evidence-input-identity/design.md
+      - boundBranch: comet/repair-evidence-input-identity
+        buildMode: autonomous
+        directOverride: false
+        isolation: branch
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: repair-evidence-input-identity
+            changeDir: openspec/changes/repair-evidence-input-identity
+            workspaceBaseline:
+              ref: 38102e37-146a-444a-b61e-af48da010bf7
+          outputs:
+            full.build.configure:
+              boundBranch: comet/repair-evidence-input-identity
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
+          ref: openspec/changes/repair-evidence-input-identity/design.md
+        plan: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+        planEvidence:
           contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
-          submissionId: 98c42ce5-e849-404a-b297-d95dc28e1287
-    ready: []
-    joins: {}
-    outputs:
-      full.build.configure:
-        sequence: 9
+          ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+        taskRevision: 1da9cb6a84ec8f676859a57c7cd06cc2441afb31634ec589232fe947ed51f8c4
+      - contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
+        ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: d02dc8b7f7d8c98095a420696eebffbbfedb6349ff9c2856fc6384992858a68f
+        cwd: .
+        environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+        exitCode: 0
+        inputAfter: 7cec72171bdda84ceae2fae638c0f4bf8019fbd416b73431fe3a063865731695
+        inputBefore: 7cec72171bdda84ceae2fae638c0f4bf8019fbd416b73431fe3a063865731695
+        manifestHash: 1090282f41d114d61bf9874d2366c6c13d368d6bb1fff263bf05040e25db1f43
+        manifestRef: .comet/runtime/classic-sdk-checks/12d7bda9cdda71025c54c91713b1dd847aca3347284903777c01aa2d8fc97c31/e97f1fc1-9974-4168-86cc-93b6fb6fd985.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/12d7bda9cdda71025c54c91713b1dd847aca3347284903777c01aa2d8fc97c31/0edfc7a1-c406-4670-9693-e071a4c83248.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 1800000
+      - contentHash: d02dc8b7f7d8c98095a420696eebffbbfedb6349ff9c2856fc6384992858a68f
+        ref: .comet/runtime/classic-sdk-checks/12d7bda9cdda71025c54c91713b1dd847aca3347284903777c01aa2d8fc97c31/0edfc7a1-c406-4670-9693-e071a4c83248.log
+      - event: verify-fail
+        reason: "Independent final review: direct Archive Close and protected effect
+          recheck source fingerprint but omit accepted derived-output manifests"
+      - designEvidence:
+          contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
+          ref: openspec/changes/repair-evidence-input-identity/design.md
+        plan: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+        planEvidence:
+          contentHash: 359021d296c366ef5dd9edb7681008b13bedb5727352a632de180547251173e7
+          ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+        taskRevision: 1da9cb6a84ec8f676859a57c7cd06cc2441afb31634ec589232fe947ed51f8c4
+      - contentHash: 359021d296c366ef5dd9edb7681008b13bedb5727352a632de180547251173e7
+        ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+      - sequence: 9
         value:
           boundBranch: comet/repair-evidence-input-identity
           buildMode: autonomous
@@ -1640,8 +864,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -1659,24 +882,7 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.plan:
-        sequence: 11
-        value:
-          designEvidence:
-            contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
-            ref: openspec/changes/repair-evidence-input-identity/design.md
-          plan: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-          planEvidence:
-            contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
-            ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-          taskRevision: 1da9cb6a84ec8f676859a57c7cd06cc2441afb31634ec589232fe947ed51f8c4
-      full.build.plan.evidence:
-        sequence: 12
-        value:
-          contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
-          ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
-      full.design.confirm:
-        sequence: 6
+      - sequence: 6
         value:
           choice: approved
           proposal:
@@ -1700,17 +906,14 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
                   ref: openspec/changes/repair-evidence-input-identity
-      full.design.document:
-        sequence: 7
+      - sequence: 7
         value:
           designDoc: openspec/changes/repair-evidence-input-identity/design.md
-      full.design.evidence:
-        sequence: 8
+      - sequence: 8
         value:
           contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
           ref: openspec/changes/repair-evidence-input-identity/design.md
-      full.design.handoff:
-        sequence: 5
+      - sequence: 5
         value:
           handoffContext: openspec/changes/repair-evidence-input-identity/.comet/handoff/design-context.json
           handoffHash: 2ffcae969cfb020f6cfd983e7f1911f1ceb7ba443a42e2a158f7697054002e11
@@ -1725,12 +928,10 @@ run_checkpoint:
           sourceEvidence:
             contentHash: bd7a6d92eb052e1a488f2c8dc19e7f10c5cfed0b6840c11cf34f22123128f9a0
             ref: openspec/changes/repair-evidence-input-identity
-      full.open:
-        sequence: 1
+      - sequence: 1
         value:
           event: open-complete
-      full.open.confirm:
-        sequence: 3
+      - sequence: 3
         value:
           choice: approved
           proposal:
@@ -1745,17 +946,981 @@ run_checkpoint:
               full.open.evidence:
                 contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
                 ref: openspec/changes/repair-evidence-input-identity
-      full.open.evidence:
-        sequence: 2
+      - sequence: 2
         value:
           contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
           ref: openspec/changes/repair-evidence-input-identity
-      full.open.revalidate:
-        sequence: 4
+      - sequence: 4
         value:
           contentHash: 0688e5dcccdc61bd4aaeb017f60d521192f27284ae9a05fcc91ffbaaade4c773
-    children: []
-    lineage: []
-  sourceRevision: 19
-  sourceHash: e95a60babf4253bcec22ff22051ee4cb8e5bd4d3abadfea46019ae29f08ff574
-check_epoch: 2
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
+            ref: openspec/changes/repair-evidence-input-identity/design.md
+          plan: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+          planEvidence:
+            contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
+            ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+          taskRevision: 1da9cb6a84ec8f676859a57c7cd06cc2441afb31634ec589232fe947ed51f8c4
+      - sequence: 12
+        value:
+          contentHash: bcc186572e6663105eb7f03d37350073ca75a270dca79418557cb945cbe11152
+          ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: d02dc8b7f7d8c98095a420696eebffbbfedb6349ff9c2856fc6384992858a68f
+          cwd: .
+          environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+          exitCode: 0
+          inputAfter: 7cec72171bdda84ceae2fae638c0f4bf8019fbd416b73431fe3a063865731695
+          inputBefore: 7cec72171bdda84ceae2fae638c0f4bf8019fbd416b73431fe3a063865731695
+          manifestHash: 1090282f41d114d61bf9874d2366c6c13d368d6bb1fff263bf05040e25db1f43
+          manifestRef: .comet/runtime/classic-sdk-checks/12d7bda9cdda71025c54c91713b1dd847aca3347284903777c01aa2d8fc97c31/e97f1fc1-9974-4168-86cc-93b6fb6fd985.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/12d7bda9cdda71025c54c91713b1dd847aca3347284903777c01aa2d8fc97c31/0edfc7a1-c406-4670-9693-e071a4c83248.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 1800000
+      - sequence: 15
+        value:
+          contentHash: d02dc8b7f7d8c98095a420696eebffbbfedb6349ff9c2856fc6384992858a68f
+          ref: .comet/runtime/classic-sdk-checks/12d7bda9cdda71025c54c91713b1dd847aca3347284903777c01aa2d8fc97c31/0edfc7a1-c406-4670-9693-e071a4c83248.log
+      - sequence: 16
+        value:
+          event: verify-fail
+          reason: "Independent final review: direct Archive Close and protected effect
+            recheck source fingerprint but omit accepted derived-output
+            manifests"
+      - sequence: 17
+        value:
+          designEvidence:
+            contentHash: 25cb55e8dd00dc5969bf6ea4ab3e64c3be94a4a1b6271a6be8bbc74ba631951e
+            ref: openspec/changes/repair-evidence-input-identity/design.md
+          plan: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+          planEvidence:
+            contentHash: 359021d296c366ef5dd9edb7681008b13bedb5727352a632de180547251173e7
+            ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+          taskRevision: 1da9cb6a84ec8f676859a57c7cd06cc2441afb31634ec589232fe947ed51f8c4
+      - sequence: 18
+        value:
+          contentHash: 359021d296c366ef5dd9edb7681008b13bedb5727352a632de180547251173e7
+          ref: docs/superpowers/plans/2026-11-07-repair-evidence-input-identity.md
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 15
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 39
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 40
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 41
+        height: 5
+      - key: full.build.plan.evidence
+        value: 17
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 16
+        left: 35
+        right: 43
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 44
+        right: 41
+        height: 5
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 46
+        right: 47
+        height: 2
+      - key: full.design.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: 49
+        right: 50
+        height: 2
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: 52
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: 51
+        right: 53
+        height: 3
+      - key: full.design.document
+        value: 21
+        left: 48
+        right: 54
+        height: 4
+      - key: full.build.plan
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 29
+        left: 56
+        right: 57
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 46
+        right: 58
+        height: 3
+      - key: full.design.document
+        value: 21
+        left: 59
+        right: 54
+        height: 4
+      - key: full.build.execute
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 46
+        right: 61
+        height: 2
+      - key: full.build.plan.evidence
+        value: 29
+        left: null
+        right: 57
+        height: 2
+      - key: full.build.plan
+        value: 28
+        left: 62
+        right: 63
+        height: 3
+      - key: full.design.document
+        value: 21
+        left: 64
+        right: 54
+        height: 4
+      - key: full.build.check
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 32
+        left: 66
+        right: 67
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 68
+        right: 61
+        height: 3
+      - key: full.build.plan
+        value: 28
+        left: 69
+        right: 63
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 70
+        right: 54
+        height: 5
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 27
+        left: 72
+        right: 73
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: 51
+        right: 74
+        height: 3
+      - key: full.design.document
+        value: 21
+        left: 70
+        right: 75
+        height: 5
+      - key: full.build.plan.evidence
+        value: 35
+        left: null
+        right: 57
+        height: 2
+      - key: full.build.plan
+        value: 34
+        left: 69
+        right: 77
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 78
+        right: 75
+        height: 5
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 25
+        left: 80
+        right: 81
+        height: 2
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: 83
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: 80
+        right: 84
+        height: 3
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: 86
+        right: 87
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: 88
+        right: 84
+        height: 3
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 21
+        left: 90
+        right: 91
+        height: 2
+      - key: full.design.handoff
+        value: 23
+        left: 92
+        right: 87
+        height: 3
+      - key: full.open.confirm
+        value: 25
+        left: 93
+        right: 84
+        height: 4
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 24
+        left: null
+        right: 95
+        height: 2
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: 98
+        right: 99
+        height: 2
+      - key: full.open
+        value: 24
+        left: 97
+        right: 100
+        height: 3
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 22
+        left: 103
+        right: 104
+        height: 2
+      - key: full.design.confirm
+        value: 20
+        left: 102
+        right: 105
+        height: 3
+      - key: full.open
+        value: 24
+        left: 106
+        right: 100
+        height: 4
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 21
+        left: 109
+        right: 110
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: 112
+        right: 113
+        height: 2
+      - key: full.open
+        value: 24
+        left: 111
+        right: 114
+        height: 3
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 116
+        right: 117
+        height: 2
+      - key: full.design.document
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 22
+        left: 119
+        right: 120
+        height: 2
+      - key: full.design.confirm
+        value: 20
+        left: 118
+        right: 121
+        height: 3
+      - key: full.open
+        value: 24
+        left: 122
+        right: 114
+        height: 4
+      - key: full.build.check
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 18
+        left: 124
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 28
+        left: 126
+        right: 127
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 125
+        right: 128
+        height: 3
+      - key: full.open
+        value: 24
+        left: 121
+        right: 114
+        height: 3
+      - key: full.design.confirm
+        value: 20
+        left: 129
+        right: 130
+        height: 4
+      - key: full.build.check
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 32
+        left: 132
+        right: 133
+        height: 2
+      - key: full.build.plan
+        value: 34
+        left: 126
+        right: 127
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 134
+        right: 135
+        height: 3
+      - key: full.verify.run
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: 137
+        height: 2
+      - key: full.open.evidence
+        value: 26
+        left: 112
+        right: 138
+        height: 3
+      - key: full.open
+        value: 24
+        left: 121
+        right: 139
+        height: 4
+      - key: full.design.confirm
+        value: 20
+        left: 136
+        right: 140
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 42
+      - 45
+      - 55
+      - 60
+      - 65
+      - 71
+      - 76
+      - 79
+      - 82
+      - 85
+      - 89
+      - 94
+      - 96
+      - 101
+      - 107
+      - 108
+      - 115
+      - 123
+      - 131
+      - 141
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actionContexts
+          - repair-evidence-input-identity:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - repair-evidence-input-identity:11
+          - results
+        map: 11
+      - path:
+          - actionContexts
+          - repair-evidence-input-identity:13
+          - results
+        map: 12
+      - path:
+          - actionContexts
+          - repair-evidence-input-identity:14
+          - results
+        map: 13
+      - path:
+          - actionContexts
+          - repair-evidence-input-identity:16
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - repair-evidence-input-identity:17
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - repair-evidence-input-identity:19
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - repair-evidence-input-identity:4
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - repair-evidence-input-identity:5
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - repair-evidence-input-identity:7
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - repair-evidence-input-identity:9
+          - results
+        map: 20
+      - path:
+          - outputs
+        map: 16
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 21
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 22
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 23
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 24
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 25
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 26
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 27
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 28
+  storageHash: 9d29b09aa8d999800d66388b4eb0c842bab26d1a764b2b23751d5c430770d41a
+check_epoch: 4

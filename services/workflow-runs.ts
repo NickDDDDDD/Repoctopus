@@ -5496,8 +5496,17 @@ export class WorkflowRuns extends Service {
       lifecycle.verificationInput.evidenceProfile.id,
       runId,
     );
+    const bundleId =
+      lifecycle.archiveDeliveryInput?.evidenceBundleId ?? state.acceptedEvidenceBundleIds.at(-1);
+    if (!bundleId) throw new Error('Archive is missing its accepted Evidence Bundle');
+    const assessment = await this.ctx.evidenceCoordinator.assessBundleInputs(
+      bundleId,
+      runId,
+      lifecycle.verificationInput.digest,
+    );
     if (
       !force &&
+      assessment === 'same' &&
       refreshed.fingerprint.digest === lifecycle.verificationInput.evidenceProfile.fingerprintDigest
     ) {
       return null;
@@ -5795,6 +5804,14 @@ export class WorkflowRuns extends Service {
         );
         if (observed.fingerprint.digest !== verification.evidenceProfile.fingerprintDigest)
           throw new Error('Archive verification inputs changed before protected closure');
+        if (
+          (await this.ctx.evidenceCoordinator.assessBundleInputs(
+            archive.evidenceBundleId,
+            state.runId,
+            verification.digest,
+          )) !== 'same'
+        )
+          throw new Error('Archive derived inputs changed before protected closure');
       }
       return effect();
     });

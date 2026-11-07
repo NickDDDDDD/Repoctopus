@@ -1165,7 +1165,7 @@ export function recoverChangeLifecycleSnapshot(options: {
     options.persisted.verificationInput as unknown as { schemaVersion?: number } | undefined
   )?.schemaVersion;
   if (
-    verificationSchemaVersion !== undefined &&
+    options.persisted.verificationInput &&
     verificationSchemaVersion !== 4 &&
     options.persisted.status !== 'completed'
   ) {

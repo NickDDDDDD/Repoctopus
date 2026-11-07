@@ -1,4 +1,4 @@
-import { evidenceDependencyFixture } from './helpers/evidence-inputs.js';
+import { verificationInputFixture } from './helpers/evidence-inputs.js';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -284,36 +284,30 @@ function phaseWork(
   };
 }
 
-function verificationInput(checkEpoch: number, value: string): VerificationInput {
-  return {
-    schemaVersion: 4 as const,
-    runId: initialSnapshot().identity.runId,
-    checkEpoch,
-    taskRevisions: [{ taskId: buildTask.taskId, taskRevision: buildTask.taskRevision }],
-    acceptanceCriteria: [],
-    acceptanceSetHash: digest('a'),
-    acceptanceCoverage: [],
-    repositories: [
-      {
-        repositoryId: 'workspace',
-        commit: 'a'.repeat(40),
-        tree: 'b'.repeat(40),
-        dirtyFilesDigest: digest('c'),
-        inputPolicyDigest: digest('i'),
-        controlPlaneInputDigest: digest('h'),
-      },
-    ],
-    projectConfigDigest: digest('p'),
-    compositionDigest: digest('c'),
-    skills: [],
-    evidenceProfile: {
-      id: 'verify',
-      planDigest: digest('e'),
-      fingerprintDigest: `fingerprint-${value}`,
-    },
-    digest: digest(value),
-    dependencies: evidenceDependencyFixture('verification-input', digest(value)),
-  };
+function verificationInput(
+  checkEpoch: number,
+  value: string,
+  tasks: readonly SpecificationTask[] = [{ ...buildTask, status: 'completed' }],
+): VerificationInput {
+  return verificationInputFixture(initialSnapshot().identity.runId, checkEpoch, {
+    tasks: tasks.map((task) => ({
+      ...task,
+      status: 'completed',
+      acceptanceCriteria: task.acceptanceCriteria.length
+        ? task.acceptanceCriteria
+        : [
+            {
+              acceptanceId: 'acceptance-test',
+              taskId: task.taskId,
+              taskRevision: task.taskRevision,
+              text: 'The task works',
+              requirementRefs: [],
+              source: 'test',
+            },
+          ],
+    })),
+    fingerprintDigest: 'fingerprint-' + value,
+  });
 }
 
 function recoveryExecutionFixture() {
@@ -762,13 +756,7 @@ describe('Change lifecycle domain', () => {
         findings: [],
       }),
     });
-    const priorInput = {
-      ...verificationInput(9, 'verify-prior'),
-      taskRevisions: fixture.tasks.tasks.map(({ taskId, taskRevision }) => ({
-        taskId,
-        taskRevision,
-      })),
-    };
+    const priorInput = verificationInput(9, 'verify-prior', fixture.tasks.tasks);
     const current = builtinSnapshot({
       revision: 12,
       checkEpoch: 9,
@@ -796,7 +784,7 @@ describe('Change lifecycle domain', () => {
       },
     });
     if (!decision) throw new Error('expected invalidate-evidence decision');
-    const nextInput = { ...priorInput, checkEpoch: 10, digest: digest('verify-next') };
+    const nextInput = verificationInput(10, 'verify-next', fixture.tasks.tasks);
     const nextWork = phaseWork('verify', 'evidence.verify', 10, nextInput.digest);
 
     const applied = applyLifecycleRecoveryDecision({
@@ -1810,10 +1798,7 @@ describe('Change lifecycle domain', () => {
       kind: 'check-accepted',
       evidence: acceptedCheck,
     });
-    const verifyInput = {
-      ...verificationInput(12, 'c'),
-      taskRevisions: completedTasks.map(({ taskId, taskRevision }) => ({ taskId, taskRevision })),
-    };
+    const verifyInput = verificationInput(12, 'c', completedTasks);
     const verifyWork = phaseWork('verify', 'evidence.verify', 12, verifyInput.digest);
     const verifyInvalidation = createBuildInvalidation({
       source: 'verify',

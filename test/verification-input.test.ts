@@ -1,7 +1,11 @@
 import { evidenceNodeInputFixture, evidenceDependencyFixture } from './helpers/evidence-inputs.js';
 import { describe, expect, it } from 'vitest';
 
-import { createVerificationInput } from '../domains/change-lifecycle/verification-input.js';
+import {
+  createVerificationInput,
+  assertVerificationInput,
+  rebaseVerificationInput,
+} from '../domains/change-lifecycle/verification-input.js';
 import { acceptVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import type { EvidenceGateProjection } from '../domains/evidence/types.js';
@@ -94,6 +98,28 @@ function create(overrides: Partial<Parameters<typeof createVerificationInput>[0]
 }
 
 describe('Verification input', () => {
+  it('rejects missing protocols, changed semantic facts and detached dependency records before rebase', () => {
+    const input = create();
+    const cases = [
+      { ...input, schemaVersion: undefined },
+      { ...input, dependencies: undefined },
+      { ...input, projectConfigDigest: digest('a') },
+      { ...input, evidenceProfile: { ...input.evidenceProfile, fingerprintDigest: 'other' } },
+      { ...input, dependencies: evidenceDependencyFixture('verification-input', input.digest) },
+    ];
+    for (const value of cases) {
+      expect(() => assertVerificationInput(value)).toThrow();
+      expect(() => rebaseVerificationInput(value as typeof input, 20)).toThrow();
+    }
+    expect(() => assertVerificationInput(rebaseVerificationInput(input, 20))).not.toThrow();
+    // Git audit coordinates are excluded from the semantic authorization identity.
+    expect(() =>
+      assertVerificationInput({
+        ...input,
+        repositories: input.repositories.map((repo) => ({ ...repo, commit: 'f'.repeat(40) })),
+      }),
+    ).not.toThrow();
+  });
   it('invalidates the input when policy or control-plane content changes', () => {
     const original = create();
     const repository = fingerprint.manifest.repositories[0]!;
@@ -231,6 +257,17 @@ describe('Verification input', () => {
       inputDigest: verification.digest,
       bundleId: 'bundle-1',
     });
+    const { dependencies: _proof, ...missingProof } = verification;
+    expect(_proof).toBeDefined();
+    expect(() =>
+      acceptVerifyGate({
+        runId: 'run-1',
+        lifecycle: { ...lifecycle, verificationInput: missingProof as typeof verification },
+        gate,
+        attemptId: 'attempt-1',
+        checkEpoch: verification.checkEpoch,
+      }),
+    ).toThrow(/dependenc/u);
     const archived = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: lifecycle,
