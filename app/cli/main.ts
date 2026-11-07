@@ -1458,8 +1458,8 @@ async function runResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
       runId,
       result: result.value,
       diagnostics: result.diagnostics,
-      nextActions: result.value.reconciliation.requiresReconciliation
-        ? ['inspect reconciliation and start a new run or restore the repository state']
+      nextActions: result.value.state.reconciliationRequired
+        ? ['restore the bound repository state and resume the same Run']
         : nextActions(result.value),
     });
   } finally {

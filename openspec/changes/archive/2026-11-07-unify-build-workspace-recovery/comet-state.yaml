@@ -1,0 +1,4333 @@
+# comet-execution: managed-run
+change_id: 68e84351-f2bf-4dd4-9f67-d95065c651f2
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: branch
+verify_mode: null
+auto_transition: true
+base_ref: 9da1d47b0dd5c43ab66fd3ee0ef42ecd61cac290
+design_doc: openspec/changes/archive/2026-11-07-unify-build-workspace-recovery/design.md
+plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/unify-build-workspace-recovery.md
+branch_status: pending
+created_at: 2026-11-06
+verified_at: 2026-11-07
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/unify-build-workspace-recovery
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-07-unify-build-workspace-recovery/.comet/handoff/design-context.json
+handoff_hash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 554084d07d8ae28b75b2a3dd11d7be5e4405806bcac9177fee6c1e46f13534bb
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: unify-build-workspace-recovery
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    definitionHashes:
+      '["comet-classic-full","1"]': 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    initialStateHash: 11593d4e4db8fffe1f1e8e9546e16e822196977e62c72778e94bc959a2fbb469
+    input:
+      change: unify-build-workspace-recovery
+      changeDir: openspec/changes/unify-build-workspace-recovery
+      workspaceBaseline:
+        ref: ed489e70-b325-4386-b548-351e1984b8af
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 9da1d47b0dd5c43ab66fd3ee0ef42ecd61cac290
+      boundBranch: comet/unify-build-workspace-recovery
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 10
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-06
+      designDoc: openspec/changes/archive/2026-11-07-unify-build-workspace-recovery/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-07-unify-build-workspace-recovery/.comet/handoff/design-context.json
+      handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
+      isolation: branch
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/unify-build-workspace-recovery.md
+      verifiedAt: 2026-11-07
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 45
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-b74aef8d2660be9ad88d736414e01637f5f2abbd4850afb065e87ff5dd9df14e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:1
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: e4f50f56254bbc5367fe86c4626b7dfe47142dff8c33ba7d0752d0cb1f286426
+        outcome:
+          actionId: unify-build-workspace-recovery:1
+          attempt: 1
+          claimToken: portable-b74aef8d2660be9ad88d736414e01637f5f2abbd4850afb065e87ff5dd9df14e
+          inputHash: e4f50f56254bbc5367fe86c4626b7dfe47142dff8c33ba7d0752d0cb1f286426
+          outcomeId: 7deaece0-d8d2-4181-9265-2ac271499455
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5f482db074105d3ed1a3f0829a991087a7a5248cf83b95021c7fbd378f9c46e8
+            outcomeId: 7deaece0-d8d2-4181-9265-2ac271499455
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-798627372e5abce4bd2af459c43f1cdde2d1bda4771503267c831571fe0619f6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:4
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 714f4bb9ed544bba1b590625243d49619d54a9614602c9be88b162588b6335a3
+        outcome:
+          actionId: unify-build-workspace-recovery:4
+          attempt: 1
+          claimToken: portable-798627372e5abce4bd2af459c43f1cdde2d1bda4771503267c831571fe0619f6
+          inputHash: 714f4bb9ed544bba1b590625243d49619d54a9614602c9be88b162588b6335a3
+          outcomeId: unify-build-workspace-recovery:4:1:executor-result
+          output:
+            contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 18894b9aeb269ec54d194a40450cbdf3dc22fde303fc385a1b9114c3148689d1
+            outcomeId: unify-build-workspace-recovery:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-37c4e6f48065b5584fc5bfde8d7437caa436e470fc8f9c216132bbc4ed40d754
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:5
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: a572c3c19701f0dc8971772d5b01b5828aa523da737a34cc157d308a4157548f
+        outcome:
+          actionId: unify-build-workspace-recovery:5
+          attempt: 1
+          claimToken: portable-37c4e6f48065b5584fc5bfde8d7437caa436e470fc8f9c216132bbc4ed40d754
+          inputHash: a572c3c19701f0dc8971772d5b01b5828aa523da737a34cc157d308a4157548f
+          outcomeId: 0edb5450-5739-4022-9df3-d1be605d8332
+          output:
+            handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+            handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+            proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+              workspace intent、当前 ExecutionBinding 和最近已接受的
+              BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
+              写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
+              Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
+              进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
+              checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+              后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在 managed-work-execution
+              中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan correction 路径。公开 CLI 的
+              nextActions 与 continuation 取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
+              的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受 HEAD，在真实四业务仓加
+              Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与
+              checkpoint 恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
+              进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound 更新控制。详见当前
+              design.md，独立 Builder Check 已确认无实质规划缺口。
+            requirementsEvidence:
+              contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+              ref: openspec/changes/unify-build-workspace-recovery
+            sourceEvidence:
+              contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+              ref: openspec/changes/unify-build-workspace-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e1a12f2152149d2cb000149af590b14bf7162d2192d942d0aa9b8bd0cc5e7f44
+            outcomeId: 0edb5450-5739-4022-9df3-d1be605d8332
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-eab06de4787230b1262673d628c11fd200ebb7951b747fdf767efd51101e867c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:7
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 70a503c54dbb48f5fd43351b060042ba6970ccf562ef1b3aa5a7831758251eef
+        outcome:
+          actionId: unify-build-workspace-recovery:7
+          attempt: 1
+          claimToken: portable-eab06de4787230b1262673d628c11fd200ebb7951b747fdf767efd51101e867c
+          inputHash: 70a503c54dbb48f5fd43351b060042ba6970ccf562ef1b3aa5a7831758251eef
+          outcomeId: fce88535-aff2-4faf-bbaa-87923911b048
+          output:
+            designDoc: openspec/changes/unify-build-workspace-recovery/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: db3c3b9bea564168ee41c0fa34a4f3be64c1b28b6be12568ce52bbd69fa777e8
+            outcomeId: fce88535-aff2-4faf-bbaa-87923911b048
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-56cfaae476d7ddd00b2372af5e7aad1d905e8cb06c97da8e000cb56c6a3178c5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:9
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: bb10aa3e6a9883c67f498e1d48cc91c9c0a0ca22008ecbb3b1dbd3b9b515c0d8
+        outcome:
+          actionId: unify-build-workspace-recovery:9
+          attempt: 1
+          claimToken: portable-56cfaae476d7ddd00b2372af5e7aad1d905e8cb06c97da8e000cb56c6a3178c5
+          inputHash: bb10aa3e6a9883c67f498e1d48cc91c9c0a0ca22008ecbb3b1dbd3b9b515c0d8
+          outcomeId: 4caaa931-e319-456b-8375-50bf32fe23da
+          output:
+            boundBranch: comet/unify-build-workspace-recovery
+            buildMode: autonomous
+            directOverride: false
+            isolation: branch
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 47ac559bdba11d758c9c1f86b5a57eb9484031388eb18beb2f501420d27f928d
+            outcomeId: 4caaa931-e319-456b-8375-50bf32fe23da
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-175456d8812f79a327032efcb38e88df419401ccf9b33d9deead40ce7a5a892b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:11
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: ba418e915fadaf37307b8c86f97e82a4c916624c116736cebad9d8672c3d521e
+        outcome:
+          actionId: unify-build-workspace-recovery:11
+          attempt: 1
+          claimToken: portable-175456d8812f79a327032efcb38e88df419401ccf9b33d9deead40ce7a5a892b
+          inputHash: ba418e915fadaf37307b8c86f97e82a4c916624c116736cebad9d8672c3d521e
+          outcomeId: cdbc16f2-308e-4a84-813f-d689b01c6715
+          output:
+            designEvidence:
+              contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
+              ref: openspec/changes/unify-build-workspace-recovery/design.md
+            plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+            planEvidence:
+              contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+              ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+            taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8376e77e7a2af2d0be03c14438ee442426e21a3b56faa6d0db53c3a282a84fcc
+            outcomeId: cdbc16f2-308e-4a84-813f-d689b01c6715
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: unify-build-workspace-recovery:13
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 4b1e818eb43b9e58d3ca1d0193a6850219a1e83754b099a4dcffd7884e1f9798
+        protocolVersion: 1
+        reason: 命令 revise-design 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: cancelled
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c7b7b734ae74b25123d28a7c9d8dbb315387defa163705bb92ed1919f32e9ae9
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:14
+        input:
+          activation:
+            expectedRevision: 19
+            fromPhase: build
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: d2082f77b0dbaf0903e60a2b49b237aa4e9f07165d3093e4b0a268b052faddb6
+        outcome:
+          actionId: unify-build-workspace-recovery:14
+          attempt: 1
+          claimToken: portable-c7b7b734ae74b25123d28a7c9d8dbb315387defa163705bb92ed1919f32e9ae9
+          inputHash: d2082f77b0dbaf0903e60a2b49b237aa4e9f07165d3093e4b0a268b052faddb6
+          outcomeId: e858c9c2-7618-4cc6-800e-4df48f5fa2bd
+          output:
+            handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+            handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
+            proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
+              Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权 checkout
+              变化统一阻断，切回后续跑，已授权 protected Plan correction
+              保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
+              requirement
+              中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
+            requirementsEvidence:
+              contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
+              ref: openspec/changes/unify-build-workspace-recovery
+            sourceEvidence:
+              contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
+              ref: openspec/changes/unify-build-workspace-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b31ed507a32fa37a4499e0a3baf2e5ddf0940a73ba1e3470b30f657dbc951c37
+            outcomeId: e858c9c2-7618-4cc6-800e-4df48f5fa2bd
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-292e8bfba79c99f03a160105c883cd43a5503f1cf1653f5629efeaed9f7bd1d0
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:16
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: e29e493d992fb5a40525e34585304acaabd898582a5d266bb990b34a5b4ce2a2
+        outcome:
+          actionId: unify-build-workspace-recovery:16
+          attempt: 1
+          claimToken: portable-292e8bfba79c99f03a160105c883cd43a5503f1cf1653f5629efeaed9f7bd1d0
+          inputHash: e29e493d992fb5a40525e34585304acaabd898582a5d266bb990b34a5b4ce2a2
+          outcomeId: c95ebdbb-9b74-47ed-8ff4-bdfbc60e45a9
+          output:
+            designDoc: openspec/changes/unify-build-workspace-recovery/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b7a470d2c876898c9f1a42cff06a847a84c9b3c80c966f1135fb62e9be69cb9f
+            outcomeId: c95ebdbb-9b74-47ed-8ff4-bdfbc60e45a9
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-1aa3bbd1ce17272fcf3d84842d5f6e6483e73ba49f0e8bfa0914e80503da0dfe
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:18
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: c3a70adf1ffe11b9a43d0f834f382481838a7a346592490d82ddc14d36e4da8c
+        outcome:
+          actionId: unify-build-workspace-recovery:18
+          attempt: 1
+          claimToken: portable-1aa3bbd1ce17272fcf3d84842d5f6e6483e73ba49f0e8bfa0914e80503da0dfe
+          inputHash: c3a70adf1ffe11b9a43d0f834f382481838a7a346592490d82ddc14d36e4da8c
+          outcomeId: 663fc5ed-d652-4064-8f06-bcb98bbe5d2c
+          output:
+            designEvidence:
+              contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+              ref: openspec/changes/unify-build-workspace-recovery/design.md
+            plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+            planEvidence:
+              contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+              ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+            taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f51d0033a4fb3b0b3fe46c5cab3a12a7fe3a762c5d1617a13372539ab9a6bac7
+            outcomeId: 663fc5ed-d652-4064-8f06-bcb98bbe5d2c
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: repoctopus-unify-build-workspace-recovery-root
+          token: portable-6800c16bfaabc61609d3fe18bd90ce0b339a3b369b44cf8557f1e5ce96822640
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:20
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: b9a45b1e35cde4f8d0b2f124b87e9a4e50dc469fb5607797298ce626ea013312
+        outcome:
+          actionId: unify-build-workspace-recovery:20
+          attempt: 1
+          claimToken: portable-6800c16bfaabc61609d3fe18bd90ce0b339a3b369b44cf8557f1e5ce96822640
+          inputHash: b9a45b1e35cde4f8d0b2f124b87e9a4e50dc469fb5607797298ce626ea013312
+          outcomeId: 0aaecfb1-e22b-4a87-b9a0-f8f392bd25e4
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 19b16b0080e103b3a7303f2fc706194df26569561cdf105d7ddfbb31494936bc
+            outcomeId: 0aaecfb1-e22b-4a87-b9a0-f8f392bd25e4
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-1b9052834f7673a0acd47168bf86b25610fbaac49c8ca2d54ec23e111cf8d49d
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:21
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 1de8dd976c8ff14e49fa260c732a58ea2d016dff5d40776e4bbf1dc4e77bb0e8
+        outcome:
+          actionId: unify-build-workspace-recovery:21
+          attempt: 1
+          claimToken: portable-1b9052834f7673a0acd47168bf86b25610fbaac49c8ca2d54ec23e111cf8d49d
+          inputHash: 1de8dd976c8ff14e49fa260c732a58ea2d016dff5d40776e4bbf1dc4e77bb0e8
+          outcomeId: f79880a4-d63e-458a-8ecf-509de10d51b9
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+            cwd: .
+            environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+            exitCode: 0
+            inputAfter: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+            inputBefore: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+            manifestHash: ab3ea4d25594f83423025226b3ea0b3d7d73c3218236bd332ff6a9aa1b0f47c1
+            manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/7c8b26d3-02a9-4453-a04a-2e9be128332d.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 038d25a368689ab524e3b0ee28b1b5d31973ae8fface4649ee5a887d4f4d1a81
+            outcomeId: f79880a4-d63e-458a-8ecf-509de10d51b9
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        id: unify-build-workspace-recovery:23
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 70759d7785b87ba3d0464a0d5be5c588c9f8cc028666acf05e8e24e02ca4140f
+        protocolVersion: 1
+        reason: 命令 revise-plan 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: cancelled
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-9bc1121ee57739ad81cd8fc4dac871a12b35bdce8b8a853c1229792c94281e28
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:24
+        input:
+          activation:
+            expectedRevision: 34
+            fromPhase: verify
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 4093eca829ef45193e369d87cb10b507a8052593d02ca27164ad17113a597eb1
+        outcome:
+          actionId: unify-build-workspace-recovery:24
+          attempt: 1
+          claimToken: portable-9bc1121ee57739ad81cd8fc4dac871a12b35bdce8b8a853c1229792c94281e28
+          inputHash: 4093eca829ef45193e369d87cb10b507a8052593d02ca27164ad17113a597eb1
+          outcomeId: 8c9448b0-f446-4492-a0ac-b0a32895cc20
+          output:
+            designEvidence:
+              contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+              ref: openspec/changes/unify-build-workspace-recovery/design.md
+            plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+            planEvidence:
+              contentHash: 2602b9ac6224a32620f9e0cc7f9cf044a261d8a41f15807109c0a5bfd6c4d375
+              ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+            taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a9c4cba713ad36ffc9698b1e8deb2e56a9f7524bab1b9b2b557d67c14f7aee79
+            outcomeId: 8c9448b0-f446-4492-a0ac-b0a32895cc20
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: repoctopus-unify-build-workspace-recovery-root
+          token: portable-12c59726de280037e7330ad9b58ab25bba1a655a19ae0e4982240789657c73fc
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:26
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 151d9af250693759e7322fa6a5b5995690336d165fe294930abe54fad0349c51
+        outcome:
+          actionId: unify-build-workspace-recovery:26
+          attempt: 1
+          claimToken: portable-12c59726de280037e7330ad9b58ab25bba1a655a19ae0e4982240789657c73fc
+          inputHash: 151d9af250693759e7322fa6a5b5995690336d165fe294930abe54fad0349c51
+          outcomeId: 24e297eb-5dad-49d1-88c9-5d4418a972a3
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 853691d4c8fbd5f3ebd4b5823448250b3ac16ccb120522e6889341fa44ccc206
+            outcomeId: 24e297eb-5dad-49d1-88c9-5d4418a972a3
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-4618656cce599a174a2aa49f594953a26cd015a5566b7b17c500df374840591c
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:27
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 287d4008aa601bc991c3b7361c714fcc196e07e66a5fad92d992e80662343edf
+        outcome:
+          actionId: unify-build-workspace-recovery:27
+          attempt: 1
+          claimToken: portable-4618656cce599a174a2aa49f594953a26cd015a5566b7b17c500df374840591c
+          inputHash: 287d4008aa601bc991c3b7361c714fcc196e07e66a5fad92d992e80662343edf
+          outcomeId: ee9d175c-77be-4348-8bb8-8ee8e0cad7e0
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 3dafad6e91619a1d2497e28737bc5be9fb492ac19419188ab726d5692ed435e1
+            cwd: .
+            environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+            exitCode: 0
+            inputAfter: b37a985d3208810c67dd684014b4efd566f7528b3c772218710e9c439b51e2b0
+            inputBefore: b37a985d3208810c67dd684014b4efd566f7528b3c772218710e9c439b51e2b0
+            manifestHash: b199f4213e96595a325bd5ccdf5b68ee169ba70afbc73a4c2e51d20ac15b3e5e
+            manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/4160611a-ea0b-450c-86db-4b9ad42f9af0.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/dfd643fc-1ec1-4f66-bd6e-2cb7da2c3dfe.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9b7986bdc1ce28372d0efb28e82a1ef97f6cbdfd292626a6382121e9f978f3bc
+            outcomeId: ee9d175c-77be-4348-8bb8-8ee8e0cad7e0
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-3068b523221acf5afbc06cb2a157658895bed5dcd50754216b69f2d17b30ce80
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:29
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 0a5194d28e28cdd120c886586e857fbe18e093d375017199061bd086db465f2a
+        outcome:
+          actionId: unify-build-workspace-recovery:29
+          attempt: 1
+          claimToken: portable-3068b523221acf5afbc06cb2a157658895bed5dcd50754216b69f2d17b30ce80
+          inputHash: 0a5194d28e28cdd120c886586e857fbe18e093d375017199061bd086db465f2a
+          outcomeId: 28177cf7-23d1-49b8-8b95-07de40267752
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/unify-build-workspace-recovery.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 660a040a3e20f5dc57d9d145c0cd099f6284157e912170a386f280320088f17a
+            outcomeId: 28177cf7-23d1-49b8-8b95-07de40267752
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-fba16692aec02741d5c503f30611a9298d19ce3174a248f89789e1d763fdca56
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:31
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: eb5b4ab028e1f834377098649a51995726a5b217ff8ab045fb2e89cfe9c5fbd6
+        outcome:
+          actionId: unify-build-workspace-recovery:31
+          attempt: 1
+          claimToken: portable-fba16692aec02741d5c503f30611a9298d19ce3174a248f89789e1d763fdca56
+          inputHash: eb5b4ab028e1f834377098649a51995726a5b217ff8ab045fb2e89cfe9c5fbd6
+          outcomeId: 45d8e482-5b76-4948-b6d4-66e5f9a9c6b0
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: a9414f343f21dd80ddc114893c433c212d5e3afed328121e756f4a5837f9c740
+            cwd: .
+            deliveryInputs: {}
+            environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+            exitCode: 1
+            inputAfter: ea027bfe0a813f6d2edbf33eabe412ff5f2416bee1674432b61854ab5af0907f
+            inputBefore: ea027bfe0a813f6d2edbf33eabe412ff5f2416bee1674432b61854ab5af0907f
+            manifestHash: 508c0753fa7ec722028569119e201cbec67655a8f4d4ddaa9de5c397abcbcce8
+            manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/5453cf72-07ec-4bed-b937-787901bb5823.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/f45624c7-7773-44dc-8dd7-05cf1c3b36d3.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 560bdcff7ccfb08bb7b681d2aec52a064f6316491dfada1f8fd1a003b6b275d0
+            outcomeId: 45d8e482-5b76-4948-b6d4-66e5f9a9c6b0
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-8b5fe4b011702dac3e57186259836441885e6d2b967d55f412e3b1088c3e063a
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:32
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 365bc329d02a30e475a42c762d177aeafeb0d57a41c72525e1c13656af30eff3
+        outcome:
+          actionId: unify-build-workspace-recovery:32
+          attempt: 1
+          claimToken: portable-8b5fe4b011702dac3e57186259836441885e6d2b967d55f412e3b1088c3e063a
+          inputHash: 365bc329d02a30e475a42c762d177aeafeb0d57a41c72525e1c13656af30eff3
+          outcomeId: 1863b439-4a0b-4044-8940-044e5492fe2d
+          output:
+            designEvidence:
+              contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+              ref: openspec/changes/unify-build-workspace-recovery/design.md
+            plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+            planEvidence:
+              contentHash: 2602b9ac6224a32620f9e0cc7f9cf044a261d8a41f15807109c0a5bfd6c4d375
+              ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+            taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b0d281cac8870155053da24b490704541d7834e07e09f79efb91b62e61bba5ba
+            outcomeId: 1863b439-4a0b-4044-8940-044e5492fe2d
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: unify-build-recovery-root
+          token: portable-e05e18a486f94d526abae075396692cdf3f2d18e93debcb2737812a02042d706
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:34
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 365bc329d02a30e475a42c762d177aeafeb0d57a41c72525e1c13656af30eff3
+        outcome:
+          actionId: unify-build-workspace-recovery:34
+          attempt: 1
+          claimToken: portable-e05e18a486f94d526abae075396692cdf3f2d18e93debcb2737812a02042d706
+          inputHash: 365bc329d02a30e475a42c762d177aeafeb0d57a41c72525e1c13656af30eff3
+          outcomeId: 5869f630-e670-4f29-b58c-4cd31649cae4
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 777365e0259b35ae85f5f9a057246290d943470db94faab9aeb8b14506e4abde
+            outcomeId: 5869f630-e670-4f29-b58c-4cd31649cae4
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-11193d0420cd854502685162a65d2234656959abe9e798dcd29a36cb4fd12451
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:35
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 365bc329d02a30e475a42c762d177aeafeb0d57a41c72525e1c13656af30eff3
+        outcome:
+          actionId: unify-build-workspace-recovery:35
+          attempt: 1
+          claimToken: portable-11193d0420cd854502685162a65d2234656959abe9e798dcd29a36cb4fd12451
+          inputHash: 365bc329d02a30e475a42c762d177aeafeb0d57a41c72525e1c13656af30eff3
+          outcomeId: 3e7b246c-5ea4-4cbc-9c04-5f3ae4a3c9c0
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 6
+            contentHash: b197f5401d4c7585184634ed45fa5dba73a4b73e49d934d972fa2bd728458bb8
+            cwd: .
+            environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+            exitCode: 0
+            inputAfter: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+            inputBefore: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+            manifestHash: a541e9502ae64f9a4cc57321988dccc571f47ff46f0a97ca52b24c057dd3af6f
+            manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/312b49ff-dec1-4ce1-98d6-8507671e4d6d.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/a994f8b0-0039-4345-af04-601f6046b4b6.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 69204187bbc2e4e6b82e5312f4634c5c5195a6605902fba27ab99341d024fb85
+            outcomeId: 3e7b246c-5ea4-4cbc-9c04-5f3ae4a3c9c0
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-f50275ee35b3bb1367614dec3e4d163e75e40e447e2d152b4b3b09f4bd906b28
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:37
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 73f1537d815128c67cdc88fb5861eaf22565c88278d84ff46248d1b1672102b0
+        outcome:
+          actionId: unify-build-workspace-recovery:37
+          attempt: 1
+          claimToken: portable-f50275ee35b3bb1367614dec3e4d163e75e40e447e2d152b4b3b09f4bd906b28
+          inputHash: 73f1537d815128c67cdc88fb5861eaf22565c88278d84ff46248d1b1672102b0
+          outcomeId: a1235165-947d-4ead-ac25-3cec9751ff97
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/unify-build-workspace-recovery.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5846a455b66de75bb87073e59899b230f0c814556c24e70827bb298e33f5f010
+            outcomeId: a1235165-947d-4ead-ac25-3cec9751ff97
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-60811287737d761843e71657e6046f529460a126a887f199b5233458f07c774b
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:39
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 7222af7c711e6b97a90038351d40a8961c947e424d634028f9ffa04fc8cf52b3
+        outcome:
+          actionId: unify-build-workspace-recovery:39
+          attempt: 1
+          claimToken: portable-60811287737d761843e71657e6046f529460a126a887f199b5233458f07c774b
+          inputHash: 7222af7c711e6b97a90038351d40a8961c947e424d634028f9ffa04fc8cf52b3
+          outcomeId: 0ed7cbcf-0a38-4cd3-93ef-27584bc7387d
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 7
+            contentHash: b197f5401d4c7585184634ed45fa5dba73a4b73e49d934d972fa2bd728458bb8
+            cwd: .
+            deliveryInputs: {}
+            environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+            exitCode: 0
+            inputAfter: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+            inputBefore: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+            manifestHash: a541e9502ae64f9a4cc57321988dccc571f47ff46f0a97ca52b24c057dd3af6f
+            manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/312b49ff-dec1-4ce1-98d6-8507671e4d6d.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/a994f8b0-0039-4345-af04-601f6046b4b6.log
+            reusable: true
+            reused: true
+            reusedFrom: unify-build-workspace-recovery:35
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ed643dcbf21a79fc88b284d552ba71bb8b4485f027195d0ec518c7bcbd4126aa
+            outcomeId: 0ed7cbcf-0a38-4cd3-93ef-27584bc7387d
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-10d5b8e8fa33c67896226f75b153b8d91e231a8dd23773fc08d4c5a4bb8210c3
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:41
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 91edb35d527fd6fe8a01daf465a22148798af193599a506fe608d54f3d5bf03b
+        outcome:
+          actionId: unify-build-workspace-recovery:41
+          attempt: 1
+          claimToken: portable-10d5b8e8fa33c67896226f75b153b8d91e231a8dd23773fc08d4c5a4bb8210c3
+          inputHash: 91edb35d527fd6fe8a01daf465a22148798af193599a506fe608d54f3d5bf03b
+          outcomeId: b02fc454-efeb-4704-9e59-a48b5b4faa63
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档已验证的 Build 工作区恢复修复，同步两项主规格并推送当前分支，创建指向 origin/main 的 PR；CI
+              通过后按既有授权合入。真实专项保留在未领取 Build Check，完整生命周期由生产组合回归覆盖。
+            targetBranch: comet/unify-build-workspace-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9dd4a67711ae3fdfdb03db9107cd66d6e353a36f8b37edf1e593ec89c5449c97
+            outcomeId: b02fc454-efeb-4704-9e59-a48b5b4faa63
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-208c6c0e0ada1abd5446186879801e79c60cdd495fed3db846697ec065a880b5
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:43
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: b1a13f5afbc963b5bfc0dbc296ba5995f8b997264e3e843a3a9e99e0f5765050
+        outcome:
+          actionId: unify-build-workspace-recovery:43
+          attempt: 1
+          claimToken: portable-208c6c0e0ada1abd5446186879801e79c60cdd495fed3db846697ec065a880b5
+          inputHash: b1a13f5afbc963b5bfc0dbc296ba5995f8b997264e3e843a3a9e99e0f5765050
+          outcomeId: 85502844-7775-4b4a-af6c-5f26860382b5
+          output:
+            baseCommit: bed5304053ed0c74cd8fd74c84aaadd8ea56b423
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/unify-build-workspace-recovery
+            verifiedBranch: comet/unify-build-workspace-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 353e69caa9af0af1defbb0ee4e14c1cc187bb328b07f68dac9aa4d545c9ae073
+            outcomeId: 85502844-7775-4b4a-af6c-5f26860382b5
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-de592d57d557263b8b52b9f88b454b6c494b6671aae6b36c71a085ffee91f4a2
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:44
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 169b8d824fed4c7451ba69b167a7d234608838c6e9a1cc01d06f8581c043e2ab
+        outcome:
+          actionId: unify-build-workspace-recovery:44
+          artifacts:
+            - sha256: 6ca2801b663818bc2b23e7280ae05319bd1ee20f4d70bd2aa0795dd01a8436e7
+              uri: openspec/changes/archive/2026-11-07-unify-build-workspace-recovery/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-de592d57d557263b8b52b9f88b454b6c494b6671aae6b36c71a085ffee91f4a2
+          inputHash: 169b8d824fed4c7451ba69b167a7d234608838c6e9a1cc01d06f8581c043e2ab
+          outcomeId: 659e60e3-e87e-47d1-a9f0-cc5854946fa2
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-07-unify-build-workspace-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7dc31e8f91beb446c6a46523e5429ccca4706655ed72313fd3309cfd5840b62d
+            outcomeId: 659e60e3-e87e-47d1-a9f0-cc5854946fa2
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: unify-build-workspace-recovery:45
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs: {}
+        inputHash: 32e5ab75922b08e7d4154b33d0e08b6e8b5b0ca7a07a1bd4d282fa5de3c09ff1
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    commands:
+      - id: 10256a8a07796482ee1abc83ed7b1cb905ec00abe1123c007e94c44b5a48278f
+        name: revise-design
+        inputHash: ed99e8b6701dcdfa2c40efa491ca6d0bbfa20eb28942fae559abfefdd83169a1
+        actionId: unify-build-workspace-recovery:14
+      - id: f4d24f81f3e5e9fcc7f144b85e6b08840afeb8c6fd2aee978f00ec5599996a24
+        name: revise-plan
+        inputHash: bdb233c0a12e55ea9d0a764bd5eda834bbd03c9648f8a46988c31f10b60b72eb
+        actionId: unify-build-workspace-recovery:24
+    actionContexts:
+      unify-build-workspace-recovery:1:
+        results: {}
+        sequence: 1
+      unify-build-workspace-recovery:11:
+        results: {}
+        sequence: 11
+      unify-build-workspace-recovery:13:
+        results: {}
+        sequence: 13
+      unify-build-workspace-recovery:14:
+        results: {}
+        sequence: 14
+      unify-build-workspace-recovery:16:
+        results: {}
+        sequence: 16
+      unify-build-workspace-recovery:18:
+        results: {}
+        sequence: 18
+      unify-build-workspace-recovery:20:
+        results: {}
+        sequence: 20
+      unify-build-workspace-recovery:21:
+        results: {}
+        sequence: 21
+      unify-build-workspace-recovery:23:
+        results: {}
+        sequence: 23
+      unify-build-workspace-recovery:24:
+        results: {}
+        sequence: 24
+      unify-build-workspace-recovery:26:
+        results: {}
+        sequence: 26
+      unify-build-workspace-recovery:27:
+        results: {}
+        sequence: 27
+      unify-build-workspace-recovery:29:
+        results: {}
+        sequence: 29
+      unify-build-workspace-recovery:31:
+        results: {}
+        sequence: 31
+      unify-build-workspace-recovery:32:
+        results: {}
+        sequence: 32
+      unify-build-workspace-recovery:34:
+        results: {}
+        sequence: 34
+      unify-build-workspace-recovery:35:
+        results: {}
+        sequence: 35
+      unify-build-workspace-recovery:37:
+        results: {}
+        sequence: 37
+      unify-build-workspace-recovery:39:
+        results: {}
+        sequence: 39
+      unify-build-workspace-recovery:4:
+        results: {}
+        sequence: 4
+      unify-build-workspace-recovery:41:
+        results: {}
+        sequence: 41
+      unify-build-workspace-recovery:43:
+        results: {}
+        sequence: 43
+      unify-build-workspace-recovery:44:
+        results: {}
+        sequence: 44
+      unify-build-workspace-recovery:45:
+        results: {}
+        sequence: 45
+      unify-build-workspace-recovery:5:
+        results: {}
+        sequence: 5
+      unify-build-workspace-recovery:7:
+        results: {}
+        sequence: 7
+      unify-build-workspace-recovery:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: unify-build-workspace-recovery:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+              ref: openspec/changes/unify-build-workspace-recovery
+        proposalHash: 5b7c666744618c7402e6640f3788aa89eca6a7db3b5ff816fd8c81e419df7917
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          choice: approved
+          proposalHash: 5b7c666744618c7402e6640f3788aa89eca6a7db3b5ff816fd8c81e419df7917
+      - id: unify-build-workspace-recovery:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+                workspace intent、当前 ExecutionBinding 和最近已接受的
+                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
+                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
+                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
+                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
+                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
+                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
+                correction 路径。公开 CLI 的 nextActions 与 continuation
+                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
+                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
+                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
+                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
+                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
+                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
+              requirementsEvidence:
+                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+                ref: openspec/changes/unify-build-workspace-recovery
+              sourceEvidence:
+                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+                ref: openspec/changes/unify-build-workspace-recovery
+        proposalHash: 302295fd6c49bcdf4185a533a00d50b99cf4dd59331494b4bdf5a31585d38351
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-302295fd6c49bcdf4185a533a00d50b99cf4dd59331494b4bdf5a31585d38351-approved
+          choice: approved
+          proposalHash: 302295fd6c49bcdf4185a533a00d50b99cf4dd59331494b4bdf5a31585d38351
+      - id: unify-build-workspace-recovery:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.build.configure:
+              boundBranch: comet/unify-build-workspace-recovery
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 432cdd04b32ee7e8a84a501e63fe2d0bb3ea33fc292e5f2ead9de199738cf77c
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 99ed86bc-9bdf-4037-810c-da16fed985cc
+          choice: approved
+          proposalHash: 432cdd04b32ee7e8a84a501e63fe2d0bb3ea33fc292e5f2ead9de199738cf77c
+      - id: unify-build-workspace-recovery:15
+        stepId: full.design.confirm
+        sequence: 15
+        status: resolved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+              handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
+              proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
+                Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
+                checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
+                保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
+                requirement
+                中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
+              requirementsEvidence:
+                contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
+                ref: openspec/changes/unify-build-workspace-recovery
+              sourceEvidence:
+                contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
+                ref: openspec/changes/unify-build-workspace-recovery
+        proposalHash: 5444605225edeaa51d377e045e33034bb010a0ce87fdc581f0a1b6566bffbfc4
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-5444605225edeaa51d377e045e33034bb010a0ce87fdc581f0a1b6566bffbfc4-approved
+          choice: approved
+          proposalHash: 5444605225edeaa51d377e045e33034bb010a0ce87fdc581f0a1b6566bffbfc4
+      - id: unify-build-workspace-recovery:42
+        stepId: full.archive.confirm
+        sequence: 42
+        status: resolved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档已验证的 Build 工作区恢复修复，同步两项主规格并推送当前分支，创建指向 origin/main 的 PR；CI
+                通过后按既有授权合入。真实专项保留在未领取 Build Check，完整生命周期由生产组合回归覆盖。
+              targetBranch: comet/unify-build-workspace-recovery
+        proposalHash: bef7551f0107c8b888b41395cde512eea84243ac0fdf4c86432938c0e217db26
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-bef7551f0107c8b888b41395cde512eea84243ac0fdf4c86432938c0e217db26-pr
+          choice: pr
+          proposalHash: bef7551f0107c8b888b41395cde512eea84243ac0fdf4c86432938c0e217db26
+    evidenceWaits:
+      - id: unify-build-workspace-recovery:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/unify-build-workspace-recovery
+          contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          submissionId: b867756d-e243-4f57-afca-1c1db3dce77c
+      - id: unify-build-workspace-recovery:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/unify-build-workspace-recovery/design.md
+          contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
+          submissionId: de0b0463-ca91-4d63-8c6e-7887127bd75a
+      - id: unify-build-workspace-recovery:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+          submissionId: 30d8d83c-86dc-419e-a8cb-0ce0c7ade293
+      - id: unify-build-workspace-recovery:17
+        stepId: full.design.evidence
+        sequence: 17
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/unify-build-workspace-recovery/design.md
+          contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+          submissionId: 9dd7cb35-19ee-4ff2-af01-a4ea5e67a9d3
+      - id: unify-build-workspace-recovery:19
+        stepId: full.build.plan.evidence
+        sequence: 19
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+          submissionId: 39e45491-7cf4-42d8-a371-5ff726cf687f
+      - id: unify-build-workspace-recovery:22
+        stepId: full.build.check.evidence
+        sequence: 22
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+          contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+          submissionId: 33a190be-7781-4886-90ed-e20d1999cba4
+      - id: unify-build-workspace-recovery:25
+        stepId: full.build.plan.evidence
+        sequence: 25
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          contentHash: 2602b9ac6224a32620f9e0cc7f9cf044a261d8a41f15807109c0a5bfd6c4d375
+          submissionId: d244a589-76bd-4f7b-944f-74db08728419
+      - id: unify-build-workspace-recovery:28
+        stepId: full.build.check.evidence
+        sequence: 28
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/dfd643fc-1ec1-4f66-bd6e-2cb7da2c3dfe.log
+          contentHash: 3dafad6e91619a1d2497e28737bc5be9fb492ac19419188ab726d5692ed435e1
+          submissionId: a08205ec-2d88-4f2e-8c86-2ccdd832f8ef
+      - id: unify-build-workspace-recovery:30
+        stepId: full.verify.report.evidence
+        sequence: 30
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/unify-build-workspace-recovery.md
+          contentHash: 5f9928aaa2d707469c5abc4859a67f20300014158e7cb4a3347854ef1c3c7000
+          submissionId: 69132bc0-5f17-442a-a475-e4b5562af111
+      - id: unify-build-workspace-recovery:33
+        stepId: full.build.plan.evidence
+        sequence: 33
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          contentHash: 2602b9ac6224a32620f9e0cc7f9cf044a261d8a41f15807109c0a5bfd6c4d375
+          submissionId: 446ef5f7-39e1-4351-91a4-70542cc46bc4
+      - id: unify-build-workspace-recovery:36
+        stepId: full.build.check.evidence
+        sequence: 36
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/a994f8b0-0039-4345-af04-601f6046b4b6.log
+          contentHash: b197f5401d4c7585184634ed45fa5dba73a4b73e49d934d972fa2bd728458bb8
+          submissionId: 4d5019df-57ec-4c78-98de-22a5342a3b65
+      - id: unify-build-workspace-recovery:38
+        stepId: full.verify.report.evidence
+        sequence: 38
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/unify-build-workspace-recovery.md
+          contentHash: 871be1eb0e2a1ccbfacd95fc90d02d5726ebd9623e6a3109814501b9a9d83b81
+          submissionId: e2ed00ac-13bd-48c0-a6a6-d5fe2328c5cb
+      - id: unify-build-workspace-recovery:40
+        stepId: full.verify.check.evidence
+        sequence: 40
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/a994f8b0-0039-4345-af04-601f6046b4b6.log
+          contentHash: b197f5401d4c7585184634ed45fa5dba73a4b73e49d934d972fa2bd728458bb8
+          submissionId: 3993b23d-321b-4aff-8e52-7f2ca794d3da
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 69
+  sourceHash: a78ba9aefdc06044dde19e4dd1467040fa0e1de513d8d0668f2c5bb499480aa5
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+              ref: openspec/changes/unify-build-workspace-recovery
+      - contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        ref: openspec/changes/unify-build-workspace-recovery
+      - contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+      - choice: approved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+              handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+              proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+                workspace intent、当前 ExecutionBinding 和最近已接受的
+                BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
+                写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
+                Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
+                进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
+                checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+                后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
+                managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
+                correction 路径。公开 CLI 的 nextActions 与 continuation
+                取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI 的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知
+                invocation 和未接受 HEAD，在真实四业务仓加 Workspace
+                的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
+                恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
+                进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
+                更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
+              requirementsEvidence:
+                contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+                ref: openspec/changes/unify-build-workspace-recovery
+              sourceEvidence:
+                contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+                ref: openspec/changes/unify-build-workspace-recovery
+      - handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+        handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+        proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+          workspace intent、当前 ExecutionBinding 和最近已接受的
+          BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation 写入阻塞前使用该判定，next
+          在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
+          Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD 进度仍由原
+          Work 执行和 acceptance 协议处理，恢复不能自行提升
+          checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+          后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在 managed-work-execution
+          中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan correction 路径。公开 CLI 的
+          nextActions 与 continuation 取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
+          的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受 HEAD，在真实四业务仓加 Workspace
+          的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint 恢复方案，通过当前
+          Cordis 架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance
+          权威和 revision-bound 更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
+        requirementsEvidence:
+          contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+          ref: openspec/changes/unify-build-workspace-recovery
+        sourceEvidence:
+          contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+          ref: openspec/changes/unify-build-workspace-recovery
+      - designDoc: openspec/changes/unify-build-workspace-recovery/design.md
+      - contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
+        ref: openspec/changes/unify-build-workspace-recovery/design.md
+      - boundBranch: comet/unify-build-workspace-recovery
+        buildMode: autonomous
+        directOverride: false
+        isolation: branch
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.build.configure:
+              boundBranch: comet/unify-build-workspace-recovery
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
+          ref: openspec/changes/unify-build-workspace-recovery/design.md
+        plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+        planEvidence:
+          contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+        taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+      - contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+        ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+      - choice: approved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+              handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
+              proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
+                Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
+                checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
+                保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
+                requirement
+                中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
+              requirementsEvidence:
+                contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
+                ref: openspec/changes/unify-build-workspace-recovery
+              sourceEvidence:
+                contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
+                ref: openspec/changes/unify-build-workspace-recovery
+      - handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+        handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
+        proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
+          Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权 checkout
+          变化统一阻断，切回后续跑，已授权 protected Plan correction
+          保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED requirement
+          中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
+        requirementsEvidence:
+          contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
+          ref: openspec/changes/unify-build-workspace-recovery
+        sourceEvidence:
+          contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
+          ref: openspec/changes/unify-build-workspace-recovery
+      - contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+        ref: openspec/changes/unify-build-workspace-recovery/design.md
+      - designEvidence:
+          contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+          ref: openspec/changes/unify-build-workspace-recovery/design.md
+        plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+        planEvidence:
+          contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+        taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+        cwd: .
+        environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+        exitCode: 0
+        inputAfter: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+        inputBefore: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+        manifestHash: ab3ea4d25594f83423025226b3ea0b3d7d73c3218236bd332ff6a9aa1b0f47c1
+        manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/7c8b26d3-02a9-4453-a04a-2e9be128332d.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+        ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+      - designEvidence:
+          contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+          ref: openspec/changes/unify-build-workspace-recovery/design.md
+        plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+        planEvidence:
+          contentHash: 2602b9ac6224a32620f9e0cc7f9cf044a261d8a41f15807109c0a5bfd6c4d375
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+        taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+      - contentHash: 2602b9ac6224a32620f9e0cc7f9cf044a261d8a41f15807109c0a5bfd6c4d375
+        ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 3dafad6e91619a1d2497e28737bc5be9fb492ac19419188ab726d5692ed435e1
+        cwd: .
+        environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+        exitCode: 0
+        inputAfter: b37a985d3208810c67dd684014b4efd566f7528b3c772218710e9c439b51e2b0
+        inputBefore: b37a985d3208810c67dd684014b4efd566f7528b3c772218710e9c439b51e2b0
+        manifestHash: b199f4213e96595a325bd5ccdf5b68ee169ba70afbc73a4c2e51d20ac15b3e5e
+        manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/4160611a-ea0b-450c-86db-4b9ad42f9af0.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/dfd643fc-1ec1-4f66-bd6e-2cb7da2c3dfe.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 3dafad6e91619a1d2497e28737bc5be9fb492ac19419188ab726d5692ed435e1
+        ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/dfd643fc-1ec1-4f66-bd6e-2cb7da2c3dfe.log
+      - contentHash: 5f9928aaa2d707469c5abc4859a67f20300014158e7cb4a3347854ef1c3c7000
+        ref: docs/superpowers/reports/unify-build-workspace-recovery.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/unify-build-workspace-recovery.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: a9414f343f21dd80ddc114893c433c212d5e3afed328121e756f4a5837f9c740
+        cwd: .
+        deliveryInputs: {}
+        environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+        exitCode: 1
+        inputAfter: ea027bfe0a813f6d2edbf33eabe412ff5f2416bee1674432b61854ab5af0907f
+        inputBefore: ea027bfe0a813f6d2edbf33eabe412ff5f2416bee1674432b61854ab5af0907f
+        manifestHash: 508c0753fa7ec722028569119e201cbec67655a8f4d4ddaa9de5c397abcbcce8
+        manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/5453cf72-07ec-4bed-b937-787901bb5823.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/f45624c7-7773-44dc-8dd7-05cf1c3b36d3.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 6
+        contentHash: b197f5401d4c7585184634ed45fa5dba73a4b73e49d934d972fa2bd728458bb8
+        cwd: .
+        environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+        exitCode: 0
+        inputAfter: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+        inputBefore: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+        manifestHash: a541e9502ae64f9a4cc57321988dccc571f47ff46f0a97ca52b24c057dd3af6f
+        manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/312b49ff-dec1-4ce1-98d6-8507671e4d6d.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/a994f8b0-0039-4345-af04-601f6046b4b6.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: b197f5401d4c7585184634ed45fa5dba73a4b73e49d934d972fa2bd728458bb8
+        ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/a994f8b0-0039-4345-af04-601f6046b4b6.log
+      - contentHash: 871be1eb0e2a1ccbfacd95fc90d02d5726ebd9623e6a3109814501b9a9d83b81
+        ref: docs/superpowers/reports/unify-build-workspace-recovery.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 7
+        contentHash: b197f5401d4c7585184634ed45fa5dba73a4b73e49d934d972fa2bd728458bb8
+        cwd: .
+        deliveryInputs: {}
+        environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+        exitCode: 0
+        inputAfter: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+        inputBefore: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+        manifestHash: a541e9502ae64f9a4cc57321988dccc571f47ff46f0a97ca52b24c057dd3af6f
+        manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/312b49ff-dec1-4ce1-98d6-8507671e4d6d.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/a994f8b0-0039-4345-af04-601f6046b4b6.log
+        reusable: true
+        reused: true
+        reusedFrom: unify-build-workspace-recovery:35
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - choice: pr
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档已验证的 Build 工作区恢复修复，同步两项主规格并推送当前分支，创建指向 origin/main 的 PR；CI
+                通过后按既有授权合入。真实专项保留在未领取 Build Check，完整生命周期由生产组合回归覆盖。
+              targetBranch: comet/unify-build-workspace-recovery
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档已验证的 Build 工作区恢复修复，同步两项主规格并推送当前分支，创建指向 origin/main 的 PR；CI
+          通过后按既有授权合入。真实专项保留在未领取 Build Check，完整生命周期由生产组合回归覆盖。
+        targetBranch: comet/unify-build-workspace-recovery
+      - baseCommit: bed5304053ed0c74cd8fd74c84aaadd8ea56b423
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: comet/unify-build-workspace-recovery
+        verifiedBranch: comet/unify-build-workspace-recovery
+      - archiveDirectory: openspec/changes/archive/2026-11-07-unify-build-workspace-recovery
+      - sequence: 9
+        value:
+          boundBranch: comet/unify-build-workspace-recovery
+          buildMode: autonomous
+          directOverride: false
+          isolation: branch
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: unify-build-workspace-recovery
+              changeDir: openspec/changes/unify-build-workspace-recovery
+              workspaceBaseline:
+                ref: ed489e70-b325-4386-b548-351e1984b8af
+            outputs:
+              full.build.configure:
+                boundBranch: comet/unify-build-workspace-recovery
+                buildMode: autonomous
+                directOverride: false
+                isolation: branch
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: unify-build-workspace-recovery
+              changeDir: openspec/changes/unify-build-workspace-recovery
+              workspaceBaseline:
+                ref: ed489e70-b325-4386-b548-351e1984b8af
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+                handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+                proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+                  workspace intent、当前 ExecutionBinding 和最近已接受的
+                  BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation
+                  写入阻塞前使用该判定，next 在返回当前 Work、接受 candidate 或派发 Host
+                  前使用同一判定。合法恢复保留原 Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知
+                  invocation、待接受提交与 HEAD 进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
+                  checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+                  后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在
+                  managed-work-execution 中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan
+                  correction 路径。公开 CLI 的 nextActions 与 continuation
+                  取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
+                  的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受 HEAD，在真实四业务仓加
+                  Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与
+                  checkpoint 恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git
+                  进度被误接纳和过期观察清除新冲突，分别以绑定验证、原 acceptance 权威和 revision-bound
+                  更新控制。详见当前 design.md，独立 Builder Check 已确认无实质规划缺口。
+                requirementsEvidence:
+                  contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+                  ref: openspec/changes/unify-build-workspace-recovery
+                sourceEvidence:
+                  contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+                  ref: openspec/changes/unify-build-workspace-recovery
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/unify-build-workspace-recovery/design.md
+      - sequence: 8
+        value:
+          contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
+          ref: openspec/changes/unify-build-workspace-recovery/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+          handoffHash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+          proposal: 两个入口共用当前 Build 工作区恢复判定。Cordis 服务负责实时 Git 观察与受保护 Run 更新，领域规则核对已批准
+            workspace intent、当前 ExecutionBinding 和最近已接受的
+            BuildWorkspaceCheckpoint。resume 在启动快照 reconciliation 写入阻塞前使用该判定，next
+            在返回当前 Work、接受 candidate 或派发 Host 前使用同一判定。合法恢复保留原
+            Run、Strategy、Binding、Plan、已完成工作包和执行证据。未知 invocation、待接受提交与 HEAD
+            进度仍由原 Work 执行和 acceptance 协议处理，恢复不能自行提升
+            checkpoint。逐仓发现未授权分支、路径、worktree、远端或拓扑变化时保留现场并阻断，恢复原 checkout
+            后只解除可归属的冲突。Spec Patch 基于用户明确批准的未授权分支阻断要求，在 managed-work-execution
+            中补齐已授权兼容重绑定的前置条件，同时保留原 protected Plan correction 路径。公开 CLI 的
+            nextActions 与 continuation 取自有效恢复结论，原始启动快照 diff 仅作诊断。以公开 CLI
+            的全新进程覆盖两个调用顺序、重复恢复、未授权分支、切回、未知 invocation 和未接受 HEAD，在真实四业务仓加
+            Workspace 的实验项目完成首包后的续跑和第二包执行，保存可审查证据。采用 Comet 0.5.1 的绑定与 checkpoint
+            恢复方案，通过当前 Cordis 架构实现。主要风险是过宽接纳分支、未知 Git 进度被误接纳和过期观察清除新冲突，分别以绑定验证、原
+            acceptance 权威和 revision-bound 更新控制。详见当前 design.md，独立 Builder Check
+            已确认无实质规划缺口。
+          requirementsEvidence:
+            contentHash: a1fcfee16603a9714300ba046a460a4a8df40fe770422daf1d55fc25a0d3785f
+            ref: openspec/changes/unify-build-workspace-recovery
+          sourceEvidence:
+            contentHash: 42c618b666cfb17446ad275788a82c5f4c2dd86134fd92f9f32d420382f79ec7
+            ref: openspec/changes/unify-build-workspace-recovery
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: unify-build-workspace-recovery
+              changeDir: openspec/changes/unify-build-workspace-recovery
+              workspaceBaseline:
+                ref: ed489e70-b325-4386-b548-351e1984b8af
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+                ref: openspec/changes/unify-build-workspace-recovery
+      - sequence: 2
+        value:
+          contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          ref: openspec/changes/unify-build-workspace-recovery
+      - sequence: 4
+        value:
+          contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 1fc191e0d591eecb757278812b14766556ae91ba8cf02c41f784ef91cf1b76ce
+            ref: openspec/changes/unify-build-workspace-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          planEvidence:
+            contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+            ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+      - sequence: 12
+        value:
+          contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+      - sequence: 15
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: unify-build-workspace-recovery
+              changeDir: openspec/changes/unify-build-workspace-recovery
+              workspaceBaseline:
+                ref: ed489e70-b325-4386-b548-351e1984b8af
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+                handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
+                proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
+                  Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权
+                  checkout 变化统一阻断，切回后续跑，已授权 protected Plan correction
+                  保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED
+                  requirement
+                  中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
+                requirementsEvidence:
+                  contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
+                  ref: openspec/changes/unify-build-workspace-recovery
+                sourceEvidence:
+                  contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
+                  ref: openspec/changes/unify-build-workspace-recovery
+      - sequence: 14
+        value:
+          handoffContext: openspec/changes/unify-build-workspace-recovery/.comet/handoff/design-context.json
+          handoffHash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
+          proposal: 沿用用户已批准的统一 Build 工作区恢复设计和 autonomous + TDD + thorough 配置。两个入口共用当前
+            Binding 与最新已接受 checkpoint 的恢复判定，保留已完成工作包与原 invocation，未授权 checkout
+            变化统一阻断，切回后续跑，已授权 protected Plan correction
+            保留原规则。独立审查提出的并发与阻塞归属问题已按原范围修复并通过相关回归。此次重新提案仅消除 MODIFIED requirement
+            中的重复描述，使原描述保持483字以满足归档后主规格500字限制，相关场景仍完整表达同一授权边界。正式设计方案、风险、测试目标和交付范围与本轮用户批准一致，实际实现和既有证据继续按当前Run核对。
+          requirementsEvidence:
+            contentHash: d43a38df3b16e2944cd171a5a7b08b0628a93c31fb3a181be0f8ec5c72a86d0b
+            ref: openspec/changes/unify-build-workspace-recovery
+          sourceEvidence:
+            contentHash: 834904b8f841d6c7229d86ad323a4883bd352d0e7131a0a7a9892bb46a73f285
+            ref: openspec/changes/unify-build-workspace-recovery
+      - sequence: 16
+        value:
+          designDoc: openspec/changes/unify-build-workspace-recovery/design.md
+      - sequence: 17
+        value:
+          contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+          ref: openspec/changes/unify-build-workspace-recovery/design.md
+      - sequence: 18
+        value:
+          designEvidence:
+            contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+            ref: openspec/changes/unify-build-workspace-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          planEvidence:
+            contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+            ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+      - sequence: 19
+        value:
+          contentHash: 024a6e7c290d6c71d498cb33d2c09a424fb5851971dc4327bb820621ba54ebf8
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+      - sequence: 20
+        value:
+          event: build-complete
+      - sequence: 21
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+          cwd: .
+          environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+          exitCode: 0
+          inputAfter: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+          inputBefore: e4bd7401ca516ba0f8130cde627f571d982147e41836bab7b838ceeb8bfa9e5b
+          manifestHash: ab3ea4d25594f83423025226b3ea0b3d7d73c3218236bd332ff6a9aa1b0f47c1
+          manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/7c8b26d3-02a9-4453-a04a-2e9be128332d.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 22
+        value:
+          contentHash: d8120398085970b4b39a3933b6c2fbe005ffef85442df7a3fdd451b2f1e79040
+          ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/fa561111-95a3-4131-9b1c-555bc0b58c7e.log
+      - sequence: 24
+        value:
+          designEvidence:
+            contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+            ref: openspec/changes/unify-build-workspace-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          planEvidence:
+            contentHash: 2602b9ac6224a32620f9e0cc7f9cf044a261d8a41f15807109c0a5bfd6c4d375
+            ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+      - sequence: 25
+        value:
+          contentHash: 2602b9ac6224a32620f9e0cc7f9cf044a261d8a41f15807109c0a5bfd6c4d375
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+      - sequence: 26
+        value:
+          event: build-complete
+      - sequence: 27
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 3dafad6e91619a1d2497e28737bc5be9fb492ac19419188ab726d5692ed435e1
+          cwd: .
+          environment: 2ffe2482f2621d162b4ee85464067ca371e26f5303fda0968a38c52e5398c528
+          exitCode: 0
+          inputAfter: b37a985d3208810c67dd684014b4efd566f7528b3c772218710e9c439b51e2b0
+          inputBefore: b37a985d3208810c67dd684014b4efd566f7528b3c772218710e9c439b51e2b0
+          manifestHash: b199f4213e96595a325bd5ccdf5b68ee169ba70afbc73a4c2e51d20ac15b3e5e
+          manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/4160611a-ea0b-450c-86db-4b9ad42f9af0.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/dfd643fc-1ec1-4f66-bd6e-2cb7da2c3dfe.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 28
+        value:
+          contentHash: 3dafad6e91619a1d2497e28737bc5be9fb492ac19419188ab726d5692ed435e1
+          ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/dfd643fc-1ec1-4f66-bd6e-2cb7da2c3dfe.log
+      - sequence: 30
+        value:
+          contentHash: 5f9928aaa2d707469c5abc4859a67f20300014158e7cb4a3347854ef1c3c7000
+          ref: docs/superpowers/reports/unify-build-workspace-recovery.md
+      - sequence: 29
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/unify-build-workspace-recovery.md
+      - sequence: 31
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: a9414f343f21dd80ddc114893c433c212d5e3afed328121e756f4a5837f9c740
+          cwd: .
+          deliveryInputs: {}
+          environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+          exitCode: 1
+          inputAfter: ea027bfe0a813f6d2edbf33eabe412ff5f2416bee1674432b61854ab5af0907f
+          inputBefore: ea027bfe0a813f6d2edbf33eabe412ff5f2416bee1674432b61854ab5af0907f
+          manifestHash: 508c0753fa7ec722028569119e201cbec67655a8f4d4ddaa9de5c397abcbcce8
+          manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/5453cf72-07ec-4bed-b937-787901bb5823.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/f45624c7-7773-44dc-8dd7-05cf1c3b36d3.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 32
+        value:
+          designEvidence:
+            contentHash: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
+            ref: openspec/changes/unify-build-workspace-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          planEvidence:
+            contentHash: 2602b9ac6224a32620f9e0cc7f9cf044a261d8a41f15807109c0a5bfd6c4d375
+            ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+          taskRevision: 1595d47ae4dcee15bc876cf33f45ae1feb433cc5047f37b308bdf629cdec4a65
+      - sequence: 33
+        value:
+          contentHash: 2602b9ac6224a32620f9e0cc7f9cf044a261d8a41f15807109c0a5bfd6c4d375
+          ref: docs/superpowers/plans/2026-11-07-unify-build-workspace-recovery.md
+      - sequence: 34
+        value:
+          event: build-complete
+      - sequence: 35
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 6
+          contentHash: b197f5401d4c7585184634ed45fa5dba73a4b73e49d934d972fa2bd728458bb8
+          cwd: .
+          environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+          exitCode: 0
+          inputAfter: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+          inputBefore: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+          manifestHash: a541e9502ae64f9a4cc57321988dccc571f47ff46f0a97ca52b24c057dd3af6f
+          manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/312b49ff-dec1-4ce1-98d6-8507671e4d6d.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/a994f8b0-0039-4345-af04-601f6046b4b6.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 36
+        value:
+          contentHash: b197f5401d4c7585184634ed45fa5dba73a4b73e49d934d972fa2bd728458bb8
+          ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/a994f8b0-0039-4345-af04-601f6046b4b6.log
+      - sequence: 38
+        value:
+          contentHash: 871be1eb0e2a1ccbfacd95fc90d02d5726ebd9623e6a3109814501b9a9d83b81
+          ref: docs/superpowers/reports/unify-build-workspace-recovery.md
+      - sequence: 37
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/unify-build-workspace-recovery.md
+      - sequence: 39
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 7
+          contentHash: b197f5401d4c7585184634ed45fa5dba73a4b73e49d934d972fa2bd728458bb8
+          cwd: .
+          deliveryInputs: {}
+          environment: 74d3620f077c072b4a490a060669e23355f015d8438c66d990819dbf4ad2b5a3
+          exitCode: 0
+          inputAfter: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+          inputBefore: f049224925f20feae3a3b7a70953cb996a4e8d92c0baeec1b559173ab24e16c7
+          manifestHash: a541e9502ae64f9a4cc57321988dccc571f47ff46f0a97ca52b24c057dd3af6f
+          manifestRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/312b49ff-dec1-4ce1-98d6-8507671e4d6d.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/a994f8b0-0039-4345-af04-601f6046b4b6.log
+          reusable: true
+          reused: true
+          reusedFrom: unify-build-workspace-recovery:35
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 40
+        value:
+          contentHash: b197f5401d4c7585184634ed45fa5dba73a4b73e49d934d972fa2bd728458bb8
+          ref: .comet/runtime/classic-sdk-checks/48345f4ac6ae6205c367f02697d69399bdc5fef364c9be45b155a192d2f5f408/a994f8b0-0039-4345-af04-601f6046b4b6.log
+      - sequence: 42
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: unify-build-workspace-recovery
+              changeDir: openspec/changes/unify-build-workspace-recovery
+              workspaceBaseline:
+                ref: ed489e70-b325-4386-b548-351e1984b8af
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档已验证的 Build 工作区恢复修复，同步两项主规格并推送当前分支，创建指向 origin/main 的 PR；CI
+                  通过后按既有授权合入。真实专项保留在未领取 Build Check，完整生命周期由生产组合回归覆盖。
+                targetBranch: comet/unify-build-workspace-recovery
+      - sequence: 41
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档已验证的 Build 工作区恢复修复，同步两项主规格并推送当前分支，创建指向 origin/main 的 PR；CI
+            通过后按既有授权合入。真实专项保留在未领取 Build Check，完整生命周期由生产组合回归覆盖。
+          targetBranch: comet/unify-build-workspace-recovery
+      - sequence: 43
+        value:
+          baseCommit: bed5304053ed0c74cd8fd74c84aaadd8ea56b423
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/unify-build-workspace-recovery
+          verifiedBranch: comet/unify-build-workspace-recovery
+      - sequence: 44
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-07-unify-build-workspace-recovery
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.design.handoff
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 12
+        left: null
+        right: 27
+        height: 2
+      - key: full.design.confirm
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 14
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 13
+        left: 30
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 29
+        right: 31
+        height: 3
+      - key: full.build.plan
+        value: 15
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 33
+        right: 34
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 35
+        right: 31
+        height: 3
+      - key: full.build.execute
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 15
+        left: 37
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: 38
+        right: 34
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 39
+        right: 31
+        height: 4
+      - key: full.build.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 17
+        left: null
+        right: 41
+        height: 2
+      - key: full.build.plan
+        value: 15
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 43
+        right: 34
+        height: 2
+      - key: full.build.execute
+        value: 16
+        left: 42
+        right: 44
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 45
+        right: 31
+        height: 4
+      - key: full.build.plan.evidence
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 19
+        left: null
+        right: 47
+        height: 2
+      - key: full.build.execute
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 19
+        left: 49
+        right: 47
+        height: 2
+      - key: full.build.check
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.execute
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 22
+        left: 51
+        right: 52
+        height: 2
+      - key: full.build.plan
+        value: 19
+        left: 53
+        right: 47
+        height: 3
+      - key: full.build.plan.evidence
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 23
+        left: 55
+        right: 56
+        height: 2
+      - key: full.build.plan
+        value: 19
+        left: 53
+        right: 57
+        height: 3
+      - key: full.verify.check
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 20
+        left: null
+        right: 59
+        height: 2
+      - key: full.verify.report.evidence
+        value: 23
+        left: 60
+        right: 56
+        height: 3
+      - key: full.build.plan
+        value: 19
+        left: 53
+        right: 61
+        height: 4
+      - key: full.build.check
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 27
+        left: 63
+        right: 52
+        height: 2
+      - key: full.build.plan
+        value: 19
+        left: 64
+        right: 61
+        height: 4
+      - key: full.verify.report.evidence
+        value: 28
+        left: 60
+        right: 56
+        height: 3
+      - key: full.build.plan
+        value: 19
+        left: 64
+        right: 66
+        height: 4
+      - key: full.build.plan.evidence
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 29
+        left: 68
+        right: 69
+        height: 2
+      - key: full.verify.report.evidence
+        value: 28
+        left: 70
+        right: 56
+        height: 3
+      - key: full.build.plan
+        value: 19
+        left: 64
+        right: 71
+        height: 4
+      - key: full.archive.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 31
+        left: 73
+        right: 74
+        height: 2
+      - key: full.build.check.evidence
+        value: 27
+        left: 75
+        right: 52
+        height: 3
+      - key: full.build.plan
+        value: 19
+        left: 76
+        right: 71
+        height: 4
+      - key: full.archive.preflight
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 30
+        left: null
+        right: 78
+        height: 2
+      - key: full.build.check.evidence
+        value: 27
+        left: 74
+        right: 52
+        height: 2
+      - key: full.archive.prepare
+        value: 31
+        left: 79
+        right: 80
+        height: 3
+      - key: full.build.plan
+        value: 19
+        left: 81
+        right: 71
+        height: 4
+      - key: full.archive.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 33
+        left: 83
+        right: 84
+        height: 2
+      - key: full.archive.prepare
+        value: 31
+        left: 85
+        right: 80
+        height: 3
+      - key: full.build.plan
+        value: 19
+        left: 86
+        right: 71
+        height: 4
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 35
+        left: 88
+        right: 89
+        height: 2
+      - key: full.design.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: 91
+        right: 92
+        height: 2
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: 94
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: 93
+        right: 95
+        height: 3
+      - key: full.design.document
+        value: 37
+        left: 90
+        right: 96
+        height: 4
+      - key: full.build.plan
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 45
+        left: 98
+        right: 99
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 88
+        right: 100
+        height: 3
+      - key: full.design.document
+        value: 37
+        left: 101
+        right: 96
+        height: 4
+      - key: full.design.handoff
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 46
+        left: null
+        right: 103
+        height: 2
+      - key: full.design.confirm
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 47
+        left: 106
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 48
+        left: 105
+        right: 107
+        height: 3
+      - key: full.build.plan
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 51
+        left: 109
+        right: 110
+        height: 2
+      - key: full.design.document
+        value: 48
+        left: 111
+        right: 107
+        height: 3
+      - key: full.build.execute
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 50
+        left: 113
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 51
+        left: 114
+        right: 110
+        height: 3
+      - key: full.design.document
+        value: 48
+        left: 115
+        right: 107
+        height: 4
+      - key: full.build.check.evidence
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 53
+        left: null
+        right: 117
+        height: 2
+      - key: full.build.plan
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 51
+        left: 119
+        right: 110
+        height: 2
+      - key: full.build.execute
+        value: 52
+        left: 118
+        right: 120
+        height: 3
+      - key: full.design.document
+        value: 48
+        left: 121
+        right: 107
+        height: 4
+      - key: full.build.plan.evidence
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 55
+        left: null
+        right: 123
+        height: 2
+      - key: full.build.execute
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 55
+        left: 125
+        right: 123
+        height: 2
+      - key: full.build.check
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.build.execute
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 59
+        left: 127
+        right: 128
+        height: 2
+      - key: full.build.plan
+        value: 55
+        left: 129
+        right: 123
+        height: 3
+      - key: full.build.plan.evidence
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 60
+        left: 131
+        right: 132
+        height: 2
+      - key: full.build.plan
+        value: 55
+        left: 129
+        right: 133
+        height: 3
+      - key: full.verify.check
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 56
+        left: null
+        right: 135
+        height: 2
+      - key: full.verify.report.evidence
+        value: 60
+        left: 136
+        right: 132
+        height: 3
+      - key: full.build.plan
+        value: 55
+        left: 129
+        right: 137
+        height: 4
+      - key: full.build.plan.evidence
+        value: 64
+        left: null
+        right: 135
+        height: 2
+      - key: full.verify.report.evidence
+        value: 60
+        left: 139
+        right: 132
+        height: 3
+      - key: full.build.plan
+        value: 63
+        left: 129
+        right: 140
+        height: 4
+      - key: full.build.execute
+        value: 65
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 59
+        left: 127
+        right: 142
+        height: 2
+      - key: full.build.plan
+        value: 63
+        left: 143
+        right: 140
+        height: 4
+      - key: full.build.check
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 67
+        left: 145
+        right: 142
+        height: 2
+      - key: full.build.plan
+        value: 63
+        left: 146
+        right: 140
+        height: 4
+      - key: full.verify.run
+        value: 69
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 68
+        left: 139
+        right: 148
+        height: 3
+      - key: full.build.plan
+        value: 63
+        left: 146
+        right: 149
+        height: 4
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 41
+        left: 151
+        right: 152
+        height: 2
+      - key: full.build.check
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.build.execute
+        value: 65
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 67
+        left: 154
+        right: 155
+        height: 2
+      - key: full.build.plan.evidence
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check.evidence
+        value: 71
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 69
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 68
+        left: 158
+        right: 159
+        height: 2
+      - key: full.verify.check
+        value: 70
+        left: 157
+        right: 160
+        height: 3
+      - key: full.build.plan
+        value: 63
+        left: 156
+        right: 161
+        height: 4
+      - key: full.archive.confirm
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 73
+        left: 163
+        right: 164
+        height: 2
+      - key: full.build.check.evidence
+        value: 67
+        left: 165
+        right: 155
+        height: 3
+      - key: full.build.plan
+        value: 63
+        left: 166
+        right: 161
+        height: 4
+      - key: full.archive.preflight
+        value: 74
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 72
+        left: null
+        right: 168
+        height: 2
+      - key: full.build.check.evidence
+        value: 67
+        left: 164
+        right: 155
+        height: 2
+      - key: full.archive.prepare
+        value: 73
+        left: 169
+        right: 170
+        height: 3
+      - key: full.build.plan
+        value: 63
+        left: 171
+        right: 161
+        height: 4
+      - key: full.archive.confirm
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 74
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 75
+        left: 173
+        right: 174
+        height: 2
+      - key: full.archive.prepare
+        value: 73
+        left: 175
+        right: 170
+        height: 3
+      - key: full.build.plan
+        value: 63
+        left: 176
+        right: 161
+        height: 4
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: 179
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: 178
+        right: 180
+        height: 3
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: 182
+        right: 183
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: 184
+        right: 180
+        height: 3
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 37
+        left: 186
+        right: 187
+        height: 2
+      - key: full.design.handoff
+        value: 39
+        left: 188
+        right: 183
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 189
+        right: 180
+        height: 4
+      - key: full.archive.confirm
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 74
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 75
+        left: 191
+        right: 192
+        height: 2
+      - key: full.build.check
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 67
+        left: 194
+        right: 195
+        height: 2
+      - key: full.archive.prepare
+        value: 73
+        left: 193
+        right: 196
+        height: 3
+      - key: full.build.execute
+        value: 65
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 46
+        left: 199
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 63
+        left: 198
+        right: 200
+        height: 3
+      - key: full.build.confirm
+        value: 35
+        left: 197
+        right: 201
+        height: 4
+      - key: full.design.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 47
+        left: 203
+        right: 183
+        height: 2
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: 205
+        right: 206
+        height: 2
+      - key: full.verify.run
+        value: 69
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 68
+        left: null
+        right: 208
+        height: 2
+      - key: full.verify.check.evidence
+        value: 71
+        left: 207
+        right: 209
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 204
+        right: 210
+        height: 4
+      - key: full.design.document
+        value: 48
+        left: 202
+        right: 211
+        height: 5
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 40
+        left: null
+        right: 213
+        height: 2
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: 216
+        right: 217
+        height: 2
+      - key: full.open
+        value: 40
+        left: 215
+        right: 218
+        height: 3
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 38
+        left: 221
+        right: 222
+        height: 2
+      - key: full.design.confirm
+        value: 36
+        left: 220
+        right: 223
+        height: 3
+      - key: full.open
+        value: 40
+        left: 224
+        right: 218
+        height: 4
+      - key: full.design.handoff
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 73
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 66
+        left: 227
+        right: 228
+        height: 2
+      - key: full.build.plan
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 64
+        left: 230
+        right: 231
+        height: 2
+      - key: full.verify.run
+        value: 69
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 68
+        left: null
+        right: 233
+        height: 2
+      - key: full.verify.check.evidence
+        value: 71
+        left: 232
+        right: 234
+        height: 3
+      - key: full.build.execute
+        value: 65
+        left: 229
+        right: 235
+        height: 4
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 37
+        left: 238
+        right: 239
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: 241
+        right: 242
+        height: 2
+      - key: full.open
+        value: 40
+        left: 240
+        right: 243
+        height: 3
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 35
+        left: 245
+        right: 246
+        height: 2
+      - key: full.design.document
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 38
+        left: 248
+        right: 249
+        height: 2
+      - key: full.design.confirm
+        value: 36
+        left: 247
+        right: 250
+        height: 3
+      - key: full.open
+        value: 40
+        left: 251
+        right: 243
+        height: 4
+      - key: full.design.confirm
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 48
+        left: 253
+        right: 254
+        height: 2
+      - key: full.build.plan
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 46
+        left: 256
+        right: null
+        height: 2
+      - key: full.design.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 47
+        left: 258
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 48
+        left: 257
+        right: 259
+        height: 3
+      - key: full.build.execute
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 53
+        left: null
+        right: 261
+        height: 2
+      - key: full.build.plan.evidence
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 46
+        left: 263
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 50
+        left: 262
+        right: 264
+        height: 3
+      - key: full.design.document
+        value: 48
+        left: 265
+        right: 259
+        height: 4
+      - key: full.build.plan
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 55
+        left: null
+        right: 269
+        height: 2
+      - key: full.build.execute
+        value: 57
+        left: 268
+        right: 270
+        height: 3
+      - key: full.build.check.evidence
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 58
+        left: null
+        right: 272
+        height: 2
+      - key: full.build.plan
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 56
+        left: 274
+        right: 275
+        height: 2
+      - key: full.build.execute
+        value: 57
+        left: 273
+        right: 276
+        height: 3
+      - key: full.build.plan
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 60
+        left: 279
+        right: 280
+        height: 2
+      - key: full.build.plan.evidence
+        value: 56
+        left: 278
+        right: 281
+        height: 3
+      - key: full.build.execute
+        value: 57
+        left: 273
+        right: 282
+        height: 4
+      - key: full.build.check
+        value: 66
+        left: null
+        right: 272
+        height: 2
+      - key: full.build.plan.evidence
+        value: 64
+        left: 278
+        right: 281
+        height: 3
+      - key: full.build.execute
+        value: 65
+        left: 284
+        right: 285
+        height: 4
+      - key: full.build.check.evidence
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 66
+        left: null
+        right: 287
+        height: 2
+      - key: full.verify.run
+        value: 69
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 60
+        left: 279
+        right: 289
+        height: 2
+      - key: full.build.plan.evidence
+        value: 64
+        left: 278
+        right: 290
+        height: 3
+      - key: full.build.execute
+        value: 65
+        left: 288
+        right: 291
+        height: 4
+      - key: full.verify.check
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 68
+        left: 293
+        right: 289
+        height: 2
+      - key: full.build.plan.evidence
+        value: 64
+        left: 278
+        right: 294
+        height: 3
+      - key: full.build.execute
+        value: 65
+        left: 288
+        right: 295
+        height: 4
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 28
+      - 32
+      - 36
+      - 40
+      - 46
+      - 48
+      - 50
+      - 54
+      - 58
+      - 62
+      - 65
+      - 67
+      - 72
+      - 77
+      - 82
+      - 87
+      - 97
+      - 102
+      - 104
+      - 108
+      - 112
+      - 116
+      - 122
+      - 124
+      - 126
+      - 130
+      - 134
+      - 138
+      - 141
+      - 144
+      - 147
+      - 150
+      - 153
+      - 162
+      - 167
+      - 172
+      - 177
+      - 181
+      - 185
+      - 190
+      - 212
+      - 214
+      - 219
+      - 225
+      - 226
+      - 236
+      - 237
+      - 244
+      - 252
+      - 255
+      - 260
+      - 266
+      - 267
+      - 271
+      - 277
+      - 283
+      - 286
+      - 292
+      - 296
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "21"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actions
+          - "22"
+          - input
+          - outputs
+        map: 18
+      - path:
+          - actions
+          - "23"
+          - input
+          - outputs
+        map: 19
+      - path:
+          - actions
+          - "24"
+          - input
+          - outputs
+        map: 20
+      - path:
+          - actions
+          - "25"
+          - input
+          - outputs
+        map: 21
+      - path:
+          - actions
+          - "26"
+          - input
+          - outputs
+        map: 22
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:11
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:13
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:14
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:16
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:18
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:20
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:21
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:23
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:24
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:26
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:27
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:29
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:31
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:32
+          - results
+        map: 34
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:34
+          - results
+        map: 35
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:35
+          - results
+        map: 36
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:37
+          - results
+        map: 37
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:39
+          - results
+        map: 38
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:4
+          - results
+        map: 39
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:41
+          - results
+        map: 40
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:43
+          - results
+        map: 41
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:44
+          - results
+        map: 42
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:45
+          - results
+        map: 43
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:5
+          - results
+        map: 44
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:7
+          - results
+        map: 45
+      - path:
+          - actionContexts
+          - unify-build-workspace-recovery:9
+          - results
+        map: 46
+      - path:
+          - outputs
+        map: 47
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 48
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 49
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 50
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 51
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 52
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 53
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 54
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 55
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 56
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 57
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 58
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 59
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 60
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 61
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 62
+      - path:
+          - evidenceWaits
+          - "10"
+          - results
+        map: 63
+      - path:
+          - evidenceWaits
+          - "11"
+          - results
+        map: 64
+      - path:
+          - evidenceWaits
+          - "12"
+          - results
+        map: 65
+  storageHash: 94b3b82eb62240d9a870525f04e96924102a55395b9192bd9892f68af5d2f95b
+check_epoch: 10

@@ -187,6 +187,8 @@ export class WorkExecutionAuthority extends Service {
     const result = await this.ctx.runStore.commitGuarded(
       packet.claim.runId,
       ({ state, trajectory }) => {
+        if (state.reconciliationRequired)
+          throw new Error('Run requires workspace reconciliation before claiming Work');
         assertActivePacket(state, packet);
         const existing = state.workExecution;
         const executionChainId = workExecutionChainIdentity(packet.work);
@@ -948,6 +950,8 @@ export class WorkExecutionAuthority extends Service {
           value: { acquired: false, checkpoint: structuredClone(current) },
         };
       }
+      if (state.reconciliationRequired)
+        throw new Error('Run requires workspace reconciliation before starting Host');
       if (current.status !== 'context-delivered') {
         throw new Error(`Work execution cannot move from ${current.status} to invoking`);
       }
@@ -1922,6 +1926,8 @@ export class WorkExecutionAuthority extends Service {
 
   async recordContinuation(runId: string, recovery: WorkExecutionRecovery): Promise<void> {
     await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
+      if (state.reconciliationRequired && recovery.reason !== 'project-drift')
+        return { value: undefined };
       const openObservationUnavailable =
         recovery.continuation === 'reobserve' && recovery.reason === 'open-observation-unavailable';
       const eventId = digest(

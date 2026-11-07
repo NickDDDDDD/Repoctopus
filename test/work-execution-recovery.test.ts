@@ -89,6 +89,63 @@ function recoveryAuthority(run: RunState, input: { active?: boolean; corrupt?: b
 }
 
 describe('Work execution recovery classification', () => {
+  it('blocks a previously claimed Host and stale continuation when workspace reconciliation arrives', async () => {
+    const initial = checkpoint('context-delivered');
+    const blocked = { ...state({ execution: initial }), reconciliationRequired: true };
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    const trajectory: TrajectoryEvent[] = [];
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded: vi.fn(
+            <T>(
+              _id: string,
+              reduce: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+                event?: TrajectoryEvent;
+                value: T;
+              },
+            ): Promise<T> => {
+              const result = reduce({ state: blocked, trajectory });
+              if (result.event) trajectory.push(result.event);
+              return Promise.resolve(result.value);
+            },
+          ),
+        },
+      },
+    });
+    const invocation: WorkExecutionHostInvocation = {
+      schemaVersion: 1,
+      invocationId: digest('f'),
+      host: {
+        schemaVersion: 1,
+        id: 'host-1',
+        version: '1',
+        codeDigest: digest('1'),
+        capabilities: [],
+        actionKinds: ['agent'],
+        reconcile: false,
+      },
+      packet: initial.packet,
+      startedAt: '2026-11-07T00:00:00Z',
+    };
+    await expect(
+      authority.markHostStarted(
+        { runId: blocked.runId, intentId: initial.intentId } as never,
+        invocation,
+      ),
+    ).rejects.toThrow(/reconciliation/u);
+    await authority.recordContinuation(blocked.runId, {
+      schemaVersion: 2,
+      continuation: 'execute',
+      workId: initial.workId,
+      attempt: initial.attempt,
+      checkEpoch: initial.checkEpoch,
+      reason: 'claim-redelivery',
+    });
+    expect(blocked.workExecution).toEqual(initial);
+    expect(trajectory).toEqual([]);
+  });
+
   it('keeps generic workflow Runs outside the Change Work classifier', async () => {
     const generic = state({});
     delete generic.changeLifecycle;

@@ -3,6 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { decide, recordOutcome, startRun } from '../engine/loop.js';
 import type { ActionOutcome, EngineAction, RunState, RunTriggerSnapshot } from '../engine/types.js';
 import { reconcileProjectSnapshots } from '../project/snapshot.js';
+import type { BuildWorkspaceRecovery } from './build-workspace-recovery.js';
 import type { ProjectSnapshot } from '../project/types.js';
 import type {
   DesktopActivationFact,
@@ -378,9 +379,20 @@ export class WorkflowRunCoordinator {
           entry.data.observationKind === 'verify-gate-satisfied' ||
           entry.data.observationKind === 'verify-gate-rejected',
       )?.data.observation as { kind?: string; attemptId?: string } | undefined;
-    const continuation = state.changeLifecycle
+    const persistedContinuation = state.changeLifecycle
       ? projectCommittedContinuation(checkpoint, trajectory)
       : undefined;
+    const continuation =
+      state.changeLifecycle && state.reconciliationRequired
+        ? {
+            schemaVersion: 2 as const,
+            continuation: 'reconcile' as const,
+            workId: state.changeLifecycle.currentWork?.workId ?? null,
+            attempt: state.workExecution?.attempt ?? null,
+            checkEpoch: state.changeLifecycle.checkEpoch,
+            reason: 'project-drift' as const,
+          }
+        : persistedContinuation;
     const changeLifecycle = state.changeLifecycle
       ? projectChangeRun(
           { ...structuredClone(state.changeLifecycle), status: state.status },
@@ -488,6 +500,13 @@ export class WorkflowRunCoordinator {
     await this.recoverChangeLifecycleDefinition(runId);
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
+      if (
+        state.changeLifecycle.phase === 'build' &&
+        state.reconciliationRequired &&
+        !options?.authorizedRebind
+      ) {
+        throw new Error('Build workspace requires reconciliation before advancing the Run');
+      }
       const observationDigest = createHash('sha256')
         .update(canonicalJson(observation))
         .digest('hex');
@@ -613,10 +632,7 @@ export class WorkflowRunCoordinator {
     return { value: await this.status(runId), diagnostics };
   }
 
-  assertChangeObservationFeasible(
-    state: RunState,
-    observation: ChangeLifecycleObservation,
-  ): void {
+  assertChangeObservationFeasible(state: RunState, observation: ChangeLifecycleObservation): void {
     if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${state.runId}`);
     const current: ChangeLifecycleSnapshot = {
       ...structuredClone(state.changeLifecycle),
@@ -661,6 +677,9 @@ export class WorkflowRunCoordinator {
     await this.recoverChangeLifecycleDefinition(runId);
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
+      if (state.changeLifecycle.phase === 'build' && state.reconciliationRequired) {
+        throw new Error('Build workspace requires reconciliation before applying recovery');
+      }
       if (decision.runId !== runId) throw new Error('Recovery decision Run identity is invalid');
       const replayed = trajectory.some(
         (entry) =>
@@ -1130,6 +1149,94 @@ export class WorkflowRunCoordinator {
     });
     const diagnostics = await this.flushTelemetry(options.runId);
     return { value: await this.status(options.runId), diagnostics };
+  }
+
+  async reconcileBuildWorkspace(
+    runId: string,
+    observation: BuildWorkspaceRecovery,
+  ): Promise<RuntimeResult<ResumeView>> {
+    const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      this.assertWritableComposition(state);
+      const protocol = state.changeLifecycle?.buildProtocol;
+      if (
+        state.stateVersion !== observation.expectedStateVersion ||
+        protocol?.binding?.bindingId !== observation.bindingId ||
+        protocol.workspaceCheckpoint?.digest !== observation.checkpointDigest
+      ) {
+        throw new Error(
+          'Build workspace recovery observation is stale; retry from the current Run',
+        );
+      }
+      const previous = trajectory.findLast((entry) =>
+        ['recovery.reconciled', 'run.resumed'].includes(entry.type),
+      );
+      const previousRecovery = previous?.data.buildWorkspaceRecovery as
+        | { observationDigest: string; ownsBlocker: boolean }
+        | undefined;
+      const matchingSnapshotConflict =
+        previousRecovery === undefined &&
+        previous?.type === 'recovery.reconciled' &&
+        canonicalJson(previous.data.reconciliation) === canonicalJson(observation.reconciliation);
+      const ownedBlocker =
+        !state.reconciliationRequired ||
+        previousRecovery?.ownsBlocker === true ||
+        matchingSnapshotConflict;
+      const requiresReconciliation =
+        observation.conflicts.length > 0 || (state.reconciliationRequired && !ownedBlocker);
+      if (
+        previousRecovery?.observationDigest === observation.observationDigest &&
+        state.reconciliationRequired === requiresReconciliation
+      ) {
+        return { value: requiresReconciliation };
+      }
+      const timestamp = this.clock().toISOString();
+      const nextState = {
+        ...state,
+        reconciliationRequired: requiresReconciliation,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId: stableEventId(
+            runId,
+            'build-workspace-recovery',
+            previous?.eventId ?? 'initial',
+            observation.observationDigest,
+          ),
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: requiresReconciliation ? 'recovery.reconciled' : 'run.resumed',
+          state: nextState,
+          data: {
+            reconciliation: observation.reconciliation,
+            buildWorkspaceRecovery: {
+              ...observation,
+              ownsBlocker: requiresReconciliation && ownedBlocker,
+            },
+          },
+        }),
+        value: requiresReconciliation,
+      };
+    });
+    const diagnostics: RuntimeDiagnostic[] = result
+      ? [
+          {
+            level: 'warning',
+            code: 'runtime.project-changed',
+            message: `Build workspace recovery blocked: ${observation.conflicts.join(', ') || 'unresolved project reconciliation'}`,
+          },
+        ]
+      : [];
+    diagnostics.push(...(await this.flushTelemetry(runId)));
+    return {
+      value: {
+        ...(await this.status(runId)),
+        reconciliation: { ...observation.reconciliation, requiresReconciliation: result },
+      },
+      diagnostics,
+    };
   }
 
   async resume(options: {

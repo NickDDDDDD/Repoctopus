@@ -242,7 +242,18 @@ function projectSelections(
     ),
     runtimeSelection(
       'workflow-runs',
-      { workspaceRoot },
+      {
+        workspaceRoot,
+        projectInput: {
+          workspaceId: config.shared.workspace.id,
+          workspaceRoot,
+          workspaceRepositoryId: config.shared.workspace.repositoryId,
+          repositories: config.repositories.map((repository) => ({
+            id: repository.id,
+            path: repository.resolvedPath,
+          })),
+        },
+      },
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
     { id: 'workflow-run-command' },

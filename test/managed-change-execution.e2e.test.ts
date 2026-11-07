@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readdir, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -11,7 +11,7 @@ import { compositionIdentity } from '../app/boot/composition.js';
 import { createProjectSnapshot, reconcileProjectSnapshots } from '../domains/project/snapshot.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
-import type { RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
+import type { ResumeView, RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
 import type { RunStoreInspection } from '../domains/runtime/types.js';
 import type { SpecificationApprovalState } from '../domains/specification/types.js';
 import { createWorkExecutionSubmission } from '../domains/work-execution/submission.js';
@@ -120,7 +120,7 @@ describe('managed Change execution production composition', () => {
       await execFileAsync('git', ['push', '--set-upstream', 'origin', 'spec/managed-blackbox'], {
         cwd: workspace,
       });
-      if (!protectedWriteRepositories) {
+      const prepareBuildBranches = async () => {
         await execFileAsync('git', ['switch', '-c', 'feature/managed-blackbox'], {
           cwd: appRepository,
         });
@@ -137,7 +137,7 @@ describe('managed Change execution production composition', () => {
           ['push', '--set-upstream', 'origin', 'feature/managed-blackbox'],
           { cwd: workerRepository },
         );
-      }
+      };
       const environment = await createOpenSpecStoreEnvironment(root, workspace, 'managed-blackbox');
       await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
       await mkdir(path.join(workspace, '.agents', 'skills', 'team-build-guidance'), {
@@ -226,6 +226,7 @@ describe('managed Change execution production composition', () => {
       });
       await execFileAsync('git', ['push'], { cwd: workspace });
 
+      if (!protectedWriteRepositories && !multiRepository) await prepareBuildBranches();
       const started = await runCli<RunStatusView>({
         packageRoot: productRoot,
         cwd: workspace,
@@ -244,6 +245,7 @@ describe('managed Change execution production composition', () => {
         ],
       });
       const runId = started.runId!;
+      if (!protectedWriteRepositories && multiRepository) await prepareBuildBranches();
       const environmentKeys = [
         'XDG_DATA_HOME',
         'XDG_CONFIG_HOME',
@@ -1316,6 +1318,32 @@ describe('managed Change execution production composition', () => {
           expect(retainedDesignApproval).toMatchObject({
             decisionRequest: { requestId: approval.decisionRequest.requestId },
           });
+          if (!protectedWriteRepositories) {
+            const tasksPath = path.join(
+              workspace,
+              'openspec',
+              'changes',
+              'managed-blackbox',
+              'tasks.md',
+            );
+            const acceptedTasks = await readFile(tasksPath, 'utf8');
+            const originalPlanWork = (await status()).changeLifecycle!.currentWork!.workId;
+            const invocationCount = capture.invocations.length;
+            await writeFile(tasksPath, `${acceptedTasks}\n- [ ] 9.9 Unapproved planning change\n`);
+            await execFileAsync('git', ['switch', '-c', 'unrelated/planning-and-branch'], {
+              cwd: workerRepository,
+            });
+            const blockedPlanning = await next();
+            expect(blockedPlanning.value.state.reconciliationRequired).toBe(true);
+            expect(blockedPlanning.value.changeLifecycle?.currentWork?.workId).toBe(
+              originalPlanWork,
+            );
+            expect(capture.invocations).toHaveLength(invocationCount);
+            await writeFile(tasksPath, acceptedTasks);
+            await execFileAsync('git', ['switch', 'feature/managed-blackbox'], {
+              cwd: workerRepository,
+            });
+          }
         }
         await restartApplication();
         let planInvocation: (typeof capture.invocations)[number] | undefined;
@@ -1426,7 +1454,7 @@ describe('managed Change execution production composition', () => {
           expect(recovered.value).toMatchObject({
             reconciliation: {
               changeClass: 'identity',
-              requiresReconciliation: true,
+              requiresReconciliation: false,
             },
             state: { reconciliationRequired: false },
             changeLifecycle: {
@@ -1588,6 +1616,67 @@ describe('managed Change execution production composition', () => {
           currentWork: { kind: 'build.execute' },
           build: { action: 'execute', planRevision: 1 },
         });
+        if (multiRepository && executionMode === 'autonomous' && !protectedWriteRepositories) {
+          const beforeRace = await status();
+          const bind = application.context.executionWorkspace.bind.bind(
+            application.context.executionWorkspace,
+          );
+          let observations = 0;
+          const lateBranch = vi
+            .spyOn(application.context.executionWorkspace, 'bind')
+            .mockImplementation(async (input) => {
+              const observed = await bind(input);
+              observations += 1;
+              if (observations === 1)
+                await execFileAsync('git', ['switch', '-c', 'unrelated/before-claim'], {
+                  cwd: workerRepository,
+                });
+              return observed;
+            });
+          let blockedRace: RuntimeResult<RunStatusView>;
+          try {
+            blockedRace = await next();
+          } finally {
+            lateBranch.mockRestore();
+          }
+          expect(blockedRace.value.state.reconciliationRequired).toBe(true);
+          expect(blockedRace.value.state.changeLifecycle?.buildProtocol).toEqual(
+            beforeRace.state.changeLifecycle?.buildProtocol,
+          );
+          expect(capture.invocations).toHaveLength(0);
+          await execFileAsync('git', ['switch', 'feature/managed-blackbox'], {
+            cwd: workerRepository,
+          });
+
+          const host = application.context.workExecutionHosts.get('capturing-work-execution-host');
+          if (!host) throw new Error('Missing package Host for the execution race');
+          const invoke = host.invoke.bind(host);
+          const interruptedHost = vi
+            .spyOn(host, 'invoke')
+            .mockImplementationOnce(async (packet, session) => {
+              const outcome = await invoke(packet, session);
+              await execFileAsync('git', ['switch', '-c', 'unrelated/after-host'], {
+                cwd: workerRepository,
+              });
+              return outcome;
+            });
+          let blockedOutcome: RuntimeResult<RunStatusView>;
+          try {
+            blockedOutcome = await next();
+          } finally {
+            interruptedHost.mockRestore();
+          }
+          expect(blockedOutcome.value.state.reconciliationRequired).toBe(true);
+          expect(blockedOutcome.value.state.changeLifecycle?.buildProtocol).toEqual(
+            beforeRace.state.changeLifecycle?.buildProtocol,
+          );
+          expect(blockedOutcome.value.state.workExecution?.hostInvocation).toBeDefined();
+          expect(blockedOutcome.value.state.workExecution?.pendingSubmission).toBeDefined();
+          expect(capture.invocations).toHaveLength(1);
+          await execFileAsync('git', ['switch', 'feature/managed-blackbox'], {
+            cwd: workerRepository,
+          });
+        }
         let afterFirstPackage: RunStatusView;
         let afterFirstPackageDiagnostics: RuntimeResult<RunStatusView>['diagnostics'] = [];
         let afterAllPackages: RuntimeResult<RunStatusView>;
@@ -1709,6 +1798,59 @@ describe('managed Change execution production composition', () => {
           const firstPackageResult = await next();
           afterFirstPackage = firstPackageResult.value;
           afterFirstPackageDiagnostics = firstPackageResult.diagnostics;
+          if (multiRepository && !protectedWriteRepositories) {
+            const acceptedProtocol = afterFirstPackage.state.changeLifecycle!.buildProtocol!;
+            const acceptedWork = afterFirstPackage.changeLifecycle!.currentWork!.workId;
+            expect(acceptedProtocol.packageCompletions).toHaveLength(1);
+            invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
+            capture.dispose();
+            await application.close();
+            const commands =
+              executionMode === 'autonomous' ? ['resume', 'next'] : ['next', 'resume'];
+            const recover = (command: string) =>
+              runCli<ResumeView>({
+                packageRoot: productRoot,
+                cwd: workspace,
+                environment,
+                args: ['run', command, '--workspace', workspace, '--run', runId],
+              });
+            const assertPreserved = (view: RunStatusView) => {
+              expect(view.state.runId).toBe(runId);
+              expect(view.changeLifecycle?.currentWork?.workId).toBe(acceptedWork);
+              const protocol = view.state.changeLifecycle!.buildProtocol!;
+              expect(protocol.binding).toEqual(acceptedProtocol.binding);
+              expect(protocol.plan).toEqual(acceptedProtocol.plan);
+              expect(protocol.packageCompletions).toEqual(acceptedProtocol.packageCompletions);
+              expect(protocol.workspaceCheckpoint).toEqual(acceptedProtocol.workspaceCheckpoint);
+            };
+            for (const command of commands) {
+              const recovered = await recover(command);
+              assertPreserved(recovered.result!);
+              expect(recovered.result!.state.reconciliationRequired).toBe(false);
+              expect(recovered.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain(
+                'runtime.project-changed',
+              );
+            }
+            await execFileAsync('git', ['switch', '-c', 'unrelated/cold-build-recovery'], {
+              cwd: workerRepository,
+            });
+            for (const command of [...commands, ...commands]) {
+              const blocked = await recover(command);
+              assertPreserved(blocked.result!);
+              expect(blocked.result!.state.reconciliationRequired).toBe(true);
+              expect(blocked.result!.continuation?.continuation).toBe('reconcile');
+            }
+            await execFileAsync('git', ['switch', 'feature/managed-blackbox'], {
+              cwd: workerRepository,
+            });
+            for (const command of commands) {
+              const recovered = await recover(command);
+              assertPreserved(recovered.result!);
+              expect(recovered.result!.state.reconciliationRequired).toBe(false);
+            }
+            application = await bootProjectComposition(productRoot, workspace);
+            capture = installHost();
+          }
           await restartApplication();
           afterAllPackages = await next();
         }
