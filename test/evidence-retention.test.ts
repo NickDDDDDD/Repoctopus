@@ -69,7 +69,6 @@ describe('evidence retention', () => {
     await store.saveAttempt(attempt);
     const bundle = createEvidenceBundle({
       compositionDigest: TEST_COMPOSITION_DIGEST,
-      bundleId: 'approved-bundle',
       attemptId: 'approved-attempt',
       profileId: 'verify',
       inputFingerprint: 'fingerprint',

@@ -407,7 +407,8 @@
             },
             "bundleId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "pattern": "^[a-f0-9]{64}$"
             },
             "attemptId": {
               "type": "string",

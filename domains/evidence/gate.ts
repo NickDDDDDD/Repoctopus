@@ -5,7 +5,7 @@ import type {
   EvidenceGateProjection,
   GateOutcome,
 } from './types.js';
-import { createEvidenceDependencyRecord } from './dependencies.js';
+import { createEvidenceDependencyRecord, evidenceDependencySetDigest } from './dependencies.js';
 import { evidenceInputDigest } from './input-snapshot.js';
 
 export function aggregateGateOutcome(
@@ -34,7 +34,13 @@ export function aggregateGateOutcome(
 export function createEvidenceBundle(
   input: Omit<
     EvidenceBundle,
-    'schemaVersion' | 'apiVersion' | 'kind' | 'outcome' | 'acceptanceTrace' | 'dependencies'
+    | 'schemaVersion'
+    | 'apiVersion'
+    | 'kind'
+    | 'outcome'
+    | 'acceptanceTrace'
+    | 'dependencies'
+    | 'bundleId'
   > &
     Partial<Pick<EvidenceBundle, 'acceptanceTrace'>>,
 ): EvidenceBundle {
@@ -46,22 +52,39 @@ export function createEvidenceBundle(
         ? 'failed'
         : 'incomplete'
       : aggregate;
-  return {
+  const body = Object.fromEntries(
+    Object.entries(input).filter(
+      ([key]) =>
+        !['schemaVersion', 'apiVersion', 'kind', 'outcome', 'dependencies', 'bundleId'].includes(
+          key,
+        ),
+    ),
+  ) as typeof input;
+  const facts = {
     schemaVersion: 3,
     apiVersion: 'repoctopus/v1alpha1',
     kind: 'EvidenceBundle',
-    ...input,
+    ...body,
     acceptanceTrace,
     outcome,
+  } as const;
+  const dependencies = [
+    {
+      partition: 'implementation-content' as const,
+      identity: evidenceInputDigest(input.inputFingerprint),
+    },
+  ];
+  const bundleId = evidenceInputDigest({
+    ...facts,
+    dependencySetDigest: evidenceDependencySetDigest(dependencies, input.receiptIds),
+  }).slice(7);
+  return {
+    ...facts,
+    bundleId,
     dependencies: createEvidenceDependencyRecord({
       subjectKind: 'bundle',
-      subjectId: input.bundleId,
-      dependencies: [
-        {
-          partition: 'implementation-content',
-          identity: evidenceInputDigest(input.inputFingerprint),
-        },
-      ],
+      subjectId: bundleId,
+      dependencies,
       dependsOnEvidenceIds: input.receiptIds,
     }),
   };

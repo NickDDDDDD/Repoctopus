@@ -117,7 +117,6 @@ describe('delivery evidence closure', () => {
     });
     const approvedBundle = createEvidenceBundle({
       compositionDigest: TEST_COMPOSITION_DIGEST,
-      bundleId: 'bundle-approved',
       attemptId: 'attempt-approved',
       profileId: 'verify',
       inputFingerprint: 'fingerprint',
@@ -129,7 +128,6 @@ describe('delivery evidence closure', () => {
     });
     const failedBundle = createEvidenceBundle({
       compositionDigest: TEST_COMPOSITION_DIGEST,
-      bundleId: 'bundle-failed',
       attemptId: 'attempt-failed',
       profileId: 'verify',
       inputFingerprint: 'fingerprint',

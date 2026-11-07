@@ -46,3 +46,27 @@ node_modules/.bin/vitest.cmd run test/managed-change-execution.e2e.test.ts -t 'a
 候选产品提交c13237c已构建并推送。首轮加入三次独立冷CLI恢复的完整用例触及240秒测试预算，该次记为超时，不作通过；后续以360秒预算重新执行。完整suite包含五个真实多仓生命周期矩阵，Comet检查预算按这一测量调整到1800秒；产品超时、重试和输入校验未放宽。最终全量与独立安装包结果尚待补录。
 
 实施细节曾追加到已批准Design，Comet只读next正确报告证据漂移；恢复批准正文后同一Action13/revision19恢复healthy。没有修改Runtime Store或重建Run。该次新增文字均属于已有冻结坐标约束的实施记录，移入本报告。
+
+## 首轮全量检查及修正
+
+完整 npm.cmd run verify 的测试段运行860.41秒：200个测试文件中186通过、13失败、1跳过；1062项测试中1043通过、14失败、5跳过。完整生产组合六项均通过。该次整体返回1，不声明门禁通过。
+
+14项失败分别来自：当前Windows独立依赖安装没有Electron二进制；旧Definition/VerificationInput/Contributor版本及composition golden；Telemetry小型组合漏装真实RepositoryInputPolicy Contributor；新来源引用只更新了脚本checker，Runtime checker仍拒绝它们；仓库自用Profile未声明源范围而扫描到依赖目录联接。已补锁定Electron binary、更新明确版本golden、给真实组合安装Contributor、对齐两checker的固定引用，以及在repoctopus.yaml为每个命令声明实际源码范围和Git消费。没有通过忽略未知文件或允许目录链接放宽产品边界。
+
+这些失败项已逐项定向转绿，类型、lint、生成物、品牌、架构、来源、Dashboard ledger与19项严格规格检查通过。当前最终产品候选为7475063，正式Comet Build/Verify Guard全量收据仍待执行。
+
+## 独立安装包真实五仓验收
+
+原固定产品包c13237c独立安装后，从项目接入开始完成真实Open、Design、两包Build、BuildCheck和Verify。两项任务各有真实RED=1/GREEN=0/regression=0、commit/push及Runtime接受。有效Verify后仅提交官方完成状态，四个fresh CLI按两种resume/next顺序恢复，完整VerificationInput、Gate、Bundle、BuildProtocol、Binding、Plan和completion不变；两条实际Node检查各执行一次，共2次。随后Workspace同内容empty commit只推进发布OID，两个入口均提示publication-checkpoint-stale，公开reprepare仅将Archive epoch14更新为15，原有效证据保留。已公开的未授权分支阻断两次，切回恢复两次。最终停在未claim的Specification Close，未执行外部Closure/publication。
+
+最终产品包7475063安装在另一个独立prefix，规范内容摘要与仓库复算一致。当前Run兼容检查为compatible/changedPluginIds[]，四次正常恢复、两次未授权分支阻断、两次切回恢复全部通过；Archive input、Work、epoch15及原execution保持不变，实际检查数仍为2。原Store分别140/31/44个文件及旧报告保持哈希不变。原始报告与最终补充报告均保存在仓外独立验收目录，精确哈希见包验收报告。
+
+验收脚本两处错误均保留：Review后的run next已自动完成Verify，脚本多发一次run verify被正确拒绝（无active Verify Work），没有重复检查；archive-prepare返回嵌套RuntimeResult，脚本只修正已保存响应的读取层次，未重复Runtime调用。
+
+## 已知的独立发行诊断问题
+
+最终包doctor实际exit1：来源诊断按源码布局读取package-lock.json，但npm发行包不含该文件；同一诊断还依赖scripts/prepare-desktop.mjs这类未发行维护资源。基线代码已有这些源码布局依赖，本次未放宽校验或向安装目录补写缺失文件。该问题不阻断本Change要求的真实工作流、Evidence与冷恢复验收，单独记录为后续发行诊断修复项；本报告不宣称doctor或完整发行诊断通过。
+
+## 最终身份复核补充
+
+独立复现确认旧 Bundle parser 没有重算 Bundle ID：将 freshness 改为 reused，或把 superseded 改为 fresh，并保留原 ID/dependencies，仍被接受，可能影响缓存候选。新增契约回归实际 RED 后，Bundle 创建改为统一计算最终事实及依赖集合摘要，Store parser 重建同一 canonical 对象；业务调用方不再自行提供 Bundle ID。正常采集与中断恢复共用该工厂，不支持旧身份算法的执行 fallback。新增实际 Store 篡改回归同时检查 status 与下一轮缓存选取必须拒绝，旧候选包验收作为历史保留，最终身份算法将另做固定包验收。

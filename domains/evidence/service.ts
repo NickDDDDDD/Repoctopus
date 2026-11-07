@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 
 import type {
@@ -95,10 +95,6 @@ interface NodeExecution {
 }
 
 const systemClock: EvidenceClock = { now: () => new Date() };
-
-function digest(value: unknown): string {
-  return createHash('sha256').update(canonicalJson(value)).digest('hex');
-}
 
 function resolveNodeCwd(repositoryPath: string, configuredCwd?: string): string {
   const resolved = path.resolve(repositoryPath, configuredCwd ?? '.');
@@ -922,7 +918,7 @@ export class EvidenceService {
           })
         : null,
     };
-    const preliminary = createEvidenceBundle({ bundleId: digest(bundleBase), ...bundleBase });
+    const preliminary = createEvidenceBundle(bundleBase);
     const verificationReport = createVerificationReport({
       plan,
       receipts,
@@ -942,7 +938,7 @@ export class EvidenceService {
       artifactDigests: [...evidenceArtifactDigests, reportArtifact.sha256].sort(),
       verificationReport: reportArtifact,
     };
-    const bundle = createEvidenceBundle({ bundleId: digest(finalBase), ...finalBase });
+    const bundle = createEvidenceBundle(finalBase);
     attempt.completedAt = completedAt;
     attempt.status = superseded || invalidated.size ? 'superseded' : 'completed';
     await this.store.saveAttempt(attempt);

@@ -31,7 +31,6 @@ describe('evidence contracts', () => {
     expect(parseEvidenceReceipt(JSON.parse(JSON.stringify(receipt)))).toEqual(receipt);
     const bundle = createEvidenceBundle({
       compositionDigest: TEST_COMPOSITION_DIGEST,
-      bundleId: 'bundle-1',
       attemptId: 'attempt-1',
       profileId: 'verify',
       inputFingerprint: 'fingerprint',
@@ -50,6 +49,17 @@ describe('evidence contracts', () => {
       findings: [],
     });
     expect(parseEvidenceBundle(JSON.parse(JSON.stringify(bundle)))).toEqual(bundle);
+    const changed = structuredClone(bundle);
+    changed.checks[0]!.freshness = 'reused';
+    expect(() => parseEvidenceBundle(changed)).toThrow(/identity/u);
+    const superseded = createEvidenceBundle({
+      ...bundle,
+      checks: bundle.checks.map((check) => ({ ...check, freshness: 'superseded' })),
+    });
+    const resurrected = structuredClone(superseded);
+    resurrected.checks[0]!.freshness = 'fresh';
+    resurrected.outcome = 'passed';
+    expect(() => parseEvidenceBundle(resurrected)).toThrow(/identity/u);
     expect(projectEvidenceGate(bundle)).toMatchObject({
       kind: 'EvidenceGateProjection',
       status: 'satisfied',

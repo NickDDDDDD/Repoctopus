@@ -108,6 +108,7 @@ Archive 在任何远端 MR 发布前调用 `prepareClosure`，把以下事实绑
 - change 语义摘要和 Specification Provider 身份；
 - 已通过的 Verify Evidence 与 Delivery plan 摘要；
 - 目标规格基线摘要；
+- 发布预检冻结的 `sourceOid`；隔离 checkout 从该 OID 创建，不随主工作树 HEAD 前移；
 - 受影响能力和允许修改的规格路径。
 
 `close` 会在执行前重新生成计划并比较摘要。OpenSpec Provider 只通过官方 `archive --yes --json` 生命周期同步主规格并归档 change。成功结果写入 `.repoctopus/specification/closures/`；相同计划重放时返回原结果，不重复归档。

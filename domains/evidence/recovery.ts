@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 import type { EvidenceExecutionPlan } from '../feedback/profile.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { createEvidenceBundle } from './gate.js';
@@ -163,10 +161,7 @@ export async function recoverEvidenceAttempt(input: {
         })
       : null,
   };
-  let bundle = createEvidenceBundle({
-    bundleId: createHash('sha256').update(canonicalJson(bundleBase)).digest('hex'),
-    ...bundleBase,
-  });
+  let bundle = createEvidenceBundle(bundleBase);
   if (input.artifacts) {
     const report = createVerificationReport({ plan: input.plan, receipts, bundle });
     const reportArtifact = await input.artifacts.put(report.contents, {
@@ -179,10 +174,7 @@ export async function recoverEvidenceAttempt(input: {
       artifactDigests: [...bundleBase.artifactDigests, reportArtifact.sha256].sort(),
       verificationReport: reportArtifact,
     };
-    bundle = createEvidenceBundle({
-      bundleId: createHash('sha256').update(canonicalJson(finalBase)).digest('hex'),
-      ...finalBase,
-    });
+    bundle = createEvidenceBundle(finalBase);
   }
   attempt.receiptIds = bundle.receiptIds;
   attempt.dependencies = createEvidenceDependencyRecord({

@@ -4,7 +4,7 @@ import { canonicalJson } from '../workflow-contract/canonical.js';
 import { assertEvidenceDependencyRecord, createEvidenceDependencyRecord } from './dependencies.js';
 import { evidenceInputDigest } from './input-snapshot.js';
 import { validateEvidenceReceiptIdentity } from './receipt.js';
-import { aggregateGateOutcome } from './gate.js';
+import { aggregateGateOutcome, createEvidenceBundle } from './gate.js';
 import {
   EVIDENCE_API_VERSION,
   type ArtifactRef,
@@ -155,5 +155,7 @@ export function parseEvidenceBundle(value: unknown): EvidenceBundle {
     trace && trace.passed !== trace.total ? (trace.failed ? 'failed' : 'incomplete') : aggregate;
   if (bundle.outcome !== outcome)
     throw new Error('EvidenceBundle outcome does not match its current proof');
+  if (canonicalJson(createEvidenceBundle(bundle)) !== canonicalJson(bundle))
+    throw new Error('EvidenceBundle identity does not match its facts and dependencies');
   return structuredClone(item) as unknown as EvidenceBundle;
 }

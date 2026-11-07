@@ -308,6 +308,21 @@ it('keeps a producer unknown when interrupted before its manifest is committed',
   expect(await counts()).toEqual(before);
 }, 60_000);
 
+it('rejects changed Bundle freshness under its original identity before cache selection', async () => {
+  const { workspace, counts } = await fixture();
+  const result = await (await boot(workspace)).run('verify', 'bundle-identity');
+  const changed = structuredClone(result.bundle);
+  changed.checks[0]!.freshness = 'reused';
+  await writeFile(
+    path.join(workspace, '.repoctopus', 'evidence', 'bundles', `${changed.bundleId}.json`),
+    JSON.stringify(changed),
+  );
+  const restarted = await boot(workspace);
+  await expect(restarted.status('bundle-identity')).rejects.toThrow(/identity/u);
+  await expect(restarted.run('verify', 'after-corruption')).rejects.toThrow(/identity/u);
+  expect(await counts()).toHaveLength(3);
+}, 60_000);
+
 it('recovers a committed producer completion without executing it again after interruption', async () => {
   const { workspace, counts } = await fixture();
   const journal = new FileEvidenceJournal(workspace);
