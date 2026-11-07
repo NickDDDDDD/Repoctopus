@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import { canonicalJson, canonicalValue } from '../workflow-contract/canonical.js';
 import type { EvidenceNodeInputSnapshot } from './input-snapshot.js';
+import type { SpecificationEvidenceProjection } from '../specification/types.js';
 
 export interface DirtyFileFingerprint {
   path: string;
@@ -37,6 +38,7 @@ export interface EvidenceFingerprintManifest {
   localConfigDigest: string | null;
   repositories: RepositoryFingerprint[];
   nodeInputs: EvidenceNodeInputSnapshot[];
+  planningProjection: SpecificationEvidenceProjection | null;
   tools: Record<string, string>;
   adapters: Record<string, string>;
   browser?: { name: string; version: string; revision?: string };
@@ -78,12 +80,26 @@ export function createEvidenceFingerprint(
   const normalized = normalizedManifest(manifest);
   if (normalized.schemaVersion !== 3 || !normalized.nodeInputs.length)
     throw new Error('Evidence fingerprint requires versioned node input snapshots');
-  const { repositories: _provenance, ...semantic } = normalized;
+  const { repositories: _provenance, planningProjection: _projection, ...semantic } = normalized;
   void _provenance;
+  void _projection;
+  const planningInputs = _projection
+    ? {
+        provider: _projection.provider,
+        root: _projection.root,
+        schemaDigest: _projection.schemaDigest,
+        policy: _projection.policy,
+        files: _projection.files.map(({ path, artifactId, semanticDigest }) => ({
+          path,
+          artifactId,
+          semanticDigest,
+        })),
+      }
+    : null;
   return {
     algorithm: 'sha256',
     digest: createHash('sha256')
-      .update(canonicalJson(canonicalValue(semantic)))
+      .update(canonicalJson(canonicalValue({ ...semantic, planningInputs })))
       .digest('hex'),
     manifest: normalized,
   };

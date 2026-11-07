@@ -4,6 +4,13 @@ import { isAbsolute } from 'node:path';
 import type { SpecificationTaskSet } from '../specification/types.js';
 import type { RuntimeIdentityKind } from '../runtime/identity.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
+import {
+  assertEvidenceDependencyRecord,
+  createEvidenceDependencyRecord,
+  evidenceDependencySetDigest,
+  type EvidenceDependency,
+  type EvidenceDependencyRecord,
+} from '../evidence/dependencies.js';
 import { isProtectedBranch, normalizeProtectedBranchPatterns } from '../delivery/branch-policy.js';
 
 export type Digest = `sha256:${string}`;
@@ -1277,6 +1284,7 @@ export function advanceBuildProtocol(
     });
   }
   if (observation.kind === 'plan-evidence-accepted') {
+    assertPlanEvidence(observation.evidence);
     if (state.currentAction !== 'plan-evidence') {
       throw new Error('Plan Evidence does not match the current Runtime-selected Action');
     }
@@ -1379,6 +1387,7 @@ export function advanceBuildProtocol(
     });
   }
   if (observation.kind === 'check-accepted') {
+    assertBuildCheckEvidence(observation.evidence);
     if (state.currentAction !== 'check' || !observation.evidence.accepted) {
       throw new Error('Build Check Evidence does not match the active Check Action');
     }
@@ -1427,7 +1436,7 @@ export function advanceBuildProtocol(
 }
 
 export interface PlanEvidence {
-  schemaVersion: 1;
+  schemaVersion: 2;
   evidenceId: string;
   planDigest: Digest;
   strategyDigest: Digest;
@@ -1448,6 +1457,33 @@ export interface PlanEvidence {
   riskDecisionDigest: Digest;
   authorizationEnvelope: BuildPlanAuthorizationEnvelope;
   accepted: true;
+  dependencies: EvidenceDependencyRecord;
+}
+
+export function assertPlanEvidence(evidence: PlanEvidence): void {
+  if (evidence.schemaVersion !== 2) throw new Error('Unsupported PlanEvidence schema');
+  assertEvidenceDependencyRecord(evidence.dependencies, 'plan-evidence', evidence.evidenceId);
+  const dependencies: EvidenceDependency[] = [
+    { partition: 'planning-semantic', identity: evidence.planDigest },
+    {
+      partition: 'execution-control',
+      identity: digest({
+        strategy: evidence.strategyDigest,
+        binding: evidence.bindingStateDigest,
+        composition: evidence.compositionCheckpointDigest,
+        tasks: evidence.taskSetDigest,
+      }),
+    },
+  ];
+  const { evidenceId, dependencies: record, ...facts } = evidence;
+  const expectedId = `plan-evidence:${digest({ ...facts, dependencySetDigest: evidenceDependencySetDigest(dependencies) }).slice(-24)}`;
+  const expected = createEvidenceDependencyRecord({
+    subjectKind: 'plan-evidence',
+    subjectId: expectedId,
+    dependencies,
+  });
+  if (evidenceId !== expectedId || canonicalJson(record) !== canonicalJson(expected))
+    throw new Error('PlanEvidence facts or dependencies were modified');
 }
 
 export interface BuildPlanRisk {
@@ -1581,7 +1617,7 @@ export function createPlanEvidence(input: {
     throw new Error('Build Plan Evidence input drifted');
   }
   const stable = {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     planDigest: input.plan.digest,
     strategyDigest: input.strategy.semanticDigest,
     bindingId: input.binding.bindingId,
@@ -1642,9 +1678,27 @@ export function createPlanEvidence(input: {
     }),
     accepted: true as const,
   };
+  const dependencies: EvidenceDependency[] = [
+    { partition: 'planning-semantic', identity: input.plan.digest },
+    {
+      partition: 'execution-control',
+      identity: digest({
+        strategy: input.strategy.semanticDigest,
+        binding: input.binding.stateDigest,
+        composition: input.compositionCheckpointDigest,
+        tasks: input.plan.taskSetDigest,
+      }),
+    },
+  ];
+  const evidenceId = `plan-evidence:${digest({ ...stable, dependencySetDigest: evidenceDependencySetDigest(dependencies) }).slice(-24)}`;
   return deepFreeze({
     ...stable,
-    evidenceId: `plan-evidence:${digest(stable).slice(-24)}`,
+    evidenceId,
+    dependencies: createEvidenceDependencyRecord({
+      subjectKind: 'plan-evidence',
+      subjectId: evidenceId,
+      dependencies,
+    }),
   });
 }
 
@@ -1730,7 +1784,7 @@ export function createBuildInvalidation(input: {
 }
 
 export interface BuildCheckEvidence {
-  schemaVersion: 1;
+  schemaVersion: 2;
   evidenceId: string;
   strategyDigest: Digest;
   bindingStateDigest: Digest;
@@ -1744,10 +1798,49 @@ export interface BuildCheckEvidence {
   findings: readonly BuildFinding[];
   accepted: boolean;
   digest: Digest;
+  dependencies: EvidenceDependencyRecord;
+}
+
+export function assertBuildCheckEvidence(evidence: BuildCheckEvidence): void {
+  if (evidence.schemaVersion !== 2) throw new Error('Unsupported BuildCheckEvidence schema');
+  assertEvidenceDependencyRecord(evidence.dependencies, 'build-check', evidence.evidenceId);
+  const dependencies: EvidenceDependency[] = [
+    { partition: 'implementation-content', identity: evidence.implementationDigest },
+    { partition: 'git-identity', identity: evidence.workspaceCheckpointDigest },
+    {
+      partition: 'execution-control',
+      identity: digest({
+        strategy: evidence.strategyDigest,
+        binding: evidence.bindingStateDigest,
+        plan: evidence.planDigest,
+      }),
+    },
+  ];
+  const { evidenceId, dependencies: record, digest: checkDigest, ...facts } = evidence;
+  const expectedDigest = digest({
+    ...facts,
+    dependencySetDigest: evidenceDependencySetDigest(dependencies, evidence.testEvidenceIds),
+  });
+  const expectedId = `build-check:${expectedDigest.slice(-24)}`;
+  const expected = createEvidenceDependencyRecord({
+    subjectKind: 'build-check',
+    subjectId: expectedId,
+    dependencies,
+    dependsOnEvidenceIds: evidence.testEvidenceIds,
+  });
+  if (
+    evidenceId !== expectedId ||
+    checkDigest !== expectedDigest ||
+    canonicalJson(record) !== canonicalJson(expected)
+  )
+    throw new Error('BuildCheckEvidence facts or dependencies were modified');
 }
 
 export function createBuildCheckEvidence(
-  input: Omit<BuildCheckEvidence, 'schemaVersion' | 'evidenceId' | 'accepted' | 'digest'>,
+  input: Omit<
+    BuildCheckEvidence,
+    'schemaVersion' | 'evidenceId' | 'accepted' | 'digest' | 'dependencies'
+  >,
 ): BuildCheckEvidence {
   if (
     !SHA256.test(input.strategyDigest) ||
@@ -1795,8 +1888,12 @@ export function createBuildCheckEvidence(
     throw new Error('Build Check requires package, Task acceptance, and test Evidence');
   }
   const stable = {
-    schemaVersion: 1 as const,
-    ...input,
+    schemaVersion: 2 as const,
+    strategyDigest: input.strategyDigest,
+    bindingStateDigest: input.bindingStateDigest,
+    planDigest: input.planDigest,
+    workspaceCheckpointDigest: input.workspaceCheckpointDigest,
+    implementationDigest: input.implementationDigest,
     completedPackageIds,
     acceptedTaskIds,
     testEvidenceIds,
@@ -1811,10 +1908,32 @@ export function createBuildCheckEvidence(
     })),
     accepted,
   };
-  const checkDigest = digest(stable);
+  const dependencies: EvidenceDependency[] = [
+    { partition: 'implementation-content', identity: input.implementationDigest },
+    { partition: 'git-identity', identity: input.workspaceCheckpointDigest },
+    {
+      partition: 'execution-control',
+      identity: digest({
+        strategy: input.strategyDigest,
+        binding: input.bindingStateDigest,
+        plan: input.planDigest,
+      }),
+    },
+  ];
+  const checkDigest = digest({
+    ...stable,
+    dependencySetDigest: evidenceDependencySetDigest(dependencies, testEvidenceIds),
+  });
+  const evidenceId = `build-check:${checkDigest.slice(-24)}`;
   return deepFreeze({
     ...stable,
-    evidenceId: `build-check:${checkDigest.slice(-24)}`,
+    evidenceId,
     digest: checkDigest,
+    dependencies: createEvidenceDependencyRecord({
+      subjectKind: 'build-check',
+      subjectId: evidenceId,
+      dependencies,
+      dependsOnEvidenceIds: testEvidenceIds,
+    }),
   });
 }

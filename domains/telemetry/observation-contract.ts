@@ -893,6 +893,25 @@ export const TELEMETRY_ATTRIBUTES = [
     'Evidence Adapter',
   ),
   attribute('repoctopus.evidence.status', 'string', 'evidence', 'low', 'public', 'Evidence 状态'),
+  attribute(
+    'repoctopus.evidence.failureKind',
+    'string',
+    'evidence',
+    'low',
+    'public',
+    '证据结果分类',
+    { values: ['none', 'implementation', 'input-drift', 'unavailable'] },
+  ),
+  ...['dependencyCount', 'derivedProducerCount', 'reusedCount', 'invalidatedCount'].map((name) =>
+    attribute(
+      `repoctopus.evidence.${name}`,
+      'integer',
+      'evidence',
+      'low',
+      'public',
+      `Evidence 依赖与复用计数 ${name}`,
+    ),
+  ),
   ...[
     'artifactDigest',
     'artifactType',

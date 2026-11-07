@@ -28,6 +28,8 @@ const RECOVERY_REASONS = new Set<WorkExecutionRecovery['reason']>([
   'open-gate-pending',
   'content-missing-or-corrupt',
   'open-observation-unavailable',
+  'evidence-observation-unavailable',
+  'publication-checkpoint-stale',
   'migration-required',
   'project-drift',
 ]);
@@ -223,7 +225,8 @@ export function projectCommittedContinuation(
       selected.data.reason,
     );
     return selected.data.observationStage === 'provider-validation' ||
-      selected.data.observationStage === 'planning-gate'
+      selected.data.observationStage === 'planning-gate' ||
+      selected.data.observationStage === 'evidence-inputs'
       ? { ...projected, observationStage: selected.data.observationStage }
       : projected;
   }
@@ -236,6 +239,14 @@ export function projectLifecycleNextActions(
   continuation?: WorkExecutionRecovery,
 ): readonly ChangeNextAction[] {
   if (['completed', 'failed', 'migration_required'].includes(snapshot.status)) return [];
+  if (snapshot.phase === 'archive' && continuation?.reason === 'publication-checkpoint-stale')
+    return [
+      {
+        id: 'archive.preflight',
+        kind: 'repair',
+        label: 'Refresh the authorized Archive publication preflight',
+      },
+    ];
   if (snapshot.phase === 'open') {
     if (snapshot.currentWork) {
       if (

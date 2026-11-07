@@ -8,6 +8,7 @@ import type {
 } from '../../domains/evidence/types.js';
 import type { DirtyFileFingerprint } from '../../domains/evidence/fingerprint.js';
 import {
+  EvidenceInputDriftError,
   evidenceInputDigest,
   type EvidenceNodeInputSnapshot,
   type EvidenceOutputClaim,
@@ -99,8 +100,14 @@ export class FileEvidenceInputProofs implements EvidenceInputProofPort {
       const claims = snapshot.derivedFrom.filter((claim) => claim.producerId === producerId);
       const expected = await this.load(producer.outputManifest);
       const actual = await this.capture(claims);
-      if (canonicalJson(expected) !== canonicalJson(actual))
-        throw new Error('Derived output changed after its producer completed');
+      const selectedExpected = {
+        ...expected,
+        repositories: expected.repositories.filter((repo) =>
+          claims.some((claim) => claim.repositoryId === repo.repositoryId),
+        ),
+      };
+      if (canonicalJson(selectedExpected) !== canonicalJson(actual))
+        throw new EvidenceInputDriftError('Derived output changed after its producer completed');
       const selected = actual.repositories.map((repo) => {
         const scope =
           node.type === 'command'

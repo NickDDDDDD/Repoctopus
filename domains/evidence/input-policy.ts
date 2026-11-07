@@ -39,7 +39,7 @@ function strings(value: unknown, allowEmpty: boolean): string[] {
     throw new Error('Evidence input declaration requires nonempty strings');
   }
   if (new Set(value).size !== value.length) throw new Error('Duplicate Evidence input declaration');
-  return [...value].sort();
+  return (value as string[]).slice().sort();
 }
 
 export function validateEvidenceInputPath(value: string): string {

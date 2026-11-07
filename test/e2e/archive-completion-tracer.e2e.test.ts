@@ -1,10 +1,8 @@
+import { createArchiveInputFixture as createArchiveDeliveryInput } from '../helpers/evidence-inputs.js';
 import { evidenceDependencyFixture } from '../helpers/evidence-inputs.js';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  createArchiveDeliveryInput,
-  type ArchiveDeliveryInput,
-} from '../../domains/change-lifecycle/archive-input.js';
+import { type ArchiveDeliveryInput } from '../../domains/change-lifecycle/archive-input.js';
 import {
   ArchiveCompletionTracer,
   type ArchiveTracerPorts,

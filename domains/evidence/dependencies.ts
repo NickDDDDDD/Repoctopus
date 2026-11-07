@@ -77,7 +77,7 @@ export function assertEvidenceDependencyRecord(
     !Array.isArray(record.dependsOnEvidenceIds) ||
     record.dependsOnEvidenceIds.some((id) => typeof id !== 'string' || !id.trim()) ||
     record.dependencies.some(
-      (entry) =>
+      (entry: EvidenceDependency) =>
         !entry ||
         !partitions.includes(entry.partition) ||
         !/^sha256:[a-f0-9]{64}$/u.test(entry.identity),

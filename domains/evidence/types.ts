@@ -149,5 +149,6 @@ export interface EvidenceGateProjection {
   outcome: GateOutcome;
   status: 'satisfied' | 'blocked';
   reason: string;
+  failureKind: 'none' | 'implementation' | 'input-drift' | 'unavailable';
   dependencies: EvidenceDependencyRecord;
 }

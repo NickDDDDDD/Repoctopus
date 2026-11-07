@@ -18,7 +18,7 @@ export interface RejectedVerifyGate {
   attemptId: string;
   bundleId: string | null;
   reason: string;
-  result: 'implementation-failure' | 'evidence-unavailable';
+  result: 'implementation-failure' | 'evidence-unavailable' | 'evidence-drift';
   checkEpoch: number;
 }
 

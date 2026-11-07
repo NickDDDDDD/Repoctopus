@@ -128,6 +128,8 @@ export function evidenceReceiptInputCurrent(
   });
   return (
     canonicalJson(expected) === canonicalJson(receipt.dependencies) &&
-    (snapshot.outputs.length === 0 ? receipt.outputManifest === null : !!receipt.outputManifest)
+    (snapshot.outputs.length === 0 || receipt.status !== 'passed'
+      ? receipt.outputManifest === null
+      : !!receipt.outputManifest)
   );
 }

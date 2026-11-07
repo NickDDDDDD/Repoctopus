@@ -1,3 +1,4 @@
+import { createArchiveInputFixture as createArchiveDeliveryInput } from './helpers/evidence-inputs.js';
 import { evidenceDependencyFixture } from './helpers/evidence-inputs.js';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -7,7 +8,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { bootProjectComposition } from '../app/boot/bootstrap.js';
 
 import {
-  createArchiveDeliveryInput,
   createDeliveryPublishWork,
   createSpecificationCloseWork,
 } from '../domains/change-lifecycle/archive-input.js';
@@ -485,6 +485,7 @@ describe('Archive publication terminal lifecycle', () => {
     });
 
     const identityCorrectedArchive = createArchiveDeliveryInput({
+      publicationCheckpoint: archive.publicationCheckpoint,
       runId: archive.runId,
       changeId: archive.changeId,
       verificationInputDigest: archive.verificationInputDigest,
@@ -745,6 +746,21 @@ describe('Archive publication terminal lifecycle', () => {
       if (!archiveDefinition) throw new Error('Expected Archive Skill');
       const boundArchiveSkill = await snapshotSkillDefinition(archiveDefinition);
       const { preflight, closure } = archiveState();
+      const coordinateProject = projectFixture({
+        root: workspace,
+        repositories: preflight.archiveDeliveryInput!.publicationCheckpoint.repositories.map(
+          (repo) => ({
+            id: repo.repositoryId,
+            name: repo.repositoryId,
+            path: workspace,
+            remoteIdentity: repo.remoteIdentity,
+            branch: repo.branch,
+            head: repo.head,
+            worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
+          }),
+        ),
+      });
+      vi.spyOn(app.context.project, 'snapshot').mockResolvedValue(coordinateProject);
       const project = {
         ...projectFixture(),
         root: workspace,
@@ -785,6 +801,8 @@ describe('Archive publication terminal lifecycle', () => {
       vi.spyOn(app.context.specification, 'phaseContext').mockResolvedValue(
         archivePhaseContext(closure.provider),
       );
+      const observedEvidence = await app.context.evidenceCoordinator.plan('verification');
+      vi.spyOn(app.context.evidenceCoordinator, 'plan').mockResolvedValue(observedEvidence);
       const staleWorkId = preflight.currentWork!.workId;
       const claim = await app.context.managedWorkExecutor.claimExternal({
         runId: preflight.identity.runId,
@@ -895,6 +913,21 @@ describe('Archive publication terminal lifecycle', () => {
       if (!archiveDefinition) throw new Error('Expected Archive Skill');
       const boundArchiveSkill = await snapshotSkillDefinition(archiveDefinition);
       const { preflight, closure } = archiveState();
+      const coordinateProject = projectFixture({
+        root: workspace,
+        repositories: preflight.archiveDeliveryInput!.publicationCheckpoint.repositories.map(
+          (repo) => ({
+            id: repo.repositoryId,
+            name: repo.repositoryId,
+            path: workspace,
+            remoteIdentity: repo.remoteIdentity,
+            branch: repo.branch,
+            head: repo.head,
+            worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
+          }),
+        ),
+      });
+      vi.spyOn(app.context.project, 'snapshot').mockResolvedValue(coordinateProject);
       const project = {
         ...projectFixture(),
         root: workspace,

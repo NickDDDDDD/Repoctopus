@@ -74,6 +74,7 @@ const fingerprint: EvidenceFingerprint = {
     tools: {},
     adapters: {},
     nodeInputs: [evidenceNodeInputFixture()],
+    planningProjection: null,
     inputArtifactDigests: [],
   },
 };
@@ -201,6 +202,7 @@ describe('Verification input', () => {
       schemaVersion: 3,
       dependencies: evidenceDependencyFixture('gate', 'gate-fixture'),
       kind: 'EvidenceGateProjection',
+      failureKind: 'none',
       workflowRunId: 'run-1',
       workflowActionId: work.workId,
       workflowStepId: 'verify',

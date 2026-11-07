@@ -2070,24 +2070,37 @@ describe('managed Change execution production composition', () => {
           await execFileAsync('git', ['push'], { cwd: workspace });
         }
 
-        await execFileAsync(
-          'git',
-          ['remote', 'set-url', 'origin', 'https://github.com/example/workspace.git'],
-          { cwd: workspace },
-        );
-        await execFileAsync(
-          'git',
-          ['remote', 'set-url', 'origin', 'https://github.com/example/app.git'],
-          { cwd: appRepository },
-        );
-        if (multiRepository) {
-          await execFileAsync(
-            'git',
-            ['remote', 'set-url', 'origin', 'https://github.com/example/worker.git'],
-            { cwd: workerRepository },
-          );
+        if (multiRepository && !protectedWriteRepositories) {
+          invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
+          capture.dispose();
+          await application.close();
+          for (const command of ['resume', 'next', 'resume']) {
+            const cold = await runCli<ResumeView>({
+              packageRoot: productRoot,
+              cwd: workspace,
+              environment,
+              args: ['run', command, '--workspace', workspace, '--run', runId],
+            });
+            expect(
+              cold.result!.state.reconciliationRequired,
+              'neutral task commit cold recovery',
+            ).toBe(false);
+            expect(cold.result!.changeLifecycle?.phase).toBe('archive');
+            expect(cold.result!.state.acceptedEvidenceBundleIds).toEqual(
+              recovered.value.state.acceptedEvidenceBundleIds,
+            );
+            expect(cold.result!.state.changeLifecycle?.buildProtocol?.packageCompletions).toEqual(
+              recovered.value.state.changeLifecycle?.buildProtocol?.packageCompletions,
+            );
+          }
+          application = await bootProjectComposition(productRoot, workspace);
+          capture = installCapturingWorkExecutionHost({
+            context: application.context,
+            workspace,
+            repositories: { workspace, app: appRepository, worker: workerRepository },
+            operations: () => [],
+          });
         }
-
         const project = await application.context.project.snapshot({
           workspaceId: 'managed-blackbox',
           workspaceRoot: workspace,
@@ -2117,7 +2130,7 @@ describe('managed Change execution production composition', () => {
             {
               deliveryId: 'app',
               repositoryId: 'app',
-              sourceBranch: 'feature/managed-blackbox',
+              sourceBranch: project.repositories.find((repo) => repo.id === 'app')!.branch!,
               targetBranch: 'main',
               commitMessage: 'feat: add managed outputs',
               actions: ['push', 'merge_request'],
@@ -2127,7 +2140,8 @@ describe('managed Change execution production composition', () => {
                   {
                     deliveryId: 'worker',
                     repositoryId: 'worker',
-                    sourceBranch: 'feature/managed-blackbox',
+                    sourceBranch: project.repositories.find((repo) => repo.id === 'worker')!
+                      .branch!,
                     targetBranch: 'main',
                     commitMessage: 'feat: add managed worker output',
                     actions: ['push', 'merge_request'] as Array<'push' | 'merge_request'>,

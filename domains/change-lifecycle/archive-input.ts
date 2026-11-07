@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import type { ArtifactRef } from '../evidence/types.js';
 import { deliveryPolicyDigest } from '../delivery/snapshot.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../delivery/types.js';
+import type { ProjectSnapshot } from '../project/types.js';
 import { assertDeliveryIntentV3, normalizeDeliveryIntentV3 } from '../delivery/v3.js';
 import type { SkillUsageSnapshot } from '../skill/types.js';
 import type { EffectiveWorkSkillComposition } from '../skill/composition.js';
@@ -11,7 +12,7 @@ import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js'
 import { materializeLifecycleWorkBinding } from './work-definition.js';
 
 export interface ArchiveDeliveryInput {
-  schemaVersion: 1 | 2;
+  schemaVersion: 3;
   runId: string;
   changeId: string;
   verificationInputDigest: `sha256:${string}`;
@@ -25,6 +26,58 @@ export interface ArchiveDeliveryInput {
   planningCompositionDigest?: `sha256:${string}`;
   evidenceCompositionDigest?: `sha256:${string}`;
   digest: `sha256:${string}`;
+  publicationCheckpoint: ArchivePublicationCheckpoint;
+}
+
+export interface ArchivePublicationCheckpoint {
+  schemaVersion: 1;
+  repositories: readonly {
+    repositoryId: string;
+    head: string;
+    branch: string;
+    remoteIdentity: string | null;
+  }[];
+  digest: `sha256:${string}`;
+}
+
+export function createArchivePublicationCheckpoint(
+  project: ProjectSnapshot,
+  intent: DeliveryIntentV3,
+): ArchivePublicationCheckpoint {
+  const routes = [
+    {
+      repositoryId: intent.changeBranch.repositoryId,
+      sourceBranch: intent.changeBranch.sourceBranch,
+    },
+    ...intent.businessDeliveries,
+  ];
+  const byId = new Map<string, ArchivePublicationCheckpoint['repositories'][number]>();
+  for (const route of routes) {
+    const repo = project.repositories.find((repo) => repo.id === route.repositoryId);
+    if (
+      !repo ||
+      repo.branch !== route.sourceBranch ||
+      !/^([a-f0-9]{40}|[a-f0-9]{64})$/u.test(repo.head)
+    )
+      throw new Error(
+        'Archive publication checkpoint requires an authorized source branch and HEAD',
+      );
+    const value = {
+      repositoryId: repo.id,
+      head: repo.head,
+      branch: repo.branch,
+      remoteIdentity: repo.remoteIdentity,
+    };
+    const old = byId.get(repo.id);
+    if (old && canonicalJson(old) !== canonicalJson(value))
+      throw new Error('Archive publication routes disagree');
+    byId.set(repo.id, value);
+  }
+  const stable = {
+    schemaVersion: 1 as const,
+    repositories: [...byId.values()].sort((a, b) => a.repositoryId.localeCompare(b.repositoryId)),
+  };
+  return { ...stable, digest: sha256(stable) };
 }
 
 function sha256(value: unknown): `sha256:${string}` {
@@ -42,6 +95,7 @@ export function createArchiveDeliveryInput(input: {
   policy: DeliveryPolicy;
   planningCompositionDigest: `sha256:${string}`;
   evidenceCompositionDigest: `sha256:${string}`;
+  publicationCheckpoint: ArchivePublicationCheckpoint;
 }): ArchiveDeliveryInput {
   assertDeliveryIntentV3(input.intent);
   if (input.intent.changeId !== input.changeId) {
@@ -57,8 +111,23 @@ export function createArchiveDeliveryInput(input: {
     throw new Error('Archive Delivery requires the bounded redacted verification report');
   }
   const intent = normalizeDeliveryIntentV3(input.intent);
+  const { digest: checkpointDigest, ...checkpointFacts } = input.publicationCheckpoint;
+  const expectedRepositories = [
+    ...new Set([
+      intent.changeBranch.repositoryId,
+      ...intent.businessDeliveries.map((item) => item.repositoryId),
+    ]),
+  ].sort();
+  if (
+    checkpointFacts.schemaVersion !== 1 ||
+    checkpointDigest !== sha256(checkpointFacts) ||
+    canonicalJson(
+      input.publicationCheckpoint.repositories.map((repo) => repo.repositoryId).sort(),
+    ) !== canonicalJson(expectedRepositories)
+  )
+    throw new Error('Archive publication checkpoint is incomplete or corrupt');
   const stable = {
-    schemaVersion: 2 as const,
+    schemaVersion: 3 as const,
     runId: input.runId,
     changeId: input.changeId,
     verificationInputDigest: input.verificationInputDigest,
@@ -73,6 +142,7 @@ export function createArchiveDeliveryInput(input: {
     actionAuthorization: 'policy' as const,
     planningCompositionDigest: input.planningCompositionDigest,
     evidenceCompositionDigest: input.evidenceCompositionDigest,
+    publicationCheckpoint: structuredClone(input.publicationCheckpoint),
   };
   return { ...stable, digest: sha256(stable) };
 }

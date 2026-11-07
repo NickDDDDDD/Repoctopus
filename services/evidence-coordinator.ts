@@ -9,6 +9,8 @@ import {
   type EvidenceFingerprint,
 } from '../domains/evidence/fingerprint.js';
 import { projectEvidenceGate } from '../domains/evidence/gate.js';
+import { assertEvidenceNodeInputSnapshot } from '../domains/evidence/input-snapshot.js';
+import { createAcceptanceTrace } from '../domains/evidence/acceptance-trace.js';
 import { recoverEvidenceAttempt } from '../domains/evidence/recovery.js';
 import { EvidenceService, type EvidenceRunResult } from '../domains/evidence/service.js';
 import {
@@ -31,7 +33,10 @@ import { FileEvidenceJournal } from '../platform/evidence/file-evidence-journal.
 import { FileEvidenceStore } from '../platform/evidence/file-evidence-store.js';
 import { FileEvidenceInputProofs } from '../platform/evidence/file-input-proofs.js';
 import { evidenceReceiptInputCurrent } from '../domains/evidence/receipt.js';
-import { evidenceInputDigest } from '../domains/evidence/input-snapshot.js';
+import {
+  evidenceInputDigest,
+  EvidenceInputDriftError,
+} from '../domains/evidence/input-snapshot.js';
 import {
   FileEvidenceRetention,
   type EvidenceCleanupResult,
@@ -148,6 +153,10 @@ function asContext(value: unknown): EvidenceRunContext {
   ) {
     throw new Error('Invalid EvidenceRunContext');
   }
+  const fingerprint = record.fingerprint as EvidenceFingerprint;
+  fingerprint.manifest.nodeInputs.forEach(assertEvidenceNodeInputSnapshot);
+  if (createEvidenceFingerprint(fingerprint.manifest).digest !== fingerprint.digest)
+    throw new Error('Evidence fingerprint content digest mismatch');
   return {
     ...(record as EvidenceRunContext),
     repositoryOverrides: record.repositoryOverrides ?? null,
@@ -224,6 +233,30 @@ export class EvidenceCoordinator extends Service {
 
   async lookup(attemptId: string): Promise<EvidenceStatus | null> {
     return optional(() => this.status(attemptId));
+  }
+
+  async hasUnsettledWorkAttempt(workflowRunId: string, workId: string): Promise<boolean> {
+    return (await this.unsettledWorkAttemptIds(workflowRunId, workId)).length > 0;
+  }
+  async unsettledWorkAttemptIds(workflowRunId: string, workId: string): Promise<string[]> {
+    const ids: string[] = [];
+    for (const context of await this.contexts()) {
+      if (
+        context.workflowBinding?.workflowRunId !== workflowRunId ||
+        context.workflowBinding.workflowActionId !== workId
+      )
+        continue;
+      if (context.status === 'running') {
+        ids.push(context.attemptId);
+        continue;
+      }
+      if (context.bundleId) {
+        const bundle = await this.store.loadBundle(context.bundleId);
+        if (bundle.findings.some((finding) => finding.code === 'recovery-uncertain-side-effect'))
+          ids.push(context.attemptId);
+      }
+    }
+    return ids.sort();
   }
 
   private async effectiveConfig(
@@ -337,6 +370,7 @@ export class EvidenceCoordinator extends Service {
       localConfigDigest: config.localDigest,
       repositories,
       nodeInputs,
+      planningProjection: projection ?? null,
       tools: { node: process.version },
       adapters,
       inputArtifactDigests: [],
@@ -508,11 +542,33 @@ export class EvidenceCoordinator extends Service {
     const adapters = this.ctx.evidenceAdapters.create(config, artifacts);
     const specification = this.ctx.get('specification');
     const inputProofs = new FileEvidenceInputProofs(config, context.plan, artifacts);
-    const reusableReceipts = await this.store.reusableReceipts(
+    let endingObservation:
+      | Promise<Awaited<ReturnType<EvidenceCoordinator['planWithRepositories']>>>
+      | undefined;
+    const observeEnding = () =>
+      (endingObservation ??= this.planWithRepositories(
+        context.profileId,
+        context.repositoryOverrides,
+        context.workflowBinding?.workflowRunId,
+      ));
+    const candidates = await this.store.reusableReceipts(
       context.plan.nodes
         .filter((node) => node.type === 'command' && node.cache)
         .map((node) => node.id),
     );
+    const reusableReceipts = [];
+    for (const candidate of candidates) {
+      const entries = await this.journal.load(candidate.attemptId);
+      if (
+        entries.some(
+          (entry) =>
+            entry.type === 'node.completed' &&
+            entry.nodeId === candidate.nodeId &&
+            entry.receiptId === candidate.receiptId,
+        )
+      )
+        reusableReceipts.push(candidate);
+    }
     const result = await new EvidenceService(
       artifacts,
       this.store,
@@ -536,9 +592,8 @@ export class EvidenceCoordinator extends Service {
       ...(config.local?.resources?.maxLogBytes
         ? { maxOutputBytes: config.local.resources.maxLogBytes }
         : {}),
-      captureEndingFingerprint: async () =>
-        (await this.fingerprint(context.profileId, config, context.workflowBinding?.workflowRunId))
-          .digest,
+      captureEndingFingerprint: async () => (await observeEnding()).fingerprint.digest,
+      captureEndingNodeInputs: async () => (await observeEnding()).fingerprint.manifest.nodeInputs,
       ...(context.workflowBinding?.acceptanceContext
         ? { acceptanceContext: context.workflowBinding.acceptanceContext }
         : {}),
@@ -637,6 +692,44 @@ export class EvidenceCoordinator extends Service {
       this.store.loadAttempt(attemptId),
       context.bundleId ? this.store.loadBundle(context.bundleId) : Promise.resolve(null),
     ]);
+    if (bundle) {
+      if (
+        bundle.attemptId !== context.attemptId ||
+        bundle.profileId !== context.profileId ||
+        bundle.inputFingerprint !== context.fingerprint.digest ||
+        bundle.compositionDigest !== attempt.compositionDigest ||
+        JSON.stringify(bundle.receiptIds) !== JSON.stringify(attempt.receiptIds)
+      )
+        throw new Error('Evidence Bundle does not match its frozen Attempt');
+      const receipts = await Promise.all(bundle.receiptIds.map((id) => this.store.loadReceipt(id)));
+      for (const receipt of receipts) {
+        const snapshot = context.fingerprint.manifest.nodeInputs.find(
+          (entry) => entry.nodeId === receipt.nodeId,
+        );
+        if (
+          !snapshot ||
+          !evidenceReceiptInputCurrent(receipt, snapshot, receipts) ||
+          receipt.attemptId !== context.attemptId
+        )
+          throw new Error('Persisted Receipt does not prove the frozen node inputs');
+      }
+      if (
+        JSON.stringify(bundle.checks.map((check) => check.nodeId)) !==
+        JSON.stringify(context.plan.order)
+      )
+        throw new Error('Evidence Bundle does not match its frozen DAG');
+      if (context.workflowBinding?.acceptanceContext) {
+        const expected = createAcceptanceTrace({
+          context: context.workflowBinding.acceptanceContext,
+          checks: bundle.checks,
+          receipts,
+          inputFingerprint: bundle.inputFingerprint,
+          nodeInputs: context.fingerprint.manifest.nodeInputs,
+        });
+        if (evidenceInputDigest(expected) !== evidenceInputDigest(bundle.acceptanceTrace))
+          throw new Error('Persisted Acceptance Trace does not match its Receipt proof');
+      }
+    }
     return {
       context,
       attempt,
@@ -701,6 +794,13 @@ export class EvidenceCoordinator extends Service {
               journal: this.journal,
               timestamp: new Date().toISOString(),
               endingFingerprint: endingFingerprint.digest,
+              nodeInputs: context.fingerprint.manifest.nodeInputs,
+              endingNodeInputs: endingFingerprint.manifest.nodeInputs,
+              inputProofs: new FileEvidenceInputProofs(
+                config,
+                context.plan,
+                new FileArtifactStore(this.workspace),
+              ),
               artifacts: new FileArtifactStore(this.workspace),
               ...(context.workflowBinding?.acceptanceContext
                 ? { acceptanceContext: context.workflowBinding.acceptanceContext }
@@ -732,6 +832,13 @@ export class EvidenceCoordinator extends Service {
                 journal: this.journal,
                 timestamp: new Date().toISOString(),
                 endingFingerprint: endingFingerprint.digest,
+                nodeInputs: context.fingerprint.manifest.nodeInputs,
+                endingNodeInputs: endingFingerprint.manifest.nodeInputs,
+                inputProofs: new FileEvidenceInputProofs(
+                  config,
+                  context.plan,
+                  new FileArtifactStore(this.workspace),
+                ),
                 artifacts: new FileArtifactStore(this.workspace),
                 allowTerminalAttempt: true,
                 ...(context.workflowBinding?.acceptanceContext
@@ -807,6 +914,7 @@ export class EvidenceCoordinator extends Service {
       return {
         ...gate,
         status: 'blocked',
+        failureKind: 'unavailable',
         reason: `Evidence attempt ${input.attemptId} belongs to a different workflow run`,
       };
     }
@@ -814,6 +922,7 @@ export class EvidenceCoordinator extends Service {
       return {
         ...gate,
         status: 'blocked',
+        failureKind: 'unavailable',
         reason: `Evidence attempt ${input.attemptId} belongs to a different workflow action`,
       };
     }
@@ -821,6 +930,7 @@ export class EvidenceCoordinator extends Service {
       return {
         ...gate,
         status: 'blocked',
+        failureKind: 'unavailable',
         reason: `Evidence attempt ${input.attemptId} belongs to a different workflow step`,
       };
     }
@@ -832,6 +942,7 @@ export class EvidenceCoordinator extends Service {
       return {
         ...gate,
         status: 'blocked',
+        failureKind: 'unavailable',
         reason: `Evidence attempt ${input.attemptId} belongs to a stale lifecycle fence`,
       };
     }
@@ -839,20 +950,33 @@ export class EvidenceCoordinator extends Service {
       return {
         ...gate,
         status: 'blocked',
+        failureKind: 'unavailable',
         reason: `Evidence attempt ${input.attemptId} uses profile ${status.context.profileId}`,
       };
+    }
+    const assessment = await this.assessInputs(input.attemptId, input.workflowRunId);
+    if (assessment !== 'same')
+      return {
+        ...gate,
+        status: 'blocked',
+        failureKind: 'input-drift',
+        reason: `Evidence input fingerprint changed after attempt ${input.attemptId}`,
+      };
+    return gate;
+  }
+
+  async assessInputs(attemptId: string, workflowRunId: string): Promise<'same' | 'drift'> {
+    const status = await this.status(attemptId);
+    if (status.context.workflowBinding?.workflowRunId !== workflowRunId || !status.bundle) {
+      throw new Error('Evidence input observation requires the owning Run and completed Bundle');
     }
     const config = await this.effectiveConfig(
       status.context.profileId,
       status.context.repositoryOverrides,
     );
-    const current = await this.fingerprint(input.profileId, config, binding.workflowRunId);
+    const current = await this.fingerprint(status.context.profileId, config, workflowRunId);
     if (current.digest !== status.bundle.inputFingerprint) {
-      return {
-        ...gate,
-        status: 'blocked',
-        reason: `Evidence input fingerprint changed after attempt ${input.attemptId}`,
-      };
+      return 'drift';
     }
     const receipts = await Promise.all(
       status.bundle.receiptIds.map((id) => this.store.loadReceipt(id)),
@@ -867,23 +991,27 @@ export class EvidenceCoordinator extends Service {
         (entry) => entry.nodeId === receipt.nodeId,
       );
       if (!snapshot || !evidenceReceiptInputCurrent(receipt, snapshot, receipts)) {
-        return { ...gate, status: 'blocked', reason: 'Evidence node dependency proof is invalid' };
+        throw new Error('Evidence node dependency proof is invalid');
       }
       if (snapshot.derivedFrom.length) {
-        const observed = await proofs.captureDerived(
-          snapshot,
-          new Map(receipts.map((entry) => [entry.nodeId, entry])),
-        );
+        let observed;
+        try {
+          observed = await proofs.captureDerived(
+            snapshot,
+            new Map(receipts.map((entry) => [entry.nodeId, entry])),
+          );
+        } catch (error) {
+          if (error instanceof EvidenceInputDriftError) return 'drift';
+          throw error;
+        }
         if (JSON.stringify(observed) !== JSON.stringify(receipt.derivedInputs)) {
-          return {
-            ...gate,
-            status: 'blocked',
-            reason: 'Evidence derived inputs changed after collection',
-          };
+          return 'drift';
         }
       }
+      if (receipt.status === 'passed' && !(await proofs.outputsCurrent(snapshot, receipt)))
+        return 'drift';
     }
-    return gate;
+    return 'same';
   }
 
   async flushTelemetry(attemptId: string): Promise<EvidenceTelemetryStatus> {

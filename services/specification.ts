@@ -100,6 +100,7 @@ export interface SpecificationWorkspace {
     changeId: string,
     signal?: AbortSignal,
   ): Promise<SpecificationEvidenceProjection>;
+  closureExecutionStarted(changeId: string): Promise<boolean>;
   planningGuidance(changeId: string, signal?: AbortSignal): Promise<SpecificationPlanningGuidance>;
   tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet>;
   completeTask(input: CompleteSpecificationTaskInput): Promise<CompleteSpecificationTaskResult>;
@@ -171,6 +172,13 @@ export abstract class Specification extends Service implements SpecificationWork
     void signal;
     return Promise.reject(
       new Error(`Specification provider ${this.identity().id} has no Evidence projection`),
+    );
+  }
+  closureExecutionStarted(changeId: string): Promise<boolean> {
+    return Promise.reject(
+      new Error(
+        `Specification provider ${this.identity().id} cannot inspect closure execution for ${changeId}`,
+      ),
     );
   }
   completeTask(input: CompleteSpecificationTaskInput): Promise<CompleteSpecificationTaskResult> {

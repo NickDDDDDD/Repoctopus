@@ -10,8 +10,12 @@ import {
   createExecutionWorkspaceIntent,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { createChangeLifecycleSnapshot } from '../domains/change-lifecycle/definition.js';
+import { BUILTIN_CHANGE_LIFECYCLE_DEFINITION } from '../domains/change-lifecycle/definition.js';
+import { createLifecyclePhaseWork } from '../domains/change-lifecycle/phase-work.js';
 import { startRun } from '../domains/engine/loop.js';
 import { classifyBuildWorkspaceRecovery } from '../domains/runtime/build-workspace-recovery.js';
+import { classifyEvidenceWorkspaceRecovery } from '../domains/runtime/evidence-workspace-recovery.js';
+import { verificationInputFixture } from './helpers/evidence-inputs.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import { classifyRecoveryObservation } from '../domains/runtime/recovery.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
@@ -300,5 +304,114 @@ describe('Build workspace recovery', () => {
     expect(classifyBuildWorkspaceRecovery(input)).toEqual(
       classifyBuildWorkspaceRecovery(structuredClone(input)),
     );
+  });
+});
+
+describe('Evidence workspace recovery', () => {
+  async function persistedFixture() {
+    const input = fixture();
+    input.state.changeLifecycle = {
+      ...input.state.changeLifecycle!,
+      phase: 'archive',
+      verificationInput: verificationInputFixture(input.state.runId),
+    };
+    const root = await temporaryDirectory('evidence-recovery-');
+    cleanup.push(root);
+    const store = new FileRuntimeStore(root);
+    const runtime = new WorkflowRunCoordinator(store, { async export() {} }, compositionFixture());
+    await runtime.start({
+      runId: input.state.runId,
+      workflow: workflowFixture(),
+      projectSnapshot: input.previous,
+      changeLifecycle: { ...input.state.changeLifecycle, status: 'running' },
+    });
+    const observe = async () =>
+      classifyEvidenceWorkspaceRecovery({
+        ...input,
+        state: await store.loadRun(input.state.runId),
+      });
+    return { input, store, runtime, observe };
+  }
+  it('uses authorized checkouts after startup and keeps raw HEAD changes separate', async () => {
+    const f = await persistedFixture();
+    const observation = await f.observe();
+    expect(observation.conflicts).toEqual([]);
+    const result = await f.runtime.reconcileEvidenceWorkspace(f.input.state.runId, observation);
+    expect(result.value.state.reconciliationRequired).toBe(false);
+    expect(result.value.state.changeLifecycle?.buildProtocol).toEqual(
+      f.input.state.changeLifecycle!.buildProtocol,
+    );
+  });
+  it('blocks an unauthorized branch, rejects stale success and restores only its own blocker', async () => {
+    const f = await persistedFixture();
+    const old = await f.observe();
+    const authorized = f.input.observed;
+    f.input.observed = createExecutionWorkspaceBinding({
+      intent: f.input.intent,
+      repositories: authorized.repositories.map((repo) => ({
+        ...repo,
+        branch: 'unrelated/evidence',
+      })),
+    });
+    await f.runtime.reconcileEvidenceWorkspace(f.input.state.runId, await f.observe());
+    await expect(f.runtime.reconcileEvidenceWorkspace(f.input.state.runId, old)).rejects.toThrow(
+      /stale/u,
+    );
+    const status = await f.runtime.status(f.input.state.runId);
+    expect(status.state.reconciliationRequired).toBe(true);
+    const decision = classifyRecoveryObservation({
+      schemaVersion: 1,
+      runId: f.input.state.runId,
+      expectedRevision: status.state.changeLifecycle!.revision,
+      checkEpoch: status.state.changeLifecycle!.checkEpoch,
+      observationId: 'late-planning',
+      planning: {
+        status: 'drift',
+        reasonCode: 'requirements-changed',
+        changedIdentities: ['planning-semantic'],
+      },
+      plan: { status: 'current', changedIdentities: [] },
+      work: { status: 'current', changedIdentities: [] },
+      evidence: { status: 'current', changedIdentities: [] },
+    })!;
+    const verification = status.state.changeLifecycle!.verificationInput!;
+    const work = createLifecyclePhaseWork({
+      runId: f.input.state.runId,
+      checkEpoch: 1,
+      changeId: f.input.intent.changeId,
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'specification.plan',
+      actionSkill: { ...verification.skills[0]!, name: 'repoctopus-design-change' },
+      augmentationSkills: [{ ...verification.skills[0]!, name: 'codebase-design' }],
+      compositionDigest: status.state.composition.compositionDigest,
+      projectSnapshotDigest: status.state.projectSnapshotDigest,
+      projectConfigDigest: verification.projectConfigDigest,
+      workspaceRepositoryId: 'app',
+      repositoryIds: ['app', 'worker'],
+    });
+    await expect(
+      f.runtime.acceptRecoveryDecision(f.input.state.runId, decision, { work, evidenceIds: [] }),
+    ).rejects.toThrow(/reconciliation/u);
+    f.input.observed = authorized;
+    const restored = await f.runtime.reconcileEvidenceWorkspace(
+      f.input.state.runId,
+      await f.observe(),
+    );
+    expect(restored.value.state.reconciliationRequired).toBe(false);
+  });
+  it('preserves an unrelated blocker through repeated equivalent content observations', async () => {
+    const f = await persistedFixture();
+    await f.runtime.resume({
+      runId: f.input.state.runId,
+      currentProjectSnapshot: projectFixture({
+        ...f.input.current,
+        root: hostAbsolutePath('other-root'),
+      }),
+    });
+    for (let i = 0; i < 2; i++)
+      expect(
+        (await f.runtime.reconcileEvidenceWorkspace(f.input.state.runId, await f.observe())).value
+          .state.reconciliationRequired,
+      ).toBe(true);
   });
 });

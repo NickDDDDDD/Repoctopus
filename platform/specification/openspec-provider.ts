@@ -468,6 +468,10 @@ export class OpenSpecProvider extends Specification {
     return this.evidenceProjectionAt(this.workspace, changeId, signal);
   }
 
+  override closureExecutionStarted(changeId: string): Promise<boolean> {
+    return new FileSpecificationClosureJournalStore(this.workspace).hasExecution(changeId);
+  }
+
   private async evidenceProjectionAt(
     workspace: string,
     changeId: string,
@@ -1029,6 +1033,19 @@ export class OpenSpecProvider extends Specification {
     workspace: string,
     input: PrepareSpecificationClosureInput,
   ): Promise<SpecificationClosurePlan> {
+    const frozen = await new FileSpecificationClosureJournalStore(workspace).planForChange(
+      input.changeId,
+    );
+    if (frozen) {
+      if (
+        frozen.mergeFactsDigest !== input.mergeFactsDigest ||
+        frozen.targetBaselineDigest !== input.targetBaselineDigest
+      )
+        throw new Error(
+          'Specification closure has an existing frozen execution; reconcile its original plan',
+        );
+      return frozen;
+    }
     const [change, validation] = await Promise.all([
       this.inspectAt(workspace, input.changeId, input.signal),
       this.validateAt(workspace, input.changeId, {
@@ -1514,6 +1531,8 @@ ${references}
       tasks: (changeId, signal) => this.tasksAt(workspace, changeId, signal),
       evidenceProjection: (changeId, signal) =>
         this.evidenceProjectionAt(workspace, changeId, signal),
+      closureExecutionStarted: (changeId) =>
+        new FileSpecificationClosureJournalStore(workspace).hasExecution(changeId),
       completeTask: (input) => this.completeTaskAt(workspace, input),
       inspect: (changeId, signal) => this.inspectAt(workspace, changeId, signal),
       validate: (changeId, options) => this.validateAt(workspace, changeId, options),

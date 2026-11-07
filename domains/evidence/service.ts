@@ -8,7 +8,7 @@ import type {
   EvidenceInputProofPort,
 } from './ports.js';
 import { createEvidenceReceipt, type EvidenceReceiptFacts } from './receipt.js';
-import { createEvidenceDependencyRecord } from './dependencies.js';
+import { createEvidenceDependencyRecord, invalidateEvidenceDependencies } from './dependencies.js';
 import { evidenceInputDigest, type EvidenceNodeInputSnapshot } from './input-snapshot.js';
 import type { BrowserAdapter, BrowserJourneyResult } from '../feedback/browser.js';
 import type { CommandAdapter } from '../feedback/ports.js';
@@ -57,6 +57,7 @@ export interface EvidenceRunOptions {
   attemptId?: string;
   reusableReceipts?: readonly EvidenceReceipt[];
   captureEndingFingerprint?: () => Promise<string>;
+  captureEndingNodeInputs?: () => Promise<readonly EvidenceNodeInputSnapshot[]>;
   maxOutputBytes?: number;
   sensitiveValues?: readonly string[];
   redactionPatterns?: readonly RegExp[];
@@ -832,9 +833,67 @@ export class EvidenceService {
       ? await options.captureEndingFingerprint()
       : inputFingerprint;
     const superseded = endingFingerprint !== inputFingerprint;
+    const invalidated = new Set<string>();
+    if (options.nodeInputs && options.captureEndingNodeInputs) {
+      const endingNodes = await options.captureEndingNodeInputs();
+      const changedDependencies = options.nodeInputs.flatMap((source) =>
+        source.dependencies.filter(
+          (dependency) =>
+            !endingNodes
+              .find((node) => node.nodeId === source.nodeId)
+              ?.dependencies.some(
+                (entry) =>
+                  entry.partition === dependency.partition &&
+                  entry.identity === dependency.identity,
+              ),
+        ),
+      );
+      const invalidation = invalidateEvidenceDependencies({
+        records: receipts.map((receipt) => receipt.dependencies),
+        changedDependencies,
+        providerAvailable: true,
+      });
+      for (const receipt of receipts)
+        if (invalidation.invalidatedEvidenceIds.includes(receipt.receiptId))
+          invalidated.add(receipt.nodeId);
+      for (const source of options.nodeInputs) {
+        if (
+          endingNodes.find((node) => node.nodeId === source.nodeId)?.fingerprint !==
+          source.fingerprint
+        )
+          invalidated.add(source.nodeId);
+      }
+    } else if (superseded) plan.nodes.forEach((node) => invalidated.add(node.id));
+    if (options.inputProofs && options.nodeInputs)
+      for (const receipt of receipts.filter((entry) => entry.status === 'passed')) {
+        const snapshot = options.nodeInputs.find((entry) => entry.nodeId === receipt.nodeId)!;
+        if (!(await options.inputProofs.outputsCurrent(snapshot, receipt)))
+          invalidated.add(receipt.nodeId);
+        if (snapshot.derivedFrom.length) {
+          try {
+            if (
+              canonicalJson(await options.inputProofs.captureDerived(snapshot, byNode)) !==
+              canonicalJson(receipt.derivedInputs)
+            )
+              invalidated.add(receipt.nodeId);
+          } catch {
+            invalidated.add(receipt.nodeId);
+          }
+        }
+      }
+    let grew = true;
+    while (grew) {
+      grew = false;
+      for (const node of plan.nodes)
+        if (!invalidated.has(node.id) && node.dependsOn.some((id) => invalidated.has(id))) {
+          invalidated.add(node.id);
+          grew = true;
+        }
+    }
     const orderedChecks = plan.order.map((nodeId) => {
       const check = checks.get(nodeId)!;
-      return superseded && check.status === 'passed'
+      return (invalidated.has(nodeId) || (superseded && !invalidated.size)) &&
+        check.status === 'passed'
         ? { ...check, freshness: 'superseded' as const }
         : check;
     });
@@ -885,7 +944,7 @@ export class EvidenceService {
     };
     const bundle = createEvidenceBundle({ bundleId: digest(finalBase), ...finalBase });
     attempt.completedAt = completedAt;
-    attempt.status = superseded ? 'superseded' : 'completed';
+    attempt.status = superseded || invalidated.size ? 'superseded' : 'completed';
     await this.store.saveAttempt(attempt);
     await this.store.saveBundle(bundle);
     return { attempt, receipts, bundle, decisionRequests };

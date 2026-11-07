@@ -6,7 +6,7 @@ import {
   createEvidenceBundle,
   projectEvidenceGate,
 } from '../domains/evidence/gate.js';
-import { EVIDENCE_API_VERSION, type EvidenceReceipt } from '../domains/evidence/types.js';
+import type { EvidenceReceipt } from '../domains/evidence/types.js';
 import { parseEvidenceBundle, parseEvidenceReceipt } from '../domains/evidence/validation.js';
 import { TEST_COMPOSITION_DIGEST } from './helpers/fixtures.js';
 

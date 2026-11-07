@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   advanceBuildProtocol,
+  assertPlanEvidence,
+  assertBuildCheckEvidence,
   advanceBuildWorkspaceCheckpoint,
   assessBuildPlanRisk,
   canRetainSuspendedExecutionBinding,
@@ -25,6 +27,7 @@ import {
   type WorkPackageCandidate,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
+import { createEvidenceDependencyRecord } from '../domains/evidence/dependencies.js';
 import { hostAbsolutePath } from './helpers/host-path.js';
 
 describe('Build workspace checkpoint', () => {
@@ -1104,6 +1107,15 @@ describe('Build protocol domain', () => {
     expect(evidence.writeScopeDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
     expect(evidence.dependencyDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
     expect(() =>
+      assertPlanEvidence({
+        ...evidence,
+        dependencies: createEvidenceDependencyRecord({
+          ...evidence.dependencies,
+          dependencies: [{ partition: 'implementation-content', identity: sha('forged') }],
+        }),
+      }),
+    ).toThrow(/modified/u);
+    expect(() =>
       createPlanEvidenceV2({
         plan,
         strategy: configuration.strategy,
@@ -1648,6 +1660,15 @@ describe('Build protocol domain', () => {
       },
       findings: [],
     });
+    expect(() =>
+      assertBuildCheckEvidence({
+        ...check,
+        dependencies: createEvidenceDependencyRecord({
+          ...check.dependencies,
+          dependencies: [{ partition: 'implementation-content', identity: sha('forged') }],
+        }),
+      }),
+    ).toThrow(/modified/u);
     const checked = advanceBuildProtocol(executed, { kind: 'check-accepted', evidence: check });
 
     expect([

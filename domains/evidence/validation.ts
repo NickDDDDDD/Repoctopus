@@ -139,5 +139,21 @@ export function parseEvidenceBundle(value: unknown): EvidenceBundle {
     if (digest !== expected) throw new Error('EvidenceBundle Acceptance Trace digest mismatch');
   }
   if (item.verificationReport !== undefined) parseArtifactRef(item.verificationReport);
+  const bundle = item as unknown as EvidenceBundle;
+  const trace = bundle.acceptanceTrace;
+  if (
+    trace &&
+    (trace.total !== trace.entries.length ||
+      trace.passed !== trace.entries.filter((entry) => entry.status === 'passed').length ||
+      trace.failed !== trace.entries.filter((entry) => entry.status === 'failed').length ||
+      trace.missing !== trace.entries.filter((entry) => entry.status === 'missing').length)
+  ) {
+    throw new Error('EvidenceBundle Acceptance Trace counters are invalid');
+  }
+  const aggregate = aggregateGateOutcome(bundle.checks, bundle.findings);
+  const outcome =
+    trace && trace.passed !== trace.total ? (trace.failed ? 'failed' : 'incomplete') : aggregate;
+  if (bundle.outcome !== outcome)
+    throw new Error('EvidenceBundle outcome does not match its current proof');
   return structuredClone(item) as unknown as EvidenceBundle;
 }

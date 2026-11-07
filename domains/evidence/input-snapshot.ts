@@ -15,6 +15,31 @@ export function evidenceInputDigest(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
 }
 
+export class EvidenceInputDriftError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'EvidenceInputDriftError';
+  }
+}
+
+export function assertEvidenceNodeInputSnapshot(value: EvidenceNodeInputSnapshot): void {
+  if (
+    !value ||
+    value.schemaVersion !== 1 ||
+    !value.nodeId ||
+    !Array.isArray(value.dependencies) ||
+    !value.dependencies.length ||
+    !Array.isArray(value.repositories) ||
+    !Array.isArray(value.derivedFrom) ||
+    !Array.isArray(value.outputs) ||
+    !Array.isArray(value.predecessorNodeIds)
+  )
+    throw new Error('Invalid Evidence node input snapshot');
+  const { fingerprint, ...facts } = value;
+  if (fingerprint !== evidenceInputDigest(facts).slice(7))
+    throw new Error('Evidence node input snapshot digest mismatch');
+}
+
 export interface EvidenceOutputClaim {
   producerId: string;
   repositoryId: string;

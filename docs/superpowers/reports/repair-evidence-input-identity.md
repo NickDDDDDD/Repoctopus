@@ -14,6 +14,8 @@ node_modules/.bin/vitest.cmd run test/managed-change-execution.e2e.test.ts -t 'a
 
 原实验项目第一次 Attempt 指纹为 `6261a7ee9faa0ebb9af845505cbfbffbe21a5ab84bbe8666cc17f0638b18809b`，第二次为 `b147d9ceff741eb8faac0ec54c2be418047170a885bda1d95f6969e8a38ed745`。第一次已读到完成状态的 dirty 文件；提交后有效字节不变，但 HEAD/tree/dirty 表示变化。根因与未接线的依赖模型已记录在同一 Change 的 design.md。
 
+只读复核原 Store：两个 Bundle 各有六个 `command/local`、fresh Receipt，合计执行十二次命令。第二次重复的六项为 front-release-label、backend-release-channel、backend-verify、web-front-build、web-design-build、web-plugin-build。该复核未修改原验收现场。
+
 ## 分段 TDD
 
 - `command.inputs` 初始两个正向测试因 unknown fields: inputs 失败，其余十个非法声明测试通过；实现后十二项通过。

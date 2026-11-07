@@ -1,4 +1,4 @@
-import { evidenceNodeInputFixture, evidenceDependencyFixture } from './helpers/evidence-inputs.js';
+import { evidenceNodeInputFixture } from './helpers/evidence-inputs.js';
 import { execFile } from 'node:child_process';
 import { link, mkdir, rm, symlink, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -313,6 +313,7 @@ describe('evidence fingerprint', () => {
       browser: { name: 'chromium', version: '1', revision: '100' },
       journeyDigest: 'journey',
       nodeInputs: [evidenceNodeInputFixture()],
+      planningProjection: null,
       inputArtifactDigests: ['artifact'],
     };
     const original = createEvidenceFingerprint(base);
@@ -323,7 +324,12 @@ describe('evidence fingerprint', () => {
       { ...base, adapters: { command: '2' } },
       { ...base, browser: { ...base.browser, revision: '101' } },
       { ...base, journeyDigest: 'changed' },
-      { ...base, nodeInputs: [evidenceNodeInputFixture()], inputArtifactDigests: ['changed'] },
+      {
+        ...base,
+        nodeInputs: [evidenceNodeInputFixture()],
+        planningProjection: null,
+        inputArtifactDigests: ['changed'],
+      },
     ]) {
       expect(createEvidenceFingerprint(changed).digest).not.toBe(original.digest);
     }
@@ -357,6 +363,7 @@ describe('evidence fingerprint', () => {
       tools: {},
       adapters: {},
       nodeInputs: [evidenceNodeInputFixture()],
+      planningProjection: null,
       inputArtifactDigests: [],
     };
     expect(createEvidenceFingerprint(manifest).digest).toBe(

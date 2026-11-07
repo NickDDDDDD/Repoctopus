@@ -39,10 +39,16 @@ export async function collectEvidenceInputFiles(input: {
     ]);
     const split = (raw: string) => raw.split('\0').filter(Boolean);
     const tracked = new Set([...split(trackedRaw), ...split(headRaw)]);
-    const candidates = new Set([...tracked, ...split(untrackedRaw)]);
+    const inScope = (candidate: string) =>
+      (!input.files ||
+        input.files.some((pattern) => matchesEvidenceInputPath(pattern, candidate))) &&
+      !input.exclude?.some((pattern) => matchesEvidenceInputPath(pattern, candidate));
+    const candidates = new Set([...tracked, ...split(untrackedRaw)].filter(inScope));
+    let visited = 0;
     // Explicit scopes can select ignored files. Visit only each literal prefix;
     // never walk Git internals, directory links, or an unbounded ignored tree.
     const visit = async (relative: string): Promise<void> => {
+      if (++visited > MAX_FILES) throw new Error('Evidence input exceeds traversal budget');
       validateEvidenceInputPath(relative);
       if (relative.split('/').includes('.git'))
         throw new Error('Git internals are not Evidence inputs');
@@ -70,7 +76,7 @@ export async function collectEvidenceInputFiles(input: {
           if (entry === '.git') continue;
           await visit(`${relative}/${entry}`);
         }
-      } else candidates.add(relative);
+      } else if (inScope(relative)) candidates.add(relative);
       if (candidates.size > MAX_FILES) throw new Error('Evidence input exceeds file count limit');
     };
     for (const pattern of input.files ?? []) {

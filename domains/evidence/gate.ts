@@ -110,6 +110,16 @@ export function projectEvidenceGate(
     acceptanceSetHash: bundle.acceptanceTrace?.acceptanceSetHash ?? null,
     outcome: bundle.outcome,
     status: gateSatisfied ? 'satisfied' : 'blocked',
+    failureKind: gateSatisfied
+      ? 'none'
+      : !traceMatchesBinding ||
+          bundle.findings.some((finding) =>
+            ['evidence-not-collected', 'recovery-uncertain-side-effect'].includes(finding.code),
+          )
+        ? 'unavailable'
+        : bundle.checks.some((check) => check.freshness === 'superseded')
+          ? 'input-drift'
+          : 'implementation',
     reason: gateSatisfied
       ? `Evidence profile ${bundle.profileId} satisfied the current input fingerprint`
       : traceMatchesBinding

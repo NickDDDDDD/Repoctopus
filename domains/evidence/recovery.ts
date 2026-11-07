@@ -3,7 +3,15 @@ import { createHash } from 'node:crypto';
 import type { EvidenceExecutionPlan } from '../feedback/profile.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { createEvidenceBundle } from './gate.js';
-import type { ArtifactStore, EvidenceJournal, EvidenceStore } from './ports.js';
+import type {
+  ArtifactStore,
+  EvidenceJournal,
+  EvidenceStore,
+  EvidenceInputProofPort,
+} from './ports.js';
+import { EvidenceInputDriftError, type EvidenceNodeInputSnapshot } from './input-snapshot.js';
+import { evidenceReceiptInputCurrent } from './receipt.js';
+import { createEvidenceDependencyRecord } from './dependencies.js';
 import type { EvidenceBundle, EvidenceCheck, EvidenceFinding, EvidenceReceipt } from './types.js';
 import type { EvidenceAcceptanceContext } from './types.js';
 import { createAcceptanceTrace } from './acceptance-trace.js';
@@ -19,6 +27,9 @@ export async function recoverEvidenceAttempt(input: {
   artifacts?: ArtifactStore;
   acceptanceContext?: EvidenceAcceptanceContext;
   allowTerminalAttempt?: boolean;
+  nodeInputs?: readonly EvidenceNodeInputSnapshot[];
+  endingNodeInputs?: readonly EvidenceNodeInputSnapshot[];
+  inputProofs?: EvidenceInputProofPort;
 }): Promise<{ receipts: EvidenceReceipt[]; bundle: EvidenceBundle }> {
   const attempt = await input.store.loadAttempt(input.attemptId);
   if (attempt.status !== 'running' && !input.allowTerminalAttempt)
@@ -37,8 +48,19 @@ export async function recoverEvidenceAttempt(input: {
   const findings: EvidenceFinding[] = [];
   const superseded =
     attempt.status === 'superseded' ||
-    (input.endingFingerprint !== undefined &&
-      input.endingFingerprint !== attempt.inputFingerprint);
+    (input.endingFingerprint !== undefined && input.endingFingerprint !== attempt.inputFingerprint);
+  const changedSources = new Set(
+    input.nodeInputs
+      ?.filter(
+        (node) =>
+          input.endingNodeInputs?.find((entry) => entry.nodeId === node.nodeId)?.fingerprint !==
+          node.fingerprint,
+      )
+      .map((node) => node.nodeId) ?? [],
+  );
+  const forceSuperseded =
+    superseded &&
+    (attempt.status === 'superseded' || !input.endingNodeInputs || changedSources.size === 0);
   if (superseded) {
     findings.push({
       code: 'input-drift',
@@ -50,7 +72,9 @@ export async function recoverEvidenceAttempt(input: {
   for (const nodeId of input.plan.order) {
     const node = nodes.get(nodeId)!;
     const blockedBy = node.dependsOn.filter(
-      (dependency) => checks.get(dependency)?.status !== 'passed',
+      (dependency) =>
+        checks.get(dependency)?.status !== 'passed' ||
+        checks.get(dependency)?.freshness === 'superseded',
     );
     if (blockedBy.length > 0) {
       checks.set(nodeId, { nodeId, required: node.required, status: 'blocked', blockedBy });
@@ -59,14 +83,47 @@ export async function recoverEvidenceAttempt(input: {
     const receiptId = completed.get(nodeId);
     if (receiptId) {
       const receipt = await input.store.loadReceipt(receiptId);
+      if (
+        receipt.attemptId !== attempt.attemptId ||
+        receipt.nodeId !== nodeId ||
+        receipt.compositionDigest !== attempt.compositionDigest
+      )
+        throw new Error('Recovery Receipt does not match its committed node');
       receipts.push(receipt);
+      const snapshot = input.nodeInputs?.find((entry) => entry.nodeId === nodeId);
+      let nodeDrift = false;
+      if (input.nodeInputs) {
+        if (!snapshot || !evidenceReceiptInputCurrent(receipt, snapshot, receipts))
+          throw new Error('Recovery Receipt dependency proof is invalid');
+        nodeDrift =
+          !!input.endingNodeInputs &&
+          input.endingNodeInputs.find((entry) => entry.nodeId === nodeId)?.fingerprint !==
+            snapshot.fingerprint;
+        if (receipt.status === 'passed' && input.inputProofs) {
+          nodeDrift ||= !(await input.inputProofs.outputsCurrent(snapshot, receipt));
+          if (snapshot.derivedFrom.length) {
+            try {
+              nodeDrift ||=
+                canonicalJson(
+                  await input.inputProofs.captureDerived(
+                    snapshot,
+                    new Map(receipts.map((entry) => [entry.nodeId, entry])),
+                  ),
+                ) !== canonicalJson(receipt.derivedInputs);
+            } catch (error) {
+              if (error instanceof EvidenceInputDriftError) nodeDrift = true;
+              else throw error;
+            }
+          }
+        }
+      }
       findings.push(...receipt.findings);
       checks.set(nodeId, {
         nodeId,
         required: node.required,
         status: receipt.status,
         trust: receipt.trust,
-        freshness: superseded ? 'superseded' : receipt.freshness,
+        freshness: nodeDrift || forceSuperseded ? 'superseded' : receipt.freshness,
         receiptId,
       });
       continue;
@@ -102,6 +159,7 @@ export async function recoverEvidenceAttempt(input: {
           checks: input.plan.order.map((nodeId) => checks.get(nodeId)!),
           receipts,
           inputFingerprint: attempt.inputFingerprint,
+          ...(input.nodeInputs ? { nodeInputs: input.nodeInputs } : {}),
         })
       : null,
   };
@@ -127,8 +185,15 @@ export async function recoverEvidenceAttempt(input: {
     });
   }
   attempt.receiptIds = bundle.receiptIds;
+  attempt.dependencies = createEvidenceDependencyRecord({
+    ...attempt.dependencies,
+    dependsOnEvidenceIds: attempt.receiptIds,
+  });
   attempt.completedAt = input.timestamp;
-  attempt.status = superseded ? 'superseded' : 'completed';
+  attempt.status =
+    superseded || [...checks.values()].some((check) => check.freshness === 'superseded')
+      ? 'superseded'
+      : 'completed';
   await input.store.saveAttempt(attempt);
   await input.store.saveBundle(bundle);
   return { receipts, bundle };
