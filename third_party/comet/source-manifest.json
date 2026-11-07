@@ -66,6 +66,18 @@
       "source": "domains/comet-classic/classic-sdk-application.ts",
       "sourceSha256": "cb17fca0241342b42c94aa885f08cddde5d509bdf8a13a77e2e8dc9119570629",
       "adoption": "behavioral-reference"
+    },
+    {
+      "role": "completed-run-boundary",
+      "source": "domains/engine/runtime-service.ts",
+      "sourceSha256": "69c903f5492087bdea6bfb0bd2ce31df594f42d910c0d3bbd721a2ede73fc44e",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "archived-change-selection",
+      "source": "domains/comet-classic/classic-current-change.ts",
+      "sourceSha256": "ba91b1456208f31217ff4e5e63ede9db2159de32eabf0be8e77f9a092460b942",
+      "adoption": "behavioral-reference"
     }
   ],
   "files": [
@@ -192,7 +204,7 @@
       "source": "domains/comet-classic/classic-guard.ts",
       "sourceSha256": "9d34982be2edce5a1ceb067310b4e82610beb6a874cd1ddbfa0fb5898ac36108",
       "target": "domains/runtime/workflow-runs.ts",
-      "sha256": "71013c161f715a234a096e36895af78ff06c8cbff6481dd9c2ea4b28786d2054",
+      "sha256": "e8c1d7e1186eb6d88627190102a7af1d0dc796e37abf8aff80d858a18d50fdac",
       "adoption": "modified"
     },
     {

@@ -1458,9 +1458,11 @@ async function runResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
       runId,
       result: result.value,
       diagnostics: result.diagnostics,
-      nextActions: result.value.state.reconciliationRequired
-        ? ['restore the bound repository state and resume the same Run']
-        : nextActions(result.value),
+      nextActions:
+        result.value.continuation?.continuation !== 'done' &&
+        result.value.state.reconciliationRequired
+          ? ['restore the bound repository state and resume the same Run']
+          : nextActions(result.value),
     });
   } finally {
     await app.close();

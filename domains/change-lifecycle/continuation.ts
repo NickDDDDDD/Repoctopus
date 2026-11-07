@@ -40,6 +40,13 @@ function isRecoveryReason(value: unknown): value is WorkExecutionRecovery['reaso
   );
 }
 
+export function isCompletedChangeRun(state: {
+  status: RunStatus;
+  changeLifecycle?: ChangeLifecycleState;
+}): boolean {
+  return state.status === 'completed' && state.changeLifecycle !== undefined;
+}
+
 function matchesCurrentCheckpoint(
   event: TrajectoryEvent,
   checkpoint: Checkpoint,

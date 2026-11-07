@@ -1,3 +1,9 @@
+---
+comet_change: preserve-completed-run-recovery
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
@@ -72,6 +78,8 @@ Engine/domain 只根据传入事实分类；Cordis Service 协调读取和入口
 终态读取核对 Run 与 Checkpoint 的身份、状态和版本来自同一可验证提交；缺少必要持久文件、损坏 JSON 或不一致且无法由原 Journal 恢复时返回诊断。不要用调用者提供的 completed 字段或只读一个原始 JSON 字段作为成功依据，也不扩展为另一套通用状态校验框架。
 
 已有 ResumeView 若携带项目差异，保留能够证明的观察内容并明确其不要求活动 reconciliation，不伪造“当前快照与原快照相同”。历史 `state.reconciliationRequired` 可以作为原持久诊断保留；执行恢复、公开 next actions 和展示端的继续指令由 terminal authority 决定。
+
+终态 `resume` / `next` 仍排空已经提交、尚未由原 telemetry cursor 确认的事件；这只补发既有遥测，不追加开发恢复事件或修改完成事实。`status` 不因此执行遥测写入。以完成事务在 trajectory/run 写入边界中断的测试核对原 Journal 恢复与仅一次事件导出。
 
 ### 6. 验收矩阵与输入固定
 

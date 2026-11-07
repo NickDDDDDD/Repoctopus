@@ -2560,6 +2560,9 @@ export class WorkflowRuns extends Service {
     confirmations: ReadonlySet<string> = new Set(),
     signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
+    if (await this.coordinator.completedChangeStatus(runId)) {
+      return this.coordinator.next(runId, confirmations);
+    }
     await this.coordinator.recoverChangeLifecycleDefinition(runId);
     await this.ctx.workExecutionAuthority.reconcileCurrentCheckpoint(runId);
     const workspaceRecovery = await this.recoverBoundBuildWorkspace(runId, 'next');
@@ -6379,6 +6382,9 @@ export class WorkflowRuns extends Service {
     signal?: AbortSignal,
   ): Promise<RuntimeResult<ResumeView>> {
     return this.operations.run({ cancellable: false, signal }, async () => {
+      if (await this.coordinator.completedChangeStatus(options.runId)) {
+        return this.coordinator.resume(options);
+      }
       await this.coordinator.recoverChangeLifecycleDefinition(options.runId);
       const [skillCompatibility, specificationCompatibility, previousProjectSnapshot] =
         await Promise.all([
