@@ -2,7 +2,7 @@
 change_id: 68e84351-f2bf-4dd4-9f67-d95065c651f2
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: b77b0f74b6610c4cca08a21921fc2d1e18f7fc38caa56f72a15892260d818801
+  hash: dd582da12f59f63184e3514422a8ac6af01f71a7494c09a62cfbd9b9a58ff36a
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,6 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 1
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -68,7 +69,7 @@ run_checkpoint:
       handoffHash: null
       isolation: branch
       language: zh-CN
-      phase: open
+      phase: design
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -80,9 +81,17 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 1
+    sequence: 5
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-b74aef8d2660be9ad88d736414e01637f5f2abbd4850afb065e87ff5dd9df14e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: unify-build-workspace-recovery:1
         input:
           input:
@@ -92,25 +101,274 @@ run_checkpoint:
               ref: ed489e70-b325-4386-b548-351e1984b8af
           outputs: {}
         inputHash: e4f50f56254bbc5367fe86c4626b7dfe47142dff8c33ba7d0752d0cb1f286426
+        outcome:
+          actionId: unify-build-workspace-recovery:1
+          attempt: 1
+          claimToken: portable-b74aef8d2660be9ad88d736414e01637f5f2abbd4850afb065e87ff5dd9df14e
+          inputHash: e4f50f56254bbc5367fe86c4626b7dfe47142dff8c33ba7d0752d0cb1f286426
+          outcomeId: 7deaece0-d8d2-4181-9265-2ac271499455
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 5f482db074105d3ed1a3f0829a991087a7a5248cf83b95021c7fbd378f9c46e8
+            outcomeId: 7deaece0-d8d2-4181-9265-2ac271499455
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: unify-build-workspace-recovery
-        status: pending
+        status: succeeded
         stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-798627372e5abce4bd2af459c43f1cdde2d1bda4771503267c831571fe0619f6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: unify-build-workspace-recovery:4
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: unify-build-workspace-recovery
+                  changeDir: openspec/changes/unify-build-workspace-recovery
+                  workspaceBaseline:
+                    ref: ed489e70-b325-4386-b548-351e1984b8af
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+                    ref: openspec/changes/unify-build-workspace-recovery
+            full.open.evidence:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+              ref: openspec/changes/unify-build-workspace-recovery
+        inputHash: 714f4bb9ed544bba1b590625243d49619d54a9614602c9be88b162588b6335a3
+        outcome:
+          actionId: unify-build-workspace-recovery:4
+          attempt: 1
+          claimToken: portable-798627372e5abce4bd2af459c43f1cdde2d1bda4771503267c831571fe0619f6
+          inputHash: 714f4bb9ed544bba1b590625243d49619d54a9614602c9be88b162588b6335a3
+          outcomeId: unify-build-workspace-recovery:4:1:executor-result
+          output:
+            contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 18894b9aeb269ec54d194a40450cbdf3dc22fde303fc385a1b9114c3148689d1
+            outcomeId: unify-build-workspace-recovery:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        id: unify-build-workspace-recovery:5
+        input:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: unify-build-workspace-recovery
+                  changeDir: openspec/changes/unify-build-workspace-recovery
+                  workspaceBaseline:
+                    ref: ed489e70-b325-4386-b548-351e1984b8af
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+                    ref: openspec/changes/unify-build-workspace-recovery
+            full.open.evidence:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+              ref: openspec/changes/unify-build-workspace-recovery
+            full.open.revalidate:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        inputHash: a572c3c19701f0dc8971772d5b01b5828aa523da737a34cc157d308a4157548f
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: unify-build-workspace-recovery
+        status: pending
+        stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
       unify-build-workspace-recovery:1:
         results: {}
         sequence: 1
-    waits: []
+      unify-build-workspace-recovery:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: unify-build-workspace-recovery
+                  changeDir: openspec/changes/unify-build-workspace-recovery
+                  workspaceBaseline:
+                    ref: ed489e70-b325-4386-b548-351e1984b8af
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+                    ref: openspec/changes/unify-build-workspace-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+              ref: openspec/changes/unify-build-workspace-recovery
+        sequence: 4
+      unify-build-workspace-recovery:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: unify-build-workspace-recovery
+                  changeDir: openspec/changes/unify-build-workspace-recovery
+                  workspaceBaseline:
+                    ref: ed489e70-b325-4386-b548-351e1984b8af
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+                    ref: openspec/changes/unify-build-workspace-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+              ref: openspec/changes/unify-build-workspace-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+        sequence: 5
+    waits:
+      - id: unify-build-workspace-recovery:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: unify-build-workspace-recovery
+            changeDir: openspec/changes/unify-build-workspace-recovery
+            workspaceBaseline:
+              ref: ed489e70-b325-4386-b548-351e1984b8af
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+              ref: openspec/changes/unify-build-workspace-recovery
+        proposalHash: 5b7c666744618c7402e6640f3788aa89eca6a7db3b5ff816fd8c81e419df7917
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+              ref: openspec/changes/unify-build-workspace-recovery
+        decision:
+          id: classic-open-e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          choice: approved
+          proposalHash: 5b7c666744618c7402e6640f3788aa89eca6a7db3b5ff816fd8c81e419df7917
+    evidenceWaits:
+      - id: unify-build-workspace-recovery:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/unify-build-workspace-recovery
+          contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          submissionId: b867756d-e243-4f57-afca-1c1db3dce77c
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: unify-build-workspace-recovery
+              changeDir: openspec/changes/unify-build-workspace-recovery
+              workspaceBaseline:
+                ref: ed489e70-b325-4386-b548-351e1984b8af
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+                ref: openspec/changes/unify-build-workspace-recovery
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
+          ref: openspec/changes/unify-build-workspace-recovery
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: e63d43b7efdade3d490adef78ad4ec6cdd57332666128c785944b59cbef1c45f
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: 96e1b847c71a83db51eadabd5ca87567ffc6b18b9b14ae7792ab6778535bc0a6
+  sourceRevision: 7
+  sourceHash: 99d42552995e21011a9c3bf3befe4404a9dce4044e9a5332b5feee598dc3429b
+check_epoch: 1

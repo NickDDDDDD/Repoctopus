@@ -18,6 +18,7 @@ Repoctopus v0.1.0 的真实多仓验收在首个 Build 工作包完成后重启�
 ### Modified Capabilities
 
 - `multi-repository-probe`：约束 Build 恢复时仓库事实的判定基线，以及两个公开入口对执行进度与漂移的一致解释。
+- `managed-work-execution`：明确已授权兼容重绑定与未授权 checkout 漂移的边界，使 Configure revalidation 与恢复阻断遵循同一授权规则。
 
 ## Impact
 
