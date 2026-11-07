@@ -4,6 +4,7 @@
     {
       "argv": ["npm.cmd", "run", "verify"],
       "cwd": ".",
+      "env": ["VITEST_MAX_WORKERS"],
       "files": [
         ".comet/check-policy.json",
         ".gitattributes",

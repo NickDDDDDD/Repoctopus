@@ -1,6 +1,6 @@
 # 已完成 Run 恢复验证
 
-- Tested implementation commit: `d8c99f8690b2edb501f5b65ace66c1fc43b40fc8`
+- Tested implementation commit: `eb019d2821723325e39819bb4219ddbb10a63606`
 - Package files: `467`
 - Package content bytes: `5949608`
 - Package content SHA-256: `0621d6bbeb13767f70aa4e415b8a550e5e8a194675d4d8f737c729618bc43e0f`
@@ -27,6 +27,7 @@ Cordis Service 在活动恢复前调用 coordinator 的可信终态读取；coor
 - 新增来源同时受脚本和运行时两份登记校验；补齐运行时登记后，两组来源测试共 16 项通过。项目 composition 的固定摘要随本次 workflow/maintenance 源码身份更新，相关组装和实际 OTLP tracer 两项回归通过。
 - 新 worktree 依赖最初跳过安装脚本，缺少锁定版 Electron 二进制；补齐本地测试依赖后，两项真实桌面启动回归通过，没有修改桌面产品源码。
 - 早期全量尝试中 Evidence DAG 用例在并发负载下超过原 60 秒限制；停止已不覆盖最终输入的旧尝试后，同一用例重跑通过（约 40 秒），没有修改 timeout 或缓存规则。旧全量尝试不作为通过证据，正式最终完整检查仍待执行。
+- 后续并发尝试中 prepared Evidence context 与接入用例超过原 30 秒限制；各自单独重跑通过（约 14 秒与 22 秒）。正式全量检查将使用 Vitest 已支持的 `VITEST_MAX_WORKERS=2`；该环境变量已加入原 Comet command policy 的环境输入，不改检查 argv、不减少用例、不放宽测试断言或时限。
 - 仓库级 `format:check` 报告 172 个未改动文件的既有格式问题；与本次基线 diff 取交集为零。本次改动文件的 Prettier 检查通过，不重新格式化已封存归档。
 - 独立 Build reviewer 逐任务审查 1.1–1.4、2.1，首轮复查关闭 R1/R2，无未解决 IMPORTANT。审查与实际 RED/GREEN 原始输出保存在独立审计证据目录。
 
@@ -46,6 +47,8 @@ Cordis Service 在活动恢复前调用 coordinator 的可信终态读取；coor
 新 Run 的接入、Open、Design 和初始 Plan 使用 `7e95c86d023b00ce494ed477bfb122b5e9b65cc5` 包（内容摘要 `a61bf3df4487f228a5da85ea0100504b5d29254188670e51c994cb5c51b07187`）。完整检查发现遗漏运行时来源登记后，最终 `d8c99f8` 只补齐两条诊断来源数据，没有修改恢复、Plan 或 Binding 代码。
 
 最终包安装到独立新 prefix，通过公开 resume 接续原 Run，保留原 Binding、Plan、check epoch 8 和同一待决定提案；没有编辑产品 Store 或重新创建 Run。两个 README 工作包及后继验证使用最终包执行。两个候选的原始包和角色分别保留，不混称为从头到尾同一个 tarball。
+
+实际安装包的源码提交为 `d8c99f8690b2edb501f5b65ace66c1fc43b40fc8`。上列验证提交 `eb019d2` 只增加 composition 测试期望摘要和本报告，打包产品文件未改变；包复现检查继续核对同一规范化内容摘要，不能将提交号不同当作无需核对字节的依据。
 
 ## 范围边界
 
