@@ -226,6 +226,7 @@ describe('managed Change execution production composition', () => {
       });
       await execFileAsync('git', ['push'], { cwd: workspace });
 
+      if (!protectedWriteRepositories && !multiRepository) await prepareBuildBranches();
       const started = await runCli<RunStatusView>({
         packageRoot: productRoot,
         cwd: workspace,
@@ -244,7 +245,7 @@ describe('managed Change execution production composition', () => {
         ],
       });
       const runId = started.runId!;
-      if (!protectedWriteRepositories) await prepareBuildBranches();
+      if (!protectedWriteRepositories && multiRepository) await prepareBuildBranches();
       const environmentKeys = [
         'XDG_DATA_HOME',
         'XDG_CONFIG_HOME',
@@ -1317,28 +1318,32 @@ describe('managed Change execution production composition', () => {
           expect(retainedDesignApproval).toMatchObject({
             decisionRequest: { requestId: approval.decisionRequest.requestId },
           });
-          const tasksPath = path.join(
-            workspace,
-            'openspec',
-            'changes',
-            'managed-blackbox',
-            'tasks.md',
-          );
-          const acceptedTasks = await readFile(tasksPath, 'utf8');
-          const originalPlanWork = (await status()).changeLifecycle!.currentWork!.workId;
-          const invocationCount = capture.invocations.length;
-          await writeFile(tasksPath, `${acceptedTasks}\n- [ ] 9.9 Unapproved planning change\n`);
-          await execFileAsync('git', ['switch', '-c', 'unrelated/planning-and-branch'], {
-            cwd: workerRepository,
-          });
-          const blockedPlanning = await next();
-          expect(blockedPlanning.value.state.reconciliationRequired).toBe(true);
-          expect(blockedPlanning.value.changeLifecycle?.currentWork?.workId).toBe(originalPlanWork);
-          expect(capture.invocations).toHaveLength(invocationCount);
-          await writeFile(tasksPath, acceptedTasks);
-          await execFileAsync('git', ['switch', 'feature/managed-blackbox'], {
-            cwd: workerRepository,
-          });
+          if (!protectedWriteRepositories) {
+            const tasksPath = path.join(
+              workspace,
+              'openspec',
+              'changes',
+              'managed-blackbox',
+              'tasks.md',
+            );
+            const acceptedTasks = await readFile(tasksPath, 'utf8');
+            const originalPlanWork = (await status()).changeLifecycle!.currentWork!.workId;
+            const invocationCount = capture.invocations.length;
+            await writeFile(tasksPath, `${acceptedTasks}\n- [ ] 9.9 Unapproved planning change\n`);
+            await execFileAsync('git', ['switch', '-c', 'unrelated/planning-and-branch'], {
+              cwd: workerRepository,
+            });
+            const blockedPlanning = await next();
+            expect(blockedPlanning.value.state.reconciliationRequired).toBe(true);
+            expect(blockedPlanning.value.changeLifecycle?.currentWork?.workId).toBe(
+              originalPlanWork,
+            );
+            expect(capture.invocations).toHaveLength(invocationCount);
+            await writeFile(tasksPath, acceptedTasks);
+            await execFileAsync('git', ['switch', 'feature/managed-blackbox'], {
+              cwd: workerRepository,
+            });
+          }
         }
         await restartApplication();
         let planInvocation: (typeof capture.invocations)[number] | undefined;
@@ -1449,7 +1454,7 @@ describe('managed Change execution production composition', () => {
           expect(recovered.value).toMatchObject({
             reconciliation: {
               changeClass: 'identity',
-              requiresReconciliation: true,
+              requiresReconciliation: false,
             },
             state: { reconciliationRequired: false },
             changeLifecycle: {

@@ -3,7 +3,7 @@
 - Change: unify-build-workspace-recovery
 - Phase: design
 - Mode: compact
-- Context hash: 57eda9e25ec5c9fdf8c9536e9bf15eec84103d8d1afc7f3202fd968223a6384d
+- Context hash: 1e935c011fc3a3df71d8697d2dbb95708c1985d92b009ecabdc0d451234ae12c
 
 Generated-by: comet-handoff.sh
 Task hash policy: task-content-v1. Read tasks.md for live completion; excerpts are design-time context.
@@ -49,10 +49,16 @@ Repoctopus v0.1.0 的真实多仓验收在首个 Build 工作包完成后重启�
 ## openspec/changes/unify-build-workspace-recovery/design.md
 
 - Source: openspec/changes/unify-build-workspace-recovery/design.md
-- Lines: 1-69
-- SHA256: 01d90b8b7d2e9482eb495875971a761bbd3a75ec84dccfc1a362f740b8e99fe5
+- Lines: 1-75
+- SHA256: 1383f7da85d07c5207616110faef63d08868eba3b0f08d49f8a8f43e4ec5eedf
 
 ```md
+---
+comet_change: unify-build-workspace-recovery
+role: technical-design
+canonical_spec: openspec
+---
+
 # Build 工作区恢复设计
 
 ## Context
@@ -98,7 +104,7 @@ Comet 0.5.1 固定源码 `35c9860b77b42bafa0c2d80d8d695889f888a924` 将已绑定
 
 ### 主规格冲突及授权依据
 
-独立 Builder Check 发现，现有 `managed-work-execution` 的 `Binding-owned事实变化` 场景将分支、worktree、拓扑或路径变化统一交给 Configure，缺少授权边界。本次用户明确要求未授权分支被拦住，且已批准 Open 的保留原进度场景，因此按该授权补齐相同 Change 的 delta。完整保留 `Build Configure 产生可批准的不可变配置` requirement，在描述和相关场景中明确先判断变化是否受批准的执行意图与当前 Run 证据授权，已授权兼容变化可以走 Configure，未授权变化保留原 Binding、Plan 和工作包并阻断。这项 Spec Patch 对应本次已确认行为，未增加新的工作流目标。
+独立 Builder Check 发现，现有 `managed-work-execution` 的 `Binding-owned事实变化` 场景将分支、worktree、拓扑或路径变化统一交给 Configure，缺少授权边界。本次用户明确要求未授权分支被拦住，且已批准 Open 的保留原进度场景，因此按该授权补齐相同 Change 的 delta。完整保留 `Build Configure 产生可批准的不可变配置` requirement，在相关场景中明确先判断变化是否受批准的执行意图与当前 Run 证据授权，已授权兼容变化可以走 Configure，未授权变化保留原 Binding、Plan 和工作包并阻断。这项 Spec Patch 对应本次已确认行为，未增加新的工作流目标。需求描述保留原有 483 字，授权细节放在场景中，以满足归档后主规格的 500 字限制。
 
 ### 验证策略
 
@@ -168,14 +174,14 @@ created: 2026-11-07
 
 - Source: openspec/changes/unify-build-workspace-recovery/specs/managed-work-execution/spec.md
 - Lines: 1-45
-- SHA256: 581bd09f0f19e71838390e064b6ecb4f38b041eaa9cb3c8754ee8fdf89bf30ce
+- SHA256: 21edcdb57dd867fe1e534aed18bd3de2258c44a665e579c8ec4c6299748ba0db
 
 ```md
 ## MODIFIED Requirements
 
 ### Requirement: Build Configure 产生可批准的不可变配置
 
-Runtime MUST 从已通过 Design Human Decision 的版本化 `BuildStrategy` 读取 execution/TDD/review/isolation intent，并根据当前 Run、仓库拓扑、隔离事实与协调 Host identity 解析独立 `ExecutionBinding`。Binding MUST 固定 repository、branch、初始 head、worktree ownership、可移植 semantic digest 和只在本地保存的 path/local overlay，但 MUST NOT 把任一 Work invocation 的 capability list或 digest作为跨 Work 语义身份。Configure Host MUST 在 claim 前满足当前 `build.configure` Work 的 capabilities；未来 Plan、Execute和Check MUST 分别按自己的 Work capabilities执行claim preflight。已接受 Binding 的事实发生变化时，Runtime MUST 先按批准的执行意图与当前 Run 证据核对授权；只有已授权兼容变化才可进入 Configure revalidation，未授权 checkout 漂移 MUST 保留原执行进度并阻断。
+Runtime MUST 从已通过 Design Human Decision 的版本化 `BuildStrategy` 读取 execution/TDD/review/isolation intent，并根据当前 Run、仓库拓扑、隔离事实与协调 Host identity 解析独立 `ExecutionBinding`。Binding MUST 固定 repository、branch、初始 head、worktree ownership、可移植 semantic digest 和只在本地保存的 path/local overlay，但 MUST NOT 把任一 Work invocation 的 capability list或 digest作为跨 Work 语义身份。Configure Host MUST 在 claim 前满足当前 `build.configure` Work 的 capabilities；未来 Plan、Execute和Check MUST 分别按自己的 Work capabilities执行claim preflight。
 
 #### Scenario: Configure 只验证当前 Work 和 Workspace Binding
 

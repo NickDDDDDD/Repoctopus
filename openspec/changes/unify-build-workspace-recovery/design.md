@@ -49,7 +49,7 @@ Comet 0.5.1 固定源码 `35c9860b77b42bafa0c2d80d8d695889f888a924` 将已绑定
 
 ### 主规格冲突及授权依据
 
-独立 Builder Check 发现，现有 `managed-work-execution` 的 `Binding-owned事实变化` 场景将分支、worktree、拓扑或路径变化统一交给 Configure，缺少授权边界。本次用户明确要求未授权分支被拦住，且已批准 Open 的保留原进度场景，因此按该授权补齐相同 Change 的 delta。完整保留 `Build Configure 产生可批准的不可变配置` requirement，在描述和相关场景中明确先判断变化是否受批准的执行意图与当前 Run 证据授权，已授权兼容变化可以走 Configure，未授权变化保留原 Binding、Plan 和工作包并阻断。这项 Spec Patch 对应本次已确认行为，未增加新的工作流目标。
+独立 Builder Check 发现，现有 `managed-work-execution` 的 `Binding-owned事实变化` 场景将分支、worktree、拓扑或路径变化统一交给 Configure，缺少授权边界。本次用户明确要求未授权分支被拦住，且已批准 Open 的保留原进度场景，因此按该授权补齐相同 Change 的 delta。完整保留 `Build Configure 产生可批准的不可变配置` requirement，在相关场景中明确先判断变化是否受批准的执行意图与当前 Run 证据授权，已授权兼容变化可以走 Configure，未授权变化保留原 Binding、Plan 和工作包并阻断。这项 Spec Patch 对应本次已确认行为，未增加新的工作流目标。需求描述保留原有 483 字，授权细节放在场景中，以满足归档后主规格的 500 字限制。
 
 ### 验证策略
 
