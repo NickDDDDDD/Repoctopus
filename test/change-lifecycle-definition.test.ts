@@ -317,7 +317,7 @@ describe('Change lifecycle definition', () => {
         currentWork: null,
         blocker: {
           code: 'change-lifecycle.verification-input-schema-drift',
-          evidenceIds: ['verification-input:v1', 'verification-input:v3'],
+          evidenceIds: ['verification-input:v1', 'verification-input:v4'],
         },
       },
     });

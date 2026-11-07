@@ -28,6 +28,11 @@ const REQUIRED_COMET_REFERENCES = new Map([
   ['revision-application', 'domains/comet-classic/classic-sdk-revision-application.ts'],
   ['evidence-invalidation', 'domains/engine/runtime-service.ts'],
   ['action-retry-policy', 'domains/engine/runtime-action.ts'],
+  ['command-input-policy', 'domains/comet-classic/classic-check-policy.ts'],
+  ['command-content-snapshot', 'domains/comet-classic/classic-check-snapshot.ts'],
+  ['archive-evidence-preflight', 'domains/comet-classic/classic-sdk-archive-preflight.ts'],
+  ['archive-frozen-publication', 'domains/comet-classic/classic-sdk-archive.ts'],
+  ['archive-publication-outcome', 'domains/comet-classic/classic-sdk-application.ts'],
 ]);
 
 function isCometPackageReference(value: unknown): boolean {

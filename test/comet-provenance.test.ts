@@ -12,6 +12,18 @@ const validManifest = {
   },
   files: [],
   references: [
+    ...[
+      ['command-input-policy', 'domains/comet-classic/classic-check-policy.ts'],
+      ['command-content-snapshot', 'domains/comet-classic/classic-check-snapshot.ts'],
+      ['archive-evidence-preflight', 'domains/comet-classic/classic-sdk-archive-preflight.ts'],
+      ['archive-frozen-publication', 'domains/comet-classic/classic-sdk-archive.ts'],
+      ['archive-publication-outcome', 'domains/comet-classic/classic-sdk-application.ts'],
+    ].map(([role, source]) => ({
+      role,
+      source,
+      sourceSha256: 'f'.repeat(64),
+      adoption: 'behavioral-reference',
+    })),
     {
       role: 'revision-readiness',
       source: 'domains/comet-classic/classic-sdk-revision-readiness.ts',
