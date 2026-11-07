@@ -6,7 +6,7 @@
 - Package content SHA-256: `13fad2c836df214f2baaac6c08c2ecaeb2a31455ef83f53f9e67e0f2ec5655a2`
 - Tarball SHA-256: `c957d744113f2980f6a6a62f1bb6b22a11d8aabfb0ef7f99f5437fc6019bc866`
 
-首轮 Build 与真实安装包验收已通过；最终集成审查发现的两处边界缺陷已修复并由同一 reviewer 复核，Comet 仍在正式 verify-fail 后的 Build。上述身份为重新独立构建、安装的当前 C3 包；新五仓完整验收和最终 Verify 尚待通过，不以旧包结果替代。
+最终集成审查发现的两处边界缺陷已修复并由同一 reviewer 复核；当前 C3 单一包的全新五仓完整验收也已通过。Comet 仍在正式 verify-fail 后的 Build，等待当前输入的 Build/Verify Guard；不以旧包结果或 CI 代替正式门禁。
 
 ## 根因与采用方案
 
@@ -33,14 +33,14 @@ Cordis Service 在活动恢复前调用 coordinator 的可信终态读取；coor
 
 ## 验收要求映射
 
-| 要求                                        | 当前证据                                                                             |
-| ------------------------------------------- | ------------------------------------------------------------------------------------ |
-| completed + 历史 reconciliation 仍返回 done | 完整 status 与 CLI 历史标志矩阵，原字段保留                                          |
-| 两种恢复顺序保留完成事实                    | Service/coordinator/CLI 比较完整 Run、Checkpoint、轨迹长度及 execution/next actions  |
-| 持久终态不能绕过完整性                      | 9 项异常场景逐一调用 status、next、resume；原项目快照重算摘要                        |
-| 原中断事务可恢复，副作用不重复              | 两处 Journal 写入中断；仅补发原遥测，重复恢复不再次导出                              |
-| 活动未授权与未知执行仍阻断                  | 既有 Build workspace、Evidence recovery、Work execution recovery 回归                |
-| 实际 Close、发布和终态冷恢复                | 新五仓完成实际 Close、三个唯一 MR、8 次终态恢复；另对旧失败副本执行 4 次恢复，均通过 |
+| 要求                                        | 当前证据                                                                            |
+| ------------------------------------------- | ----------------------------------------------------------------------------------- |
+| completed + 历史 reconciliation 仍返回 done | 完整 status 与 CLI 历史标志矩阵，原字段保留                                         |
+| 两种恢复顺序保留完成事实                    | Service/coordinator/CLI 比较完整 Run、Checkpoint、轨迹长度及 execution/next actions |
+| 持久终态不能绕过完整性                      | 最终 11 项异常场景逐一调用 status、next、resume；原项目快照及 Workflow 正文重算摘要 |
+| 原中断事务可恢复，副作用不重复              | 两处 Journal 写入中断；仅补发原遥测，重复恢复不再次导出                             |
+| 活动未授权与未知执行仍阻断                  | 既有 Build workspace、Evidence recovery、Work execution recovery 回归               |
+| 实际 Close、发布和终态冷恢复                | 最终 C3 新五仓实际 Close、三个唯一 MR、12 次终态恢复；最终包恢复旧失败副本 4 次通过 |
 
 ## 首轮真实多仓候选 C1 / C2（历史成功）
 
@@ -68,7 +68,17 @@ Cordis Service 在活动恢复前调用 coordinator 的可信终态读取；coor
 
 CLI 只提交 Run 身份，由 Service 在终态之后才进行活动项目观察。未观察时省略可选 reconciliation，调用者提供的真实 snapshot 仍保留其差异；活动恢复缺失当前 snapshot 或不可读 checkout 仍拒绝。Workflow 正文使用既有 hashWorkflowDefinition 重新验证。没有新增持久 schema、迁移或恢复 Work。
 
-当前 C3 在独立新目录重新从公开接入开始验收，不升级首轮活动 Run。最终包的实际内容身份列于页首；旧现场和首轮成功报告继续按哈希保护。此前 Linux CI 成功属于 `2298096`，不能当作 C3 的最终 CI；最终门禁仍待新结果。
+当前 C3 在独立新目录从公开接入重新完成全流程，不升级首轮活动 Run。最终包的实际内容身份列于页首；旧现场和首轮成功报告继续按哈希保护。[当前 C3 CI](https://github.com/NickDDDDDD/Repoctopus/actions/runs/42404778291) 已成功，HEAD `3866f67a4bbac90a335e5d59737482b08603a066`：199 文件、1090 项测试通过，1 文件/4 项跳过，严格规格 19 项通过，并重新构建核对相同的 13fad2c8 包内容身份。此前 `2298096` CI 仍单独作为旧候选记录；本机正式 Verify 仍待最终门禁。
+
+### C3 实际全流程与完成事实
+
+唯一新 Run 为 `change-agent-lab-v010-workspace-verify-terminal-final-20261108-cef0230ab48d018b`，单一最终包从接入、Open、Design、Configure、Plan、两包真实 TDD、独立两轴审查到 managed Verify、Provider Close、原生发布完整通过。新三 MR 均唯一且 OPEN：backend #6、web-front #10、Workspace #4，base 均为 `acceptance/terminal-final-20261108`。实际 Receipt 为 `sha256:b7776f946657ea539184dc8b27538cb6082a2350b4f1f9858d333d5fbf7d5c8f`。
+
+终态 12 次新进程分别覆盖正常 source、完成后分支变化、完成后业务目录退役；每次再 status，都 done/terminal、空 nextActions、没有虚构 reconciliation。stateVersion 242、epoch 17、完整 Run/Checkpoint/Trajectory、10 个 Host Work 与 2 个实际验证命令均不变。目录经校验后暂时 rename，并在 finally 恢复，不删除业务内容。
+
+活动 Run 的同一目录不可读负例仍在两个入口拒绝，stderr 返回正式错误 JSON，持久三元组哈希不变；恢复目录后能继续原 Plan、Binding 和首包 completion。操作者一度误从 stdout 解析预期错误，修正解析并保存 raw exit/stdout/stderr/PID，未修改产品或把解析失败记作产品成功。
+
+最终包再次对 F1 的验证副本完成 4 次恢复，raw 历史标志 true 保留；9 个旧 Store、545 文件和 14 份报告/摘要哈希全不变，含 C2 成功现场与报告，新五仓干净且已 push。最终原始报告 `lab-terminal-final-1108/verification-report.md` SHA256 为 `57fdc6463739536b344d717b1b3428e070e725170b852bd5742cf6e9fe35c6a3`，父任务已独立读取与复核；详细远端 OID、归档布局与全过程账本另见该报告。
 
 ## 范围边界
 

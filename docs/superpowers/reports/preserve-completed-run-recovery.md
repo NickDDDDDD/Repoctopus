@@ -1,6 +1,6 @@
 # 已完成 Run 恢复验证记录
 
-本报告记录 Build 验收与正式 Verify；首轮 Build 通过后，最终审查发现两处缺口，已通过正式 verify-fail 返回同一 Run 的 Build 并完成代码修复。当前最终包全流程和最终完整 Verify 尚未通过，不把旧候选或局部结果解释为最终门禁通过。
+本报告记录 Build 验收与正式 Verify；首轮 Build 通过后，最终审查发现两处缺口，已通过正式 verify-fail 返回同一 Run 的 Build 并完成代码修复。当前最终包全流程与最终源码 Linux CI 已通过，本机正式 Verify 尚未通过，不把现场验收或 CI 解释为本机门禁收据。
 
 唯一最终集成 reviewer 为 `/root/completed_recovery_final_verify_review`，独立会话 `codex-completed-recovery-final-review`。审查基线为 `c872b4080d8336d2440410e28e482fce98423464`，候选为 `84fb2c2fc346f4e520503b9a50f40d64d5066e59`；仅生成的 Comet 控制状态在 Build Guard 后更新。Verify 不使用仅允许 Build 的任务协调写入口，最终审查分配与证据在本报告记录，不修改生命周期存储。
 
@@ -100,7 +100,7 @@ Build 期间曾把原待导出遥测的实施说明追加到已封存 Design；�
 
 仓库全局格式检查报告 172 个未改动的历史文件；与本次 diff 交集为零，当前变更文件格式通过，未重新格式化已封存归档。此项不能报告为全仓格式通过。
 
-此前候选 `2298096` 的 [Linux CI](https://github.com/NickDDDDDD/Repoctopus/actions/runs/42400952275) 已成功；该结果先于最终两项修复，仅作为历史证据。C3 的正式 Verify、新 CI 和新完整包验收仍待补齐。
+此前候选 `2298096` 的 [Linux CI](https://github.com/NickDDDDDD/Repoctopus/actions/runs/42400952275) 成功仅作为历史证据。当前 C3 的 [Linux CI](https://github.com/NickDDDDDD/Repoctopus/actions/runs/42404778291) 已成功，精确 HEAD `3866f67a4bbac90a335e5d59737482b08603a066`，产品源码为 f22e29f；199 个文件、1090 项测试通过，1 文件/4 项按现有条件跳过。全套 npm run verify 通过，其中测试段实际 697.84 秒，19 项严格规格、来源/架构/生成物和最终包 13fad2c8 的复现检查均通过。原 job 日志与摘要已读取保存；C3 本机正式 Verify 仍待补齐。
 
 ## OpenSpec 完整性复核
 
@@ -130,6 +130,20 @@ Runtime 已接受同一 Run 的 complete-build，并派发 full.build.check。�
 同一独立 reviewer 的外部真实临时 fixture 复查 exit 0、2/2 通过，验证三入口均拒绝损坏 Workflow、三条实际 CLI 在业务目录移走后仍完成。无未解决 Critical/Important；最终审查报告 SHA256 为 `96f366f9af12320342afcbc23f0c36891c963b45498a4554d58b3ce40e5fc0d8`，最终门禁与当前包验收仍是合入条件。
 
 当前 C3 内容摘要 `13fad2c836df214f2baaac6c08c2ecaeb2a31455ef83f53f9e67e0f2ec5655a2`，467 文件/5951541 字节，单一包从新的五仓公开接入开始重跑完整流程；不升级首轮未完成执行或把 C2 完成证明冒充当前字节。详细当前身份与首轮历史身份见包验收报告。
+
+## 最终 C3 真实验收完成
+
+实验 Change `verify-terminal-final-20261108` 从接入到实际 Close/Publish 完整通过，12 个新进程终态操作加各自 status 全部完成。正常 source、完成后切换分支、完成后业务目录暂时退役各 4 次；完整 Run/Checkpoint/Trajectory、stateVersion 242、epoch 17、10 个 Host Work 和 2 条实际验证命令均不增加，CLI 不虚构 reconciliation。
+
+活动目录不可读仍阻断两个入口、返回明确 stderr JSON、保留原持久三元组；恢复后沿原 Plan 与首包完成事实继续。当前包再次恢复 F1 验证副本 4 次，原 raw flag=true 保留。9 个旧 Store/545 文件、14 份报告/摘要哈希完全相同，包含 C2 的 Run、历史副本与成功报告。
+
+| 当前 C3 实验 MR                                                  | Receipt 冻结 OID                           | Base                                 |
+| ---------------------------------------------------------------- | ------------------------------------------ | ------------------------------------ |
+| [backend #6](https://github.com/NickDDDDDD/backend/pull/6)       | `147a2c955c3a27406d380da2d7df317b234d1e02` | `acceptance/terminal-final-20261108` |
+| [web-front #10](https://github.com/NickDDDDDD/web-front/pull/10) | `1d8464452c705af6a86d27fb95bb11b7f5f6ed7e` | `acceptance/terminal-final-20261108` |
+| Workspace #4（URL 见原始报告）                                   | `eac67a67ca61d148f5dd4a5dbb6f5a06e64cc71c` | `acceptance/terminal-final-20261108` |
+
+实际 Receipt `sha256:b7776f946657ea539184dc8b27538cb6082a2350b4f1f9858d333d5fbf7d5c8f`；三个 MR 均唯一且 OPEN，远端 head/base/OID 和归档四类产物/主规格核对通过，没有合入。完整原始报告 `lab-terminal-final-1108/verification-report.md` SHA256 `57fdc6463739536b344d717b1b3428e070e725170b852bd5742cf6e9fe35c6a3`，父任务已复核原文与摘要；与首轮报告各自保留，不静默改写历史。
 
 ## 不在本次修复范围
 
