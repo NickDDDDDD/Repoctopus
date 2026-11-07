@@ -1,6 +1,10 @@
 # 已完成 Run 恢复验证记录
 
-当前为 Build 的验证记录，正式 Comet Verify 尚未通过。不得将下列局部通过结果解释为最终门禁通过。
+本报告记录 Build 验收与正式 Verify；首轮 Build 通过后，最终审查发现两处缺口，已通过正式 verify-fail 返回同一 Run 的 Build 并完成代码修复。当前最终包全流程和最终完整 Verify 尚未通过，不把旧候选或局部结果解释为最终门禁通过。
+
+唯一最终集成 reviewer 为 `/root/completed_recovery_final_verify_review`，独立会话 `codex-completed-recovery-final-review`。审查基线为 `c872b4080d8336d2440410e28e482fce98423464`，候选为 `84fb2c2fc346f4e520503b9a50f40d64d5066e59`；仅生成的 Comet 控制状态在 Build Guard 后更新。Verify 不使用仅允许 Build 的任务协调写入口，最终审查分配与证据在本报告记录，不修改生命周期存储。
+
+该同一会话已对修复后的 `f22e29ff0261a376d9c8e2dc36c0235a5c901781` 源码做局部复查，不重复建立最终审查；原报告与复查记录一并保留。
 
 ## 已采用的上游规则
 
@@ -96,8 +100,37 @@ Build 期间曾把原待导出遥测的实施说明追加到已封存 Design；�
 
 仓库全局格式检查报告 172 个未改动的历史文件；与本次 diff 交集为零，当前变更文件格式通过，未重新格式化已封存归档。此项不能报告为全仓格式通过。
 
-当前分支 Linux CI 已启动；正式 Comet Build/Verify 检查、唯一最终集成审查及本次最终结论仍待补齐。
+此前候选 `2298096` 的 [Linux CI](https://github.com/NickDDDDDD/Repoctopus/actions/runs/42400952275) 已成功；该结果先于最终两项修复，仅作为历史证据。C3 的正式 Verify、新 CI 和新完整包验收仍待补齐。
+
+## OpenSpec 完整性复核
+
+通过 Comet adapter 实际执行 `classic openspec -- status --change preserve-completed-run-recovery --json` 与 `classic openspec -- instructions apply --change preserve-completed-run-recovery --json`，exit code 均为 0。spec-driven 四类产物均 done，任务 8/8、remaining 0，Provider 明确仍要求验证后再归档。
+
+| 维度   | 当前结果                                                                                                                              |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 完整性 | 8/8 tasks；两个 MODIFIED requirement 的工件齐全，所有列出的 contextFiles 均已读取                                                     |
+| 正确性 | 两个 requirement 的终态、历史诊断、两入口恢复、持久异常、Journal、活动授权场景已有相关回归与真实五仓证据；完整集成检查尚待正式 Verify |
+| 一致性 | 实现遵循 approved Design 的可信终态、持久边界与多仓职责分离；未建立第二任务/规划权威；最终独立集成审查进行中                          |
+
+没有把未执行的最终综合检查记为通过，也尚不声明 ready for archive。
+
+## 正式 Build 门禁
+
+Runtime 已接受同一 Run 的 complete-build，并派发 full.build.check。实际命令为 `node C:/nvm4w/nodejs/node_modules/@rpamis/comet/bin/comet.js guard preserve-completed-run-recovery build --apply --local -- npm.cmd run build`，exit code 0；Guard 报告 ALL CHECKS PASSED，推进到 Verify。检查程序、argv、cwd 均使用既有 policy。
+
+此前 PowerShell 脚本包装入口两次返回 Usage、exit code 1，尚未执行 Build 检查；直接调用同一已安装 0.5.1 的 Node CLI 入口后保留了原始参数。没有更换 Comet 版本、检查命令、策略或状态。正式 Verify 使用相同的入口形式，保留其完整输出与真实收据。
+
+## 最终集成审查的两项修复
+
+1. `resume` 的 CLI 在 Service 判断持久终态前探测业务 checkout；实际移走业务目录后，status/next 成功而 resume 失败。CLI 现只提交 Run 身份，Service 在非终态时才按已有 projectInput 采集当前 snapshot。没有观察时省略可选 reconciliation；已有真实 snapshot 仍保留其差异，不能传入原 snapshot 伪造当前没有变化。
+2. 持久 Workflow 仅比较 digest 标签，正文损坏为 null 或被改写仍可能 done。现用已有 hashWorkflowDefinition 重算正文摘要，再接受可信终态；没有新增通用 schema 验证框架或动态文件观察。
+
+正式 verify-fail 使同一 Run 返回 Build Plan，配置保留；修订原计划后进入 Build Execute，没有重跑 Open/Design 或再次配置审批。新增实际 RED 为 4 项失败；修复后原始命令 `node node_modules/vitest/vitest.mjs run test/archive-publication-lifecycle.test.ts test/runtime.test.ts test/build-workspace-recovery.test.ts test/evidence-recovery.test.ts test/runtime-recovery.test.ts test/runtime-recovery-application.test.ts test/work-execution-recovery.test.ts test/change-continuation.test.ts test/project-composition.test.ts`，exit 0，9 文件/141 项通过，其中 Archive 38 项。
+
+同一独立 reviewer 的外部真实临时 fixture 复查 exit 0、2/2 通过，验证三入口均拒绝损坏 Workflow、三条实际 CLI 在业务目录移走后仍完成。无未解决 Critical/Important；最终审查报告 SHA256 为 `96f366f9af12320342afcbc23f0c36891c963b45498a4554d58b3ce40e5fc0d8`，最终门禁与当前包验收仍是合入条件。
+
+当前 C3 内容摘要 `13fad2c836df214f2baaac6c08c2ecaeb2a31455ef83f53f9e67e0f2ec5655a2`，467 文件/5951541 字节，单一包从新的五仓公开接入开始重跑完整流程；不升级首轮未完成执行或把 C2 完成证明冒充当前字节。详细当前身份与首轮历史身份见包验收报告。
 
 ## 不在本次修复范围
 
-Windows Git 长路径使用实验 checkout 的局部前置配置，未改全局 Git；发行包 doctor 的源码布局依赖、消费者桌面激活与 PR Skill 正文交接仍为独立事项。临时 Comet 输入文件会在验证完成后清理；实际验收 Store、安装包和审计证据作为复核资产保留。
+Windows Git 长路径使用实验 checkout 的局部前置配置，未改全局 Git；发行包 doctor 的源码布局依赖、消费者桌面激活与 PR Skill 正文交接仍为独立事项。已消费的临时 Comet 输入文件已清理；实际验收 Store、安装包和审计证据保留。自动审批审查以 blocked by policy 拒绝外部 Vitest 缓存的递归删除及随后更窄的单文件清理，未给出进一步原因；该生成缓存保留，不改用其他工具绕过拒绝，且不影响产品源码或实际 Store。

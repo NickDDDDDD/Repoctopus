@@ -1,12 +1,12 @@
 # 已完成 Run 恢复验证
 
-- Tested implementation commit: `eb019d2821723325e39819bb4219ddbb10a63606`
+- Tested implementation commit: `f22e29ff0261a376d9c8e2dc36c0235a5c901781`
 - Package files: `467`
-- Package content bytes: `5949608`
-- Package content SHA-256: `0621d6bbeb13767f70aa4e415b8a550e5e8a194675d4d8f737c729618bc43e0f`
-- Tarball SHA-256: `08ed4da46acf90ad44e9d3c443efc934a9c2f6e02b40278d37ad9096a63b4999`
+- Package content bytes: `5951541`
+- Package content SHA-256: `13fad2c836df214f2baaac6c08c2ecaeb2a31455ef83f53f9e67e0f2ec5655a2`
+- Tarball SHA-256: `c957d744113f2980f6a6a62f1bb6b22a11d8aabfb0ef7f99f5437fc6019bc866`
 
-当前记录仍在 Build：真实安装包多仓验收已通过，最终集成审查和正式 Comet Guard 尚未完成，不声明整个 Change 验证通过。上述身份来自本次实际独立安装包；不是旧包或旧报告的身份。
+首轮 Build 与真实安装包验收已通过；最终集成审查发现的两处边界缺陷已修复并由同一 reviewer 复核，Comet 仍在正式 verify-fail 后的 Build。上述身份为重新独立构建、安装的当前 C3 包；新五仓完整验收和最终 Verify 尚待通过，不以旧包结果替代。
 
 ## 根因与采用方案
 
@@ -42,15 +42,15 @@ Cordis Service 在活动恢复前调用 coordinator 的可信终态读取；coor
 | 活动未授权与未知执行仍阻断                  | 既有 Build workspace、Evidence recovery、Work execution recovery 回归                |
 | 实际 Close、发布和终态冷恢复                | 新五仓完成实际 Close、三个唯一 MR、8 次终态恢复；另对旧失败副本执行 4 次恢复，均通过 |
 
-## 真实多仓包的连续使用
+## 首轮真实多仓候选 C1 / C2（历史成功）
 
-新 Run 的接入、Open、Design 和初始 Plan 使用 `7e95c86d023b00ce494ed477bfb122b5e9b65cc5` 包（内容摘要 `a61bf3df4487f228a5da85ea0100504b5d29254188670e51c994cb5c51b07187`）。完整检查发现遗漏运行时来源登记后，最终 `d8c99f8` 只补齐两条诊断来源数据，没有修改恢复、Plan 或 Binding 代码。
+首轮 Run 的接入、Open、Design 和初始 Plan 使用 `7e95c86d023b00ce494ed477bfb122b5e9b65cc5` 包（内容摘要 `a61bf3df4487f228a5da85ea0100504b5d29254188670e51c994cb5c51b07187`）。完整检查发现遗漏运行时来源登记后，第二候选 `d8c99f8` 只补齐两条诊断来源数据，没有修改恢复、Plan 或 Binding 代码。
 
-最终包安装到独立新 prefix，通过公开 resume 接续原 Run，保留原 Binding、Plan、check epoch 8 和同一待决定提案；没有编辑产品 Store 或重新创建 Run。两个 README 工作包及后继验证使用最终包执行。两个候选的原始包和角色分别保留，不混称为从头到尾同一个 tarball。
+第二候选安装到独立新 prefix，通过公开 resume 接续首轮 Run，保留原 Binding、Plan、check epoch 8 和同一待决定提案；没有编辑产品 Store 或重新创建 Run。首轮两个 README 工作包及后继验证使用第二候选执行。两个候选的原始包和角色分别保留，不混称为从头到尾同一个 tarball。
 
-实际安装包的源码提交为 `d8c99f8690b2edb501f5b65ace66c1fc43b40fc8`。上列验证提交 `eb019d2` 只增加 composition 测试期望摘要和本报告，打包产品文件未改变；包复现检查继续核对同一规范化内容摘要，不能将提交号不同当作无需核对字节的依据。
+首轮完成包源码为 `d8c99f8690b2edb501f5b65ace66c1fc43b40fc8`，内容摘要为 `0621d6bbeb13767f70aa4e415b8a550e5e8a194675d4d8f737c729618bc43e0f`；当时验证提交 `eb019d2` 只增加测试固定摘要和报告。该首轮成功独立保留，不将它冒充当前 C3 的完整流程。
 
-## 实际终态与历史现场验证
+## 首轮实际终态与历史现场验证
 
 新 Run 完成全流程后，8 个新进程分别在合法 source 和完成后的其他 checkout 上执行两种恢复顺序；每次额外读取 status，均为 completed、done/terminal、空 next actions。完整 Run、Checkpoint、Trajectory 的字节与完成事实不变，stateVersion 244、check epoch 17、10 个 Host Work、2 个验证命令均不增加。
 
@@ -59,6 +59,16 @@ Cordis Service 在活动恢复前调用 coordinator 的可信终态读取；coor
 7 个旧 Store 的 425 文件及 10 份旧报告哈希全部不变；新五仓干净且与 upstream 同步。远端 backend #5、web-front #9、Workspace #3 均唯一、OPEN、面向 `acceptance/terminal-20261108`，head/base/OID 与实际 Receipt 完全一致；本轮没有合入实验 MR。
 
 原始独立报告 `lab-terminal-1108/verification-report.md` 的 SHA256 为 `982071711871f05249cb9bf7b1ed00562e913eb4e340485360e8b95a0825d167`，父任务已独立复核。完整命令、实际两轴审查、归档布局、远端核对、终态矩阵与历史哈希清单均保留在同目录 evidence；不将协调器 fixture 当作这项远端证明。
+
+## 最终审查修复与 C3 验证
+
+同一最终 reviewer 发现 CLI 在 Service 判断终态前强制观察业务目录，以及持久 Workflow 正文未重算摘要。通过正式 verify-fail 返回 Build Plan，保留已批准配置与唯一 Change；计划仍映射原任务，不修改 Design 或规格。
+
+新增实际 RED 4 项失败；修复后 9 个相关测试文件、141 项通过，含完整 Archive publication 的 38 项、活动恢复和 runtime 回归。reviewer 在独立临时 fixture 中复跑 2/2 通过，无未解决 Critical/Important；最终审查记录 SHA256 为 `96f366f9af12320342afcbc23f0c36891c963b45498a4554d58b3ce40e5fc0d8`。
+
+CLI 只提交 Run 身份，由 Service 在终态之后才进行活动项目观察。未观察时省略可选 reconciliation，调用者提供的真实 snapshot 仍保留其差异；活动恢复缺失当前 snapshot 或不可读 checkout 仍拒绝。Workflow 正文使用既有 hashWorkflowDefinition 重新验证。没有新增持久 schema、迁移或恢复 Work。
+
+当前 C3 在独立新目录重新从公开接入开始验收，不升级首轮活动 Run。最终包的实际内容身份列于页首；旧现场和首轮成功报告继续按哈希保护。此前 Linux CI 成功属于 `2298096`，不能当作 C3 的最终 CI；最终门禁仍待新结果。
 
 ## 范围边界
 
