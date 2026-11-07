@@ -1,0 +1,52 @@
+# 已完成 Run 恢复验证
+
+- Tested implementation commit: `d8c99f8690b2edb501f5b65ace66c1fc43b40fc8`
+- Package files: `467`
+- Package content bytes: `5949608`
+- Package content SHA-256: `0621d6bbeb13767f70aa4e415b8a550e5e8a194675d4d8f737c729618bc43e0f`
+- Tarball SHA-256: `08ed4da46acf90ad44e9d3c443efc934a9c2f6e02b40278d37ad9096a63b4999`
+
+当前记录仍在 Build：真实安装包多仓验收、最终集成审查和正式 Comet Guard 尚未完成，不声明整个 Change 验证通过。上述身份来自本次实际独立安装包；不是旧包或旧报告的身份。
+
+## 根因与采用方案
+
+原多仓 Run 已接受 PublicationReceipt 并进入 completed，后续通用 resume 却将当前 checkout 与启动快照比较并持久化全局 reconciliation。完整 status 和 CLI envelope 又让历史诊断覆盖终态。前两次修复覆盖的是活动 Build 工作区恢复和 Evidence 输入身份，没有覆盖 completed 的完整入口链。
+
+采用 Comet 0.5.1 固定提交 `35c9860b77b42bafa0c2d80d8d695889f888a924` 的终态先于调度原则：`domains/engine/runtime-service.ts` 和 `domains/comet-classic/classic-current-change.ts`。本次观察的上游 master 为 `a61a2e5b4766e1ad62377dec598e402560a259b6`，这两份来源与固定版一致。来源哈希已登记并通过 provenance 检查，没有引入 Comet SDK 或修改固定依赖。
+
+Cordis Service 在活动恢复前调用 coordinator 的可信终态读取；coordinator 核对 Run、Checkpoint、原始持久项目快照和 Trajectory，然后共享既有终态投影。历史 reconciliation 标志不清除、不迁移；它不再要求完成 Run 恢复旧 checkout。原 Journal 仍可完成原事务，原待上报遥测仍可补发，不产生新的开发工作。
+
+## 已执行的回归与独立审查
+
+- 初始完整状态与恢复回归实际 RED：原实现的 9 项失败、1 项通过。不是仅验证纯分类器。
+- 完整性审查发现原快照丢失和反向 Run/Checkpoint 状态冲突，新增回归实际 4 项失败；修复后 9 项完整性回归通过，独立 reviewer 复跑同样通过。
+- 完整 Archive publication 文件实际 34 项通过，包括两处原 Journal 中断边界、仅一次原遥测补发、真实 Git 两仓、两种 Service/CLI 新进程恢复顺序和历史诊断保留。
+- 原有另外六组活动 Build/Evidence、Runtime 和未知执行恢复回归共 80 项通过。
+- CLI 变异验证只在生成产物中关闭 completed 分派，使原通用路径重新执行，4 项生产 CLI 用例全部因状态变化失败；随后恢复原始产物字节，`build --check` 通过。没有回退源码制造 TDD 证据。
+- 类型检查、相关 ESLint、Prettier、来源检查通过。首次完整 verify 在测试 fixture 的 JSON 类型标注处被 ESLint 阻止，该问题已修复；后续完整检查的最终结论待补。
+- 新增来源同时受脚本和运行时两份登记校验；补齐运行时登记后，两组来源测试共 16 项通过。项目 composition 的固定摘要随本次 workflow/maintenance 源码身份更新，相关组装和实际 OTLP tracer 两项回归通过。
+- 新 worktree 依赖最初跳过安装脚本，缺少锁定版 Electron 二进制；补齐本地测试依赖后，两项真实桌面启动回归通过，没有修改桌面产品源码。
+- 早期全量尝试中 Evidence DAG 用例在并发负载下超过原 60 秒限制；停止已不覆盖最终输入的旧尝试后，同一用例重跑通过（约 40 秒），没有修改 timeout 或缓存规则。旧全量尝试不作为通过证据，正式最终完整检查仍待执行。
+- 仓库级 `format:check` 报告 172 个未改动文件的既有格式问题；与本次基线 diff 取交集为零。本次改动文件的 Prettier 检查通过，不重新格式化已封存归档。
+- 独立 Build reviewer 逐任务审查 1.1–1.4、2.1，首轮复查关闭 R1/R2，无未解决 IMPORTANT。审查与实际 RED/GREEN 原始输出保存在独立审计证据目录。
+
+## 验收要求映射
+
+| 要求                                        | 当前证据                                                                            |
+| ------------------------------------------- | ----------------------------------------------------------------------------------- |
+| completed + 历史 reconciliation 仍返回 done | 完整 status 与 CLI 历史标志矩阵，原字段保留                                         |
+| 两种恢复顺序保留完成事实                    | Service/coordinator/CLI 比较完整 Run、Checkpoint、轨迹长度及 execution/next actions |
+| 持久终态不能绕过完整性                      | 9 项异常场景逐一调用 status、next、resume；原项目快照重算摘要                       |
+| 原中断事务可恢复，副作用不重复              | 两处 Journal 写入中断；仅补发原遥测，重复恢复不再次导出                             |
+| 活动未授权与未知执行仍阻断                  | 既有 Build workspace、Evidence recovery、Work execution recovery 回归               |
+| 实际 Close、发布和终态冷恢复                | 独立新五仓验收进行中，不以 coordinator fixture 代替远端证明                         |
+
+## 真实多仓包的连续使用
+
+新 Run 的接入、Open、Design 和初始 Plan 使用 `7e95c86d023b00ce494ed477bfb122b5e9b65cc5` 包（内容摘要 `a61bf3df4487f228a5da85ea0100504b5d29254188670e51c994cb5c51b07187`）。完整检查发现遗漏运行时来源登记后，最终 `d8c99f8` 只补齐两条诊断来源数据，没有修改恢复、Plan 或 Binding 代码。
+
+最终包安装到独立新 prefix，通过公开 resume 接续原 Run，保留原 Binding、Plan、check epoch 8 和同一待决定提案；没有编辑产品 Store 或重新创建 Run。两个 README 工作包及后继验证使用最终包执行。两个候选的原始包和角色分别保留，不混称为从头到尾同一个 tarball。
+
+## 范围边界
+
+本次只修复 completed Change Run，不扩大 failed/cancelled 的重试语义，不添加 schema、迁移、后台进程或新的恢复 Work。后续 MR 审查与远端变动继续由独立一致性审查处理。Windows Git 长路径、独立安装包 doctor 资源布局、桌面启动以及 PR Skill 正文交接不在本次功能修复范围；验证遇到失败会保留并明确报告，不把未执行或失败计为通过。
