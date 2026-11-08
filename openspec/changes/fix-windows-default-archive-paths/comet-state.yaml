@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 37aa34e1-24a8-4411-81f9-ad23388173d9
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 04d37b5494fa1cf3bc2837312096f0c2401fa5a4
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-08
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/fix-windows-default-archive-paths
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: e0eeedd0fa588299fc56751dad75fbfa307051f0e64cbee3f4a54bd514d7f8b7
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: fix-windows-default-archive-paths
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 3cede4dde52afdbe38ea5d100a9fce907276f55a1f9111c1710da657d9dca7d7
+    input:
+      change: fix-windows-default-archive-paths
+      changeDir: openspec/changes/fix-windows-default-archive-paths
+      workspaceBaseline:
+        ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 04d37b5494fa1cf3bc2837312096f0c2401fa5a4
+      boundBranch: comet/fix-windows-default-archive-paths
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-08
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: fix-windows-default-archive-paths:1
+        input:
+          input:
+            change: fix-windows-default-archive-paths
+            changeDir: openspec/changes/fix-windows-default-archive-paths
+            workspaceBaseline:
+              ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+          outputs: {}
+        inputHash: 0f4aefed3fce1c44a8270ba6cf12e442f9ce1788795e5a698df5bfb590e92830
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-default-archive-paths
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      fix-windows-default-archive-paths:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 47a5370c7dd615788caead9b65d84add0f439a59c77d48cda0ff0081559369e5
