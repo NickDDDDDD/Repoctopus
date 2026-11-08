@@ -2,19 +2,19 @@
 change_id: 37aa34e1-24a8-4411-81f9-ad23388173d9
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: 04d37b5494fa1cf3bc2837312096f0c2401fa5a4
-design_doc: null
-plan: null
+design_doc: openspec/changes/fix-windows-default-archive-paths/design.md
+plan: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: comet/fix-windows-default-archive-paths
-direct_override: null
-handoff_context: null
-handoff_hash: null
+direct_override: false
+handoff_context: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+handoff_hash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 7a75f4810dbfa48a9aa447d107174cbdf787dd4fc2339f1be2fb0e0a1b088a3b
+  hash: aaa4fa80b25297ccafe475b097ae194543facc774bd630a1b4f4a2ac3011a410
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,24 +56,24 @@ run_checkpoint:
       baseRef: 04d37b5494fa1cf3bc2837312096f0c2401fa5a4
       boundBranch: comet/fix-windows-default-archive-paths
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-08
-      designDoc: null
-      directOverride: null
-      handoffContext: null
-      handoffHash: null
+      designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+      directOverride: false
+      handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+      handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
       isolation: worktree
       language: zh-CN
-      phase: design
-      plan: null
+      phase: build
+      plan: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 5
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -181,6 +181,14 @@ run_checkpoint:
         stepId: full.open.revalidate
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-edeed18104670626d73bc7d8d0a339bf50d619bc19d3504b52edff03c47edcc5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: fix-windows-default-archive-paths:5
         input:
           input:
@@ -211,20 +219,727 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
         inputHash: af9963a59d63ba0acf0b1a19aeba1c5269d01b5881ebfba1486e5b1a65c2d740
+        outcome:
+          actionId: fix-windows-default-archive-paths:5
+          attempt: 1
+          claimToken: portable-edeed18104670626d73bc7d8d0a339bf50d619bc19d3504b52edff03c47edcc5
+          inputHash: af9963a59d63ba0acf0b1a19aeba1c5269d01b5881ebfba1486e5b1a65c2d740
+          outcomeId: b10363cd-ac84-49a8-a340-c7ff75fefbde
+          output:
+            handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+            handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+            proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+              Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+              Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+              Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+            requirementsEvidence:
+              contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+              ref: openspec/changes/fix-windows-default-archive-paths
+            sourceEvidence:
+              contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+              ref: openspec/changes/fix-windows-default-archive-paths
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: b32e99ee3cd08454a0adbd58b2c52c202e71a1fb509f94c0900862183ae73afa
+            outcomeId: b10363cd-ac84-49a8-a340-c7ff75fefbde
         reconciliations: []
         ref: comet-design
         requiredCapabilities: []
         retry: manual
         runId: fix-windows-default-archive-paths
-        status: pending
+        status: succeeded
         stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-70bd8c56a3ac1c4460415101febf6e3af9263f9e5bbeeacb3704ee68fcd3e4e3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-default-archive-paths:7
+        input:
+          input:
+            change: fix-windows-default-archive-paths
+            changeDir: openspec/changes/fix-windows-default-archive-paths
+            workspaceBaseline:
+              ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                    handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                    proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                      Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                      Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                      Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                    requirementsEvidence:
+                      contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                      ref: openspec/changes/fix-windows-default-archive-paths
+                    sourceEvidence:
+                      contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                      ref: openspec/changes/fix-windows-default-archive-paths
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+            full.open.evidence:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+            full.open.revalidate:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        inputHash: 97f63086420d2118ab58a5ed5461d33584819f1f98e675a810a3ec2c28dfc414
+        outcome:
+          actionId: fix-windows-default-archive-paths:7
+          attempt: 1
+          claimToken: portable-70bd8c56a3ac1c4460415101febf6e3af9263f9e5bbeeacb3704ee68fcd3e4e3
+          inputHash: 97f63086420d2118ab58a5ed5461d33584819f1f98e675a810a3ec2c28dfc414
+          outcomeId: 91a89e7c-2eb6-44bf-b8d4-9dc6bd415207
+          output:
+            designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5f90bc269d5527962e16b5fcdb627b94e3ab70039b5044890baae3810c55135a
+            outcomeId: 91a89e7c-2eb6-44bf-b8d4-9dc6bd415207
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-default-archive-paths
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-9590eac78b7dd68428339900f93f6b5cd27e288aa774fcc9a7e47221de8a31fe
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-default-archive-paths:9
+        input:
+          input:
+            change: fix-windows-default-archive-paths
+            changeDir: openspec/changes/fix-windows-default-archive-paths
+            workspaceBaseline:
+              ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                    handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                    proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                      Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                      Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                      Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                    requirementsEvidence:
+                      contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                      ref: openspec/changes/fix-windows-default-archive-paths
+                    sourceEvidence:
+                      contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                      ref: openspec/changes/fix-windows-default-archive-paths
+            full.design.document:
+              designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+            full.design.evidence:
+              contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+              ref: openspec/changes/fix-windows-default-archive-paths/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+            full.open.evidence:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+            full.open.revalidate:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        inputHash: 3e995ea29c43ba6d220b92934e3eb8ab0de17364e36c8c4d0c26e655e56b7e15
+        outcome:
+          actionId: fix-windows-default-archive-paths:9
+          attempt: 1
+          claimToken: portable-9590eac78b7dd68428339900f93f6b5cd27e288aa774fcc9a7e47221de8a31fe
+          inputHash: 3e995ea29c43ba6d220b92934e3eb8ab0de17364e36c8c4d0c26e655e56b7e15
+          outcomeId: 9eddada0-9c9a-470a-aee9-cf571a009f77
+          output:
+            boundBranch: comet/fix-windows-default-archive-paths
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 543d7c1375dd38b73ae4de493daac1625143e0e62c66e4e875bf248f64faadc8
+            outcomeId: 9eddada0-9c9a-470a-aee9-cf571a009f77
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-default-archive-paths
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-cdea59d2cd35426f646f5ff92193a429fad20b7f9e7421717e6deaa449076b31
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-default-archive-paths:11
+        input:
+          input:
+            change: fix-windows-default-archive-paths
+            changeDir: openspec/changes/fix-windows-default-archive-paths
+            workspaceBaseline:
+              ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+          outputs:
+            full.build.configure:
+              boundBranch: comet/fix-windows-default-archive-paths
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/fix-windows-default-archive-paths
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                    handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                    proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                      Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                      Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                      Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                    requirementsEvidence:
+                      contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                      ref: openspec/changes/fix-windows-default-archive-paths
+                    sourceEvidence:
+                      contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                      ref: openspec/changes/fix-windows-default-archive-paths
+            full.design.document:
+              designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+            full.design.evidence:
+              contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+              ref: openspec/changes/fix-windows-default-archive-paths/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+            full.open.evidence:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+            full.open.revalidate:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        inputHash: 263cb05d6e29f1abf201eb8e58ede63f342f99fa25c6ec8a091cdce5c734729e
+        outcome:
+          actionId: fix-windows-default-archive-paths:11
+          attempt: 1
+          claimToken: portable-cdea59d2cd35426f646f5ff92193a429fad20b7f9e7421717e6deaa449076b31
+          inputHash: 263cb05d6e29f1abf201eb8e58ede63f342f99fa25c6ec8a091cdce5c734729e
+          outcomeId: fc350598-f31b-41fc-b14f-d7f3397d7763
+          output:
+            designEvidence:
+              contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+              ref: openspec/changes/fix-windows-default-archive-paths/design.md
+            plan: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+            planEvidence:
+              contentHash: c2abde15e280c587cbeeeb8c32dcc03adb93d358b11a0e4761b72bc009b98c9d
+              ref: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+            taskRevision: c5de40fe2684ebb4beb81022cc9052f0dc34d011e7c6dd74833504f3eb9cf364
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 27b8a91025119b93d02c49ec68bfc1821fcd5fe1ab67980cd3ca172a3917601f
+            outcomeId: fc350598-f31b-41fc-b14f-d7f3397d7763
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-default-archive-paths
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: fix-windows-default-archive-paths:13
+        input:
+          input:
+            change: fix-windows-default-archive-paths
+            changeDir: openspec/changes/fix-windows-default-archive-paths
+            workspaceBaseline:
+              ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+          outputs:
+            full.build.configure:
+              boundBranch: comet/fix-windows-default-archive-paths
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/fix-windows-default-archive-paths
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+                ref: openspec/changes/fix-windows-default-archive-paths/design.md
+              plan: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+              planEvidence:
+                contentHash: c2abde15e280c587cbeeeb8c32dcc03adb93d358b11a0e4761b72bc009b98c9d
+                ref: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+              taskRevision: c5de40fe2684ebb4beb81022cc9052f0dc34d011e7c6dd74833504f3eb9cf364
+            full.build.plan.evidence:
+              contentHash: c2abde15e280c587cbeeeb8c32dcc03adb93d358b11a0e4761b72bc009b98c9d
+              ref: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                    handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                    proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                      Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                      Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                      Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                    requirementsEvidence:
+                      contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                      ref: openspec/changes/fix-windows-default-archive-paths
+                    sourceEvidence:
+                      contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                      ref: openspec/changes/fix-windows-default-archive-paths
+            full.design.document:
+              designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+            full.design.evidence:
+              contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+              ref: openspec/changes/fix-windows-default-archive-paths/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+            full.open.evidence:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+            full.open.revalidate:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        inputHash: ab5bee1a0a3cbc262f4f878387da4d021564e74839a8d16681e6735457c4fe7e
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-default-archive-paths
+        status: pending
+        stepId: full.build.execute
         type: invoke_skill
     actionContexts:
       fix-windows-default-archive-paths:1:
         results: {}
         sequence: 1
+      fix-windows-default-archive-paths:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/fix-windows-default-archive-paths
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/fix-windows-default-archive-paths
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                    handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                    proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                      Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                      Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                      Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                    requirementsEvidence:
+                      contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                      ref: openspec/changes/fix-windows-default-archive-paths
+                    sourceEvidence:
+                      contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                      ref: openspec/changes/fix-windows-default-archive-paths
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+              ref: openspec/changes/fix-windows-default-archive-paths/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        sequence: 11
+      fix-windows-default-archive-paths:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/fix-windows-default-archive-paths
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/fix-windows-default-archive-paths
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+                ref: openspec/changes/fix-windows-default-archive-paths/design.md
+              plan: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+              planEvidence:
+                contentHash: c2abde15e280c587cbeeeb8c32dcc03adb93d358b11a0e4761b72bc009b98c9d
+                ref: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+              taskRevision: c5de40fe2684ebb4beb81022cc9052f0dc34d011e7c6dd74833504f3eb9cf364
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: c2abde15e280c587cbeeeb8c32dcc03adb93d358b11a0e4761b72bc009b98c9d
+              ref: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                    handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                    proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                      Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                      Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                      Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                    requirementsEvidence:
+                      contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                      ref: openspec/changes/fix-windows-default-archive-paths
+                    sourceEvidence:
+                      contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                      ref: openspec/changes/fix-windows-default-archive-paths
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+              ref: openspec/changes/fix-windows-default-archive-paths/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        sequence: 13
       fix-windows-default-archive-paths:4:
         results:
           full.open:
@@ -285,6 +1000,157 @@ run_checkpoint:
             value:
               contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
         sequence: 5
+      fix-windows-default-archive-paths:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                    handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                    proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                      Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                      Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                      Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                    requirementsEvidence:
+                      contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                      ref: openspec/changes/fix-windows-default-archive-paths
+                    sourceEvidence:
+                      contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                      ref: openspec/changes/fix-windows-default-archive-paths
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        sequence: 7
+      fix-windows-default-archive-paths:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                    handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                    proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                      Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                      Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                      Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                    requirementsEvidence:
+                      contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                      ref: openspec/changes/fix-windows-default-archive-paths
+                    sourceEvidence:
+                      contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                      ref: openspec/changes/fix-windows-default-archive-paths
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+              ref: openspec/changes/fix-windows-default-archive-paths/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        sequence: 9
     waits:
       - id: fix-windows-default-archive-paths:3
         stepId: full.open.confirm
@@ -320,6 +1186,198 @@ run_checkpoint:
           id: classic-open-713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
           choice: approved
           proposalHash: 65f5efb35e26a95e66468f299036133ef1f0c740f0b2c3eb345f52468e0cf173
+      - id: fix-windows-default-archive-paths:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: fix-windows-default-archive-paths
+            changeDir: openspec/changes/fix-windows-default-archive-paths
+            workspaceBaseline:
+              ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+        proposalHash: 56a1e518cc92034d5cbbeaff6c86cbdfa656da5612d461283c5294ea64179091
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        decision:
+          id: classic-design-56a1e518cc92034d5cbbeaff6c86cbdfa656da5612d461283c5294ea64179091-approved
+          choice: approved
+          proposalHash: 56a1e518cc92034d5cbbeaff6c86cbdfa656da5612d461283c5294ea64179091
+      - id: fix-windows-default-archive-paths:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: fix-windows-default-archive-paths
+            changeDir: openspec/changes/fix-windows-default-archive-paths
+            workspaceBaseline:
+              ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+          outputs:
+            full.build.configure:
+              boundBranch: comet/fix-windows-default-archive-paths
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: f47edd9923f5a442a4149cbc94a532322f0765bfa443189635518b5a3af97385
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/fix-windows-default-archive-paths
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                    handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                    proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                      Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                      Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                      Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                    requirementsEvidence:
+                      contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                      ref: openspec/changes/fix-windows-default-archive-paths
+                    sourceEvidence:
+                      contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                      ref: openspec/changes/fix-windows-default-archive-paths
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+              ref: openspec/changes/fix-windows-default-archive-paths/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        decision:
+          id: classic-build-f47edd9923f5a442a4149cbc94a532322f0765bfa443189635518b5a3af97385-approved
+          choice: approved
+          proposalHash: f47edd9923f5a442a4149cbc94a532322f0765bfa443189635518b5a3af97385
     evidenceWaits:
       - id: fix-windows-default-archive-paths:2
         stepId: full.open.evidence
@@ -335,9 +1393,311 @@ run_checkpoint:
           ref: openspec/changes/fix-windows-default-archive-paths
           contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
           submissionId: 4ac332a0-6500-4df7-a027-edfbb912826f
+      - id: fix-windows-default-archive-paths:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                    handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                    proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                      Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                      Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                      Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                    requirementsEvidence:
+                      contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                      ref: openspec/changes/fix-windows-default-archive-paths
+                    sourceEvidence:
+                      contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                      ref: openspec/changes/fix-windows-default-archive-paths
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        receipt:
+          ref: openspec/changes/fix-windows-default-archive-paths/design.md
+          contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+          submissionId: 3ae6fbd0-5cbc-4fc0-9fdc-82d96e03d4c2
+      - id: fix-windows-default-archive-paths:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/fix-windows-default-archive-paths
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/fix-windows-default-archive-paths
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+                ref: openspec/changes/fix-windows-default-archive-paths/design.md
+              plan: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+              planEvidence:
+                contentHash: c2abde15e280c587cbeeeb8c32dcc03adb93d358b11a0e4761b72bc009b98c9d
+                ref: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+              taskRevision: c5de40fe2684ebb4beb81022cc9052f0dc34d011e7c6dd74833504f3eb9cf364
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                    handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                    proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                      Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                      Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                      Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                    requirementsEvidence:
+                      contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                      ref: openspec/changes/fix-windows-default-archive-paths
+                    sourceEvidence:
+                      contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                      ref: openspec/changes/fix-windows-default-archive-paths
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+              ref: openspec/changes/fix-windows-default-archive-paths/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+              handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+              proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+              requirementsEvidence:
+                contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                ref: openspec/changes/fix-windows-default-archive-paths
+              sourceEvidence:
+                contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                ref: openspec/changes/fix-windows-default-archive-paths
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-default-archive-paths
+                  changeDir: openspec/changes/fix-windows-default-archive-paths
+                  workspaceBaseline:
+                    ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+                    ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+              ref: openspec/changes/fix-windows-default-archive-paths
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
+        receipt:
+          ref: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+          contentHash: c2abde15e280c587cbeeeb8c32dcc03adb93d358b11a0e4761b72bc009b98c9d
+          submissionId: 451b4df7-0c7c-4df5-8216-13aa3952f11e
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: comet/fix-windows-default-archive-paths
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-windows-default-archive-paths
+              changeDir: openspec/changes/fix-windows-default-archive-paths
+              workspaceBaseline:
+                ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+            outputs:
+              full.build.configure:
+                boundBranch: comet/fix-windows-default-archive-paths
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+            ref: openspec/changes/fix-windows-default-archive-paths/design.md
+          plan: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+          planEvidence:
+            contentHash: c2abde15e280c587cbeeeb8c32dcc03adb93d358b11a0e4761b72bc009b98c9d
+            ref: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+          taskRevision: c5de40fe2684ebb4beb81022cc9052f0dc34d011e7c6dd74833504f3eb9cf364
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: c2abde15e280c587cbeeeb8c32dcc03adb93d358b11a0e4761b72bc009b98c9d
+          ref: docs/superpowers/plans/2026-11-08-fix-windows-default-archive-paths.md
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-windows-default-archive-paths
+              changeDir: openspec/changes/fix-windows-default-archive-paths
+              workspaceBaseline:
+                ref: 70c9a007-fa9e-4e67-94c1-cd851121dd6e
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+                handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+                proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+                  Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+                  Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+                  Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+                requirementsEvidence:
+                  contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+                  ref: openspec/changes/fix-windows-default-archive-paths
+                sourceEvidence:
+                  contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+                  ref: openspec/changes/fix-windows-default-archive-paths
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/fix-windows-default-archive-paths/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: 4d8cd3cadb9022194e589aeb94cb0b3380c7d375f5f62c0b144a058c320613d6
+          ref: openspec/changes/fix-windows-default-archive-paths/design.md
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/fix-windows-default-archive-paths/.comet/handoff/design-context.json
+          handoffHash: 47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8
+          proposal: 用户已选择B并委托Agent代理中间确认。方案：同一Change修复Windows受管Archive
+            Git长路径，以及原Run跨实现恢复。保留冻结Archive来源、原规划审批、Verify
+            Input/Gate/Bundle和Journal；由现有组合权威精确采纳当前实现，补齐Archive真实Provider依赖，在既有受保护入口核对最新Run/Work/epoch/input/composition，从可信状态形成进程内执行上下文供Delivery核验。不用历史来源要求当前代码完全相同，不直接换冻结摘要，不新增持久授权协议或通用兼容层。Windows只在受管Git子进程用命令级长路径配置，不改宿主持久配置、目录布局或检查argv。已按用户B选择更新Spec
+            Patch，增加Archive执行组合与冻结来源分离的契约，原路径/隔离要求保持，12项任务。真实生产回归禁止mock核心校验；修复包必须公开接续原失败多仓Run，核对无重复审批/Verify/MR及冷恢复。独立Builder复核无阻断。风险：不兼容实现、执行前漂移、未知副作用与底层路径失败继续阻断。采用autonomous+TDD+thorough，沿用当前worktree。修复CI通过后归档创建PR合入main，再以main包验证并按授权继续修复直到通过。
+          requirementsEvidence:
+            contentHash: 196df44747928570a9f5ed33fdd0e3e8b71d43199122cef163bed37b48830dba
+            ref: openspec/changes/fix-windows-default-archive-paths
+          sourceEvidence:
+            contentHash: 01547b25d800833b1a0523d59514825055c17ef82eae710c35214ae3bd6c3afa
+            ref: openspec/changes/fix-windows-default-archive-paths
       full.open:
         sequence: 1
         value:
@@ -369,6 +1729,6 @@ run_checkpoint:
           contentHash: 713934f2339de7b41e9802b3a3c0a42a5b78c3fa19cfbfba65a4bccfa7fad540
     children: []
     lineage: []
-  sourceRevision: 7
-  sourceHash: e8bb9b6f3c1f87370fc755ef18253009f96a23ec695e52ac83e66d52625912b0
-check_epoch: 1
+  sourceRevision: 19
+  sourceHash: 30f4948765699f1a7c08b272664fdb7c130a471e35c67a8e7340aaccd8cf11f9
+check_epoch: 2

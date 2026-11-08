@@ -1,0 +1,16 @@
+{
+  "change": "fix-windows-default-archive-paths",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "47453448e2ef9b884b905bb8a59e907f7fa7255724057bbd8428ae341c72d7e8",
+  "files": [
+    { "path": "openspec/changes/fix-windows-default-archive-paths/proposal.md", "sha256": "084e3b1ed699b3adb998c7d678beeb996718177eab104d469a2d551e64c632b6" },
+    { "path": "openspec/changes/fix-windows-default-archive-paths/design.md", "sha256": "0c0e609276d66af4aaee7d4229da06d193e2ad62cda553e248bded1690db3062" },
+    { "path": "openspec/changes/fix-windows-default-archive-paths/tasks.md", "sha256": "c5de40fe2684ebb4beb81022cc9052f0dc34d011e7c6dd74833504f3eb9cf364" },
+    { "path": "openspec/changes/fix-windows-default-archive-paths/.openspec.yaml", "sha256": "5fd2cc7d290b25cf909218418df74e542dd2eb03ebf67a63a38a9bee04d94037" },
+    { "path": "openspec/changes/fix-windows-default-archive-paths/specs/delivery-governance/spec.md", "sha256": "469e60ccbf6d3fd678380ccdc32f4dd285dd9c82853bd54804bde38c6b3f1dec" }
+  ]
+}
