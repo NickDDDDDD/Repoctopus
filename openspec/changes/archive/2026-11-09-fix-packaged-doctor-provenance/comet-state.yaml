@@ -1,0 +1,2597 @@
+# comet-execution: managed-run
+change_id: af9c08c9-f1e9-43af-b5f5-cb8e4c6d7a0e
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: fec442b1c1b8cf1af94929fb9304de6e1a9dc575
+design_doc: openspec/changes/archive/2026-11-09-fix-packaged-doctor-provenance/design.md
+plan: docs/superpowers/plans/2026-11-09-fix-packaged-doctor-provenance.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/fix-packaged-doctor-provenance.md
+branch_status: pending
+created_at: 2026-11-08
+verified_at: 2026-11-08
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/fix-packaged-doctor-provenance
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-09-fix-packaged-doctor-provenance/.comet/handoff/design-context.json
+handoff_hash: 3946eb908f59a554e9d3b47f4be1c7bd92aa827132bb7485261e5f4c64854a58
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 53ce930d51f2a32d2a3bc75a984ca2c0ed4b40d8996bc0d2b9b9da3aa9c79e56
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: fix-packaged-doctor-provenance
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: d558245a297b50ffe7827d4bf9bbbcdcd7570827bfe49080cb5c884ef89e4e38
+    input:
+      change: fix-packaged-doctor-provenance
+      changeDir: openspec/changes/fix-packaged-doctor-provenance
+      workspaceBaseline:
+        ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: fec442b1c1b8cf1af94929fb9304de6e1a9dc575
+      boundBranch: comet/fix-packaged-doctor-provenance
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 6
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-08
+      designDoc: openspec/changes/archive/2026-11-09-fix-packaged-doctor-provenance/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-09-fix-packaged-doctor-provenance/.comet/handoff/design-context.json
+      handoffHash: 3946eb908f59a554e9d3b47f4be1c7bd92aa827132bb7485261e5f4c64854a58
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-09-fix-packaged-doctor-provenance.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/fix-packaged-doctor-provenance.md
+      verifiedAt: 2026-11-08
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 24
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-465080cd3e0b52ed07296448f74586da955a9e21e72cc523a0f7c2770d22063d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:1
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: c3186890af1b863d53ced55b4fb3a78ec86cd80185382e09fb76bca0863066af
+        outcome:
+          actionId: fix-packaged-doctor-provenance:1
+          attempt: 1
+          claimToken: portable-465080cd3e0b52ed07296448f74586da955a9e21e72cc523a0f7c2770d22063d
+          inputHash: c3186890af1b863d53ced55b4fb3a78ec86cd80185382e09fb76bca0863066af
+          outcomeId: 6363168f-5cff-44ef-981a-8181b27e2d13
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8642af2185a0cd0f5a56dc987b6b22bdd5bad207c3a4341ac4be50d9c88b8fee
+            outcomeId: 6363168f-5cff-44ef-981a-8181b27e2d13
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-05b20482709f4c2b297a84c17a05f1b769c299c52bf2e953aa23126ba0b6c351
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:4
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: 77670130747b588df963cb5c3f82deb13ecaed285d427883d82d058f3dabbe14
+        outcome:
+          actionId: fix-packaged-doctor-provenance:4
+          attempt: 1
+          claimToken: portable-05b20482709f4c2b297a84c17a05f1b769c299c52bf2e953aa23126ba0b6c351
+          inputHash: 77670130747b588df963cb5c3f82deb13ecaed285d427883d82d058f3dabbe14
+          outcomeId: fix-packaged-doctor-provenance:4:1:executor-result
+          output:
+            contentHash: b59a32b998e5a406fa4e08469bf66371a035b70ff01ecf64cf2da765fd092862
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a9231dce211c391db1a60715d4416ad5b227b63888f3f9bb47a9bac9f169926d
+            outcomeId: fix-packaged-doctor-provenance:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-7e94f6349f97c07115da15fa1c81e0e57ff3d0ab676087b28e1d83e86066c519
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:5
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: 1a3dec77e6217de665667185645ebe9795a6369149d438bb7fe85cbd8a48df2f
+        outcome:
+          actionId: fix-packaged-doctor-provenance:5
+          attempt: 1
+          claimToken: portable-7e94f6349f97c07115da15fa1c81e0e57ff3d0ab676087b28e1d83e86066c519
+          inputHash: 1a3dec77e6217de665667185645ebe9795a6369149d438bb7fe85cbd8a48df2f
+          outcomeId: a4087880-750b-495c-8e10-876f11d67aed
+          output:
+            handoffContext: openspec/changes/fix-packaged-doctor-provenance/.comet/handoff/design-context.json
+            handoffHash: 3946eb908f59a554e9d3b47f4be1c7bd92aa827132bb7485261e5f4c64854a58
+            proposal: 使用已分发来源 manifest 与实际生产包身份完成 doctor，移除运行时对开发 lockfile 和准备脚本的依赖；CI
+              保留完整锁与 integrity 审计。通过无开发资源健康样本、依赖漂移与缺失、源码审计反例、真实 tarball doctor
+              资源损坏及持久状态字节对比验收。不新增 schema、模式或迁移。用户已委托代理审批。
+            requirementsEvidence:
+              contentHash: c2b8206ac9f618b2fb76f7a3ede250466c82c844477bc3317d50a8b196cb99b4
+              ref: openspec/changes/fix-packaged-doctor-provenance
+            sourceEvidence:
+              contentHash: 690f403a3555d62fa1c70a079a0189d451dc7eaf3d80de88df8308eb745f24fc
+              ref: openspec/changes/fix-packaged-doctor-provenance
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 520d04b10571659c85869adbf3c50df14a324176a45c48cc636ee8cf2d784ccc
+            outcomeId: a4087880-750b-495c-8e10-876f11d67aed
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-0c2da001f40703104babc24edb836b51d0f0822f6057bbc25b5e23b3f61a4ec6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:7
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: d0ed833828b5dcd004bd10f2c34a9f388cca1e4e84e8bcf2f8b749dd45878f52
+        outcome:
+          actionId: fix-packaged-doctor-provenance:7
+          attempt: 1
+          claimToken: portable-0c2da001f40703104babc24edb836b51d0f0822f6057bbc25b5e23b3f61a4ec6
+          inputHash: d0ed833828b5dcd004bd10f2c34a9f388cca1e4e84e8bcf2f8b749dd45878f52
+          outcomeId: ef16f47c-2280-4a14-a82b-a6ab122553d7
+          output:
+            designDoc: openspec/changes/fix-packaged-doctor-provenance/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 551b2550874e3233b95a1a2a1d2f4edb5fff110a47fa4e8dd6e102c07acbbf33
+            outcomeId: ef16f47c-2280-4a14-a82b-a6ab122553d7
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-7f0e6cf4c029d3a803747397d140aa473122db7702566b51c5e0642d7c91b49d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:9
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: 094f1d679a9a52209b9e23366a73138c97de6b2e55888839d29c5269e008f438
+        outcome:
+          actionId: fix-packaged-doctor-provenance:9
+          attempt: 1
+          claimToken: portable-7f0e6cf4c029d3a803747397d140aa473122db7702566b51c5e0642d7c91b49d
+          inputHash: 094f1d679a9a52209b9e23366a73138c97de6b2e55888839d29c5269e008f438
+          outcomeId: ae5d9e9b-18c9-482d-8915-6046c00009da
+          output:
+            boundBranch: comet/fix-packaged-doctor-provenance
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: eeb9cd2fc2935a790a39f37cdf6f3f114e15c9b9e8032469e4d848c4b330cdfa
+            outcomeId: ae5d9e9b-18c9-482d-8915-6046c00009da
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-aea231e7d6fdd09e1b0776912a4d71988f0af50b2e08a9d2a441dcc59eb76c06
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:11
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: 5a92cf82f7a5a861a0ed6f3b58672f50d348d4df2119aeba5d2b5a3775341dd0
+        outcome:
+          actionId: fix-packaged-doctor-provenance:11
+          attempt: 1
+          claimToken: portable-aea231e7d6fdd09e1b0776912a4d71988f0af50b2e08a9d2a441dcc59eb76c06
+          inputHash: 5a92cf82f7a5a861a0ed6f3b58672f50d348d4df2119aeba5d2b5a3775341dd0
+          outcomeId: 43766ad0-461c-4045-8ec3-8a070e7fffff
+          output:
+            designEvidence:
+              contentHash: 8b6a334a56db455cfe8028c9a5b1f07eaccd508ce1b80a25c0c0d34a34bc2db7
+              ref: openspec/changes/fix-packaged-doctor-provenance/design.md
+            plan: docs/superpowers/plans/2026-11-09-fix-packaged-doctor-provenance.md
+            planEvidence:
+              contentHash: 25b8079ec95be69e9fdc6cc9df9a5c27a7329d3b4c6c7096a8538491d9294def
+              ref: docs/superpowers/plans/2026-11-09-fix-packaged-doctor-provenance.md
+            taskRevision: a0e1540b3c81e4237b94c253a565be2cdc92197edf7b3a1b22bb905ed3463f78
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: dd8f97c165f9587f8f7c5e52bf8678298d1e46aedc31a3f8655932b405570c4a
+            outcomeId: 43766ad0-461c-4045-8ec3-8a070e7fffff
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-packaged-doctor
+          token: portable-ed276af17a88973b8254208477d73b64da082373a32420ec24fa0c0bd36b5cec
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:13
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: 9a94f9f69c46d816035696a3cdbb5cf3351ba9b20f56bd956d109d5b59e3a9eb
+        outcome:
+          actionId: fix-packaged-doctor-provenance:13
+          attempt: 1
+          claimToken: portable-ed276af17a88973b8254208477d73b64da082373a32420ec24fa0c0bd36b5cec
+          inputHash: 9a94f9f69c46d816035696a3cdbb5cf3351ba9b20f56bd956d109d5b59e3a9eb
+          outcomeId: ffd9af0b-0398-4298-939d-387189bbbee0
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 12c7cb1de0f5d606a287e2cf7d39ad0149be9b3e4799a945627e00dc947cdfab
+            outcomeId: ffd9af0b-0398-4298-939d-387189bbbee0
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-e511bb5862c468f8c88f94fd08bbc773b6bff4457401b8c8e73a06d2a36d48c8
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:14
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: 8b9323c3d965841975a7663b85b10f208f4d4ccfb789c0f05f845a468a895529
+        outcome:
+          actionId: fix-packaged-doctor-provenance:14
+          attempt: 1
+          claimToken: portable-e511bb5862c468f8c88f94fd08bbc773b6bff4457401b8c8e73a06d2a36d48c8
+          inputHash: 8b9323c3d965841975a7663b85b10f208f4d4ccfb789c0f05f845a468a895529
+          outcomeId: b10cf67e-ed25-4814-b35d-30701b8b4181
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: ef1c961cb7ca7ad32f9655809509de89facbce39a53d9f8e6a56b42c158055af
+            cwd: .
+            environment: d4b579cb36a8d2bc0ef85ddb1ba212fa9736ec2aa376f187c8925aae255fa838
+            exitCode: 0
+            inputAfter: 3455327ed2a52b7a87842c4b1008243ce74fd61640f8905cabcfbdc3ce5896af
+            inputBefore: 3455327ed2a52b7a87842c4b1008243ce74fd61640f8905cabcfbdc3ce5896af
+            manifestHash: 5c96f61ee027cf56b90692f52698e0599909ac8084ae438341b9a4aa06f0ad57
+            manifestRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/c4636505-3089-4691-902f-bf8e6acd76b0.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/b6e2df7c-ea20-46a5-a183-ace44a4ab3c9.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 02059cdbf2b5a0a244caad2140ad0c610259c9d7408ee20d106cd1cc5f80ba1c
+            outcomeId: b10cf67e-ed25-4814-b35d-30701b8b4181
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-d026e912ce8bc843d3b2e5b08ab16c345e0a177db9a62652c329c85354f68764
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:16
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: 0062d8498ecac87d36e8e845c1a0ae639c4afae7b6e7eb305c5b3374492d2b3b
+        outcome:
+          actionId: fix-packaged-doctor-provenance:16
+          attempt: 1
+          claimToken: portable-d026e912ce8bc843d3b2e5b08ab16c345e0a177db9a62652c329c85354f68764
+          inputHash: 0062d8498ecac87d36e8e845c1a0ae639c4afae7b6e7eb305c5b3374492d2b3b
+          outcomeId: 7726ebd3-9306-4e6a-94b1-e11aeb36303f
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/fix-packaged-doctor-provenance.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 74ea2ef0cb5c56b3815768de78853d919152e4170a37392019b587cc09d5c6d0
+            outcomeId: 7726ebd3-9306-4e6a-94b1-e11aeb36303f
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-17d34316dc5b346f4f161011f85dc04446942165c4e90ef81c39a4b70fac1235
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:18
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: 9f971e982be3427110cc0e14fc08c1494768cfa2a5db29d9a81963189bb15309
+        outcome:
+          actionId: fix-packaged-doctor-provenance:18
+          attempt: 1
+          claimToken: portable-17d34316dc5b346f4f161011f85dc04446942165c4e90ef81c39a4b70fac1235
+          inputHash: 9f971e982be3427110cc0e14fc08c1494768cfa2a5db29d9a81963189bb15309
+          outcomeId: cb52ee10-382d-4450-bf39-a0dba148fd1b
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: ffe045dc7e0990e91c7492ee6049cdcb1b1ff9747330128b72d4b956ccc58a4c
+            cwd: .
+            deliveryInputs: {}
+            environment: d4b579cb36a8d2bc0ef85ddb1ba212fa9736ec2aa376f187c8925aae255fa838
+            exitCode: 0
+            inputAfter: c14bf0cb2e93d41fd3df58463c1cce946bd017076f2bab5ed8d3f07f553dd287
+            inputBefore: c14bf0cb2e93d41fd3df58463c1cce946bd017076f2bab5ed8d3f07f553dd287
+            manifestHash: 9ae621e7d68daa9bfa28ec4cf02bfad4ab1b0bc1978bb7fd34c209b116786276
+            manifestRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/465b6a6d-0796-4ee3-9faa-75c837694db1.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/93099092-6255-41c2-9c0f-be941f017f76.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9c079f407cc44286d17f69b0f29ae5ca870636ae80f125bfc68d1feb92cea66e
+            outcomeId: cb52ee10-382d-4450-bf39-a0dba148fd1b
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-35eb668b0b2c8296d75cd155397a6ac030cfd260105872b48e21ee7e0225e0ec
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:20
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: af6756c86e8953ace60c89619a0843efc02b68b13140309517aefd9d29581aff
+        outcome:
+          actionId: fix-packaged-doctor-provenance:20
+          attempt: 1
+          claimToken: portable-35eb668b0b2c8296d75cd155397a6ac030cfd260105872b48e21ee7e0225e0ec
+          inputHash: af6756c86e8953ace60c89619a0843efc02b68b13140309517aefd9d29581aff
+          outcomeId: 74b908b7-7a58-46f3-993f-60f96478906f
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 修复发布包 doctor 对开发 lockfile/preparation script
+              的错误依赖；保留实际安装依赖与受保护资源校验，源码完整审计继续由 CI 执行。两次完整
+              verify、真实候选包消费验收及独立审查通过；归档本 Change，push origin 并创建到 main 的 PR，CI
+              成功后按既有授权合入并复验 main 安装包。
+            targetBranch: comet/fix-packaged-doctor-provenance
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ffb03a92d126cbf0ea0e043cb85693d3da42a801f690582432ae0875aaef53c4
+            outcomeId: 74b908b7-7a58-46f3-993f-60f96478906f
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-8fbdaa0b80f3f90dcfc1cca09213f55f1f20af0fd948333c0ee00e684d766dcc
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:22
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: db1f393c190493cda1f3a41589e7b1abd12962823be838705ef6f5f69792f976
+        outcome:
+          actionId: fix-packaged-doctor-provenance:22
+          attempt: 1
+          claimToken: portable-8fbdaa0b80f3f90dcfc1cca09213f55f1f20af0fd948333c0ee00e684d766dcc
+          inputHash: db1f393c190493cda1f3a41589e7b1abd12962823be838705ef6f5f69792f976
+          outcomeId: 4618f7df-fdee-4912-aca6-22c36952f945
+          output:
+            baseCommit: 2e3faaa01ef798f415cce402ae06620c310e840c
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/fix-packaged-doctor-provenance
+            verifiedBranch: comet/fix-packaged-doctor-provenance
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bd3a966c84445ec74831ce1f1d23fc71b96f4579f4c3a5ec062a3ff46ad08c12
+            outcomeId: 4618f7df-fdee-4912-aca6-22c36952f945
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-def1fe13c79c4a82709283c45be52da02e4c934b30b356bc791954de566a3387
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-packaged-doctor-provenance:23
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: 1f961fa9e6a2aa099309d55d967dd9d14b0da62b8d35fa0cc40e6d37a0bedc0d
+        outcome:
+          actionId: fix-packaged-doctor-provenance:23
+          artifacts:
+            - sha256: 7413d511cdae264b70c797ecd5161bde124f1ec73a7830fca9bfbd23571e135a
+              uri: openspec/changes/archive/2026-11-09-fix-packaged-doctor-provenance/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-def1fe13c79c4a82709283c45be52da02e4c934b30b356bc791954de566a3387
+          inputHash: 1f961fa9e6a2aa099309d55d967dd9d14b0da62b8d35fa0cc40e6d37a0bedc0d
+          outcomeId: cf8ec639-f91d-44cd-80ad-a60a632efb80
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-09-fix-packaged-doctor-provenance
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8e3047e1cd0dac07bf0d5ad54715e0498dd0e35180bffd0849b559d3f77d0f3e
+            outcomeId: cf8ec639-f91d-44cd-80ad-a60a632efb80
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: fix-packaged-doctor-provenance:24
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: 73a1c2c5d5e9b136c039937bf20a0138f5c9a544709d14f04da7884f699a8aef
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      fix-packaged-doctor-provenance:1:
+        results: {}
+        sequence: 1
+      fix-packaged-doctor-provenance:11:
+        results: {}
+        sequence: 11
+      fix-packaged-doctor-provenance:13:
+        results: {}
+        sequence: 13
+      fix-packaged-doctor-provenance:14:
+        results: {}
+        sequence: 14
+      fix-packaged-doctor-provenance:16:
+        results: {}
+        sequence: 16
+      fix-packaged-doctor-provenance:18:
+        results: {}
+        sequence: 18
+      fix-packaged-doctor-provenance:20:
+        results: {}
+        sequence: 20
+      fix-packaged-doctor-provenance:22:
+        results: {}
+        sequence: 22
+      fix-packaged-doctor-provenance:23:
+        results: {}
+        sequence: 23
+      fix-packaged-doctor-provenance:24:
+        results: {}
+        sequence: 24
+      fix-packaged-doctor-provenance:4:
+        results: {}
+        sequence: 4
+      fix-packaged-doctor-provenance:5:
+        results: {}
+        sequence: 5
+      fix-packaged-doctor-provenance:7:
+        results: {}
+        sequence: 7
+      fix-packaged-doctor-provenance:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: fix-packaged-doctor-provenance:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: b59a32b998e5a406fa4e08469bf66371a035b70ff01ecf64cf2da765fd092862
+              ref: openspec/changes/fix-packaged-doctor-provenance
+        proposalHash: dc1c06e8e2a495a6dd5804968d33195594e55b8ec47b65b4c89ca6df588c7e5d
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-b59a32b998e5a406fa4e08469bf66371a035b70ff01ecf64cf2da765fd092862
+          choice: approved
+          proposalHash: dc1c06e8e2a495a6dd5804968d33195594e55b8ec47b65b4c89ca6df588c7e5d
+      - id: fix-packaged-doctor-provenance:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-packaged-doctor-provenance/.comet/handoff/design-context.json
+              handoffHash: 3946eb908f59a554e9d3b47f4be1c7bd92aa827132bb7485261e5f4c64854a58
+              proposal: 使用已分发来源 manifest 与实际生产包身份完成 doctor，移除运行时对开发 lockfile 和准备脚本的依赖；CI
+                保留完整锁与 integrity 审计。通过无开发资源健康样本、依赖漂移与缺失、源码审计反例、真实 tarball doctor
+                资源损坏及持久状态字节对比验收。不新增 schema、模式或迁移。用户已委托代理审批。
+              requirementsEvidence:
+                contentHash: c2b8206ac9f618b2fb76f7a3ede250466c82c844477bc3317d50a8b196cb99b4
+                ref: openspec/changes/fix-packaged-doctor-provenance
+              sourceEvidence:
+                contentHash: 690f403a3555d62fa1c70a079a0189d451dc7eaf3d80de88df8308eb745f24fc
+                ref: openspec/changes/fix-packaged-doctor-provenance
+        proposalHash: 3211d814ec1ccf2a486f3f37fc206fe5070725df75ac688b5082104d9c839355
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-3211d814ec1ccf2a486f3f37fc206fe5070725df75ac688b5082104d9c839355-approved
+          choice: approved
+          proposalHash: 3211d814ec1ccf2a486f3f37fc206fe5070725df75ac688b5082104d9c839355
+      - id: fix-packaged-doctor-provenance:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs:
+            full.build.configure:
+              boundBranch: comet/fix-packaged-doctor-provenance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 8a373fd0b3b666e5c31c9c1457d4c479d2545c92eff8b32a161a59d7ea78f305
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: c0014201-21d5-4463-bd6a-c0a5197f81dc
+          choice: approved
+          proposalHash: 8a373fd0b3b666e5c31c9c1457d4c479d2545c92eff8b32a161a59d7ea78f305
+      - id: fix-packaged-doctor-provenance:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 修复发布包 doctor 对开发 lockfile/preparation script
+                的错误依赖；保留实际安装依赖与受保护资源校验，源码完整审计继续由 CI 执行。两次完整
+                verify、真实候选包消费验收及独立审查通过；归档本 Change，push origin 并创建到 main 的 PR，CI
+                成功后按既有授权合入并复验 main 安装包。
+              targetBranch: comet/fix-packaged-doctor-provenance
+        proposalHash: 4a30c5cbb6f00581f62dca4888138e99eb61eed1af128b75cae791ca6db9f94e
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-4a30c5cbb6f00581f62dca4888138e99eb61eed1af128b75cae791ca6db9f94e-pr
+          choice: pr
+          proposalHash: 4a30c5cbb6f00581f62dca4888138e99eb61eed1af128b75cae791ca6db9f94e
+    evidenceWaits:
+      - id: fix-packaged-doctor-provenance:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/fix-packaged-doctor-provenance
+          contentHash: b59a32b998e5a406fa4e08469bf66371a035b70ff01ecf64cf2da765fd092862
+          submissionId: bbfa3bf0-a8b0-422c-af9d-5f4ad39fe050
+      - id: fix-packaged-doctor-provenance:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/fix-packaged-doctor-provenance/design.md
+          contentHash: 8b6a334a56db455cfe8028c9a5b1f07eaccd508ce1b80a25c0c0d34a34bc2db7
+          submissionId: 5e26279a-800f-4344-99fe-3c8c37c982a4
+      - id: fix-packaged-doctor-provenance:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-fix-packaged-doctor-provenance.md
+          contentHash: 25b8079ec95be69e9fdc6cc9df9a5c27a7329d3b4c6c7096a8538491d9294def
+          submissionId: 39868a3c-86bb-472e-ac49-16633cbe647a
+      - id: fix-packaged-doctor-provenance:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/b6e2df7c-ea20-46a5-a183-ace44a4ab3c9.log
+          contentHash: ef1c961cb7ca7ad32f9655809509de89facbce39a53d9f8e6a56b42c158055af
+          submissionId: 88fd2606-0db8-4da8-af6c-ea64f8e55b43
+      - id: fix-packaged-doctor-provenance:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/fix-packaged-doctor-provenance.md
+          contentHash: 2ac9f6f21efc198100d751c93e1ca324c2019390fa5f19d8310853132f3b81ef
+          submissionId: d7bd09b2-bde4-4741-8aaf-9a1535e4ffd0
+      - id: fix-packaged-doctor-provenance:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/93099092-6255-41c2-9c0f-be941f017f76.log
+          contentHash: ffe045dc7e0990e91c7492ee6049cdcb1b1ff9747330128b72d4b956ccc58a4c
+          submissionId: 98a01991-fbf2-4364-8e96-8e0169a85e2a
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 37
+  sourceHash: edbf18f9e212facc0c47610308d1b311964f8e44ad8c01f3e860249b909af8d9
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: b59a32b998e5a406fa4e08469bf66371a035b70ff01ecf64cf2da765fd092862
+              ref: openspec/changes/fix-packaged-doctor-provenance
+      - contentHash: b59a32b998e5a406fa4e08469bf66371a035b70ff01ecf64cf2da765fd092862
+        ref: openspec/changes/fix-packaged-doctor-provenance
+      - contentHash: b59a32b998e5a406fa4e08469bf66371a035b70ff01ecf64cf2da765fd092862
+      - choice: approved
+        proposal:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-packaged-doctor-provenance/.comet/handoff/design-context.json
+              handoffHash: 3946eb908f59a554e9d3b47f4be1c7bd92aa827132bb7485261e5f4c64854a58
+              proposal: 使用已分发来源 manifest 与实际生产包身份完成 doctor，移除运行时对开发 lockfile 和准备脚本的依赖；CI
+                保留完整锁与 integrity 审计。通过无开发资源健康样本、依赖漂移与缺失、源码审计反例、真实 tarball doctor
+                资源损坏及持久状态字节对比验收。不新增 schema、模式或迁移。用户已委托代理审批。
+              requirementsEvidence:
+                contentHash: c2b8206ac9f618b2fb76f7a3ede250466c82c844477bc3317d50a8b196cb99b4
+                ref: openspec/changes/fix-packaged-doctor-provenance
+              sourceEvidence:
+                contentHash: 690f403a3555d62fa1c70a079a0189d451dc7eaf3d80de88df8308eb745f24fc
+                ref: openspec/changes/fix-packaged-doctor-provenance
+      - handoffContext: openspec/changes/fix-packaged-doctor-provenance/.comet/handoff/design-context.json
+        handoffHash: 3946eb908f59a554e9d3b47f4be1c7bd92aa827132bb7485261e5f4c64854a58
+        proposal: 使用已分发来源 manifest 与实际生产包身份完成 doctor，移除运行时对开发 lockfile 和准备脚本的依赖；CI
+          保留完整锁与 integrity 审计。通过无开发资源健康样本、依赖漂移与缺失、源码审计反例、真实 tarball doctor
+          资源损坏及持久状态字节对比验收。不新增 schema、模式或迁移。用户已委托代理审批。
+        requirementsEvidence:
+          contentHash: c2b8206ac9f618b2fb76f7a3ede250466c82c844477bc3317d50a8b196cb99b4
+          ref: openspec/changes/fix-packaged-doctor-provenance
+        sourceEvidence:
+          contentHash: 690f403a3555d62fa1c70a079a0189d451dc7eaf3d80de88df8308eb745f24fc
+          ref: openspec/changes/fix-packaged-doctor-provenance
+      - designDoc: openspec/changes/fix-packaged-doctor-provenance/design.md
+      - contentHash: 8b6a334a56db455cfe8028c9a5b1f07eaccd508ce1b80a25c0c0d34a34bc2db7
+        ref: openspec/changes/fix-packaged-doctor-provenance/design.md
+      - boundBranch: comet/fix-packaged-doctor-provenance
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs:
+            full.build.configure:
+              boundBranch: comet/fix-packaged-doctor-provenance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 8b6a334a56db455cfe8028c9a5b1f07eaccd508ce1b80a25c0c0d34a34bc2db7
+          ref: openspec/changes/fix-packaged-doctor-provenance/design.md
+        plan: docs/superpowers/plans/2026-11-09-fix-packaged-doctor-provenance.md
+        planEvidence:
+          contentHash: 25b8079ec95be69e9fdc6cc9df9a5c27a7329d3b4c6c7096a8538491d9294def
+          ref: docs/superpowers/plans/2026-11-09-fix-packaged-doctor-provenance.md
+        taskRevision: a0e1540b3c81e4237b94c253a565be2cdc92197edf7b3a1b22bb905ed3463f78
+      - contentHash: 25b8079ec95be69e9fdc6cc9df9a5c27a7329d3b4c6c7096a8538491d9294def
+        ref: docs/superpowers/plans/2026-11-09-fix-packaged-doctor-provenance.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: ef1c961cb7ca7ad32f9655809509de89facbce39a53d9f8e6a56b42c158055af
+        cwd: .
+        environment: d4b579cb36a8d2bc0ef85ddb1ba212fa9736ec2aa376f187c8925aae255fa838
+        exitCode: 0
+        inputAfter: 3455327ed2a52b7a87842c4b1008243ce74fd61640f8905cabcfbdc3ce5896af
+        inputBefore: 3455327ed2a52b7a87842c4b1008243ce74fd61640f8905cabcfbdc3ce5896af
+        manifestHash: 5c96f61ee027cf56b90692f52698e0599909ac8084ae438341b9a4aa06f0ad57
+        manifestRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/c4636505-3089-4691-902f-bf8e6acd76b0.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/b6e2df7c-ea20-46a5-a183-ace44a4ab3c9.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: ef1c961cb7ca7ad32f9655809509de89facbce39a53d9f8e6a56b42c158055af
+        ref: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/b6e2df7c-ea20-46a5-a183-ace44a4ab3c9.log
+      - contentHash: 2ac9f6f21efc198100d751c93e1ca324c2019390fa5f19d8310853132f3b81ef
+        ref: docs/superpowers/reports/fix-packaged-doctor-provenance.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/fix-packaged-doctor-provenance.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: ffe045dc7e0990e91c7492ee6049cdcb1b1ff9747330128b72d4b956ccc58a4c
+        cwd: .
+        deliveryInputs: {}
+        environment: d4b579cb36a8d2bc0ef85ddb1ba212fa9736ec2aa376f187c8925aae255fa838
+        exitCode: 0
+        inputAfter: c14bf0cb2e93d41fd3df58463c1cce946bd017076f2bab5ed8d3f07f553dd287
+        inputBefore: c14bf0cb2e93d41fd3df58463c1cce946bd017076f2bab5ed8d3f07f553dd287
+        manifestHash: 9ae621e7d68daa9bfa28ec4cf02bfad4ab1b0bc1978bb7fd34c209b116786276
+        manifestRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/465b6a6d-0796-4ee3-9faa-75c837694db1.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/93099092-6255-41c2-9c0f-be941f017f76.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: ffe045dc7e0990e91c7492ee6049cdcb1b1ff9747330128b72d4b956ccc58a4c
+        ref: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/93099092-6255-41c2-9c0f-be941f017f76.log
+      - choice: pr
+        proposal:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 修复发布包 doctor 对开发 lockfile/preparation script
+                的错误依赖；保留实际安装依赖与受保护资源校验，源码完整审计继续由 CI 执行。两次完整
+                verify、真实候选包消费验收及独立审查通过；归档本 Change，push origin 并创建到 main 的 PR，CI
+                成功后按既有授权合入并复验 main 安装包。
+              targetBranch: comet/fix-packaged-doctor-provenance
+      - prBaseBranch: main
+        remote: origin
+        summary: 修复发布包 doctor 对开发 lockfile/preparation script
+          的错误依赖；保留实际安装依赖与受保护资源校验，源码完整审计继续由 CI 执行。两次完整
+          verify、真实候选包消费验收及独立审查通过；归档本 Change，push origin 并创建到 main 的 PR，CI
+          成功后按既有授权合入并复验 main 安装包。
+        targetBranch: comet/fix-packaged-doctor-provenance
+      - baseCommit: 2e3faaa01ef798f415cce402ae06620c310e840c
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: comet/fix-packaged-doctor-provenance
+        verifiedBranch: comet/fix-packaged-doctor-provenance
+      - archiveDirectory: openspec/changes/archive/2026-11-09-fix-packaged-doctor-provenance
+      - sequence: 9
+        value:
+          boundBranch: comet/fix-packaged-doctor-provenance
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-packaged-doctor-provenance
+              changeDir: openspec/changes/fix-packaged-doctor-provenance
+              workspaceBaseline:
+                ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+            outputs:
+              full.build.configure:
+                boundBranch: comet/fix-packaged-doctor-provenance
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-packaged-doctor-provenance
+              changeDir: openspec/changes/fix-packaged-doctor-provenance
+              workspaceBaseline:
+                ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/fix-packaged-doctor-provenance/.comet/handoff/design-context.json
+                handoffHash: 3946eb908f59a554e9d3b47f4be1c7bd92aa827132bb7485261e5f4c64854a58
+                proposal: 使用已分发来源 manifest 与实际生产包身份完成 doctor，移除运行时对开发 lockfile 和准备脚本的依赖；CI
+                  保留完整锁与 integrity 审计。通过无开发资源健康样本、依赖漂移与缺失、源码审计反例、真实 tarball
+                  doctor 资源损坏及持久状态字节对比验收。不新增 schema、模式或迁移。用户已委托代理审批。
+                requirementsEvidence:
+                  contentHash: c2b8206ac9f618b2fb76f7a3ede250466c82c844477bc3317d50a8b196cb99b4
+                  ref: openspec/changes/fix-packaged-doctor-provenance
+                sourceEvidence:
+                  contentHash: 690f403a3555d62fa1c70a079a0189d451dc7eaf3d80de88df8308eb745f24fc
+                  ref: openspec/changes/fix-packaged-doctor-provenance
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/fix-packaged-doctor-provenance/design.md
+      - sequence: 8
+        value:
+          contentHash: 8b6a334a56db455cfe8028c9a5b1f07eaccd508ce1b80a25c0c0d34a34bc2db7
+          ref: openspec/changes/fix-packaged-doctor-provenance/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/fix-packaged-doctor-provenance/.comet/handoff/design-context.json
+          handoffHash: 3946eb908f59a554e9d3b47f4be1c7bd92aa827132bb7485261e5f4c64854a58
+          proposal: 使用已分发来源 manifest 与实际生产包身份完成 doctor，移除运行时对开发 lockfile 和准备脚本的依赖；CI
+            保留完整锁与 integrity 审计。通过无开发资源健康样本、依赖漂移与缺失、源码审计反例、真实 tarball doctor
+            资源损坏及持久状态字节对比验收。不新增 schema、模式或迁移。用户已委托代理审批。
+          requirementsEvidence:
+            contentHash: c2b8206ac9f618b2fb76f7a3ede250466c82c844477bc3317d50a8b196cb99b4
+            ref: openspec/changes/fix-packaged-doctor-provenance
+          sourceEvidence:
+            contentHash: 690f403a3555d62fa1c70a079a0189d451dc7eaf3d80de88df8308eb745f24fc
+            ref: openspec/changes/fix-packaged-doctor-provenance
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-packaged-doctor-provenance
+              changeDir: openspec/changes/fix-packaged-doctor-provenance
+              workspaceBaseline:
+                ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: b59a32b998e5a406fa4e08469bf66371a035b70ff01ecf64cf2da765fd092862
+                ref: openspec/changes/fix-packaged-doctor-provenance
+      - sequence: 2
+        value:
+          contentHash: b59a32b998e5a406fa4e08469bf66371a035b70ff01ecf64cf2da765fd092862
+          ref: openspec/changes/fix-packaged-doctor-provenance
+      - sequence: 4
+        value:
+          contentHash: b59a32b998e5a406fa4e08469bf66371a035b70ff01ecf64cf2da765fd092862
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 8b6a334a56db455cfe8028c9a5b1f07eaccd508ce1b80a25c0c0d34a34bc2db7
+            ref: openspec/changes/fix-packaged-doctor-provenance/design.md
+          plan: docs/superpowers/plans/2026-11-09-fix-packaged-doctor-provenance.md
+          planEvidence:
+            contentHash: 25b8079ec95be69e9fdc6cc9df9a5c27a7329d3b4c6c7096a8538491d9294def
+            ref: docs/superpowers/plans/2026-11-09-fix-packaged-doctor-provenance.md
+          taskRevision: a0e1540b3c81e4237b94c253a565be2cdc92197edf7b3a1b22bb905ed3463f78
+      - sequence: 12
+        value:
+          contentHash: 25b8079ec95be69e9fdc6cc9df9a5c27a7329d3b4c6c7096a8538491d9294def
+          ref: docs/superpowers/plans/2026-11-09-fix-packaged-doctor-provenance.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: ef1c961cb7ca7ad32f9655809509de89facbce39a53d9f8e6a56b42c158055af
+          cwd: .
+          environment: d4b579cb36a8d2bc0ef85ddb1ba212fa9736ec2aa376f187c8925aae255fa838
+          exitCode: 0
+          inputAfter: 3455327ed2a52b7a87842c4b1008243ce74fd61640f8905cabcfbdc3ce5896af
+          inputBefore: 3455327ed2a52b7a87842c4b1008243ce74fd61640f8905cabcfbdc3ce5896af
+          manifestHash: 5c96f61ee027cf56b90692f52698e0599909ac8084ae438341b9a4aa06f0ad57
+          manifestRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/c4636505-3089-4691-902f-bf8e6acd76b0.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/b6e2df7c-ea20-46a5-a183-ace44a4ab3c9.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: ef1c961cb7ca7ad32f9655809509de89facbce39a53d9f8e6a56b42c158055af
+          ref: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/b6e2df7c-ea20-46a5-a183-ace44a4ab3c9.log
+      - sequence: 17
+        value:
+          contentHash: 2ac9f6f21efc198100d751c93e1ca324c2019390fa5f19d8310853132f3b81ef
+          ref: docs/superpowers/reports/fix-packaged-doctor-provenance.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/fix-packaged-doctor-provenance.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: ffe045dc7e0990e91c7492ee6049cdcb1b1ff9747330128b72d4b956ccc58a4c
+          cwd: .
+          deliveryInputs: {}
+          environment: d4b579cb36a8d2bc0ef85ddb1ba212fa9736ec2aa376f187c8925aae255fa838
+          exitCode: 0
+          inputAfter: c14bf0cb2e93d41fd3df58463c1cce946bd017076f2bab5ed8d3f07f553dd287
+          inputBefore: c14bf0cb2e93d41fd3df58463c1cce946bd017076f2bab5ed8d3f07f553dd287
+          manifestHash: 9ae621e7d68daa9bfa28ec4cf02bfad4ab1b0bc1978bb7fd34c209b116786276
+          manifestRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/465b6a6d-0796-4ee3-9faa-75c837694db1.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/93099092-6255-41c2-9c0f-be941f017f76.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          contentHash: ffe045dc7e0990e91c7492ee6049cdcb1b1ff9747330128b72d4b956ccc58a4c
+          ref: .comet/runtime/classic-sdk-checks/13dcf19685c18410873dc79f548f23b2190836dcf4215c570e474613ab3fd3c9/93099092-6255-41c2-9c0f-be941f017f76.log
+      - sequence: 21
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: fix-packaged-doctor-provenance
+              changeDir: openspec/changes/fix-packaged-doctor-provenance
+              workspaceBaseline:
+                ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 修复发布包 doctor 对开发 lockfile/preparation script
+                  的错误依赖；保留实际安装依赖与受保护资源校验，源码完整审计继续由 CI 执行。两次完整
+                  verify、真实候选包消费验收及独立审查通过；归档本 Change，push origin 并创建到 main 的
+                  PR，CI 成功后按既有授权合入并复验 main 安装包。
+                targetBranch: comet/fix-packaged-doctor-provenance
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 修复发布包 doctor 对开发 lockfile/preparation script
+            的错误依赖；保留实际安装依赖与受保护资源校验，源码完整审计继续由 CI 执行。两次完整
+            verify、真实候选包消费验收及独立审查通过；归档本 Change，push origin 并创建到 main 的 PR，CI
+            成功后按既有授权合入并复验 main 安装包。
+          targetBranch: comet/fix-packaged-doctor-provenance
+      - sequence: 22
+        value:
+          baseCommit: 2e3faaa01ef798f415cce402ae06620c310e840c
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/fix-packaged-doctor-provenance
+          verifiedBranch: comet/fix-packaged-doctor-provenance
+      - sequence: 23
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-09-fix-packaged-doctor-provenance
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 52
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 54
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 48
+        height: 5
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: 57
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 58
+        right: 51
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 53
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 59
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 22
+        left: 63
+        right: 64
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 65
+        right: 51
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 66
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 67
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 70
+        height: 2
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 72
+        right: 73
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 75
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 76
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 71
+        right: 77
+        height: 4
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: 79
+        right: 80
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 81
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 82
+        right: 77
+        height: 4
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 84
+        height: 2
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: 80
+        height: 2
+      - key: full.build.plan
+        value: 33
+        left: 85
+        right: 86
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 87
+        right: 77
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 89
+        right: 90
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 91
+        right: 84
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 92
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 77
+        height: 5
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: 96
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: 97
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 99
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 102
+        right: 96
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 101
+        right: 103
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 104
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 43
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 90
+        right: 84
+        height: 2
+      - key: full.build.check.evidence
+        value: 37
+        left: 109
+        right: 110
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 111
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 112
+        right: 105
+        height: 5
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: 114
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 115
+        right: 108
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 110
+        right: 86
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 116
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 118
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 45
+        left: 120
+        right: 121
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 122
+        right: 108
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 123
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 124
+        right: 105
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 127
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 129
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 132
+        right: 133
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 134
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 136
+        right: 137
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: 138
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 139
+        right: 130
+        height: 4
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: 141
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 145
+        height: 2
+      - key: full.open
+        value: 29
+        left: 143
+        right: 146
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 149
+        right: 150
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 148
+        right: 151
+        height: 3
+      - key: full.open
+        value: 29
+        left: 152
+        right: 146
+        height: 4
+      - key: full.archive.prepare
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: 154
+        right: 155
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: 158
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: 157
+        right: 159
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: 156
+        right: 160
+        height: 4
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 162
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 164
+        right: 165
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 163
+        right: 166
+        height: 3
+      - key: full.open
+        value: 29
+        left: 151
+        right: 167
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 161
+        right: 168
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 171
+        right: 172
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 175
+        height: 2
+      - key: full.open
+        value: 29
+        left: 173
+        right: 176
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 178
+        right: 179
+        height: 2
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 181
+        right: 182
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 180
+        right: 183
+        height: 3
+      - key: full.open
+        value: 29
+        left: 184
+        right: 176
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: 186
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: 188
+        right: 189
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 187
+        right: 190
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 176
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: 191
+        right: 192
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 194
+        right: 195
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 196
+        right: 190
+        height: 3
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: 198
+        height: 2
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 199
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 200
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 201
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 203
+        height: 2
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: 205
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 204
+        right: 206
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 207
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 208
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 56
+      - 62
+      - 68
+      - 78
+      - 83
+      - 88
+      - 94
+      - 100
+      - 106
+      - 113
+      - 119
+      - 125
+      - 128
+      - 131
+      - 135
+      - 140
+      - 142
+      - 147
+      - 153
+      - 169
+      - 170
+      - 177
+      - 185
+      - 193
+      - 202
+      - 209
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:11
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:13
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:14
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:16
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:18
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:20
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:22
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:23
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:4
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:5
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:7
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - fix-packaged-doctor-provenance:9
+          - results
+        map: 26
+      - path:
+          - outputs
+        map: 22
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 27
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 28
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 29
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 31
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 36
+  storageHash: ca4c5f0370f28b2f28a3078c962c39a4443b08c46d4bf7582d5c458fbf25cb96
+check_epoch: 6

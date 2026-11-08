@@ -304,6 +304,67 @@ describe('published package', () => {
         journal: [{ type: 'node.intent' }, { type: 'node.completed' }],
       },
     });
+    // Diagnose the production installation through its public entry point. npm
+    // intentionally does not distribute the product's development lockfile.
+    for (const absent of [
+      'package-lock.json',
+      'scripts/prepare-desktop.mjs',
+      'node_modules/electron/package.json',
+    ]) {
+      await expect(readFile(path.join(installedPackage, absent))).rejects.toMatchObject({
+        code: 'ENOENT',
+      });
+    }
+    const diagnosticRunId = 'package-doctor-run';
+    await runCli({
+      packageRoot: installedPackage,
+      cwd: workspace,
+      environment,
+      args: ['run', 'start', '--workspace', workspace, '--run', diagnosticRunId],
+    });
+    const runFiles = ['run.json', 'checkpoint.json', 'trajectory.jsonl'].map((file) =>
+      path.join(workspace, '.repoctopus', 'runs', diagnosticRunId, file),
+    );
+    const originalRunBytes = await Promise.all(runFiles.map((file) => readFile(file)));
+    const expectRunUnchanged = async () => {
+      expect(await Promise.all(runFiles.map((file) => readFile(file)))).toEqual(originalRunBytes);
+    };
+    const diagnose = () =>
+      runCli<{ healthy: boolean }>({
+        packageRoot: installedPackage,
+        cwd: project,
+        environment,
+        args: ['doctor', '--workspace', workspace, '--run', diagnosticRunId],
+      });
+    expect((await diagnose()).result?.healthy).toBe(true);
+    await expectRunUnchanged();
+    const protectedFile = path.join(installedPackage, 'third_party/cordis/src/context.ts');
+    const originalResource = await readFile(protectedFile);
+    try {
+      await writeFile(
+        protectedFile,
+        Buffer.concat([originalResource, Buffer.from('\n// damaged resource\n')]),
+      );
+      let damaged: { code?: number; stderr?: string } | undefined;
+      try {
+        await diagnose();
+      } catch (error) {
+        damaged = error as typeof damaged;
+      }
+      expect(damaged?.code).toBe(1);
+      const rejected = JSON.parse(damaged?.stderr ?? '{}') as {
+        ok: boolean;
+        command: string;
+        diagnostics: Array<{ message: string }>;
+      };
+      expect(rejected).toMatchObject({ protocolVersion: 1, ok: false, command: 'doctor' });
+      expect(rejected.diagnostics[0]?.message).toContain('Cordis snapshot digest mismatch');
+      await expectRunUnchanged();
+    } finally {
+      await writeFile(protectedFile, originalResource);
+    }
+    expect((await diagnose()).result?.healthy).toBe(true);
+    await expectRunUnchanged();
     let failure: { code?: number; stderr?: string } | undefined;
     try {
       await execFileAsync(

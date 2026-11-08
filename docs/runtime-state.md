@@ -132,6 +132,10 @@ Verify/Archive 恢复在通用启动 HEAD 检查前使用同一 Evidence authori
 
 `doctor` 只读检查 Run、Checkpoint、Trajectory、来源清单和遥测 Cursor 的一致性。发现未完成 Journal 时只报告并提示使用 `run resume`，不会完成转换、删除损坏轨迹或猜测正确状态。
 
+安装包的来源诊断依据随包发布的来源清单、受保护文件摘要和实际安装的 DSH 生产依赖身份；不要求工具开发仓的 `package-lock.json`、Electron 开发依赖或 `scripts/prepare-desktop.mjs`。在 Workspace 中执行 `repoctopus doctor --workspace . --run <run-id> --json`，可从结构化错误中的依赖或资源位置定位问题；必需资源缺失、内容被修改或生产依赖版本不符仍会返回失败，不会自动修改 Run 或修复安装。
+
+维护者在源码 checkout 中使用 `npm run check:provenance` 检查开发锁文件、依赖 integrity、禁止依赖和开发准备资源；该审计保留在标准 `npm run verify` 中。源码审计通过与安装包诊断通过是两份独立证据，包 E2E 还会在生产依赖隔离安装后验证 `doctor` 的健康、损坏与恢复场景。
+
 ## 交付状态
 
 每个 change 的交付状态位于 `.repoctopus/deliveries/<change-id>/`：

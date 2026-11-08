@@ -1,6 +1,10 @@
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { createRequire } from 'node:module';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { pathToFileURL } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -8,6 +12,7 @@ import { checkProvenance } from '../platform/provenance/check.js';
 
 const productRoot = path.resolve(import.meta.dirname, '..');
 const temporaryRoots: string[] = [];
+const execFileAsync = promisify(execFile);
 
 afterEach(async () => {
   await Promise.all(
@@ -15,18 +20,30 @@ afterEach(async () => {
   );
 });
 
-async function provenanceFixture(): Promise<string> {
-  const root = await mkdtemp(path.join(tmpdir(), 'repoctopus-provenance-'));
-  temporaryRoots.push(root);
+async function provenanceFixture(development = false): Promise<string> {
+  const temporary = await mkdtemp(path.join(tmpdir(), 'repoctopus-provenance-'));
+  temporaryRoots.push(temporary);
+  const root = path.join(temporary, 'product');
+  await mkdir(root);
   await cp(path.join(productRoot, 'third_party'), path.join(root, 'third_party'), {
     recursive: true,
   });
   await mkdir(path.join(root, 'scripts'), { recursive: true });
   await Promise.all(
-    ['package.json', 'package-lock.json', 'scripts/prepare-desktop.mjs'].map((file) =>
-      cp(path.join(productRoot, file), path.join(root, file)),
-    ),
+    [
+      'package.json',
+      ...(development ? ['package-lock.json', 'scripts/prepare-desktop.mjs'] : []),
+    ].map((file) => cp(path.join(productRoot, file), path.join(root, file))),
   );
+  const dshPackages = JSON.parse(
+    await readFile(path.join(productRoot, 'third_party', 'dsh-adoption.json'), 'utf8'),
+  ) as { npmPackages: Array<{ name: string }> };
+  const productRequire = createRequire(path.join(productRoot, 'package.json'));
+  for (const { name } of dshPackages.npmPackages) {
+    const target = path.join(root, 'node_modules', name, 'package.json');
+    await mkdir(path.dirname(target), { recursive: true });
+    await cp(productRequire.resolve(`${name}/package.json`), target);
+  }
   const manifest = JSON.parse(
     await readFile(path.join(productRoot, 'third_party', 'comet', 'source-manifest.json'), 'utf8'),
   ) as { files: Array<{ target: string }> };
@@ -49,6 +66,18 @@ async function provenanceFixture(): Promise<string> {
 }
 
 describe('third-party provenance', () => {
+  it('diagnoses a production install without development resources', async () => {
+    const root = await provenanceFixture();
+    await expect(readFile(path.join(root, 'package-lock.json'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    await expect(readFile(path.join(root, 'scripts', 'prepare-desktop.mjs'))).rejects.toMatchObject(
+      { code: 'ENOENT' },
+    );
+
+    expect((await checkProvenance(root)).valid).toBe(true);
+  });
+
   it('accepts the immutable Cordis snapshot', async () => {
     const result = await checkProvenance(await provenanceFixture());
     expect(result.valid).toBe(true);
@@ -153,17 +182,97 @@ describe('third-party provenance', () => {
 
   it('rejects a DSH dependency that drifts from the fixed package version', async () => {
     const root = await provenanceFixture();
-    const lockPath = path.join(root, 'package-lock.json');
-    const lock = JSON.parse(await readFile(lockPath, 'utf8')) as {
-      packages: Record<string, { version?: string }>;
-    };
-    lock.packages['node_modules/@deepseek-ai/dsh-skill']!.version = '0.2.1-rc.1';
-    await writeFile(lockPath, JSON.stringify(lock, null, 2));
+    const installedPath = path.join(root, 'node_modules/@deepseek-ai/dsh-skill/package.json');
+    const installed = JSON.parse(await readFile(installedPath, 'utf8')) as { version: string };
+    installed.version = '0.2.1-rc.1';
+    await writeFile(installedPath, JSON.stringify(installed, null, 2));
 
     const result = await checkProvenance(root);
     expect(result.valid).toBe(false);
     expect(result.findings).toContain(
-      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.5',
+      'Installed DSH package identity mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.5',
+    );
+  });
+
+  it.each([
+    ['missing', 'Installed DSH package unavailable:'],
+    ['malformed', 'Installed DSH package unavailable:'],
+    ['wrong-name', 'Installed DSH package identity mismatch:'],
+  ])('rejects a %s installed production dependency manifest', async (kind, message) => {
+    const root = await provenanceFixture();
+    const file = path.join(root, 'node_modules/@deepseek-ai/dsh-skill/package.json');
+    if (kind === 'missing') await rm(file);
+    else if (kind === 'malformed') await writeFile(file, '{broken');
+    else await writeFile(file, JSON.stringify({ name: 'another-package', version: '0.2.1-rc.5' }));
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toEqual(
+      expect.arrayContaining([expect.stringContaining(`${message} @deepseek-ai/dsh-skill`)]),
+    );
+  });
+
+  it('rejects a forbidden runtime dependency declaration', async () => {
+    const root = await provenanceFixture();
+    const file = path.join(root, 'package.json');
+    const config = JSON.parse(await readFile(file, 'utf8')) as {
+      dependencies: Record<string, string>;
+    };
+    const adoption = JSON.parse(
+      await readFile(path.join(root, 'third_party/dsh-adoption.json'), 'utf8'),
+    ) as { forbiddenRuntimePackages: string[] };
+    const forbidden = adoption.forbiddenRuntimePackages[0]!;
+    config.dependencies[forbidden] = '1.0.0';
+    await writeFile(file, JSON.stringify(config));
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toContain(`Forbidden DSH runtime package declared: ${forbidden}`);
+  });
+
+  it('does not let NODE_PATH hide a missing ESM production dependency', async () => {
+    const root = await provenanceFixture();
+    await rm(path.join(root, 'node_modules/@deepseek-ai/dsh-skill/package.json'));
+    const entry = pathToFileURL(path.join(productRoot, 'platform/provenance/check.ts')).href;
+    const source = `import {checkProvenance} from ${JSON.stringify(entry)};console.log(JSON.stringify(await checkProvenance(process.argv[1])));`;
+    const response = await execFileAsync(
+      process.execPath,
+      ['--experimental-strip-types', '--input-type=module', '-e', source, root],
+      {
+        cwd: tmpdir(),
+        env: { ...process.env, NODE_PATH: path.join(productRoot, 'node_modules') },
+      },
+    );
+    const result = JSON.parse(response.stdout) as { valid: boolean; findings: string[] };
+    expect(result.valid).toBe(false);
+    expect(result.findings.join('\n')).toContain(
+      'Installed DSH package unavailable: @deepseek-ai/dsh-skill',
+    );
+  });
+
+  it('accepts production dependencies hoisted to the consumer node_modules', async () => {
+    const root = await provenanceFixture();
+    const consumer = path.dirname(root);
+    expect(temporaryRoots).toContain(consumer);
+    await mkdir(path.join(consumer, 'node_modules'));
+    await rename(
+      path.join(root, 'node_modules/@deepseek-ai'),
+      path.join(consumer, 'node_modules/@deepseek-ai'),
+    );
+    expect((await checkProvenance(root)).valid).toBe(true);
+  });
+
+  it('does not hide a nearest package with missing metadata behind an ancestor copy', async () => {
+    const root = await provenanceFixture();
+    const consumer = path.dirname(root);
+    expect(temporaryRoots).toContain(consumer);
+    const local = path.join(root, 'node_modules/@deepseek-ai/dsh-skill/package.json');
+    const hoisted = path.join(consumer, 'node_modules/@deepseek-ai/dsh-skill/package.json');
+    await mkdir(path.dirname(hoisted), { recursive: true });
+    await cp(local, hoisted);
+    await rm(local);
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings.join('\n')).toContain(
+      'Installed DSH package unavailable: @deepseek-ai/dsh-skill',
     );
   });
 
@@ -240,4 +349,36 @@ describe('third-party provenance', () => {
     expect(result.valid).toBe(false);
     expect(result.findings).toContain('Invalid upstream baseline manifest');
   });
+});
+
+describe('development source provenance audit', () => {
+  it.each(['version', 'integrity', 'preparation-script'])(
+    'still rejects development %s drift after runtime diagnostic separation',
+    async (kind) => {
+      const root = await provenanceFixture(true);
+      await mkdir(path.join(root, 'scripts/provenance'), { recursive: true });
+      for (const file of ['scripts/check-provenance.mjs', 'scripts/provenance/comet.mjs']) {
+        await cp(path.join(productRoot, file), path.join(root, file));
+      }
+      const run = () =>
+        execFileAsync(process.execPath, [path.join(root, 'scripts/check-provenance.mjs')], {
+          cwd: root,
+        });
+      await expect(run()).resolves.toBeDefined();
+      if (kind === 'preparation-script') await rm(path.join(root, 'scripts/prepare-desktop.mjs'));
+      else {
+        const file = path.join(root, 'package-lock.json');
+        const lock = JSON.parse(await readFile(file, 'utf8')) as {
+          packages: Record<string, Record<string, string>>;
+        };
+        lock.packages['node_modules/@deepseek-ai/dsh-skill']![kind] = 'invalid';
+        await writeFile(file, JSON.stringify(lock));
+      }
+      await expect(run()).rejects.toThrow(
+        kind === 'preparation-script'
+          ? /Missing Electron binary preparation command/u
+          : /DSH package lock mismatch/u,
+      );
+    },
+  );
 });

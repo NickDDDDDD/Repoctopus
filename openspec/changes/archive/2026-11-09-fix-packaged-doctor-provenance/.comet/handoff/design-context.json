@@ -1,0 +1,16 @@
+{
+  "change": "fix-packaged-doctor-provenance",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "3946eb908f59a554e9d3b47f4be1c7bd92aa827132bb7485261e5f4c64854a58",
+  "files": [
+    { "path": "openspec/changes/fix-packaged-doctor-provenance/proposal.md", "sha256": "16a5fc1d540947272cc470df2b96bfb06f12879ef8c81c147ce702177c82acc1" },
+    { "path": "openspec/changes/fix-packaged-doctor-provenance/design.md", "sha256": "5d11b1428023a523332d1cc3c6f92f679f3f152b276daa4282e9397889af55ac" },
+    { "path": "openspec/changes/fix-packaged-doctor-provenance/tasks.md", "sha256": "a0e1540b3c81e4237b94c253a565be2cdc92197edf7b3a1b22bb905ed3463f78" },
+    { "path": "openspec/changes/fix-packaged-doctor-provenance/.openspec.yaml", "sha256": "309e6764c826c3fc6250bcce33b56b7e44adebafc76c7df25f058663d6de4299" },
+    { "path": "openspec/changes/fix-packaged-doctor-provenance/specs/product-distribution/spec.md", "sha256": "64525e1ee1c32ba67b422185d637497aaae8c665b48b2bb41a7f29091c994ba2" }
+  ]
+}
