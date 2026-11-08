@@ -154,6 +154,9 @@ function compositionDependencyClosure(state: RunState): {
       'workflow-transition',
       'lifecycle-definition',
       'lifecycle-validator',
+      ...(state.changeLifecycle?.phase === 'archive' && state.status !== 'completed'
+        ? ['specification-authority', 'delivery-state-write']
+        : []),
       ...(work?.capabilities ?? []),
     ],
   };
@@ -249,9 +252,11 @@ export class WorkflowRunCoordinator {
     effect: (latest: RunState) => Promise<T>,
   ): Promise<T> {
     return this.store.commitGuarded(expected.runId, async ({ state: latest }) => {
+      this.assertWritableComposition(latest);
       if (
         latest.status !== 'running' ||
         latest.reconciliationRequired ||
+        latest.composition.compositionDigest !== expected.composition.compositionDigest ||
         latest.changeLifecycle?.phase !== 'archive' ||
         latest.changeLifecycle.currentWork?.workId !==
           expected.changeLifecycle?.currentWork?.workId ||

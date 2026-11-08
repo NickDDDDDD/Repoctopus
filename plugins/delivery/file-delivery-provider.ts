@@ -36,7 +36,12 @@ import {
   EnvironmentCredentialProvider,
   GitHubMergeRequestAdapter,
 } from '../../platform/github/merge-request.js';
-import { Delivery, type DeliveryPreparation } from '../../services/delivery.js';
+import {
+  Delivery,
+  type ArchiveDeliveryPreparation,
+  type ArchiveExecutionContext,
+  type DeliveryPreparation,
+} from '../../services/delivery.js';
 import { DeliveryObservationTelemetry } from '../../services/observation-telemetry.js';
 import {
   bindOperationOwnership,
@@ -118,11 +123,7 @@ export class FileDeliveryProvider extends Delivery {
     });
   }
 
-  private async assertPlanningApproval(
-    intent: DeliveryIntentV3,
-    remote: string,
-    planningCompositionDigest = this.ctx.compositionIdentity.current().compositionDigest,
-  ): Promise<void> {
+  private async assertPlanningApproval(intent: DeliveryIntentV3, remote: string): Promise<void> {
     const approval = await this.ctx.specificationPlanning.status(intent.changeId);
     const currentChangeBranch = await inspectRemoteChangeBranch({
       repositoryPath: this.config.workspaceRoot,
@@ -142,7 +143,6 @@ export class FileDeliveryProvider extends Delivery {
       approval.status !== 'approved' ||
       approval.decision?.decision !== 'approve' ||
       approval.snapshot.changeId !== intent.changeId ||
-      this.ctx.compositionIdentity.current().compositionDigest !== planningCompositionDigest ||
       canonicalJson(branchCoordinates(approval.snapshot.changeBranch)) !==
         canonicalJson(branchCoordinates(intent.changeBranch)) ||
       canonicalJson(currentChangeBranch) !== canonicalJson(intent.changeBranch)
@@ -153,15 +153,33 @@ export class FileDeliveryProvider extends Delivery {
     }
   }
 
+  private assertArchiveExecution(
+    intent: DeliveryIntentV3,
+    execution: ArchiveExecutionContext,
+    runId?: string,
+  ): void {
+    if (
+      !execution ||
+      typeof execution.runId !== 'string' ||
+      !execution.runId.trim() ||
+      (runId !== undefined && execution.runId !== runId) ||
+      execution.changeId !== intent.changeId ||
+      execution.compositionDigest !== this.ctx.compositionIdentity.current().compositionDigest
+    ) {
+      throw new Error('Archive execution context differs from its Run or current composition');
+    }
+  }
+
   override validateArchiveIntent(
     intent: DeliveryIntentV3,
     policy: DeliveryPolicy,
-    planningCompositionDigest: `sha256:${string}`,
+    execution: ArchiveExecutionContext,
     signal?: AbortSignal,
   ): Promise<void> {
-    return this.operations.run({ cancellable: true, signal }, () =>
-      this.assertPlanningApproval(intent, policy.publication.remote, planningCompositionDigest),
-    );
+    return this.operations.run({ cancellable: true, signal }, async () => {
+      this.assertArchiveExecution(intent, execution);
+      await this.assertPlanningApproval(intent, policy.publication.remote);
+    });
   }
 
   private legacyReadOnly(operation: string): never {
@@ -233,18 +251,12 @@ export class FileDeliveryProvider extends Delivery {
   }
 
   override publishArchive(
-    options: DeliveryPreparation & {
-      intent: DeliveryIntentV3;
-      expectedRepositoryHeads: Readonly<Record<string, string>>;
-    },
+    options: ArchiveDeliveryPreparation,
     signal?: AbortSignal,
   ): Promise<ArchivePublicationResult> {
     return this.operations.run({ cancellable: false, signal }, async () => {
-      await this.assertPlanningApproval(
-        options.intent,
-        options.policy.publication.remote,
-        options.planningCompositionDigest,
-      );
+      this.assertArchiveExecution(options.intent, options.execution, options.runId);
+      await this.assertPlanningApproval(options.intent, options.policy.publication.remote);
       return this.domainV3(options.policy).publishArchive(options);
     });
   }

@@ -43,7 +43,7 @@ interface Fixture {
   primaryHead: string;
 }
 
-async function fixture(): Promise<Fixture> {
+async function fixture(longArchivePath = false): Promise<Fixture> {
   const root = await temporaryDirectory('repoctopus-specification-publication-');
   cleanup.push(root);
   const remote = path.join(root, 'remote.git');
@@ -54,7 +54,12 @@ async function fixture(): Promise<Fixture> {
   await execFileAsync('git', ['switch', '-c', 'spec/archive-move'], { cwd: repository });
 
   const active = 'openspec/changes/example/proposal.md';
-  const archived = 'openspec/changes/archive/2026-10-25-example/proposal.md';
+  const archived = longArchivePath
+    ? `openspec/changes/archive/2026-10-25-example/${'details with spaces/'.repeat(9)}proposal.md`
+    : 'openspec/changes/archive/2026-10-25-example/proposal.md';
+  if (longArchivePath) {
+    await git(repository, ['config', '--local', 'core.longpaths', 'false']);
+  }
   await mkdir(path.dirname(path.join(repository, active)), { recursive: true });
   await writeFile(path.join(repository, active), '# Example\n');
   await execFileAsync('git', ['add', active], { cwd: repository });
@@ -171,6 +176,29 @@ async function expectPublished(
 }
 
 describe('Specification publication adapter', () => {
+  it.runIf(process.platform === 'win32')(
+    'publishes an archive with long paths without changing persistent Git configuration',
+    async () => {
+      const setup = await fixture(true);
+      const configuration = await git(setup.repository, ['config', '--local', '--list']);
+      const checkout = await setup.checkoutManager.find(setup.request.closure.candidate.checkoutId);
+      expect(checkout).not.toBeNull();
+      expect(
+        path.join(checkout!.root, setup.request.closure.changedFiles[1]!).length,
+      ).toBeGreaterThan(260);
+      const result = await new SpecificationPublicationAdapter(setup.mergeRequests).publish(
+        setup.request,
+      );
+      await expectPublished(setup, result);
+      expect(await git(setup.repository, ['config', '--local', '--list'])).toBe(configuration);
+      expect(setup.createdMergeRequests()).toBe(1);
+      await expect(
+        new SpecificationPublicationAdapter(setup.mergeRequests).publish(setup.request),
+      ).resolves.toEqual(result);
+      expect(setup.createdMergeRequests()).toBe(1);
+    },
+  );
+
   it('never repeats a Specification push while its result is unknown', async () => {
     const setup = await fixture();
     let observable = false;

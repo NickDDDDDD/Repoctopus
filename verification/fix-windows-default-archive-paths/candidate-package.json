@@ -1,0 +1,25 @@
+{
+  "sourceCommit": "d4b69ed8e831fc9f9c33a5eefaa6c9682c5c66db",
+  "version": "0.1.0",
+  "rawSha256": "753583cf175b603922bf8d0f03ebabab2ee322b35386afed4536c9c030164036",
+  "normalized": {
+    "sha256": "4e96b7b7a526c10f3c1f020041a7abef70adc1de3cbc264991ba697fae4cf876",
+    "files": 468,
+    "bytes": 5957187
+  },
+  "files": 468,
+  "bytes": 1262723,
+  "unpackedBytes": 5957187,
+  "independentInstall": true,
+  "packageE2E": {
+    "command": ["npm.cmd", "run", "test:package-e2e"],
+    "candidateOverride": true,
+    "exitCode": 0,
+    "passed": 1
+  },
+  "originalPackage": {
+    "sourceCommit": "04d37b5494fa1cf3bc2837312096f0c2401fa5a4",
+    "rawSha256": "c957d744113f2980f6a6a62f1bb6b22a11d8aabfb0ef7f99f5437fc6019bc866",
+    "preserved": true
+  }
+}

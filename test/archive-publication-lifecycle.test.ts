@@ -369,6 +369,157 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
 }
 
 describe('Archive publication terminal lifecycle', () => {
+  it.each(
+    (['close', 'publish'] as const).flatMap((checkpoint) =>
+      (
+        [
+          'code',
+          'config',
+          'schema',
+          'authority',
+          'wrong-predecessor',
+          'multiple-predecessors',
+        ] as const
+      ).map((drift) => ({ checkpoint, drift })),
+    ),
+  )(
+    'rejects incompatible Delivery $drift before the Archive $checkpoint checkpoint writes',
+    async ({ checkpoint, drift }) => {
+      const workspace = await temporaryDirectory('repoctopus-archive-composition-');
+      cleanup.push(workspace);
+      const store = new FileRuntimeStore(workspace);
+      const beforePlugin = {
+        id: 'delivery-file',
+        version: '1.0.0',
+        codeDigest: digest('1'),
+        descriptorDigest: digest('2'),
+        configDigest: digest('3'),
+        authorities: ['delivery-state-write'],
+        stateSchemas: { delivery: '2|3' },
+      };
+      const before = compositionFixture({
+        compositionDigest: digest('6'),
+        plugins: [beforePlugin],
+      });
+      const initial = new WorkflowRunCoordinator(
+        store,
+        { export: () => Promise.resolve() },
+        before,
+      );
+      const archive = archiveState();
+      const lifecycle = checkpoint === 'close' ? archive.preflight : archive.closed;
+      await initial.start({
+        workflow: workflowFixture(),
+        projectSnapshot: projectFixture(),
+        runId: lifecycle.identity.runId,
+        changeLifecycle: lifecycle,
+      });
+      const persisted = await store.loadRun(lifecycle.identity.runId);
+      const updated = new WorkflowRunCoordinator(
+        store,
+        { export: () => Promise.resolve() },
+        compositionFixture({
+          compositionDigest: digest('7'),
+          plugins: [
+            {
+              ...beforePlugin,
+              codeDigest: digest('4'),
+              ...(drift === 'config' ? { configDigest: digest('8') } : {}),
+              ...(drift === 'schema' ? { stateSchemas: { delivery: '4' } } : {}),
+              ...(drift === 'authority'
+                ? { authorities: ['delivery-state-write', 'specification-authority'] }
+                : {}),
+              ...(drift === 'code'
+                ? {}
+                : {
+                    compatibleImplementations:
+                      drift === 'wrong-predecessor'
+                        ? [{ codeDigest: digest('8'), descriptorDigest: digest('9') }]
+                        : [
+                            {
+                              codeDigest: beforePlugin.codeDigest,
+                              descriptorDigest: beforePlugin.descriptorDigest,
+                            },
+                            ...(drift === 'multiple-predecessors'
+                              ? [{ codeDigest: digest('8'), descriptorDigest: digest('9') }]
+                              : []),
+                          ],
+                  }),
+            },
+          ],
+        }),
+      );
+
+      await expect(
+        updated.recoverChangeLifecycleDefinition(lifecycle.identity.runId),
+      ).rejects.toThrow(/migration_required/u);
+      expect(await store.loadRun(lifecycle.identity.runId)).toEqual(persisted);
+    },
+  );
+
+  it('rejects an old executor composition after another process adopted the Archive Run', async () => {
+    const workspace = await temporaryDirectory('repoctopus-archive-old-executor-');
+    cleanup.push(workspace);
+    const store = new FileRuntimeStore(workspace);
+    const beforePlugin = {
+      id: 'delivery-file',
+      version: '1.0.0',
+      codeDigest: digest('1'),
+      descriptorDigest: digest('2'),
+      configDigest: digest('3'),
+      authorities: ['delivery-state-write'],
+      stateSchemas: { delivery: '2|3' },
+    };
+    const initial = new WorkflowRunCoordinator(
+      store,
+      { export: () => Promise.resolve() },
+      compositionFixture({ compositionDigest: digest('6'), plugins: [beforePlugin] }),
+    );
+    const { closed } = archiveState();
+    await initial.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture(),
+      runId: closed.identity.runId,
+      changeLifecycle: closed,
+    });
+    const observed = await store.loadRun(closed.identity.runId);
+    const updated = new WorkflowRunCoordinator(
+      store,
+      { export: () => Promise.resolve() },
+      compositionFixture({
+        compositionDigest: digest('7'),
+        plugins: [
+          {
+            ...beforePlugin,
+            codeDigest: digest('4'),
+            compatibleImplementations: [
+              {
+                codeDigest: beforePlugin.codeDigest,
+                descriptorDigest: beforePlugin.descriptorDigest,
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    await updated.recoverChangeLifecycleDefinition(closed.identity.runId);
+    expect((await store.loadRun(closed.identity.runId)).composition.compositionDigest).toBe(
+      digest('7'),
+    );
+    const effect = vi.fn(() => Promise.resolve());
+
+    await expect(initial.withArchiveEffectAuthority(observed, effect)).rejects.toThrow(
+      /composition|authority changed/u,
+    );
+    expect(effect).not.toHaveBeenCalled();
+    const adopted = await store.loadRun(closed.identity.runId);
+    expect(adopted.changeLifecycle?.archiveDeliveryInput).toEqual(
+      observed.changeLifecycle?.archiveDeliveryInput,
+    );
+    await expect(updated.withArchiveEffectAuthority(adopted, effect)).resolves.toBeUndefined();
+    expect(effect).toHaveBeenCalledOnce();
+  });
+
   it('keeps completed status terminal despite a historical reconciliation flag', async () => {
     const workspace = await temporaryDirectory('repoctopus-terminal-status-');
     cleanup.push(workspace);

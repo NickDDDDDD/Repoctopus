@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "successfulFullRetry": {
+    "argv": ["npm.cmd", "run", "verify"],
+    "environment": { "VITEST_MAX_WORKERS": "2" },
+    "exitCode": 0,
+    "testFiles": { "passed": 201, "failed": 0, "skipped": 1 },
+    "tests": { "passed": 1109, "failed": 0, "skipped": 5 },
+    "vitestDurationSeconds": 1132.64,
+    "specifications": { "passed": 19, "failed": 0 },
+    "rawLog": "external-evidence/full-pre-guard-retry-1.log",
+    "remainingEntrypoints": "generated, brand, architecture, provenance, dashboard salvage and managed package content checks all passed",
+    "boundary": "Ordinary full command. Comet input-bound Build/Verify Guards are still required; no manual receipt was submitted."
+  },
+  "firstFullCheck": {
+    "argv": ["npm.cmd", "run", "verify"],
+    "environment": { "VITEST_MAX_WORKERS": "2" },
+    "exitCode": 1,
+    "testFiles": { "passed": 197, "failed": 4, "skipped": 1 },
+    "tests": { "passed": 1104, "failed": 5, "skipped": 5 },
+    "vitestDurationSeconds": 1137.19,
+    "rawLog": "external-evidence/full-pre-guard.log",
+    "failures": [
+      {
+        "test": "test/e2e/desktop-run-activation.e2e.test.ts",
+        "cause": "Fresh worktree had no prepared Electron executable; source Desktop activation was unavailable.",
+        "resolution": "Ran the existing scripts/prepare-desktop.mjs; no product code changed.",
+        "followup": { "passed": 2, "failed": 0 }
+      },
+      {
+        "test": "test/provenance.test.ts and test/e2e/runtime-tracer.e2e.test.ts",
+        "cause": "Local adapted Runtime target digest in the provenance manifest was stale, so provenance and doctor rejected it.",
+        "resolutionCommit": "dc2c23c",
+        "resolution": "Updated the actual local target SHA256; fixed upstream commit/source digest and all checks are unchanged.",
+        "followup": { "passed": 13, "failed": 0 }
+      },
+      {
+        "test": "test/project-composition.test.ts",
+        "cause": "Exact composition snapshot still expected the pre-patch implementation identity.",
+        "resolutionCommit": "a39be14",
+        "resolution": "Refreshed the strict expected identity to the actual production compiler result; structural assertions are unchanged.",
+        "followup": { "passed": 1, "failed": 0 }
+      }
+    ],
+    "verdict": "failed; individual corrections are not represented as a full passing run"
+  }
+}

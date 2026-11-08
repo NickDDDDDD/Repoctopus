@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "initialSourceBase": "ef5e47a",
+  "results": [
+    {
+      "stage": "red",
+      "area": "long archive index",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "test/archive-git-longpaths.test.ts",
+        "test/specification-publication.test.ts",
+        "-t",
+        "Windows path|long paths"
+      ],
+      "exitCode": 1,
+      "failure": "Real Git omitted the over-limit untracked archive path, so the protected publisher rejected the diff before indexing.",
+      "boundary": "Real Git repository and isolated checkout, fixture-local core.longpaths=false, external MR port fixture only."
+    },
+    {
+      "stage": "green",
+      "area": "Windows checkout and archive index",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "test/archive-git-longpaths.test.ts",
+        "test/specification-publication.test.ts",
+        "-t",
+        "Windows path|long paths"
+      ],
+      "exitCode": 0,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 7,
+      "control": "Raw default Git worktree add at the same supported metadata root rejects Filename too long; managed checkout succeeds. Actual archive indexing, commit, bare-remote push and completed replay pass.",
+      "fixtureCorrections": "Initial deeper checkout also exceeded Git's independent GIT_DIR argument limit; this was not counted as the target RED. The corrected fixture isolates file path handling and uses explicit LF attributes to avoid unrelated autocrlf expectations.",
+      "knownToolLimit": "Git for Windows setup.c retains a PATH_MAX-40 explicit GIT_DIR check; command-local core.longpaths does not remove that independent limit.",
+      "toolSource": "https://raw.githubusercontent.com/git-for-windows/git/v2.56.0.windows.2/setup.c"
+    },
+    {
+      "stage": "regression",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "test/archive-composition-execution.test.ts",
+        "test/archive-publication-lifecycle.test.ts",
+        "test/composition-compatibility.test.ts",
+        "test/runtime.test.ts"
+      ],
+      "exitCode": 0,
+      "passed": 74,
+      "failed": 0,
+      "prerequisite": "Standard npm run build completed before CLI cases; initial missing-dist diagnostic failures were preparation errors, not product RED evidence.",
+      "additionalChecks": ["npm.cmd run typecheck", "targeted eslint"],
+      "boundary": "Coordinator, production Delivery context, existing Archive/terminal and composition regressions; full actual package upgrade and long-path acceptance remain pending."
+    },
+    {
+      "stage": "red",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "test/archive-composition-execution.test.ts"
+      ],
+      "exitCode": 1,
+      "passed": 2,
+      "failed": 1,
+      "failure": "The real FileDeliveryProvider rejected a valid current execution context at its old planning composition equality check.",
+      "boundary": "Production Cordis boot and actual file planning approval constructors/Store; contract fixture, not real package upgrade acceptance. No core validation mock."
+    },
+    {
+      "stage": "green",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "test/archive-composition-execution.test.ts"
+      ],
+      "exitCode": 0,
+      "passed": 3,
+      "failed": 0,
+      "boundary": "Current execution context accepted by the production provider; stale composition or mismatched change rejected and original approval preserved."
+    },
+    {
+      "stage": "red",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "test/archive-publication-lifecycle.test.ts",
+        "-t",
+        "composition"
+      ],
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 3,
+      "skipped": 38,
+      "failure": "Expected incompatible Delivery adoption or stale executor effect to reject, but current implementation resolved.",
+      "boundary": "Real Coordinator, file Run Store and guarded callback; synthetic implementation identities. This is not the real package upgrade acceptance."
+    },
+    {
+      "stage": "green",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "test/archive-publication-lifecycle.test.ts",
+        "-t",
+        "composition"
+      ],
+      "exitCode": 0,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 38,
+      "boundary": "Archive protected dependency closure and executor composition fencing only; full Delivery and package acceptance remain pending."
+    }
+  ]
+}

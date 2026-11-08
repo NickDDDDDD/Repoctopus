@@ -235,6 +235,7 @@
         "domains/specification/**",
         "platform/specification/**",
         "platform/git/change-branch.ts",
+        "platform/git/archive-git.ts",
         "platform/git/specification-checkout.ts",
         "plugins/command/specification-contributor.ts"
       ],

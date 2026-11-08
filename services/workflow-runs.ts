@@ -9,6 +9,7 @@ import { reconcileProjectSnapshots } from '../domains/project/snapshot.js';
 import { classifyBuildWorkspaceRecovery } from '../domains/runtime/build-workspace-recovery.js';
 import { classifyEvidenceWorkspaceRecovery } from '../domains/runtime/evidence-workspace-recovery.js';
 import type { WorkspaceSnapshotInput } from './project.js';
+import type { ArchiveExecutionContext } from './delivery.js';
 import { classifyWorkContinuation } from '../domains/change-lifecycle/continuation.js';
 import {
   WorkflowRunCoordinator,
@@ -5681,7 +5682,7 @@ export class WorkflowRuns extends Service {
       await this.ctx.delivery.validateArchiveIntent(
         input.intent,
         input.policy,
-        state.composition.compositionDigest,
+        this.archiveExecutionContext(state),
         signal,
       );
       const archiveInput = createArchiveDeliveryInput({
@@ -5771,9 +5772,27 @@ export class WorkflowRuns extends Service {
     });
   }
 
+  private archiveExecutionContext(state: RunState): ArchiveExecutionContext {
+    const lifecycle = state.changeLifecycle;
+    if (
+      !lifecycle ||
+      lifecycle.phase !== 'archive' ||
+      state.status !== 'running' ||
+      state.composition.compositionDigest !==
+        this.ctx.compositionIdentity.current().compositionDigest
+    ) {
+      throw new Error('Archive execution requires the current adopted Run composition');
+    }
+    return {
+      runId: state.runId,
+      changeId: lifecycle.identity.changeId,
+      compositionDigest: state.composition.compositionDigest,
+    };
+  }
+
   private withArchiveEffectAuthority<T>(
     state: RunState,
-    effect: () => Promise<T>,
+    effect: (execution: ArchiveExecutionContext) => Promise<T>,
     signal?: AbortSignal,
   ): Promise<T> {
     return this.coordinator.withArchiveEffectAuthority(state, async (latest) => {
@@ -5816,7 +5835,7 @@ export class WorkflowRuns extends Service {
         )
           throw new Error('Archive derived inputs changed before protected closure');
       }
-      return effect();
+      return effect(this.archiveExecutionContext(latest));
     });
   }
 
@@ -6048,11 +6067,12 @@ export class WorkflowRuns extends Service {
       if (!planningCompositionDigest) {
         throw new Error('Archive Delivery is missing its planning composition identity');
       }
+      const executionContext = this.archiveExecutionContext(state);
       try {
         await this.ctx.delivery.validateArchiveIntent(
           intent,
           input.policy,
-          planningCompositionDigest,
+          executionContext,
           signal,
         );
       } catch (error) {
@@ -6100,7 +6120,7 @@ export class WorkflowRuns extends Service {
           await this.ctx.delivery.validateArchiveIntent(
             correctedIntent,
             input.policy,
-            planningCompositionDigest,
+            executionContext,
             signal,
           );
         } catch (correctedError) {
@@ -6248,7 +6268,7 @@ export class WorkflowRuns extends Service {
       try {
         publication = await this.withArchiveEffectAuthority(
           state,
-          () =>
+          (execution) =>
             this.ctx.delivery.publishArchive(
               {
                 runId: input.runId,
@@ -6263,7 +6283,7 @@ export class WorkflowRuns extends Service {
                     repo.head,
                   ]),
                 ),
-                planningCompositionDigest,
+                execution,
                 evidenceCompositionDigest:
                   archive.evidenceCompositionDigest ??
                   (verificationCompositionDigest as `sha256:${string}`),

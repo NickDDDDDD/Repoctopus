@@ -1,7 +1,7 @@
 import { mkdir, realpath, rm } from 'node:fs/promises';
 import path from 'node:path';
 
-import { execute } from '../process/execute.js';
+import { executeArchiveGit } from './archive-git.js';
 
 export interface IsolatedSpecificationCheckout {
   checkoutId: string;
@@ -10,7 +10,7 @@ export interface IsolatedSpecificationCheckout {
 }
 
 async function git(cwd: string, args: string[]): Promise<string> {
-  return (await execute('git', args, { cwd })).stdout.trim();
+  return (await executeArchiveGit(cwd, args)).stdout.trim();
 }
 
 export class GitSpecificationCheckoutManager {

@@ -1,0 +1,157 @@
+{
+  "passed": true,
+  "runId": "change-agent-lab-v010-workspace-verify-windows-longpath-20261108-ba8f171d976c917a",
+  "terminalProcesses": 4,
+  "terminalPersistentHashes": {
+    "run.json": "4d92cb15813d2d7177432496eaa3ed52247a63ca133edc7829ac05600a026955",
+    "checkpoint.json": "9dec592133c51aefa960d2a0b27158610d5287b78590035f84e2ef3574e56cb4",
+    "trajectory.jsonl": "5eedd072aca14dd7d936caa759065179eabff679343a294094cf118c89fae38e"
+  },
+  "uniqueMergeRequests": [
+    {
+      "repository": "backend",
+      "number": 8,
+      "url": "https://github.com/NickDDDDDD/backend/pull/8",
+      "head": "22af28c4ac5f09bb8fa34b198d9ae2a6a0cc808c",
+      "base": "acceptance/windows-longpath-20261108",
+      "unique": true
+    },
+    {
+      "repository": "web-front",
+      "number": 12,
+      "url": "https://github.com/NickDDDDDD/web-front/pull/12",
+      "head": "802f8d6cb991f2b3a74936b12345e49e124e4dd7",
+      "base": "acceptance/windows-longpath-20261108",
+      "unique": true
+    },
+    {
+      "repository": "agent-lab-v010-workspace",
+      "number": 6,
+      "url": "https://github.com/NickDDDDDD/agent-lab-v010-workspace/pull/6",
+      "head": "534d3cf7b5e3919812d4fe26951f46fefef4816a",
+      "base": "acceptance/windows-longpath-20261108",
+      "unique": true
+    }
+  ],
+  "archiveFiles": [
+    "openspec/changes/archive/2026-11-08-verify-windows-longpath-20261108/design.md",
+    "openspec/changes/archive/2026-11-08-verify-windows-longpath-20261108/proposal.md",
+    "openspec/changes/archive/2026-11-08-verify-windows-longpath-20261108/specs/archive-e2e-acceptance/spec.md",
+    "openspec/changes/archive/2026-11-08-verify-windows-longpath-20261108/tasks.md"
+  ],
+  "longestArchivePath": 276,
+  "verifyCommandCalls": 2,
+  "gitLongpaths": [
+    {
+      "repository": "agent-lab-v010-workspace",
+      "scope": "--local",
+      "value": null
+    },
+    {
+      "repository": "agent-lab-v010-workspace",
+      "scope": "--global",
+      "value": null
+    },
+    {
+      "repository": "agent-lab-v010-workspace",
+      "scope": "--system",
+      "value": null
+    },
+    {
+      "repository": "backend",
+      "scope": "--local",
+      "value": null
+    },
+    {
+      "repository": "backend",
+      "scope": "--global",
+      "value": null
+    },
+    {
+      "repository": "backend",
+      "scope": "--system",
+      "value": null
+    },
+    {
+      "repository": "web-front",
+      "scope": "--local",
+      "value": null
+    },
+    {
+      "repository": "web-front",
+      "scope": "--global",
+      "value": null
+    },
+    {
+      "repository": "web-front",
+      "scope": "--system",
+      "value": null
+    },
+    {
+      "repository": "web-design",
+      "scope": "--local",
+      "value": null
+    },
+    {
+      "repository": "web-design",
+      "scope": "--global",
+      "value": null
+    },
+    {
+      "repository": "web-design",
+      "scope": "--system",
+      "value": null
+    },
+    {
+      "repository": "web-plugin",
+      "scope": "--local",
+      "value": null
+    },
+    {
+      "repository": "web-plugin",
+      "scope": "--global",
+      "value": null
+    },
+    {
+      "repository": "web-plugin",
+      "scope": "--system",
+      "value": null
+    }
+  ],
+  "partialPublicationRecovery": "automated real Provider/Journal fault regression; no network fault introduced into live GitHub publication",
+  "oldVerifyFactsRetained": true,
+  "oldBuildFactsRetained": true,
+  "archiveInputRetained": true,
+  "oldSourceCommit": "04d37b5494fa1cf3bc2837312096f0c2401fa5a4",
+  "candidateSourceCommit": "d4b69ed8e831fc9f9c33a5eefaa6c9682c5c66db",
+  "oldComposition": "sha256:83a6650270dfb0f78059df160341b8f32e5d5ebbd8fb4448e5a8b8903f7f998c",
+  "executionComposition": "sha256:ab0af0fade437122e74d8b2d88dd7a1ef18e4e15c6e78b312d4cf61249e5db5a",
+  "adoption": [
+    {
+      "type": "skill-composition.compiled",
+      "sequence": 14,
+      "data": {
+        "skillCompositionDigest": "sha256:7c5068c1d54c9b1e267c981717e9a3b1ea5d80d1a7f80126f26a9372f9ea8ee3",
+        "result": "compiled",
+        "workCount": 9,
+        "layerCount": 12
+      }
+    },
+    {
+      "type": "composition.changed",
+      "sequence": 222,
+      "data": {
+        "previousCompositionDigest": "sha256:83a6650270dfb0f78059df160341b8f32e5d5ebbd8fb4448e5a8b8903f7f998c",
+        "compositionDigest": "sha256:ab0af0fade437122e74d8b2d88dd7a1ef18e4e15c6e78b312d4cf61249e5db5a",
+        "changedPluginIds": ["delivery-file", "workflow-runs"],
+        "changedContributorIds": []
+      }
+    }
+  ],
+  "systemLongPathsEnabled": 0,
+  "priorStoreCount": 13,
+  "priorStoreFiles": 785,
+  "priorReports": 45,
+  "priorArtifactsUnchanged": true,
+  "oldPackagePreserved": true
+}

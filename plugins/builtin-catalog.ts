@@ -1177,9 +1177,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: { delivery: '2|3' },
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:8ce1ca7a06353931b4dff6dd0a1f7fb45e0a5ef1bf119e4d4eb543a7a44dbb21',
+          codeDigest: 'sha256:e788833a2a494d3fc300e4c795597c7e629cefc705fd98d1b594c8192d58e13b',
           descriptorDigest:
-            'sha256:621c769e571765974eade7280ef7dc5db2fcb5c6e6324f70d76dddac4e6bea7e',
+            'sha256:1cbfdf734f2ff047f21df1c22b6061781f13485cc23aa4818683a1efa8ac6445',
         },
       ],
     },
@@ -1202,6 +1202,7 @@ const definitions: readonly BuiltinDefinition[] = [
       'platform/delivery/file-specification-publication-journal-store.ts',
       'platform/delivery/specification-publication.ts',
       'platform/git/delivery.ts',
+      'platform/git/archive-git.ts',
       'platform/git/specification-checkout.ts',
       'platform/github/merge-request.ts',
     ],
@@ -1236,9 +1237,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: { run: '1' },
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:7808e686562ba7e2f0f4612035a6f5a7cfed851d0953cd5870fead68dd1a5c16',
+          codeDigest: 'sha256:0054b1fd3c9cbbc1b9ccd82ce396a0d230fe4120ca1ca799fa61231a6cdf531a',
           descriptorDigest:
-            'sha256:c27610eae1f7b3599b32ac3487ff5392e12b3ca40cf6bec27adf7e516d277619',
+            'sha256:2e4683748cf8450219c8cab108164b39ab54561c94d90981d26ad2b315dad0dc',
         },
       ],
     },
