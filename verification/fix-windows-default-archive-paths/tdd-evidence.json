@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "sourceBase": "ef5e47a",
+  "results": [
+    {
+      "stage": "red",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "test/archive-publication-lifecycle.test.ts",
+        "-t",
+        "composition"
+      ],
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 3,
+      "skipped": 38,
+      "failure": "Expected incompatible Delivery adoption or stale executor effect to reject, but current implementation resolved.",
+      "boundary": "Real Coordinator, file Run Store and guarded callback; synthetic implementation identities. This is not the real package upgrade acceptance."
+    },
+    {
+      "stage": "green",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "test/archive-publication-lifecycle.test.ts",
+        "-t",
+        "composition"
+      ],
+      "exitCode": 0,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 38,
+      "boundary": "Archive protected dependency closure and executor composition fencing only; full Delivery and package acceptance remain pending."
+    }
+  ]
+}
