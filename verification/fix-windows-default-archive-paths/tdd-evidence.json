@@ -9,9 +9,10 @@
         "node",
         "node_modules/vitest/vitest.mjs",
         "run",
+        "test/archive-git-longpaths.test.ts",
         "test/specification-publication.test.ts",
         "-t",
-        "long paths"
+        "Windows path|long paths"
       ],
       "exitCode": 1,
       "failure": "Real Git omitted the over-limit untracked archive path, so the protected publisher rejected the diff before indexing.",
