@@ -1,5 +1,17 @@
 {
   "schemaVersion": 1,
+  "successfulFullRetry": {
+    "argv": ["npm.cmd", "run", "verify"],
+    "environment": { "VITEST_MAX_WORKERS": "2" },
+    "exitCode": 0,
+    "testFiles": { "passed": 201, "failed": 0, "skipped": 1 },
+    "tests": { "passed": 1109, "failed": 0, "skipped": 5 },
+    "vitestDurationSeconds": 1132.64,
+    "specifications": { "passed": 19, "failed": 0 },
+    "rawLog": "external-evidence/full-pre-guard-retry-1.log",
+    "remainingEntrypoints": "generated, brand, architecture, provenance, dashboard salvage and managed package content checks all passed",
+    "boundary": "Ordinary full command. Comet input-bound Build/Verify Guards are still required; no manual receipt was submitted."
+  },
   "firstFullCheck": {
     "argv": ["npm.cmd", "run", "verify"],
     "environment": { "VITEST_MAX_WORKERS": "2" },

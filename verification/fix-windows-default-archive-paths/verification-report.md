@@ -38,6 +38,14 @@ commit/push 规则保持：源提交 OID、插件实现摘要、规划/验证内
 
 自动化临时仓与目录通过 afterEach 清理；真实受管归档 checkout 在发布完成后清理。原失败证据、候选包、MR 与验收文档是保留的测试产物，未作为临时文件删除。未启动调试服务。
 
+## 完整命令结果
+
+修正环境准备、来源目标摘要与组合预期快照后，完整 `npm.cmd run verify` 返回 0：201 个测试文件通过、1 个跳过，1109 项测试通过、5 项跳过、0 失败；Vitest 耗时 1132.64 秒。19 项规格验证、生成文件、命名、架构、provenance、Dashboard ledger 和 managed package content 检查全部通过。原始失败与成功复跑分别保留，详见 validation-history.json，不把首次失败改写为成功。
+
+该普通完整检查不冒充 Comet 的输入绑定收据；后续实际执行正式 Build/Verify Guard。当前报告保存事实与包绑定，不宣称尚未执行的正式阶段已经完成。
+
+本轮核对了本地 trajectory 的 Run/Work 与组合采纳事件；未连接公司 SigNoz 验证远端查询或看板，未把本地事件持久化等同于远端接收成功。
+
 ## 当前包输入绑定
 
 Tested implementation commit: `f21c5026a4496ac1df6fda39ffc3704f0aedb152`

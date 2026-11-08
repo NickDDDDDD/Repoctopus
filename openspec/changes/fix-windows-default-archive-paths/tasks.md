@@ -19,7 +19,7 @@
 - [x] 3.1 从最终修复提交构建并独立安装候选包，记录实际源提交、包摘要和 CLI 入口；保留原已验证旧包、失败日志、registry 和实验现场，不改变验收仓 Git 配置或系统设置。 <!-- comet-task:62e65c6f-2762-4a91-bf7b-feda48bc36c0 -->
 - [x] 3.2 使用候选包公开 CLI 接续原失败多仓 Run，验证精确组合采纳、原工作包/审批/Verify Input/Gate/Bundle/Archive input 保留，以及真实规格关闭和完整既定 MR 集合；记录实际默认设置、路径长度及命令/副作用次数，不以新 Run 替代。 <!-- comet-task:8dd9ab1c-ebc2-4294-98c3-6bcfb80257ac -->
 - [x] 3.3 在成功关闭、部分发布和完成边界验证新进程恢复与 resume/next 顺序，核对原 Journal、精确 OID/MR、调用次数及终态不重复执行；关联既有 Run/Work/组合采纳遥测，缺失证据如实列为未验证。 <!-- comet-task:84ba5edb-a748-4af4-8e10-d40850f724ed -->
-- [ ] 3.4 按 Comet check policy 精确命令完成全量验证和独立 thorough 审查，修复阻断项；提交正式验证报告，区分自动化契约夹具与真实旧包到新包的结果，确认临时测试目录清理且原失败证据保留。 <!-- comet-task:7594fa72-e6c3-4ec2-b7ec-abd6e0d629f2 -->
+- [x] 3.4 按 Comet check policy 精确命令完成全量验证和独立 thorough 审查，修复阻断项；提交正式验证报告，区分自动化契约夹具与真实旧包到新包的结果，确认临时测试目录清理且原失败证据保留。 <!-- comet-task:7594fa72-e6c3-4ec2-b7ec-abd6e0d629f2 -->
 
 ## Workflow follow-up
 
