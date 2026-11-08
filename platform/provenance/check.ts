@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 interface ProvenanceEntry {
@@ -598,18 +598,24 @@ async function installedPackageManifest(
   // packages that the ESM entry cannot import, masking an incomplete install.
   let directory = path.resolve(productRoot);
   for (;;) {
-    let contents: string;
+    const packageDirectory = path.join(directory, 'node_modules', name);
+    let exists = false;
     try {
-      contents = await readFile(path.join(directory, 'node_modules', name, 'package.json'), 'utf8');
+      exists = (await stat(packageDirectory)).isDirectory();
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-      const parent = path.dirname(directory);
-      if (parent === directory)
-        throw new Error(`No installed package manifest found for ${name}`, { cause: error });
-      directory = parent;
-      continue;
     }
-    return JSON.parse(contents) as { name?: string; version?: string } | null;
+    if (exists) {
+      // An incomplete nearest package must fail locally, not borrow an ancestor
+      // manifest. Only absent package directories permit normal hoisting.
+      return JSON.parse(await readFile(path.join(packageDirectory, 'package.json'), 'utf8')) as {
+        name?: string;
+        version?: string;
+      } | null;
+    }
+    const parent = path.dirname(directory);
+    if (parent === directory) throw new Error(`No installed package manifest found for ${name}`);
+    directory = parent;
   }
 }
 

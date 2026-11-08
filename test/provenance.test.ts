@@ -260,6 +260,22 @@ describe('third-party provenance', () => {
     expect((await checkProvenance(root)).valid).toBe(true);
   });
 
+  it('does not hide a nearest package with missing metadata behind an ancestor copy', async () => {
+    const root = await provenanceFixture();
+    const consumer = path.dirname(root);
+    expect(temporaryRoots).toContain(consumer);
+    const local = path.join(root, 'node_modules/@deepseek-ai/dsh-skill/package.json');
+    const hoisted = path.join(consumer, 'node_modules/@deepseek-ai/dsh-skill/package.json');
+    await mkdir(path.dirname(hoisted), { recursive: true });
+    await cp(local, hoisted);
+    await rm(local);
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings.join('\n')).toContain(
+      'Installed DSH package unavailable: @deepseek-ai/dsh-skill',
+    );
+  });
+
   it('rejects modeling Electron lazy binary acquisition as an install script', async () => {
     const root = await provenanceFixture();
     const packagePath = path.join(root, 'package.json');
