@@ -2,6 +2,8 @@
 comet_change: fix-packaged-doctor-provenance
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-09-fix-packaged-doctor-provenance
+status: final
 ---
 
 # Design

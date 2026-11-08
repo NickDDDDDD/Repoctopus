@@ -2,6 +2,7 @@
 change: fix-packaged-doctor-provenance
 design-doc: openspec/changes/fix-packaged-doctor-provenance/design.md
 base-ref: fec442b1c1b8cf1af94929fb9304de6e1a9dc575
+archived-with: 2026-11-09-fix-packaged-doctor-provenance
 ---
 
 # 安装包 doctor 修复计划
