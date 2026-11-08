@@ -1,0 +1,21 @@
+{
+  "sourceCommit": "f21c5026a4496ac1df6fda39ffc3704f0aedb152",
+  "version": "0.1.0",
+  "rawSha256": "ab5c4fe915278718a2ba7de67d0385780ea94ef54dc106f8b0b2295a81dfade2",
+  "content": {
+    "sha256": "139141734461bc654b5785036b52221b99ea47840392780bd10e47239b2c6329",
+    "files": 468,
+    "bytes": 5957187
+  },
+  "independentInstall": true,
+  "checks": {
+    "completedRunColdResume": true,
+    "compositionUnchanged": true,
+    "verifyCommandCalls": 2,
+    "packagedDoctor": {
+      "passed": false,
+      "cause": "Installed npm package omits package-lock.json required by the existing provenance diagnostic.",
+      "classification": "pre-existing nonblocking diagnostic distribution issue; no manual resource injection or weakening of checks"
+    }
+  }
+}

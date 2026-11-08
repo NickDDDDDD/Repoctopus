@@ -37,3 +37,17 @@ commit/push 规则保持：源提交 OID、插件实现摘要、规划/验证内
 命令级长路径不能解除 Git for Windows 对显式 GIT_DIR 参数的独立长度上限，也不承诺外部 hooks/工具支持任意深度；本次修复与负例针对已复现的 276 字符文件路径。未修改系统设置、移动 checkout 或扩大不相关插件的兼容前驱集合。
 
 自动化临时仓与目录通过 afterEach 清理；真实受管归档 checkout 在发布完成后清理。原失败证据、候选包、MR 与验收文档是保留的测试产物，未作为临时文件删除。未启动调试服务。
+
+## 当前包输入绑定
+
+Tested implementation commit: `f21c5026a4496ac1df6fda39ffc3704f0aedb152`
+
+Package content SHA-256: `139141734461bc654b5785036b52221b99ea47840392780bd10e47239b2c6329`
+
+Package files: `468`
+
+Package content bytes: `5957187`
+
+这四项绑定最终元数据候选包，见 final-candidate-package.json；不覆盖 d4b69ed 原候选的摘要。f21c502 重新打包、独立安装并从公开 CLI 冷恢复 completed 原 Run，组合与原 Receipt 不变，Verify 仍为两次。真实旧包 Run 的关闭与三个 MR 发布发生于 d4b69ed 修复候选；随后仅增加回归、Evidence、配套来源摘要与组合测试快照，产品 Runtime 实现未变。报告不把最终候选的终态恢复冒充再次完成全五阶段。合入 main 后另用新包、新五仓 Run 验证全流程。
+
+附加诊断发现已安装 npm 包的 doctor 读取缺失的 package-lock.json 时失败，属于已有诊断资源分发问题，不阻断本次公开 Run 恢复与发布。未向安装包注入源码文件、未绕过 provenance；本次明确记录为未修复的非阻断观察，不宣称打包 doctor 通过。
