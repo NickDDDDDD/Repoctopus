@@ -604,7 +604,8 @@ async function installedPackageManifest(
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
       const parent = path.dirname(directory);
-      if (parent === directory) throw new Error(`No installed package manifest found for ${name}`);
+      if (parent === directory)
+        throw new Error(`No installed package manifest found for ${name}`, { cause: error });
       directory = parent;
       continue;
     }
