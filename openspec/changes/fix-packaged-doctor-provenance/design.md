@@ -1,3 +1,9 @@
+---
+comet_change: fix-packaged-doctor-provenance
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
