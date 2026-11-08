@@ -2,6 +2,8 @@
 comet_change: fix-windows-default-archive-paths
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-08-fix-windows-default-archive-paths
+status: final
 ---
 
 # Windows 归档路径与跨实现恢复设计

@@ -2,6 +2,7 @@
 change: fix-windows-default-archive-paths
 design-doc: openspec/changes/fix-windows-default-archive-paths/design.md
 base-ref: 04d37b5494fa1cf3bc2837312096f0c2401fa5a4
+archived-with: 2026-11-08-fix-windows-default-archive-paths
 ---
 
 # Windows 归档路径与跨实现恢复实施计划
