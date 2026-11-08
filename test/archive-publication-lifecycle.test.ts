@@ -369,9 +369,22 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
 }
 
 describe('Archive publication terminal lifecycle', () => {
-  it.each(['close', 'publish'] as const)(
-    'rejects incompatible Delivery composition before the Archive %s checkpoint writes',
-    async (checkpoint) => {
+  it.each(
+    (['close', 'publish'] as const).flatMap((checkpoint) =>
+      (
+        [
+          'code',
+          'config',
+          'schema',
+          'authority',
+          'wrong-predecessor',
+          'multiple-predecessors',
+        ] as const
+      ).map((drift) => ({ checkpoint, drift })),
+    ),
+  )(
+    'rejects incompatible Delivery $drift before the Archive $checkpoint checkpoint writes',
+    async ({ checkpoint, drift }) => {
       const workspace = await temporaryDirectory('repoctopus-archive-composition-');
       cleanup.push(workspace);
       const store = new FileRuntimeStore(workspace);
@@ -407,7 +420,33 @@ describe('Archive publication terminal lifecycle', () => {
         { export: () => Promise.resolve() },
         compositionFixture({
           compositionDigest: digest('7'),
-          plugins: [{ ...beforePlugin, codeDigest: digest('4') }],
+          plugins: [
+            {
+              ...beforePlugin,
+              codeDigest: digest('4'),
+              ...(drift === 'config' ? { configDigest: digest('8') } : {}),
+              ...(drift === 'schema' ? { stateSchemas: { delivery: '4' } } : {}),
+              ...(drift === 'authority'
+                ? { authorities: ['delivery-state-write', 'specification-authority'] }
+                : {}),
+              ...(drift === 'code'
+                ? {}
+                : {
+                    compatibleImplementations:
+                      drift === 'wrong-predecessor'
+                        ? [{ codeDigest: digest('8'), descriptorDigest: digest('9') }]
+                        : [
+                            {
+                              codeDigest: beforePlugin.codeDigest,
+                              descriptorDigest: beforePlugin.descriptorDigest,
+                            },
+                            ...(drift === 'multiple-predecessors'
+                              ? [{ codeDigest: digest('8'), descriptorDigest: digest('9') }]
+                              : []),
+                          ],
+                  }),
+            },
+          ],
         }),
       );
 

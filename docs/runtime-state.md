@@ -112,6 +112,12 @@ Run、Checkpoint 和 Trajectory 保存完整 composition 身份。写转换前�
 
 普通插件重载由 Cordis Loader 先卸载旧 Fiber，再激活新 Fiber。Run 不依赖旧 Fiber 的内存对象，恢复依据始终是 Store、Journal 与 Checkpoint。
 
+Archive 的兼容性依赖包含实际规格关闭与发布 Provider；Work 的 capability 名称不能代替 Provider authority。即使当前 Work 只做规格关闭，受保护的发布实现发生不兼容变化也会在执行前被阻断。兼容采纳后，原审批、Verify Input、Bundle、冻结 Archive input 和发布 Journal 保持原身份，受保护入口从最新 Run 取得本次执行组合并交给 Delivery 核对。冻结的 `planningCompositionDigest` 保存历史来源，不要求当前执行代码与历史完全相同；原 `evidenceCompositionDigest` 仍用于核对 Bundle 归属。
+
+执行者观察 Run 后，若另一进程改变了组合，旧执行者不能继续执行副作用。恢复仍使用公开 `run resume`、`run next` 和 `run archive-publish --work-attempt <integer>`，不手改 Store、覆盖冻结摘要或重新批准相同设计；结果未知时继续观察与协调，不盲重发。
+
+每次 commit 后立即 push 的规则不变。提交和远端 OID 属于代码或发布坐标；插件组合摘要来自登记源码和配置，两者分别核验。仅提交进度或报告不等于替换 Runtime 实现，也不能通过延迟 push 规避真实发布漂移。
+
 Change Run 还冻结 Lifecycle Definition、Work Contributor、Validator、Extension、`EffectiveSkillComposition` 与 Specification Provider 身份。团队 guidance/replacement 的角色、顺序、binding/slot、Provider 内容和资源摘要随 Run 固定；当前 Work packet 只装入该 Work 的冻结层。恢复时摘要相同才继续，活动 Provider 内容或合同漂移会在 claim 前 fail closed。核心 transition、Validator 或写入范围不兼容时进入只读 `migration_required`。预发布旧 lifecycle 状态不会被扫描或原地升级，也没有 successor Run。
 
 ## 恢复时的多仓核对

@@ -26,13 +26,13 @@ import type {
 } from '../../domains/delivery/specification-publication.js';
 import type { MergeRequestStatus } from '../../domains/delivery/types.js';
 import { GitSpecificationCheckoutManager } from '../git/specification-checkout.js';
-import { execute } from '../process/execute.js';
+import { executeArchiveGit } from '../git/archive-git.js';
 import { FileSpecificationPublicationJournalStore } from './file-specification-publication-journal-store.js';
 
 export type SpecificationPublicationFaultPoint = 'after-commit' | 'after-push' | 'after-mr';
 
 async function git(cwd: string, args: string[]): Promise<string> {
-  return (await execute('git', args, { cwd })).stdout.trim();
+  return (await executeArchiveGit(cwd, args)).stdout.trim();
 }
 
 function nulPaths(output: string): string[] {
@@ -49,13 +49,13 @@ function samePaths(actual: readonly string[], expected: readonly string[]): bool
 
 async function changedPaths(cwd: string): Promise<string[]> {
   const [unstaged, staged, untracked] = await Promise.all([
-    execute('git', ['diff', '--name-only', '--no-renames', '-z'], { cwd }).then((value) =>
+    executeArchiveGit(cwd, ['diff', '--name-only', '--no-renames', '-z']).then((value) =>
       nulPaths(value.stdout),
     ),
-    execute('git', ['diff', '--cached', '--name-only', '--no-renames', '-z'], { cwd }).then(
+    executeArchiveGit(cwd, ['diff', '--cached', '--name-only', '--no-renames', '-z']).then(
       (value) => nulPaths(value.stdout),
     ),
-    execute('git', ['ls-files', '--others', '--exclude-standard', '-z'], { cwd }).then((value) =>
+    executeArchiveGit(cwd, ['ls-files', '--others', '--exclude-standard', '-z']).then((value) =>
       nulPaths(value.stdout),
     ),
   ]);
@@ -194,9 +194,13 @@ export class SpecificationPublicationAdapter {
       await git(checkoutRoot, ['add', '--all', '--', ...intent.changedFiles]);
       const staged = nulPaths(
         (
-          await execute('git', ['diff', '--cached', '--name-only', '--no-renames', '-z'], {
-            cwd: checkoutRoot,
-          })
+          await executeArchiveGit(checkoutRoot, [
+            'diff',
+            '--cached',
+            '--name-only',
+            '--no-renames',
+            '-z',
+          ])
         ).stdout,
       );
       if (!samePaths(staged, intent.changedFiles)) {
@@ -214,9 +218,14 @@ export class SpecificationPublicationAdapter {
       git(checkoutRoot, ['rev-parse', 'HEAD^']),
       git(checkoutRoot, ['rev-list', '--count', `${intent.baseOid}..HEAD`]),
       git(checkoutRoot, ['log', '-1', '--format=%s']),
-      execute('git', ['diff', '--name-only', '--no-renames', '-z', intent.baseOid, 'HEAD'], {
-        cwd: checkoutRoot,
-      }).then((value) => nulPaths(value.stdout)),
+      executeArchiveGit(checkoutRoot, [
+        'diff',
+        '--name-only',
+        '--no-renames',
+        '-z',
+        intent.baseOid,
+        'HEAD',
+      ]).then((value) => nulPaths(value.stdout)),
     ]);
     if (
       parent !== intent.baseOid ||

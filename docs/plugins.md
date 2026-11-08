@@ -43,3 +43,7 @@ Runtime 只检查当前 checkpoint dependency closure 中实际使用的插件�
 受保护插件变更只有在 adoption catalog 精确声明一个旧 code/config/definition identity 到一个新 identity 的直接前驱、允许的 checkpoint 范围和不变合同后才能继续。Runtime 通过 CAS 记录一次 adoption fact；通配、多前驱、缺失材料和状态 schema 变化都返回 `migration_required`。已经 claim 的 Work 始终使用原不可变 packet，只有尚未 materialize 的 successor Work 使用新 composition。
 
 Specification Provider 的实现摘要变化本身不撤销 Planning approval。Provider 观察到的规范化语义发生变化时，Specification Planning 才产生 semantic drift；二进制或状态兼容性由 composition authority 判断，Human Decision 不能替代技术兼容证明。
+
+Archive 关闭与发布共用这套兼容性权威，依赖闭包包含真实的 Specification 和 Delivery Provider。恢复层采纳新实现后，受保护副作用入口再次核对最新 Run 的组合、Work、epoch 和冻结输入，再交付进程内执行上下文；Adapter 检查当前实现与该上下文一致，不另行要求历史来源摘要等于当前实现。这个上下文不是团队可配置的授权字段或 Host 自述。
+
+组合更新不重写原审批、验证 Bundle、冻结发布集合、OID 或 Journal；未确认副作用也不因此获得重试权限。新增适配模块要进入所属实现的真实源码摘要，受保护变更只声明经验证的唯一直接前驱，不能通过改名、通配或添加历史前驱集合放行。

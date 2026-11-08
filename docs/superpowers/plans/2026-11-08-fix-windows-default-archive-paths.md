@@ -17,7 +17,7 @@ base-ref: 04d37b5494fa1cf3bc2837312096f0c2401fa5a4
 - platform/git/archive-git.ts：局部受管 Git 执行；specification-checkout 与 specification-publication 的全部归档 Git 调用接入。
 - plugins/builtin-catalog.ts：登记实际代码依赖及经核实的唯一直接前驱。
 - test/archive-composition-execution.test.ts、test/archive-git-longpaths.test.ts 及现有 Runtime、publication、compatibility 测试：分别验证真实执行边界、路径与恢复负例。
-- docs/runtime-state.md、docs/plugin-architecture.md：公开恢复与身份解释。正式结果写入 verification/fix-windows-default-archive-paths/verification-report.md。
+- docs/runtime-state.md、docs/plugins.md：公开恢复与身份解释。正式结果写入 verification/fix-windows-default-archive-paths/verification-report.md。
 
 ## 1. 恢复权威垂直切片
 
