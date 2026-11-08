@@ -30,8 +30,20 @@ export interface DeliveryPreparation {
   policy: DeliveryPolicy;
   reportContents: string;
   evidenceBundleIds: string[];
-  planningCompositionDigest?: `sha256:${string}`;
   evidenceCompositionDigest?: `sha256:${string}`;
+}
+
+export interface ArchiveExecutionContext {
+  readonly runId: string;
+  readonly changeId: string;
+  readonly compositionDigest: `sha256:${string}`;
+}
+
+export interface ArchiveDeliveryPreparation extends DeliveryPreparation {
+  runId: string;
+  intent: DeliveryIntentV3;
+  execution: ArchiveExecutionContext;
+  expectedRepositoryHeads: Readonly<Record<string, string>>;
 }
 
 export abstract class Delivery extends Service {
@@ -61,11 +73,7 @@ export abstract class Delivery extends Service {
     signal?: AbortSignal,
   ): Promise<DeliveryState | DeliveryStateV3>;
   publishArchive(
-    options: DeliveryPreparation & {
-      intent: DeliveryIntentV3;
-      runId?: string;
-      expectedRepositoryHeads: Readonly<Record<string, string>>;
-    },
+    options: ArchiveDeliveryPreparation,
     signal?: AbortSignal,
   ): Promise<ArchivePublicationResult> {
     void signal;
@@ -78,12 +86,12 @@ export abstract class Delivery extends Service {
   validateArchiveIntent(
     intent: DeliveryIntentV3,
     policy: DeliveryPolicy,
-    planningCompositionDigest: `sha256:${string}`,
+    execution: ArchiveExecutionContext,
     signal?: AbortSignal,
   ): Promise<void> {
     void intent;
     void policy;
-    void planningCompositionDigest;
+    void execution;
     void signal;
     return Promise.reject(new Error('Delivery provider cannot validate lifecycle Archive intent'));
   }
