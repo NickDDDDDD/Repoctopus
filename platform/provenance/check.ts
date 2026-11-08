@@ -469,29 +469,13 @@ export async function checkProvenance(
     scripts?: Record<string, string>;
     allowScripts?: Record<string, boolean>;
   };
-  const packageLock = JSON.parse(
-    await readFile(path.join(productRoot, 'package-lock.json'), 'utf8'),
-  ) as {
-    packages?: Record<
-      string,
-      { name?: string; version?: string; integrity?: string; resolved?: string }
-    >;
-  };
+  // Runtime diagnoses the installed product. The CI source audit owns lockfiles,
+  // transitive dependency integrity and development preparation resources.
   for (const field of ['dependencies', 'optionalDependencies', 'peerDependencies'] as const) {
     for (const [name, spec] of Object.entries(packageJson[field] ?? {})) {
       if (isCometPackageReference(name) || isCometPackageReference(spec)) {
         findings.push(`Comet Runtime dependency is forbidden in ${field}: ${name}`);
       }
-    }
-  }
-  for (const [location, locked] of Object.entries(packageLock.packages ?? {})) {
-    if (
-      location &&
-      (isCometPackageReference(location) ||
-        isCometPackageReference(locked.name) ||
-        isCometPackageReference(locked.resolved))
-    ) {
-      findings.push(`Comet Runtime dependency is forbidden in package lock: ${location}`);
     }
   }
   for (const packageEntry of dsh.npmPackages ?? []) {
@@ -505,14 +489,28 @@ export async function checkProvenance(
         `DSH package override is not fixed: ${packageEntry.name}@${packageEntry.version}`,
       );
     }
-    const locked = packageLock.packages?.[`node_modules/${packageEntry.name}`];
-    if (locked?.version !== packageEntry.version || !/^sha512-/.test(locked.integrity ?? '')) {
-      findings.push(`DSH package lock mismatch: ${packageEntry.name}@${packageEntry.version}`);
+    try {
+      const installed = await installedPackageManifest(productRoot, packageEntry.name);
+      if (installed?.name !== packageEntry.name || installed.version !== packageEntry.version) {
+        findings.push(
+          `Installed DSH package identity mismatch: ${packageEntry.name}@${packageEntry.version}`,
+        );
+      }
+    } catch (error) {
+      findings.push(
+        `Installed DSH package unavailable: ${packageEntry.name}: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
   for (const packageName of dsh.forbiddenRuntimePackages ?? []) {
-    if (packageLock.packages?.[`node_modules/${packageName}`]) {
-      findings.push(`Forbidden DSH runtime package installed: ${packageName}`);
+    if (
+      [
+        packageJson.dependencies,
+        packageJson.optionalDependencies,
+        packageJson.peerDependencies,
+      ].some((dependencies) => Object.hasOwn(dependencies ?? {}, packageName))
+    ) {
+      findings.push(`Forbidden DSH runtime package declared: ${packageName}`);
     }
   }
   const electronDependency = dsh.desktopDependencies?.find((entry) => entry.name === 'electron');
@@ -526,9 +524,6 @@ export async function checkProvenance(
   ) {
     findings.push('Invalid Electron binary preparation policy');
   }
-  await readFile(path.join(productRoot, 'scripts', 'prepare-desktop.mjs')).catch(() => {
-    findings.push('Missing Electron binary preparation command');
-  });
   const electronScriptKey = `electron@${electronDependency?.version ?? '(missing version)'}`;
   if (Object.hasOwn(packageJson.allowScripts ?? {}, electronScriptKey)) {
     findings.push(
@@ -592,6 +587,29 @@ export async function checkProvenance(
     fileCount: manifest.files.length + cordisFiles + (matt.files?.length ?? 0),
     findings,
   };
+}
+
+async function installedPackageManifest(
+  productRoot: string,
+  name: string,
+): Promise<{ name?: string; version?: string } | null> {
+  // Match the ESM product's normal ancestor lookup, including npm hoisting and
+  // pnpm symlinks. CJS createRequire would additionally accept NODE_PATH/global
+  // packages that the ESM entry cannot import, masking an incomplete install.
+  let directory = path.resolve(productRoot);
+  for (;;) {
+    let contents: string;
+    try {
+      contents = await readFile(path.join(directory, 'node_modules', name, 'package.json'), 'utf8');
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+      const parent = path.dirname(directory);
+      if (parent === directory) throw new Error(`No installed package manifest found for ${name}`);
+      directory = parent;
+      continue;
+    }
+    return JSON.parse(contents) as { name?: string; version?: string } | null;
+  }
 }
 
 async function listFiles(directory: string, prefix = ''): Promise<string[]> {

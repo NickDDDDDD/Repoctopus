@@ -31,7 +31,7 @@ describe('project composition assembly', () => {
     );
     const ids = composition.entries.map((entry) => entry.id);
     expect(compositionIdentity(composition).compositionDigest).toBe(
-      'sha256:ebb00fa153f451b7675e0cb223e091eb33969b0c2016ae918d46a83da027b7c3',
+      'sha256:052fb43e19f52e158c9a8f9004275d111b3009fedcd1ed6ac07f3d93135d4fc1',
     );
     expect(ids).toEqual(
       expect.arrayContaining([
