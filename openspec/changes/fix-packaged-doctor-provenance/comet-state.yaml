@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: af9c08c9-f1e9-43af-b5f5-cb8e4c6d7a0e
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: fec442b1c1b8cf1af94929fb9304de6e1a9dc575
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-08
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/fix-packaged-doctor-provenance
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: c03488ce7a4db9333dea9710c59e9de3dc8797e914a2c584f44e61049cc2c4a6
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: fix-packaged-doctor-provenance
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: d558245a297b50ffe7827d4bf9bbbcdcd7570827bfe49080cb5c884ef89e4e38
+    input:
+      change: fix-packaged-doctor-provenance
+      changeDir: openspec/changes/fix-packaged-doctor-provenance
+      workspaceBaseline:
+        ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: fec442b1c1b8cf1af94929fb9304de6e1a9dc575
+      boundBranch: comet/fix-packaged-doctor-provenance
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-08
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: fix-packaged-doctor-provenance:1
+        input:
+          input:
+            change: fix-packaged-doctor-provenance
+            changeDir: openspec/changes/fix-packaged-doctor-provenance
+            workspaceBaseline:
+              ref: bea2ef13-a8f1-49a0-9c64-604e36a00732
+          outputs: {}
+        inputHash: c3186890af1b863d53ced55b4fb3a78ec86cd80185382e09fb76bca0863066af
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-packaged-doctor-provenance
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      fix-packaged-doctor-provenance:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 001a097039b9f1dc4a423265b260707733e2bbbd05bb3a2660ea0a542414c5f3
