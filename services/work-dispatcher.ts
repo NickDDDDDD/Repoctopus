@@ -86,6 +86,7 @@ function createChangeInputs(input: {
           plan,
           planEvidence: protocol.planEvidence,
           packageCompletions: protocol.packageCompletions,
+          verifyRepair: protocol.verifyRepair,
           currentPackage:
             plan?.packages.find((candidate) => candidate.packageId === input.work.packageId) ??
             null,

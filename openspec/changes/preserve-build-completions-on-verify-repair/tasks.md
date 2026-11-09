@@ -2,7 +2,7 @@
 
 ## 1. 局部 Verify 修复垂直切片
 
-- [ ] 1.1 在领域和生产 Verify 路径建立真实 RED：四个可区分的已完成包中一个实现检查失败，断言原代码错误地失效全部 completion，保存失败命令和原因；回归不能只比较最终 projection。 <!-- comet-task:445e47c3-f66a-4390-9a76-a9b8fbdd81e0 -->
+- [x] 1.1 在领域和生产 Verify 路径建立真实 RED：四个可区分的已完成包中一个实现检查失败，断言原代码错误地失效全部 completion，保存失败命令和原因；回归不能只比较最终 projection。 <!-- comet-task:445e47c3-f66a-4390-9a76-a9b8fbdd81e0 -->
 - [ ] 1.2 修正 Verify 失败分类及修复 Plan 复核，使用现有失败 Evidence、Acceptance/Plan 关系验证范围，保留真实输入仍有效的独立包凭证；以局部失败回归转绿及原 Plan 语义身份保持为验收。 <!-- comet-task:da090b63-9a31-43a1-b82c-805a0a29be61 -->
 - [ ] 1.3 让已完成 Task 的实现修复通过普通受管 Execute、新 Check 和 Verify 完成，沿用 Task IDs 及有效配置，不新增 Repair Work kind 或影子任务；以同一 Run 真正执行单包修复、其余包 Execute 计数不增加为验收。 <!-- comet-task:1532b36d-0809-4d7b-974f-36a60807a939 -->
 - [ ] 1.4 将实际失败、影响/保留范围、修复 Work 与新检查接入既有 Trajectory/OTLP 记录，补齐本组对应设计说明与回归；验收恢复原因不虚报 Plan 漂移、事件可关联且指标不包含高基数或敏感原文。 <!-- comet-task:7872e6c7-872a-490c-817e-4b87cf035268 -->

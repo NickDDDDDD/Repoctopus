@@ -1,4 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
+import {
+  createVerifyRepair,
+  type VerifyRepair,
+} from '../domains/change-lifecycle/verify-repair.js';
+import { reuseEquivalentBuildPlan } from '../domains/change-lifecycle/build-protocol.js';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
 import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
@@ -1317,6 +1322,7 @@ export class WorkflowRuns extends Service {
     observationId: string;
     layers: Partial<Pick<RecoveryObservation, 'planning' | 'plan' | 'work' | 'evidence'>>;
     materialization: LifecycleRecoveryMaterialization;
+    reobserve?: (state: RunState) => Promise<void>;
     beforeApply?: (
       decision: RecoveryDecision,
       materialization: LifecycleRecoveryMaterialization,
@@ -1355,6 +1361,7 @@ export class WorkflowRuns extends Service {
       input.state.runId,
       decision,
       input.materialization,
+      input.reobserve ? { reobserve: input.reobserve } : undefined,
     );
   }
 
@@ -3552,6 +3559,7 @@ export class WorkflowRuns extends Service {
                   tasks: taskSet,
                   candidate: { packages: result.packages },
                 });
+                plan = reuseEquivalentBuildPlan(protocol.plan, plan);
               } catch (error) {
                 return rejectSubmission(
                   'outcome-rejected',
@@ -3607,10 +3615,14 @@ export class WorkflowRuns extends Service {
                 protocol.workspaceCheckpoint,
                 [workspaceRepositoryId],
               );
+              const repairRetention = await this.observeVerifyRepairRetention(current);
               const planObservation = {
                 kind: 'build-plan-accepted',
                 plan,
                 workspaceCheckpoint: planWorkspaceCheckpoint,
+                ...(repairRetention?.invalidation
+                  ? { retentionInvalidation: repairRetention.invalidation }
+                  : {}),
               } as const;
               if (planExecution?.status === 'submitted') {
                 if (planCandidate?.kind !== 'candidate') {
@@ -3624,6 +3636,7 @@ export class WorkflowRuns extends Service {
                   validationInput: {
                     taskSetDigest: taskSet.digest,
                     planDigest: plan.digest,
+                    repairRetention,
                     workspaceCheckpointDigest: planWorkspaceCheckpoint.digest,
                     bindingStateDigest: binding.stateDigest,
                     projectSnapshotDigest: current.projectSnapshotDigest,
@@ -3643,6 +3656,7 @@ export class WorkflowRuns extends Service {
                     return {
                       taskSetDigest: refreshedTaskSet.digest,
                       planDigest: plan.digest,
+                      repairRetention: await this.observeVerifyRepairRetention(current),
                       workspaceCheckpointDigest: refreshedWorkspaceCheckpoint.digest,
                       bindingStateDigest: binding.stateDigest,
                       projectSnapshotDigest: refreshedProjectSnapshot.digest,
@@ -3990,8 +4004,14 @@ export class WorkflowRuns extends Service {
                   ],
                 };
               }
+              const repairRetention = await this.observeVerifyRepairRetention(current);
               const completedIds = new Set([
-                ...protocol.packageCompletions.map((entry) => entry.packageId),
+                ...protocol.packageCompletions
+                  .filter(
+                    (entry) =>
+                      !repairRetention?.invalidation?.affectedPackageIds.includes(entry.packageId),
+                  )
+                  .map((entry) => entry.packageId),
                 completion.packageId,
               ]);
               const taskSetBeforeCompletion = await this.ctx.specification.tasks(
@@ -4087,6 +4107,9 @@ export class WorkflowRuns extends Service {
               const packageObservation = {
                 kind: 'build-package-completed',
                 completion,
+                ...(repairRetention?.invalidation
+                  ? { retentionInvalidation: repairRetention.invalidation }
+                  : {}),
                 workspaceCheckpoint,
                 work: nextWork,
                 tasks: projectedTaskValues,
@@ -4105,6 +4128,7 @@ export class WorkflowRuns extends Service {
                     workspaceCheckpoint,
                     taskSetBeforeCompletion,
                     taskIdsToComplete,
+                    repairRetention,
                     planDigest: plan.digest,
                     projectSnapshotDigest: current.projectSnapshotDigest,
                   },
@@ -4125,6 +4149,7 @@ export class WorkflowRuns extends Service {
                       workspaceCheckpoint: refreshedWorkspaceCheckpoint,
                       taskSetBeforeCompletion: refreshedTasks,
                       taskIdsToComplete,
+                      repairRetention: await this.observeVerifyRepairRetention(current),
                       planDigest: plan.digest,
                       projectSnapshotDigest: refreshedProjectSnapshot.digest,
                     };
@@ -4369,6 +4394,7 @@ export class WorkflowRuns extends Service {
                   'Build Check does not cover every Task acceptance',
                 );
               }
+              const repairRetention = await this.observeVerifyRepairRetention(current);
               let checkEvidence: ReturnType<typeof createBuildCheckEvidence>;
               try {
                 const normalizedFindings = normalizeWorkExecutionFindings(hostOutcome);
@@ -4432,6 +4458,16 @@ export class WorkflowRuns extends Service {
                     summary: finding.summary,
                   };
                 });
+                if (repairRetention?.invalidation)
+                  findings.push({
+                    findingId: `finding:${repairRetention.invalidation.digest}`,
+                    classification: 'implementation',
+                    blocking: true,
+                    requirementRefs: [],
+                    taskIds: [],
+                    packageIds: [...repairRetention.invalidation.affectedPackageIds],
+                    summary: 'Retained machine evidence inputs changed during Verify repair',
+                  });
                 const implementationExecutionId = `implementation:${createHash('sha256')
                   .update(
                     canonicalJson(
@@ -4567,6 +4603,7 @@ export class WorkflowRuns extends Service {
                         validationInput: {
                           checkEvidence,
                           invalidation,
+                          repairRetention,
                           planDigest: plan.digest,
                           projectSnapshotDigest: current.projectSnapshotDigest,
                         },
@@ -4582,6 +4619,7 @@ export class WorkflowRuns extends Service {
                           return {
                             checkEvidence,
                             invalidation,
+                            repairRetention: await this.observeVerifyRepairRetention(current),
                             planDigest: plan.digest,
                             projectSnapshotDigest: refreshedProjectSnapshot.digest,
                           };
@@ -4683,6 +4721,7 @@ export class WorkflowRuns extends Service {
                   validationInput: {
                     checkEvidence,
                     verificationInput,
+                    repairRetention,
                     evidenceFingerprint: evidencePlan.fingerprint,
                     planDigest: plan.digest,
                     projectSnapshotDigest: current.projectSnapshotDigest,
@@ -4713,6 +4752,7 @@ export class WorkflowRuns extends Service {
                     return {
                       checkEvidence,
                       verificationInput: refreshedVerificationInput,
+                      repairRetention: await this.observeVerifyRepairRetention(current),
                       evidenceFingerprint: refreshedEvidencePlan.fingerprint,
                       planDigest: plan.digest,
                       projectSnapshotDigest: refreshedProjectSnapshot.digest,
@@ -5035,15 +5075,49 @@ export class WorkflowRuns extends Service {
     });
   }
 
+  private async observeVerifyRepairRetention(state: RunState) {
+    const protocol = state.changeLifecycle?.buildProtocol;
+    const repair = protocol?.verifyRepair;
+    if (!repair || !protocol.plan) return null;
+    const retained = repair.retained.filter((r) =>
+      protocol.packageCompletions.some(
+        (c) => c.completionId === r.completionId && c.packageDigest === r.packageDigest,
+      ),
+    );
+    const assessments = await this.ctx.evidenceCoordinator.assessSelectedReceiptInputs(
+      repair.source.attemptId,
+      state.runId,
+      retained.flatMap((r) => r.receiptIds),
+    );
+    const drifted = retained.filter((r) => r.receiptIds.some((id) => assessments[id] !== 'same'));
+    return {
+      repairDigest: repair.digest,
+      retainedCompletionIds: retained.map((r) => r.completionId).sort(),
+      invalidation: drifted.length
+        ? createBuildInvalidation({
+            source: 'verify',
+            plan: protocol.plan,
+            classification: 'implementation',
+            affectedPackageIds: drifted.map((r) => r.packageId),
+            packageCompletions: protocol.packageCompletions,
+            reason:
+              'Previously retained machine evidence inputs changed during implementation repair',
+          })
+        : null,
+    };
+  }
+
   private async createVerifyFailureContinuation(
     state: RunState,
     result: 'implementation-failure' | 'evidence-drift' | 'evidence-unavailable',
     signal?: AbortSignal,
+    attemptId?: string,
   ): Promise<{
     tasks?: SpecificationTask[];
     work: WorkDescriptor;
     invalidation?: ReturnType<typeof createBuildInvalidation>;
     verificationInput?: ReturnType<typeof rebaseVerificationInput>;
+    verifyRepair?: VerifyRepair;
   }> {
     const lifecycle = state.changeLifecycle;
     if (!lifecycle?.verificationInput || lifecycle.phase !== 'verify') {
@@ -5113,13 +5187,33 @@ export class WorkflowRuns extends Service {
     const plan = protocol.plan!;
     const strategy = protocol.strategy;
     const binding = protocol.binding!;
+    if (!attemptId) throw new Error('Verify repair requires the failed machine Attempt');
+    const facts = await this.ctx.evidenceCoordinator.verifyRepairFacts(state, attemptId);
     const invalidation = createBuildInvalidation({
       source: 'verify',
       plan,
       classification: 'implementation',
-      affectedPackageIds: plan.packages.map((workPackage) => workPackage.packageId),
+      affectedPackageIds: facts.affectedPackageIds,
       packageCompletions: protocol.packageCompletions,
-      reason: 'Verify rejected the current implementation; conservatively revise all packages',
+      reason: 'Required machine evidence rejected the implementation',
+    });
+    const verifyRepair = createVerifyRepair({
+      source: {
+        attemptId: facts.attemptId,
+        bundleId: facts.bundleId,
+        verificationInputDigest: lifecycle.verificationInput.digest,
+        checkEpoch: lifecycle.checkEpoch,
+        planDigest: plan.digest,
+      },
+      scope: {
+        failedNodeIds: facts.failedNodeIds,
+        failedAcceptanceIds: facts.failedAcceptanceIds,
+        affectedPackageIds: invalidation.affectedPackageIds,
+        invalidationDigest: invalidation.digest,
+      },
+      retained: facts.retained.filter(
+        (r) => !invalidation.affectedPackageIds.includes(r.packageId),
+      ),
     });
     const skills = await this.resolveLifecycleWorkSkills('build.plan', signal, [], state.runId);
     const work = createBuildActionWork({
@@ -5147,8 +5241,9 @@ export class WorkflowRuns extends Service {
           taskId,
           taskRevision,
         })),
-        reason: 'verify-finding-plan-revision',
+        reason: 'verify-implementation-revision',
         invalidationDigest: invalidation.digest,
+        verifyRepairDigest: verifyRepair.digest,
       },
     });
     for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
@@ -5158,6 +5253,7 @@ export class WorkflowRuns extends Service {
       tasks: Array.from(lifecycle.tasks ?? [], (task) => structuredClone(task)),
       work,
       invalidation,
+      verifyRepair,
     };
   }
 
@@ -5172,7 +5268,7 @@ export class WorkflowRuns extends Service {
   ): Promise<RuntimeResult<RunStatusView>> {
     const evidenceIds = [attemptId, ...(bundleId ? [bundleId] : [])];
     if (result === 'implementation-failure') {
-      if (!continuation.invalidation) {
+      if (!continuation.invalidation || !continuation.verifyRepair) {
         throw new Error('Verify implementation failure requires a Plan invalidation');
       }
       return this.classifyAndApplyRecovery({
@@ -5184,16 +5280,36 @@ export class WorkflowRuns extends Service {
           invalidationDigest: continuation.invalidation.digest,
         }),
         layers: {
-          plan: {
-            status: 'drift',
-            reasonCode: 'plan-constraint-changed',
-            changedIdentities: ['build-plan'],
+          work: {
+            status: 'implementation-failed',
+            reasonCode: 'implementation-failed',
+            changedIdentities: ['package-completion'],
           },
         },
         materialization: {
           work: continuation.work,
           invalidation: continuation.invalidation,
+          verifyRepair: continuation.verifyRepair,
           evidenceIds,
+        },
+        reobserve: async (latest) => {
+          const facts = await this.ctx.evidenceCoordinator.verifyRepairFacts(latest, attemptId);
+          const latestProtocol = latest.changeLifecycle!.buildProtocol!;
+          const invalidation = createBuildInvalidation({
+            source: 'verify',
+            plan: latestProtocol.plan!,
+            classification: 'implementation',
+            affectedPackageIds: facts.affectedPackageIds,
+            packageCompletions: latestProtocol.packageCompletions,
+            reason: 'Required machine evidence rejected the implementation',
+          });
+          if (
+            invalidation.digest !== continuation.invalidation!.digest ||
+            canonicalJson(
+              facts.retained.filter((r) => !invalidation.affectedPackageIds.includes(r.packageId)),
+            ) !== canonicalJson(continuation.verifyRepair!.retained)
+          )
+            throw new Error('Verify repair inputs changed before the protected acceptance commit');
         },
       });
     }
@@ -5410,11 +5526,23 @@ export class WorkflowRuns extends Service {
                 ? 'evidence-unavailable'
                 : 'implementation-failure',
         });
-        const continuation = await this.createVerifyFailureContinuation(
-          state,
-          rejected.result,
-          signal,
-        );
+        let continuation: Awaited<ReturnType<WorkflowRuns['createVerifyFailureContinuation']>>;
+        try {
+          continuation = await this.createVerifyFailureContinuation(
+            state,
+            rejected.result,
+            signal,
+            attemptId,
+          );
+        } catch (error) {
+          return this.preserveUnsettledVerify(
+            input.runId,
+            attemptId,
+            rejected.bundleId,
+            error instanceof Error ? error.message : String(error),
+            'reobserve',
+          );
+        }
         const fallback = await this.applyVerifyRecovery(
           state,
           lifecycle,

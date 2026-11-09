@@ -52,6 +52,12 @@
 
 ## 已完成 Run 的恢复边界
 
+## Verify 实现修复的完成事实保留
+
+本次固定参考同一 Comet 0.5.1 commit 的 `native-sdk-verify-decision.ts`：区分 `revise-implementation` 与 `retry-verifier`；Classic `classic-application.ts` 保留 Verify 后重新进入 Build Plan 的步骤。来源内容摘要登记在 source-manifest.json。本次没有引入 Comet SDK、复制新源码或切换上游版本。
+
+Repoctopus 将上述分类和依赖有效性原则应用于现有多仓 Build Protocol：失败的机器 Bundle/Acceptance Trace 与已接受 Plan 决定影响闭包，未受影响完成凭证仍由真实声明输入和 producer 产物证明。四包选择性保留算法是对 Repoctopus 现有包模型的适配，并非声称 Comet Classic 存在同构的四包实现。同内容 Plan 复用原身份，真正的实现修复保留原 Task 完成事实，继续普通 Execute、Check、Verify。未知范围不猜测全局影响；schema 3 的修复事实不是另一个生命周期或 generation。
+
 固定参考 Comet 0.5.1（35c9860b77b42bafa0c2d80d8d695889f888a924）的 domains/engine/runtime-service.ts 和 domains/comet-classic/classic-current-change.ts，来源摘要登记在 source-manifest.json。执行循环先停止 completed，普通命令不能隐式重新激活完成 Run，Classic 先识别归档再检查活动分支。
 
 Repoctopus 将这些规则应用于现有 continuation、完整 Runtime status、coordinator、Cordis Service 和 CLI 输出；保留 RunStore/Journal 的完整性边界和活动多仓授权校验，不引入 Comet SDK 或第二份状态。终态保留原 Closure、PublicationReceipt、Evidence 和历史诊断，只补发原 Cursor 尚未确认的已提交遥测。验收覆盖完整状态与两个新进程顺序，记录在 preserve-completed-run-recovery 的规格、任务和验证报告中。
