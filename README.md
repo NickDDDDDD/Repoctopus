@@ -86,7 +86,9 @@ repoctopus.cmd project review --workspace . --request $prepared.result.file
 
 批准后，Repoctopus 准备或复用 Workspace 的 `openspec/`，登记本机的 OpenSpec Store，并写入团队共享的 `repoctopus.yaml`。把生成的共享文件按团队 Git 流程合入远端目标分支。
 
-- **Workspace** 提交 `repoctopus.yaml`、`openspec/`、`.openspec-store/` 和变更后的 `.gitignore`。草稿和本机配置保存在被忽略的 `.repoctopus/` 中。
+支持 Workspace 引导的新版本还会生成 `README.md` 使用入口、`AGENTS.md` Agent 入口及 `docs/repoctopus/workspace-guide.md` 本地教程，只维护 Repoctopus 标记区块，保留已有团队内容。之后可以直接在团队仓阅读基本教程。旧 `v0.1.0` 没有自动生成这些引导；升级到包含此功能的版本后，按[补齐本地引导](docs/project-onboarding.md#补齐或更新-workspace-引导)操作。
+
+- **Workspace** 提交 `repoctopus.yaml`、`openspec/`、`.openspec-store/`、变更后的 `.gitignore`，以及生成的 README、AGENTS 和本地教程。草稿和本机配置保存在被忽略的 `.repoctopus/` 中。
 - **多仓中的业务仓** 如果批准了 Store 指向配置，将生成的 `openspec/config.yaml` 提交到它所属的业务仓。
 
 [配置示例与审核细节](docs/project-onboarding.md)

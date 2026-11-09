@@ -274,6 +274,8 @@ const definitions: readonly BuiltinDefinition[] = [
       'platform/project-configuration/onboarding.ts',
       'platform/project-configuration/detect.ts',
       'platform/project-configuration/gitignore.ts',
+      'platform/project-configuration/workspace-guides.ts',
+      'domains/project-configuration/workspace-guides.ts',
     ],
   },
   {

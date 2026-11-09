@@ -1,0 +1,17 @@
+{
+  "change": "add-workspace-onboarding-guides",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5",
+  "files": [
+    { "path": "openspec/changes/add-workspace-onboarding-guides/proposal.md", "sha256": "74aef4c179b4d1e6e59f9e63a322208a0963ed58fbc0c1d338b4af2af2cd3098" },
+    { "path": "openspec/changes/add-workspace-onboarding-guides/design.md", "sha256": "c24212f1be42f0b320e5bf41b2ca32e3c8008653f457a98eb8a09f65930ae113" },
+    { "path": "openspec/changes/add-workspace-onboarding-guides/tasks.md", "sha256": "835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8" },
+    { "path": "openspec/changes/add-workspace-onboarding-guides/.openspec.yaml", "sha256": "309e6764c826c3fc6250bcce33b56b7e44adebafc76c7df25f058663d6de4299" },
+    { "path": "openspec/changes/add-workspace-onboarding-guides/specs/product-distribution/spec.md", "sha256": "b99a3520413d821220a4a1843005c5303608b8ebc270c7c7564f748b10ce1640" },
+    { "path": "openspec/changes/add-workspace-onboarding-guides/specs/project-configuration/spec.md", "sha256": "3c1d1e6808f92b0aecb28198d78cd2132f68443fed5e561525eb99755c9d0c2c" }
+  ]
+}

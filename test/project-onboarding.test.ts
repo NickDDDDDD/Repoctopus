@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { parse } from 'yaml';
@@ -85,7 +85,103 @@ function response(
   };
 }
 
+async function guideDecisionFixture() {
+  const root = await temporaryDirectory('repoctopus-guide-transaction-');
+  cleanup.push(root);
+  const workspace = await createGitRepository(root, 'workspace');
+  const web = await createGitRepository(root, 'web');
+  await writeFile(
+    path.join(web, 'package.json'),
+    JSON.stringify({ scripts: { build: 'node --version' } }),
+  );
+  const detected = await detectProjectConfiguration({ workspace, scanRoot: root });
+  const prepared = await prepareProjectConfigurationDecision({
+    workspace,
+    draftFile: detected.file,
+    completedCandidate: detected.draft.candidateConfig!,
+  });
+  return {
+    workspace,
+    prepared,
+    input: {
+      workspace,
+      decisionFile: prepared.file,
+      response: response(prepared.request),
+      actor: { actorId: 'user', source: 'cli' as const, authenticated: true },
+      timestamp: '2026-01-01T00:00:00.000Z',
+    },
+  };
+}
+
 describe('project configuration onboarding', () => {
+  it.each(['reject', 'request_changes'] as const)(
+    'does not install guides before approval or after %s',
+    async (decision) => {
+      const { workspace, input } = await guideDecisionFixture();
+      const readme = await readFile(path.join(workspace, 'README.md'));
+      await expect(access(path.join(workspace, 'AGENTS.md'))).rejects.toMatchObject({
+        code: 'ENOENT',
+      });
+      const result = await applyDecision({ ...input, response: { ...input.response, decision } });
+      expect(result.status).toBe(decision === 'reject' ? 'rejected' : 'request_changes');
+      expect(await readFile(path.join(workspace, 'README.md'))).toEqual(readme);
+      await expect(access(path.join(workspace, 'docs'))).rejects.toMatchObject({ code: 'ENOENT' });
+      await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+        code: 'ENOENT',
+      });
+    },
+  );
+
+  it('preflights malformed guides before Store side effects or config publication', async () => {
+    const { workspace, input } = await guideDecisionFixture();
+    await writeFile(path.join(workspace, 'AGENTS.md'), '<repoctopus-workflow>\nBroken');
+    let sideEffects = 0;
+    await expect(
+      applyProjectConfigurationDecision(input, {
+        ...registration,
+        prepareRoot: (request) => {
+          sideEffects++;
+          return registration.prepareRoot(request);
+        },
+        ensureRegistered: (request) => {
+          sideEffects++;
+          return registration.ensureRegistered(request);
+        },
+      }),
+    ).rejects.toThrow(/managed block/u);
+    expect(sideEffects).toBe(0);
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+  });
+
+  it('resumes a partially installed guide set before publishing configuration, and keeps confirmed replay inert', async () => {
+    const { workspace, prepared, input } = await guideDecisionFixture();
+    await expect(
+      applyDecision({
+        ...input,
+        hooks: {
+          afterGuideWrite(file: string) {
+            if (file === 'README.md') throw new Error('simulated guide interruption');
+          },
+        },
+      }),
+    ).rejects.toThrow('simulated guide interruption');
+    const readme = await readFile(path.join(workspace, 'README.md'));
+    const readmeStat = await stat(path.join(workspace, 'README.md'));
+    expect(JSON.parse(await readFile(prepared.file, 'utf8'))).toMatchObject({ status: 'applying' });
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    const completed = await applyDecision(input);
+    expect(completed.status).toBe('confirmed');
+    expect(await readFile(path.join(workspace, 'README.md'))).toEqual(readme);
+    expect((await stat(path.join(workspace, 'README.md'))).mtimeMs).toBe(readmeStat.mtimeMs);
+    await writeFile(path.join(workspace, 'AGENTS.md'), '# Later team change\n');
+    expect(await applyDecision(input)).toEqual(completed);
+    expect(await readFile(path.join(workspace, 'AGENTS.md'), 'utf8')).toBe('# Later team change\n');
+  });
+
   it('requires a usable default verify profile before creating an approval request', async () => {
     const root = await temporaryDirectory('repoctopus-onboarding-coverage-');
     cleanup.push(root);
@@ -279,6 +375,18 @@ describe('project configuration onboarding', () => {
       /openspec\//u,
     );
     expect(loaded.shared).toEqual(parseSharedProjectConfig(completedCandidate));
+    const guide = await readFile(
+      path.join(workspace, 'docs/repoctopus/workspace-guide.md'),
+      'utf8',
+    );
+    expect(await readFile(path.join(workspace, 'README.md'), 'utf8')).toContain(
+      '(docs/repoctopus/workspace-guide.md)',
+    );
+    expect(await readFile(path.join(workspace, 'AGENTS.md'), 'utf8')).toContain('run next');
+    expect(guide).toContain('web-front');
+    expect(guide).toContain('telemetry.endpoint');
+    expect(guide).not.toContain(workspace);
+    expect(guide).not.toContain('https://collector.example/otel');
     expect(hashProjectConfig(loaded.shared)).toBe(prepared.request.candidateConfigDigest);
     expect(loaded.sharedDigest).not.toBe(prepared.request.candidateConfigDigest);
     expect((JSON.parse(await readFile(detected.file, 'utf8')) as { status: string }).status).toBe(

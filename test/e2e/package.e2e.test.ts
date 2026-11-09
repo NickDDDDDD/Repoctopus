@@ -11,6 +11,7 @@ import {
   temporaryDirectory,
 } from '../helpers/fixtures.js';
 import { runCli } from './cli.js';
+import type { ProjectDetectionDraft } from '../../domains/project-configuration/detection.js';
 
 const execFileAsync = promisify(execFile);
 const repositoryRoot = path.resolve(import.meta.dirname, '..', '..');
@@ -402,6 +403,68 @@ describe('published package', () => {
     expect(await readdir(path.join(installedPackage, 'docs', 'schemas'))).toContain(
       'project-config.schema.json',
     );
+    const onboardingRoot = path.join(root, 'onboarding');
+    const newWorkspace = await createGitRepository(onboardingRoot, 'workspace');
+    const newWeb = await createGitRepository(onboardingRoot, 'web');
+    await writeFile(
+      path.join(newWeb, 'package.json'),
+      JSON.stringify({ scripts: { build: 'node --version' } }),
+    );
+    const originalReadme = await readFile(path.join(newWorkspace, 'README.md'));
+    const detected = await runCli<{ draft: ProjectDetectionDraft; file: string }>({
+      packageRoot: installedPackage,
+      cwd: newWorkspace,
+      environment,
+      args: [
+        'project',
+        'detect',
+        '--workspace',
+        newWorkspace,
+        '--scan-root',
+        onboardingRoot,
+        '--store',
+        'package-guide-preview',
+      ],
+    });
+    const candidateFile = path.join(newWorkspace, '.repoctopus/drafts/guide-candidate.json');
+    await writeFile(candidateFile, JSON.stringify(detected.result!.draft.candidateConfig));
+    const prepared = await runCli<{ file: string }>({
+      packageRoot: installedPackage,
+      cwd: newWorkspace,
+      environment,
+      args: [
+        'project',
+        'prepare',
+        '--workspace',
+        newWorkspace,
+        '--draft',
+        detected.result!.file,
+        '--candidate',
+        candidateFile,
+      ],
+    });
+    await expect(
+      runCli({
+        packageRoot: installedPackage,
+        cwd: newWorkspace,
+        environment,
+        args: [
+          'project',
+          'review',
+          '--workspace',
+          newWorkspace,
+          '--request',
+          prepared.result!.file,
+        ],
+      }),
+    ).rejects.toThrow(/interactive terminal/u);
+    expect(await readFile(path.join(newWorkspace, 'README.md'))).toEqual(originalReadme);
+    await expect(readFile(path.join(newWorkspace, 'AGENTS.md'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    await expect(
+      readFile(path.join(newWorkspace, 'docs/repoctopus/workspace-guide.md')),
+    ).rejects.toMatchObject({ code: 'ENOENT' });
     await writeFile(
       path.join(environment.XDG_DATA_HOME!, 'openspec', 'stores', 'registry.yaml'),
       JSON.stringify({

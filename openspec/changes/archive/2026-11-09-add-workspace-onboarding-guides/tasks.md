@@ -1,0 +1,17 @@
+# Tasks
+
+## 1. 获批接入的本地引导
+
+- [x] 1.1 交付空白 Workspace 的 README 短入口、AGENTS 执行入口和本地教程模板，并接入现有获批 apply；以真实 RED→GREEN 接入回归证明三份文件均可生成、相对链接有效，模板不包含产品 checkout 或开发者绝对路径。 <!-- comet-task:579fe2e4-b9fa-4798-88f1-4e7a1552f20b -->
+- [x] 1.2 完善受管 Markdown 安装器的内容所有权、换行、文件类型和路径保护；以针对性回归证明已有团队文本字节不变，幂等无重复，残缺/重复标记、符号链接与并发变化被拒绝，并核对实际采用上游代码时的现有许可证与来源登记。 <!-- comet-task:60f2e194-a82d-4b54-b769-27d5b87600e4 -->
+- [x] 1.3 完成引导预检、配置最后发布和同一请求恢复的协作；以接入测试证明 detect/prepare/reject/request_changes 不写共享引导、部分写入后可以续接、失败不记录 confirmed、不提前发布新配置，且 confirmed 重放维持原有幂等结果。 <!-- comet-task:ffd162e4-1c89-4fde-a076-f43c38b3d97e -->
+
+## 2. 团队入口与实际安装包验收
+
+- [x] 2.1 更新现有接入审批摘要及产品接入说明，说明三份引导的受管范围、已有团队的补齐步骤和共享文件提交范围；核对生成教程的多仓/单仓、新成员、Run、配置与 SigNoz 示例均匹配公共 CLI，根 AGENTS 只保留短入口，不重建阶段或 Skill 权威。 <!-- comet-task:56a8c9c8-4b37-4b58-a6cd-e5ffddd1c3ff -->
+- [x] 2.2 扩展公共 CLI 与候选包集成验收，并从指定 tarball 生产安装后用真实 PTY 执行接入 review；验证多仓新 Workspace、已有说明的单仓、拒绝审批、启动/状态/新进程恢复和全部本地链接，保留包身份、命令、退出码及原始内容比较证据，不用源码 apply 或伪造 isTTY 代替安装后交互。 <!-- comet-task:74562c66-1331-4a9f-b04f-0e8e84857fdc -->
+
+## Workflow follow-up
+
+- 以上任务完成后，由 Comet 执行独立 Verify 和归档/交付决定；不把归档、PR 或 Release 当作 Build 完成复选框。
+- 本 Change 不公开新的 Release；后续版本应从合入后通过 CI 的精确 main 提交构建并验证实际发布资产。

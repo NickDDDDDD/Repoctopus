@@ -19,6 +19,11 @@ import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js'
 import { loadProjectConfig } from './file-config.js';
 import { ensureRepoctopusGitignore } from './gitignore.js';
 import {
+  installWorkspaceGuides,
+  planWorkspaceGuides,
+  verifyWorkspaceGuides,
+} from './workspace-guides.js';
+import {
   createStoreBindingIntent,
   createStoreBindingReceipt,
   type StoreBindingIntent,
@@ -426,6 +431,7 @@ export async function applyProjectConfigurationDecision(
     hooks?: {
       afterIntent?(intent: StoreBindingIntent): Promise<void> | void;
       afterPointerWrite?(intent: StoreBindingIntent): Promise<void> | void;
+      afterGuideWrite?(file: string): Promise<void> | void;
     };
   },
   registration: OpenSpecStoreRegistrationPort = new OpenSpecStoreRegistration(),
@@ -501,6 +507,7 @@ export async function applyProjectConfigurationDecision(
   if (state.request.storeBinding?.repositories.some((binding) => binding.selection === 'blocked')) {
     throw new Error('Approved Store binding still contains blocked repository conflicts');
   }
+  const guides = await planWorkspaceGuides(workspace, state.request.candidateConfig);
   await atomicWriteJson(
     stateFile,
     { ...state, status: 'applying', record },
@@ -517,15 +524,20 @@ export async function applyProjectConfigurationDecision(
         ...(input.hooks ? { hooks: input.hooks } : {}),
       })
     : [];
-  if (currentDigest !== candidateDigest) {
-    await atomicWriteText(configFile, stringify(state.request.candidateConfig, { lineWidth: 0 }));
-  }
+  await installWorkspaceGuides(workspace, guides, (file) => input.hooks?.afterGuideWrite?.(file));
   await ensureRepoctopusGitignore(workspace);
+  if (currentDigest !== candidateDigest) {
+    await atomicWriteText(configFile, stringify(state.request.candidateConfig, { lineWidth: 0 }), {
+      containedRoot: workspace,
+      beforeCommit: () => verifyWorkspaceGuides(workspace, guides),
+    });
+  }
   const written = await loadProjectConfig(workspace);
   const writtenDigest = hashProjectConfig(written.shared);
   if (writtenDigest !== candidateDigest) {
     throw new Error('Written project configuration does not match the approved digest');
   }
+  await verifyWorkspaceGuides(workspace, guides);
   await atomicWriteJson(
     draftFile,
     { ...draft, status: 'confirmed' } satisfies ProjectDetectionDraft,
