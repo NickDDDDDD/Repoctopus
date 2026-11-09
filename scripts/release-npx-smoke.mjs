@@ -38,6 +38,7 @@ try {
     path.join(path.dirname(npm), 'npx-cli.js'),
     '--yes',
     '--ignore-scripts',
+    '--legacy-peer-deps',
     '--cache',
     path.join(root, 'npm-cache'),
     '--package',
