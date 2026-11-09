@@ -1,0 +1,17 @@
+{
+  "change": "preserve-build-completions-on-verify-repair",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda",
+  "files": [
+    { "path": "openspec/changes/preserve-build-completions-on-verify-repair/proposal.md", "sha256": "7978f5ede4ffb166ff5086a68cc37e6f5ece7ebff3b43d4586932017210bcba1" },
+    { "path": "openspec/changes/preserve-build-completions-on-verify-repair/design.md", "sha256": "6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4" },
+    { "path": "openspec/changes/preserve-build-completions-on-verify-repair/tasks.md", "sha256": "532da6a81ca63a15fb60d33e2725af91757d6572b45546eec230e20f5c0549d7" },
+    { "path": "openspec/changes/preserve-build-completions-on-verify-repair/.openspec.yaml", "sha256": "309e6764c826c3fc6250bcce33b56b7e44adebafc76c7df25f058663d6de4299" },
+    { "path": "openspec/changes/preserve-build-completions-on-verify-repair/specs/change-lifecycle/spec.md", "sha256": "af5022512b472bdcdfe33d1a16fe263db83c1f776b4ab92822d17dae334d82aa" },
+    { "path": "openspec/changes/preserve-build-completions-on-verify-repair/specs/managed-work-execution/spec.md", "sha256": "a2040b795fb152e46fffdbd252e3844bace318ba12bb1400127ab2654e6a6a5a" }
+  ]
+}
