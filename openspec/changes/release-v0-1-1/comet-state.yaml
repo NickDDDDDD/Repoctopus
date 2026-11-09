@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 0ea00fef-6eb4-4025-ad04-d69be1bada1d
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 9646fc70e927731955f87f27d8a6d62107cb3c9e
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-09
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/release-v0-1-1
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: a609ff1510be2bc280f9e5eee24d94122a8a52909d1f3b7b3bf715711d1319f5
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: release-v0-1-1
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 8766a050c30aac9250397f2409605db41cdcfb0676c4972cdaf9b1b13173fa9a
+    input:
+      change: release-v0-1-1
+      changeDir: openspec/changes/release-v0-1-1
+      workspaceBaseline:
+        ref: dd42085c-1379-4815-9240-56f2ca54e991
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 9646fc70e927731955f87f27d8a6d62107cb3c9e
+      boundBranch: comet/release-v0-1-1
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-09
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: release-v0-1-1:1
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs: {}
+        inputHash: 9f3d8c184af2094641edf7e754d72482ed7f85742a04a4eab4c2d7100a8b0ba3
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      release-v0-1-1:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: e397c28fbbf9400b53960c597fd9d1b397b95aa881814222b86f54f923aa7d81
