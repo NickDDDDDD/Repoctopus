@@ -401,6 +401,75 @@ if (stage === 'init' || stage === 'init-recover') {
 } else if (stage === 'verify') {
   const result = run(`verify-${Date.now()}`, 'verify');
   console.log(JSON.stringify({ gate: result.result.gate, ...summarize(result.result.run) }));
+} else if (stage === 'assert-final') {
+  const view = current(),
+    l = life(view),
+    protocol = l.buildProtocol;
+  assert.equal(l.phase, 'archive');
+  assert.equal(protocol.packageCompletions.length, 4);
+  assert.equal(protocol.verifyRepair, null);
+  const snapshots = fs
+    .readdirSync(evidence)
+    .filter((n) => /^snapshot-.*\.json$/u.test(n))
+    .map((n) => read(path.join(evidence, n)));
+  const original = snapshots
+    .map((x) => x.state?.changeLifecycle)
+    .find((x) => x?.phase === 'verify' && x.checkEpoch === 13);
+  assert(original, 'Missing original completed Build snapshot');
+  assert.deepEqual(protocol.plan, original.buildProtocol.plan);
+  for (const name of names) {
+    const p = protocol.plan.packages.find((p) => p.packageKey === name),
+      old = original.buildProtocol.packageCompletions.find((c) => c.packageId === p.packageId),
+      now = protocol.packageCompletions.find((c) => c.packageId === p.packageId);
+    if (name === 'a') assert.notEqual(now.completionId, old.completionId);
+    else assert.deepEqual(now, old);
+  }
+  assert.deepEqual(l.tasks, original.tasks, 'Official Task completion facts must remain unchanged');
+  const jsonl = (name) =>
+    fs
+      .readFileSync(path.join(evidence, name), 'utf8')
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map(JSON.parse);
+  const counts = (records, key) =>
+    Object.fromEntries(names.map((n) => [n, records.filter((r) => r[key] === n).length]));
+  const executeCounts = counts(jsonl('execute-calls.jsonl'), 'repo'),
+    machineCounts = counts(jsonl('node-calls.jsonl'), 'node');
+  assert.deepEqual(executeCounts, { a: 2, b: 1, c: 1, d: 1 });
+  assert.deepEqual(machineCounts, { a: 2, b: 1, c: 1, d: 1 });
+  const recoveries = fs
+    .readdirSync(evidence)
+    .filter((n) => /^(resume|next)-.*\.json$/u.test(n))
+    .map((n) => read(path.join(evidence, n)).result);
+  const epochs = new Set(
+    recoveries
+      .filter((r) => !r.state.reconciliationRequired)
+      .map((r) => r.state.changeLifecycle.checkEpoch),
+  );
+  for (const epoch of [14, 16, 17, 18])
+    assert(epochs.has(epoch), `Missing cold recovery boundary ${epoch}`);
+  assert(
+    recoveries.filter((r) => r.state.reconciliationRequired).length >= 2,
+    'Both unauthorized entrypoints must reject',
+  );
+  const receipt = {
+    schemaVersion: 1,
+    runId: state.runId,
+    planId: protocol.plan.planId,
+    originalCompletions: original.buildProtocol.packageCompletions.map((c) => c.completionId),
+    finalCompletions: protocol.packageCompletions.map((c) => c.completionId),
+    executeCounts,
+    machineCounts,
+    coldRecoveryEpochs: [14, 16, 17, 18],
+    unauthorizedEntrypointsRejected: true,
+    gate: 'satisfied',
+    finalPhase: l.phase,
+    taskFactsUnchanged: true,
+    at: new Date().toISOString(),
+  };
+  write(file('acceptance-receipt'), receipt);
+  console.log(JSON.stringify(receipt));
 } else if (stage === 'snapshot') {
   const view = current();
   write(file(`snapshot-${Date.now()}`), view);
