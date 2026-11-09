@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { readdir } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -13,6 +13,27 @@ const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 describe('CLI preflight', () => {
+  it('reports its packaged version outside the product without reading the business package', async () => {
+    const cwd = await temporaryDirectory('repoctopus-cli-version-');
+    cleanup.push(cwd);
+    await writeFile(path.join(cwd, 'package.json'), '{"name":"business-app","version":"99.0.0"}');
+    const metadata = JSON.parse(await readFile(path.join(packageRoot, 'package.json'), 'utf8')) as {
+      version: string;
+    };
+    const result = await execFileAsync(process.execPath, [entry, '--version'], { cwd });
+    expect(result.stdout.trim()).toBe(metadata.version);
+    expect(result.stderr).toBe('');
+    expect(await readdir(cwd)).toEqual(['package.json']);
+  });
+
+  it('preserves explicit help precedence when version is also requested', async () => {
+    const cwd = await temporaryDirectory('repoctopus-cli-version-help-');
+    cleanup.push(cwd);
+    const result = await execFileAsync(process.execPath, [entry, '--version', '--help'], { cwd });
+    expect(result.stdout).toMatch(/^Usage: repoctopus /u);
+    expect(await readdir(cwd)).toEqual([]);
+  });
+
   it.each([['--help'], ['--version'], ['run', 'start', '--help']])(
     'answers %s without booting a composition',
     async (...args) => {

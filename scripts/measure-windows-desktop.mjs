@@ -7,14 +7,14 @@ import path from 'node:path';
 import { performance } from 'node:perf_hooks';
 import process from 'node:process';
 import { setTimeout as delay } from 'node:timers/promises';
+import { releaseAssetNames } from './release-policy.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
-const installer = path.join(
-  root,
-  'dist',
-  'desktop-release',
-  'Repoctopus-Desktop-0.1.0-x64-Setup.exe',
+const { version: packageVersion } = JSON.parse(
+  await readFile(path.join(root, 'package.json'), 'utf8'),
 );
+const [, installerName] = releaseAssetNames(packageVersion);
+const installer = path.join(root, 'dist', 'desktop-release', installerName);
 const evidenceFile = path.resolve(
   process.env.REPOCTOPUS_DESKTOP_PERFORMANCE_EVIDENCE ??
     path.join(root, 'verification', 'add-windows-desktop-dashboard', 'desktop-performance.json'),
@@ -157,7 +157,7 @@ function otlpBody(sequence) {
       {
         scopeLogs: [
           {
-            scope: { name: 'repoctopus-runtime', version: '0.1.0' },
+            scope: { name: 'repoctopus-runtime', version: packageVersion },
             logRecords: [
               {
                 eventName: 'repoctopus.work.created',

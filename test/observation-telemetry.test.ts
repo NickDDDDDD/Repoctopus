@@ -1,8 +1,36 @@
 import { describe, expect, it } from 'vitest';
+import metadata from '../package.json' with { type: 'json' };
 
 import { observationDestinationsFromEnvironment } from '../services/observation-telemetry.js';
 
 describe('canonical observation destination configuration', () => {
+  it('reports the product package version for remote and desktop while preserving service naming', () => {
+    const destinations = observationDestinationsFromEnvironment({
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4318',
+      REPOCTOPUS_DESKTOP_OTLP_ENDPOINT: 'http://127.0.0.1:4319',
+      OTEL_SERVICE_NAME: 'team-runtime',
+    });
+    expect(destinations).toHaveLength(2);
+    for (const destination of destinations) {
+      expect(destination.resourceAttributes).toMatchObject({
+        'service.name': 'team-runtime',
+        'service.version': metadata.version,
+      });
+    }
+  });
+
+  it('retains explicit deployment resource version overrides for both destinations', () => {
+    const destinations = observationDestinationsFromEnvironment({
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4318',
+      REPOCTOPUS_DESKTOP_OTLP_ENDPOINT: 'http://127.0.0.1:4319',
+      OTEL_RESOURCE_ATTRIBUTES: 'service.version=deployment-release',
+    });
+    expect(destinations).toHaveLength(2);
+    for (const destination of destinations) {
+      expect(destination.resourceAttributes?.['service.version']).toBe('deployment-release');
+    }
+  });
+
   it('uses the workspace base for signals with no environment endpoint', () => {
     const [remote] = observationDestinationsFromEnvironment(
       { OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: 'https://trace.example/collect' },

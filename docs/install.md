@@ -8,10 +8,10 @@
 
 ## 用 npx 临时运行 CLI
 
-在 [GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases) 找到该版本的 `repoctopus-<版本>.tgz`。以下以 `v0.1.0` 为例。
+在 [GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases) 找到该版本的 `repoctopus-<版本>.tgz`。以下以 `v0.1.1` 为例。
 
 ```bash
-npx --yes --ignore-scripts --legacy-peer-deps --package=https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz repoctopus --help
+npx --yes --ignore-scripts --legacy-peer-deps --package=https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.1/repoctopus-0.1.1.tgz repoctopus --help
 ```
 
 确认输出 `Usage: repoctopus ...` 后，进入准备接入的 Git 项目或已有团队 Workspace。每次运行时保留上面命令中直到 `repoctopus` 的部分，再把 `--help` 换成所需的子命令和参数。让 Agent 执行时也提供这个固定版本命令。Windows PowerShell 若阻止 `.ps1` 启动器，使用 `npx.cmd`。示例带上 `--legacy-peer-deps`，以避开 Windows npm 11 在同一项目连续运行本地 tarball 时的缓存解析错误。
@@ -24,10 +24,11 @@ npx --yes --ignore-scripts --legacy-peer-deps --package=https://github.com/NickD
 
 ```powershell
 $repoctopusInstall = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.repoctopus-cli'
-npm.cmd install --ignore-scripts --omit=dev --prefix $repoctopusInstall ./repoctopus-0.1.0.tgz
+npm.cmd install --ignore-scripts --omit=dev --prefix $repoctopusInstall ./repoctopus-0.1.1.tgz
 $repoctopusBin = Join-Path $repoctopusInstall 'node_modules/.bin'
 $env:Path = "$repoctopusBin$([IO.Path]::PathSeparator)$env:Path"
 repoctopus.cmd --help
+repoctopus.cmd --version
 ```
 
 可以从该终端启动 Agent，让它继承 `PATH`。若从桌面图标启动，在 Windows 用户环境变量 `Path` 中加入 `$repoctopusBin` 对应的目录，再重启 Agent。macOS 和 Linux 同样可以用 `npm install --ignore-scripts --omit=dev --prefix` 安装到独立用户目录，并把其中的 `node_modules/.bin` 加入 `PATH`。
@@ -40,7 +41,7 @@ repoctopus.cmd --help
 
 ## 维护者发布版本
 
-1. 选定远端 `main` 上已通过 `Continuous integration / verify` 的完整提交 SHA。从该提交的 `package.json` 取得版本，例如 `0.1.0` 对应 `v0.1.0`。首版使用 GitHub 的预发布标记。
+1. 选定远端 `main` 上已通过 `Continuous integration / verify` 的完整提交 SHA。从该提交的 `package.json` 取得版本，例如 `0.1.1` 对应 `v0.1.1`。当前版本使用 GitHub 的预发布标记。
 2. 在 GitHub Actions 的 **Prepare or publish Repoctopus release** 选择 `main`，以 `prepare`、完整 SHA 和 Tag 启动。该操作验证提交、构建并验收 CLI 与桌面包，然后生成草稿。
 3. 等 Prepare Run 成功，从候选作业的摘要抄取 **Candidate artifact ID**。在草稿中核对目标提交、CI Run 链接和三份文件。候选工件包含来源记录，可以用其中的摘要核对下载内容。
 4. 从 `main` 再次启动同一 workflow，选择 `publish`，填入同一个 SHA、Tag 和候选工件 ID。该操作核对草稿及远端摘要，再公开预发布。查看末尾的 **Verify public downloads and npx** 作业，确认公开 URL 的文件摘要、CLI 帮助和 JSON 响应都通过。

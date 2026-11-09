@@ -5,6 +5,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import { parse } from 'yaml';
+import { PRODUCT_VERSION } from '../../platform/product/version.js';
 
 import type {
   DeliveryIntentV3,
@@ -66,7 +67,6 @@ const PRODUCT_ROOT =
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
   'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
-const CLI_VERSION = '0.1.0';
 const COMMANDS = new Set([
   'project detect',
   'project prepare',
@@ -1641,12 +1641,13 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     parsed = parseArguments(argv);
     asJson = booleanFlag(parsed, 'json');
     command = parsed.command.join(' ') || 'help';
-    if (command === 'help' || booleanFlag(parsed, 'help')) {
+    const showVersion = booleanFlag(parsed, 'version');
+    if (booleanFlag(parsed, 'help') || (command === 'help' && !showVersion)) {
       process.stdout.write(`${USAGE}\n`);
       return 0;
     }
-    if (booleanFlag(parsed, 'version')) {
-      process.stdout.write(`${CLI_VERSION}\n`);
+    if (showVersion) {
+      process.stdout.write(`${PRODUCT_VERSION}\n`);
       return 0;
     }
     preflightCli(parsed);

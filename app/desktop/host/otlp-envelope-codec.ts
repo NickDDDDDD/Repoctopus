@@ -1,4 +1,5 @@
 import type { OtlpSignal } from './otlp-http-receiver.js';
+import { PRODUCT_VERSION } from '../../../platform/product/version.js';
 import {
   isObservationEnvelope,
   type ObservationEnvelope,
@@ -405,7 +406,7 @@ export function encodeObservationOtlpJson(
               : {}),
             scopeLogs: [
               {
-                scope: { name: 'repoctopus-runtime', version: '0.1.0' },
+                scope: { name: 'repoctopus-runtime', version: PRODUCT_VERSION },
                 logRecords: envelopes.map((envelope) => ({
                   timeUnixNano: String(
                     BigInt(new Date(envelope.observedAt).getTime()) * 1_000_000n,
@@ -431,7 +432,7 @@ export function encodeObservationOtlpJson(
               : {}),
             scopeSpans: [
               {
-                scope: { name: 'repoctopus-runtime', version: '0.1.0' },
+                scope: { name: 'repoctopus-runtime', version: PRODUCT_VERSION },
                 spans: envelopes.map((envelope) => ({
                   traceId: envelope.digest.slice(-32),
                   spanId: envelope.envelopeId.slice(-16),
@@ -460,7 +461,7 @@ export function encodeObservationOtlpJson(
             : {}),
           scopeMetrics: [
             {
-              scope: { name: 'repoctopus-runtime', version: '0.1.0' },
+              scope: { name: 'repoctopus-runtime', version: PRODUCT_VERSION },
               metrics: encodeMetrics(envelopes),
             },
           ],

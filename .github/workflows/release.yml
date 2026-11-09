@@ -207,6 +207,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.preflight.outputs.commit }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@v4
