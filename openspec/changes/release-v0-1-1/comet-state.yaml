@@ -15,9 +15,9 @@ auto_transition: true
 base_ref: 9646fc70e927731955f87f27d8a6d62107cb3c9e
 design_doc: openspec/changes/release-v0-1-1/design.md
 plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-verify_result: pending
-verify_failures: 0
-verification_report: null
+verify_result: fail
+verify_failures: 1
+verification_report: docs/superpowers/reports/release-v0-1-1.md
 branch_status: pending
 created_at: 2026-11-09
 verified_at: null
@@ -30,8 +30,8 @@ handoff_hash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: b8a364db32f9a02c89f4b271a5679bcd9d7b20d50e9a65d644644f8450c777cc
+  schema: comet.workflow-run-checkpoint.v2
+  hash: a383c063507863b55b7c66e54f91a60dff4b5789f3797fe79be28190a003a3db
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 4
+      checkEpoch: 6
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -74,14 +74,14 @@ run_checkpoint:
       reviewMode: thorough
       subagentDispatch: null
       tddMode: tdd
-      verificationReport: null
+      verificationReport: docs/superpowers/reports/release-v0-1-1.md
       verifiedAt: null
-      verifyFailures: 0
+      verifyFailures: 1
       verifyMode: null
-      verifyResult: pending
+      verifyResult: fail
       workflow: full
     status: running
-    sequence: 28
+    sequence: 36
     actions:
       - attempt: 1
         claim:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-            full.open.evidence:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
+          outputs: {}
         inputHash: c1f0e95278dab621cac8d6f1972262f0397ede1ff97668b132ce3c2f5711283e
         outcome:
           actionId: release-v0-1-1:4
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-            full.open.evidence:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-            full.open.revalidate:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+          outputs: {}
         inputHash: a41265ea0d2cb8ecc353b14d102bb107e4a7a3ae9d1ed75ca1f60c164bb1f4b2
         outcome:
           actionId: release-v0-1-1:5
@@ -270,71 +230,7 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                    proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                      Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                      Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                      CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经
-                      PR/main CI 交付，再以精确 main 提交运行现有
-                      Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                      偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-                      thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-                    requirementsEvidence:
-                      contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                      ref: openspec/changes/release-v0-1-1
-            full.design.handoff:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-              proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-                交付，再以精确 main 提交运行现有
-                Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-              requirementsEvidence:
-                contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                ref: openspec/changes/release-v0-1-1
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-            full.open.evidence:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-            full.open.revalidate:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+          outputs: {}
         inputHash: 52a3d0a3ed75516e57d8bacaf30dae109815f49eaf7c3143602fd02cd28c52f6
         outcome:
           actionId: release-v0-1-1:7
@@ -373,76 +269,7 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                    proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                      Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                      Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                      CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经
-                      PR/main CI 交付，再以精确 main 提交运行现有
-                      Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                      偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-                      thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-                    requirementsEvidence:
-                      contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                      ref: openspec/changes/release-v0-1-1
-            full.design.document:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-            full.design.evidence:
-              contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
-              ref: openspec/changes/release-v0-1-1/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-              proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-                交付，再以精确 main 提交运行现有
-                Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-              requirementsEvidence:
-                contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                ref: openspec/changes/release-v0-1-1
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-            full.open.evidence:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-            full.open.revalidate:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+          outputs: {}
         inputHash: f01f31b1449bcf6fc1a3e9d1e34d7033f9d3d360ba801adf8a2f08cd652dbb1f
         outcome:
           actionId: release-v0-1-1:9
@@ -487,101 +314,7 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.build.configure:
-              boundBranch: comet/release-v0-1-1
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/release-v0-1-1
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                    proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                      Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                      Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                      CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经
-                      PR/main CI 交付，再以精确 main 提交运行现有
-                      Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                      偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-                      thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-                    requirementsEvidence:
-                      contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                      ref: openspec/changes/release-v0-1-1
-            full.design.document:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-            full.design.evidence:
-              contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
-              ref: openspec/changes/release-v0-1-1/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-              proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-                交付，再以精确 main 提交运行现有
-                Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-              requirementsEvidence:
-                contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                ref: openspec/changes/release-v0-1-1
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-            full.open.evidence:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-            full.open.revalidate:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+          outputs: {}
         inputHash: f9a93e2109ddd773b44fd3f438fbdcc6826406c8fb16cbe124a5587e0927b7fe
         outcome:
           actionId: release-v0-1-1:11
@@ -619,113 +352,7 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.build.configure:
-              boundBranch: comet/release-v0-1-1
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/release-v0-1-1
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
-                ref: openspec/changes/release-v0-1-1/design.md
-              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              planEvidence:
-                contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
-                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
-            full.build.plan.evidence:
-              contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
-              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                    proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                      Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                      Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                      CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经
-                      PR/main CI 交付，再以精确 main 提交运行现有
-                      Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                      偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-                      thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-                    requirementsEvidence:
-                      contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                      ref: openspec/changes/release-v0-1-1
-            full.design.document:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-            full.design.evidence:
-              contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
-              ref: openspec/changes/release-v0-1-1/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-              proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-                交付，再以精确 main 提交运行现有
-                Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-              requirementsEvidence:
-                contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                ref: openspec/changes/release-v0-1-1
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-            full.open.evidence:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-            full.open.revalidate:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+          outputs: {}
         inputHash: bcad46324fa3c5532cfa7f195e292b3449cb850778b18f23fddb95a4205977ba
         protocolVersion: 1
         reason: 命令 revise-design 已取代待执行 Action
@@ -807,42 +434,7 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-                    requirementsEvidence:
-                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                      ref: openspec/changes/release-v0-1-1
-            full.design.handoff:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-              requirementsEvidence:
-                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                ref: openspec/changes/release-v0-1-1
+          outputs: {}
         inputHash: 64577877e52544d446b4b6595aa518757a52eb687e32a827249a15d98eb6bc8c
         outcome:
           actionId: release-v0-1-1:16
@@ -881,47 +473,7 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-                    requirementsEvidence:
-                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                      ref: openspec/changes/release-v0-1-1
-            full.design.document:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-            full.design.evidence:
-              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-              ref: openspec/changes/release-v0-1-1/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-              requirementsEvidence:
-                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                ref: openspec/changes/release-v0-1-1
+          outputs: {}
         inputHash: bef5eeb07bd3a8d12338ce92b269e02e46070aadfb1e8434192190fb6bff61bc
         outcome:
           actionId: release-v0-1-1:18
@@ -959,59 +511,7 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.build.plan:
-              designEvidence:
-                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-                ref: openspec/changes/release-v0-1-1/design.md
-              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              planEvidence:
-                contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
-                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
-            full.build.plan.evidence:
-              contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
-              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-                    requirementsEvidence:
-                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                      ref: openspec/changes/release-v0-1-1
-            full.design.document:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-            full.design.evidence:
-              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-              ref: openspec/changes/release-v0-1-1/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-              requirementsEvidence:
-                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                ref: openspec/changes/release-v0-1-1
+          outputs: {}
         inputHash: 4142bc97f57f8c55d18ebcf5859a48ca4526bcc64ef6b3a5c23108b135128bd5
         protocolVersion: 1
         reason: 命令 revise-plan 已取代待执行 Action
@@ -1116,40 +616,7 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-                    requirementsEvidence:
-                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                      ref: openspec/changes/release-v0-1-1
-            full.design.handoff:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-              requirementsEvidence:
-                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                ref: openspec/changes/release-v0-1-1
+          outputs: {}
         inputHash: c95ead4ca135052a9576da4ae2026a487409dbf18d4b802678c4dc44446e904c
         outcome:
           actionId: release-v0-1-1:24
@@ -1188,45 +655,7 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-                    requirementsEvidence:
-                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                      ref: openspec/changes/release-v0-1-1
-            full.design.document:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-            full.design.evidence:
-              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-              ref: openspec/changes/release-v0-1-1/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-              requirementsEvidence:
-                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                ref: openspec/changes/release-v0-1-1
+          outputs: {}
         inputHash: 44433334f338560fcc63e7869d50560dc4890ba7328374c0911d1c3539219717
         outcome:
           actionId: release-v0-1-1:26
@@ -1257,6 +686,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-release-v011
+          token: portable-3ada748ede1e95edd8283dd0981c233d912bbe9c342485d10b08c274c2f7963c
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
         id: release-v0-1-1:28
         input:
           input:
@@ -1264,58 +702,242 @@ run_checkpoint:
             changeDir: openspec/changes/release-v0-1-1
             workspaceBaseline:
               ref: dd42085c-1379-4815-9240-56f2ca54e991
-          outputs:
-            full.build.plan:
-              designEvidence:
-                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-                ref: openspec/changes/release-v0-1-1/design.md
-              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              planEvidence:
-                contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
-                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
-            full.build.plan.evidence:
-              contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
-              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-                    requirementsEvidence:
-                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                      ref: openspec/changes/release-v0-1-1
-            full.design.document:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-            full.design.evidence:
+          outputs: {}
+        inputHash: 6692a5a27638d7260e7c70d3afada52426384d21b2b0b7067b622e4709a94a64
+        outcome:
+          actionId: release-v0-1-1:28
+          attempt: 1
+          claimToken: portable-3ada748ede1e95edd8283dd0981c233d912bbe9c342485d10b08c274c2f7963c
+          inputHash: 6692a5a27638d7260e7c70d3afada52426384d21b2b0b7067b622e4709a94a64
+          outcomeId: 0080c727-4a45-4b23-9cfc-a97130cd8929
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 4fe73982a376eaebcfd9bedbc5846676e4bfaaa13037c0db036b7dcdb17feed1
+            outcomeId: 0080c727-4a45-4b23-9cfc-a97130cd8929
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-5a514fe6f22164aa764cfab3e79ab010490fec867d44adde9386ee4c1d5ca9e6
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: release-v0-1-1:29
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs: {}
+        inputHash: 86875d0c258d10a301544e3fcc8bda7547f6e80d29baeb1a879a4be9219c8522
+        outcome:
+          actionId: release-v0-1-1:29
+          attempt: 1
+          claimToken: portable-5a514fe6f22164aa764cfab3e79ab010490fec867d44adde9386ee4c1d5ca9e6
+          inputHash: 86875d0c258d10a301544e3fcc8bda7547f6e80d29baeb1a879a4be9219c8522
+          outcomeId: 7be5d679-3a72-4954-8cfa-e8dc547f43bd
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: dfbbfc01e337628a9317a238ee8d1c5f48bd6764fd523ef4c38e98c9ea675d5f
+            cwd: .
+            environment: ecf9bed91cec6fba07dfa8a03b8c1ff61e027b7a69f909d3f284afcf63c9a22c
+            exitCode: 0
+            inputAfter: 255abec6b6a640b037ad529054009cc1e65c096eda8a121fb60006d7db124f8b
+            inputBefore: 255abec6b6a640b037ad529054009cc1e65c096eda8a121fb60006d7db124f8b
+            manifestHash: d1c5bb375f353fb05f8547e1395dba744cedb005b27f0868dff9ce8de7d3d0eb
+            manifestRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/4b5ecc9e-8530-4435-bc21-a2ae17103194.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/497efa6f-e88d-4fbd-95df-de9262b077b4.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0efe9afbe9970785d7363f00b09213ce4e58047fe3e2b6c13690bb6f2fead980
+            outcomeId: 7be5d679-3a72-4954-8cfa-e8dc547f43bd
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-646e29e1e81d09b119975dc8bc220bd142b0db97deb664c2901c071655969e74
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: release-v0-1-1:31
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs: {}
+        inputHash: ea0d8e028c8e905d113883bdcaeec77604eb17b32b88fef002b6ed905d1930b9
+        outcome:
+          actionId: release-v0-1-1:31
+          attempt: 1
+          claimToken: portable-646e29e1e81d09b119975dc8bc220bd142b0db97deb664c2901c071655969e74
+          inputHash: ea0d8e028c8e905d113883bdcaeec77604eb17b32b88fef002b6ed905d1930b9
+          outcomeId: be7ca55a-8ba5-4781-8c64-11566163a97c
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/release-v0-1-1.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 881ed14132e69ce2d67e329b136eefb687914056135bdc5e0583efa403d1c75e
+            outcomeId: be7ca55a-8ba5-4781-8c64-11566163a97c
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-989ddcf8660f236c159fe9e2dadf87e05cae99e7a231f29f3d2412d72c5bfd0d
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: release-v0-1-1:33
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs: {}
+        inputHash: b61bcc15e53bb3f6a3c98071f094b5dc341fc386aa27328e83863c13666e2d38
+        outcome:
+          actionId: release-v0-1-1:33
+          attempt: 1
+          claimToken: portable-989ddcf8660f236c159fe9e2dadf87e05cae99e7a231f29f3d2412d72c5bfd0d
+          inputHash: b61bcc15e53bb3f6a3c98071f094b5dc341fc386aa27328e83863c13666e2d38
+          outcomeId: b8a8d836-5ecd-4f4e-b8d0-781b5d3c78f7
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: ca02a40c3fe8c13b4142e0acc91270a4d3c4a2520b9d504aebaa56fbda3fc2e5
+            cwd: .
+            deliveryInputs: {}
+            environment: 04ccae1c7c045f5439fb27c39cbf20d76904034462a8ad6bf6a45206896eea2d
+            exitCode: 1
+            inputAfter: 01ba53e542e1ff999169e36b09725a46f9e1d3ed915d6b85166b0bda5422b1fe
+            inputBefore: 01ba53e542e1ff999169e36b09725a46f9e1d3ed915d6b85166b0bda5422b1fe
+            manifestHash: 35f972cc4c61da0480129d01dcdb86ff7a6000ec04df9886d1b4c5ed2a9c7d6f
+            manifestRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/80b32719-de23-49f4-8675-a541accd252b.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/e6e1ba4c-da66-4370-a9f8-4b392bf6773f.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: c7eb3b6567ed33b6964efdefbb2ea1112672edb762389d590f60b4e31e404b59
+            outcomeId: b8a8d836-5ecd-4f4e-b8d0-781b5d3c78f7
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-3fc8833fde9ecf2862edbfbc6a946df90aeed81b34c206a0995f78e6f6c92e6c
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: release-v0-1-1:34
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs: {}
+        inputHash: 8d4da8e593fa89937dd71f62bfe135da6599f8a65ea828a71549797f72b16060
+        outcome:
+          actionId: release-v0-1-1:34
+          attempt: 1
+          claimToken: portable-3fc8833fde9ecf2862edbfbc6a946df90aeed81b34c206a0995f78e6f6c92e6c
+          inputHash: 8d4da8e593fa89937dd71f62bfe135da6599f8a65ea828a71549797f72b16060
+          outcomeId: 4697bdf7-f3d7-461a-abfd-1b2cae763104
+          output:
+            designEvidence:
               contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
               ref: openspec/changes/release-v0-1-1/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-              requirementsEvidence:
-                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                ref: openspec/changes/release-v0-1-1
-        inputHash: 6692a5a27638d7260e7c70d3afada52426384d21b2b0b7067b622e4709a94a64
+            plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+            planEvidence:
+              contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+            taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9618d558d9aa5327e28ab223d1ff90d6d45f84e9bff2252c02eff952971f7c3c
+            outcomeId: 4697bdf7-f3d7-461a-abfd-1b2cae763104
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: release-v0-1-1:36
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs: {}
+        inputHash: 8d4da8e593fa89937dd71f62bfe135da6599f8a65ea828a71549797f72b16060
         protocolVersion: 1
         receipts: []
         reconciliations: []
@@ -1344,417 +966,22 @@ run_checkpoint:
         results: {}
         sequence: 1
       release-v0-1-1:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/release-v0-1-1
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/release-v0-1-1
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                    proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                      Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                      Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                      CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经
-                      PR/main CI 交付，再以精确 main 提交运行现有
-                      Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                      偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-                      thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-                    requirementsEvidence:
-                      contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
-              ref: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-              proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-                交付，再以精确 main 提交运行现有
-                Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-              requirementsEvidence:
-                contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                ref: openspec/changes/release-v0-1-1
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+        results: {}
         sequence: 11
       release-v0-1-1:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/release-v0-1-1
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/release-v0-1-1
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
-                ref: openspec/changes/release-v0-1-1/design.md
-              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              planEvidence:
-                contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
-                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
-              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                    proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                      Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                      Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                      CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经
-                      PR/main CI 交付，再以精确 main 提交运行现有
-                      Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                      偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-                      thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-                    requirementsEvidence:
-                      contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
-              ref: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-              proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-                交付，再以精确 main 提交运行现有
-                Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-              requirementsEvidence:
-                contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                ref: openspec/changes/release-v0-1-1
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+        results: {}
         sequence: 13
       release-v0-1-1:14:
         results: {}
         sequence: 14
       release-v0-1-1:16:
-        results:
-          full.design.confirm:
-            sequence: 15
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-                    requirementsEvidence:
-                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                      ref: openspec/changes/release-v0-1-1
-          full.design.handoff:
-            sequence: 14
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-              requirementsEvidence:
-                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                ref: openspec/changes/release-v0-1-1
+        results: {}
         sequence: 16
       release-v0-1-1:18:
-        results:
-          full.design.confirm:
-            sequence: 15
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-                    requirementsEvidence:
-                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 16
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.evidence:
-            sequence: 17
-            value:
-              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-              ref: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 14
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-              requirementsEvidence:
-                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                ref: openspec/changes/release-v0-1-1
+        results: {}
         sequence: 18
       release-v0-1-1:20:
-        results:
-          full.build.plan:
-            sequence: 18
-            value:
-              designEvidence:
-                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-                ref: openspec/changes/release-v0-1-1/design.md
-              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              planEvidence:
-                contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
-                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
-          full.build.plan.evidence:
-            sequence: 19
-            value:
-              contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
-              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-          full.design.confirm:
-            sequence: 15
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-                    requirementsEvidence:
-                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 16
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.evidence:
-            sequence: 17
-            value:
-              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-              ref: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 14
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-              requirementsEvidence:
-                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                ref: openspec/changes/release-v0-1-1
+        results: {}
         sequence: 20
       release-v0-1-1:21:
         results: {}
@@ -1763,385 +990,40 @@ run_checkpoint:
         results: {}
         sequence: 22
       release-v0-1-1:24:
-        results:
-          full.design.confirm:
-            sequence: 23
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-                    requirementsEvidence:
-                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                      ref: openspec/changes/release-v0-1-1
-          full.design.handoff:
-            sequence: 22
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-              requirementsEvidence:
-                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                ref: openspec/changes/release-v0-1-1
+        results: {}
         sequence: 24
       release-v0-1-1:26:
-        results:
-          full.design.confirm:
-            sequence: 23
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-                    requirementsEvidence:
-                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 24
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.evidence:
-            sequence: 25
-            value:
-              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-              ref: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 22
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-              requirementsEvidence:
-                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                ref: openspec/changes/release-v0-1-1
+        results: {}
         sequence: 26
       release-v0-1-1:28:
-        results:
-          full.build.plan:
-            sequence: 26
-            value:
-              designEvidence:
-                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-                ref: openspec/changes/release-v0-1-1/design.md
-              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              planEvidence:
-                contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
-                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
-          full.build.plan.evidence:
-            sequence: 27
-            value:
-              contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
-              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-          full.design.confirm:
-            sequence: 23
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-                    requirementsEvidence:
-                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 24
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.evidence:
-            sequence: 25
-            value:
-              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-              ref: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 22
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-              requirementsEvidence:
-                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                ref: openspec/changes/release-v0-1-1
+        results: {}
         sequence: 28
+      release-v0-1-1:29:
+        results: {}
+        sequence: 29
+      release-v0-1-1:31:
+        results: {}
+        sequence: 31
+      release-v0-1-1:33:
+        results: {}
+        sequence: 33
+      release-v0-1-1:34:
+        results: {}
+        sequence: 34
+      release-v0-1-1:36:
+        results: {}
+        sequence: 36
       release-v0-1-1:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
+        results: {}
         sequence: 4
       release-v0-1-1:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+        results: {}
         sequence: 5
       release-v0-1-1:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                    proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                      Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                      Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                      CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经
-                      PR/main CI 交付，再以精确 main 提交运行现有
-                      Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                      偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-                      thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-                    requirementsEvidence:
-                      contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                      ref: openspec/changes/release-v0-1-1
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-              proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-                交付，再以精确 main 提交运行现有
-                Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-              requirementsEvidence:
-                contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                ref: openspec/changes/release-v0-1-1
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+        results: {}
         sequence: 7
       release-v0-1-1:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                    proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                      Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                      Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                      CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经
-                      PR/main CI 交付，再以精确 main 提交运行现有
-                      Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                      偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-                      thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-                    requirementsEvidence:
-                      contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
-              ref: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-              proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-                交付，再以精确 main 提交运行现有
-                Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-              requirementsEvidence:
-                contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                ref: openspec/changes/release-v0-1-1
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+        results: {}
         sequence: 9
     waits:
       - id: release-v0-1-1:3
@@ -2164,16 +1046,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
+        results: {}
         decision:
           id: classic-open-fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
           choice: approved
@@ -2210,55 +1083,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-              proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-                交付，再以精确 main 提交运行现有
-                Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-              requirementsEvidence:
-                contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                ref: openspec/changes/release-v0-1-1
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+        results: {}
         decision:
           id: classic-design-fec0775d54926c5cac49186832896e268e2997eee1e7f67b98965b9df8a3ddd1-approved
           choice: approved
@@ -2286,102 +1111,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/release-v0-1-1
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                    proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                      Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                      Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                      CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经
-                      PR/main CI 交付，再以精确 main 提交运行现有
-                      Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                      偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-                      thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-                    requirementsEvidence:
-                      contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
-              ref: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-              proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-                交付，再以精确 main 提交运行现有
-                Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-              requirementsEvidence:
-                contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                ref: openspec/changes/release-v0-1-1
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+        results: {}
         decision:
           id: f292e45e-9397-472d-9210-87465b003ea7
           choice: approved
@@ -2414,22 +1144,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 14
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-              requirementsEvidence:
-                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                ref: openspec/changes/release-v0-1-1
+        results: {}
         decision:
           id: classic-design-49a943cf7ec0dc808e1fa59576e7434c7c2e154d56d47d87f9b314a7d651e4b5-approved
           choice: approved
@@ -2461,21 +1176,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 22
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-              requirementsEvidence:
-                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                ref: openspec/changes/release-v0-1-1
+        results: {}
         decision:
           id: classic-design-208e8de15064f7ee8cf549d59dd9ac36c6f43599ae7b7d598883f3a0e069a8b6-approved
           choice: approved
@@ -2486,11 +1187,7 @@ run_checkpoint:
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/release-v0-1-1
           contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
@@ -2500,87 +1197,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                    proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                      Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                      Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                      CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经
-                      PR/main CI 交付，再以精确 main 提交运行现有
-                      Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                      偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-                      thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-                    requirementsEvidence:
-                      contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-              proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-                交付，再以精确 main 提交运行现有
-                Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-              requirementsEvidence:
-                contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                ref: openspec/changes/release-v0-1-1
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+        results: {}
         receipt:
           ref: openspec/changes/release-v0-1-1/design.md
           contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
@@ -2590,87 +1207,117 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/release-v0-1-1
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/release-v0-1-1
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
-                ref: openspec/changes/release-v0-1-1/design.md
-              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              planEvidence:
-                contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
-                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                    proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                      Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                      Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                      CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经
-                      PR/main CI 交付，再以精确 main 提交运行现有
-                      Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                      偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-                      thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
-                    requirementsEvidence:
-                      contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
-              ref: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
+          submissionId: 9e8aa0ca-cc69-437a-926c-f9409e40da60
+      - id: release-v0-1-1:17
+        stepId: full.design.evidence
+        sequence: 17
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/release-v0-1-1/design.md
+          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+          submissionId: 0e03183c-56b4-4cc0-b9b3-d4f962f84d99
+      - id: release-v0-1-1:19
+        stepId: full.build.plan.evidence
+        sequence: 19
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
+          submissionId: 19441ac8-f365-4663-bcb2-54a0205060d5
+      - id: release-v0-1-1:25
+        stepId: full.design.evidence
+        sequence: 25
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/release-v0-1-1/design.md
+          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+          submissionId: 31577d20-8126-44fb-8e37-e3dd701e1fa9
+      - id: release-v0-1-1:27
+        stepId: full.build.plan.evidence
+        sequence: 27
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+          submissionId: 16b0b674-015c-48a0-a740-441ba0c0bb4d
+      - id: release-v0-1-1:30
+        stepId: full.build.check.evidence
+        sequence: 30
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/497efa6f-e88d-4fbd-95df-de9262b077b4.log
+          contentHash: dfbbfc01e337628a9317a238ee8d1c5f48bd6764fd523ef4c38e98c9ea675d5f
+          submissionId: 709a88d9-3a8a-42c9-a229-8dab3221719e
+      - id: release-v0-1-1:32
+        stepId: full.verify.report.evidence
+        sequence: 32
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/release-v0-1-1.md
+          contentHash: 88fab8d41fb74ccde3b68517173e3342a2b10f270ddf182be2a8919ceb19a5e4
+          submissionId: 7903a507-5d5d-46cd-9fd8-a0e3898597db
+      - id: release-v0-1-1:35
+        stepId: full.build.plan.evidence
+        sequence: 35
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+          submissionId: e07c85f6-ac51-48e4-abc3-61b131a9db38
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 53
+  sourceHash: c2fc9e8c5779e633161ce3efc330fb9ffc8a0a5caf23350faf1ea08881d4cd22
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+              ref: openspec/changes/release-v0-1-1
+      - contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+        ref: openspec/changes/release-v0-1-1
+      - contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+      - choice: approved
+        proposal:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
               handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
               proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
@@ -2687,284 +1334,192 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
                 ref: openspec/changes/release-v0-1-1
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                    ref: openspec/changes/release-v0-1-1
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-              ref: openspec/changes/release-v0-1-1
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-        receipt:
-          ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+      - handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+        handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
+        proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
+          Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
+          Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
+          CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
+          交付，再以精确 main 提交运行现有 Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原
+          Desktop 偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
+          worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
+        requirementsEvidence:
+          contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
+          ref: openspec/changes/release-v0-1-1
+        sourceEvidence:
+          contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
+          ref: openspec/changes/release-v0-1-1
+      - designDoc: openspec/changes/release-v0-1-1/design.md
+      - contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
+        ref: openspec/changes/release-v0-1-1/design.md
+      - boundBranch: comet/release-v0-1-1
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.build.configure:
+              boundBranch: comet/release-v0-1-1
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
+          ref: openspec/changes/release-v0-1-1/design.md
+        plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+        planEvidence:
           contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
-          submissionId: 9e8aa0ca-cc69-437a-926c-f9409e40da60
-      - id: release-v0-1-1:17
-        stepId: full.design.evidence
-        sequence: 17
-        kind: classic-design-document
-        status: resolved
-        results:
-          full.design.confirm:
-            sequence: 15
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-                    requirementsEvidence:
-                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 16
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 14
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-              requirementsEvidence:
-                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                ref: openspec/changes/release-v0-1-1
-        receipt:
-          ref: openspec/changes/release-v0-1-1/design.md
-          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-          submissionId: 0e03183c-56b4-4cc0-b9b3-d4f962f84d99
-      - id: release-v0-1-1:19
-        stepId: full.build.plan.evidence
-        sequence: 19
-        kind: classic-build-plan
-        status: resolved
-        results:
-          full.build.plan:
-            sequence: 18
-            value:
-              designEvidence:
-                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-                ref: openspec/changes/release-v0-1-1/design.md
-              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              planEvidence:
-                contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
-                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
-          full.design.confirm:
-            sequence: 15
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-                    requirementsEvidence:
-                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 16
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.evidence:
-            sequence: 17
-            value:
-              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-              ref: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 14
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
-              requirementsEvidence:
-                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
-                ref: openspec/changes/release-v0-1-1
-        receipt:
           ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+        taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
+      - contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
+        ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+      - choice: approved
+        proposal:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+              requirementsEvidence:
+                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                ref: openspec/changes/release-v0-1-1
+      - handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+        handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+        proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+          service.version 和 Instrumentation Scope 来自包元数据；已有部署显式 service.version
+          覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+          补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+        requirementsEvidence:
+          contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+          ref: openspec/changes/release-v0-1-1
+        sourceEvidence:
+          contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+          ref: openspec/changes/release-v0-1-1
+      - contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+        ref: openspec/changes/release-v0-1-1/design.md
+      - designEvidence:
+          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+          ref: openspec/changes/release-v0-1-1/design.md
+        plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+        planEvidence:
           contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
-          submissionId: 19441ac8-f365-4663-bcb2-54a0205060d5
-      - id: release-v0-1-1:25
-        stepId: full.design.evidence
-        sequence: 25
-        kind: classic-design-document
-        status: resolved
-        results:
-          full.design.confirm:
-            sequence: 23
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-                    requirementsEvidence:
-                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 24
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 22
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-              requirementsEvidence:
-                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                ref: openspec/changes/release-v0-1-1
-        receipt:
-          ref: openspec/changes/release-v0-1-1/design.md
-          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-          submissionId: 31577d20-8126-44fb-8e37-e3dd701e1fa9
-      - id: release-v0-1-1:27
-        stepId: full.build.plan.evidence
-        sequence: 27
-        kind: classic-build-plan
-        status: resolved
-        results:
-          full.build.plan:
-            sequence: 26
-            value:
-              designEvidence:
-                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-                ref: openspec/changes/release-v0-1-1/design.md
-              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              planEvidence:
-                contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
-                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-              taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
-          full.design.confirm:
-            sequence: 23
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: release-v0-1-1
-                  changeDir: openspec/changes/release-v0-1-1
-                  workspaceBaseline:
-                    ref: dd42085c-1379-4815-9240-56f2ca54e991
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-                    requirementsEvidence:
-                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                      ref: openspec/changes/release-v0-1-1
-                    sourceEvidence:
-                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                      ref: openspec/changes/release-v0-1-1
-          full.design.document:
-            sequence: 24
-            value:
-              designDoc: openspec/changes/release-v0-1-1/design.md
-          full.design.evidence:
-            sequence: 25
-            value:
-              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-              ref: openspec/changes/release-v0-1-1/design.md
-          full.design.handoff:
-            sequence: 22
-            value:
-              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
-              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
-                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
-                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
-              requirementsEvidence:
-                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
-                ref: openspec/changes/release-v0-1-1
-              sourceEvidence:
-                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
-                ref: openspec/changes/release-v0-1-1
-        receipt:
           ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+        taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
+      - contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
+        ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+      - choice: approved
+        proposal:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+              requirementsEvidence:
+                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                ref: openspec/changes/release-v0-1-1
+      - handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+        handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+        proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+          勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+          runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+        requirementsEvidence:
+          contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+          ref: openspec/changes/release-v0-1-1
+        sourceEvidence:
+          contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+          ref: openspec/changes/release-v0-1-1
+      - designEvidence:
+          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+          ref: openspec/changes/release-v0-1-1/design.md
+        plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+        planEvidence:
           contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
-          submissionId: 16b0b674-015c-48a0-a740-441ba0c0bb4d
-    ready: []
-    joins: {}
-    outputs:
-      full.build.configure:
-        sequence: 9
+          ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+        taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
+      - contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+        ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: dfbbfc01e337628a9317a238ee8d1c5f48bd6764fd523ef4c38e98c9ea675d5f
+        cwd: .
+        environment: ecf9bed91cec6fba07dfa8a03b8c1ff61e027b7a69f909d3f284afcf63c9a22c
+        exitCode: 0
+        inputAfter: 255abec6b6a640b037ad529054009cc1e65c096eda8a121fb60006d7db124f8b
+        inputBefore: 255abec6b6a640b037ad529054009cc1e65c096eda8a121fb60006d7db124f8b
+        manifestHash: d1c5bb375f353fb05f8547e1395dba744cedb005b27f0868dff9ce8de7d3d0eb
+        manifestRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/4b5ecc9e-8530-4435-bc21-a2ae17103194.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/497efa6f-e88d-4fbd-95df-de9262b077b4.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: dfbbfc01e337628a9317a238ee8d1c5f48bd6764fd523ef4c38e98c9ea675d5f
+        ref: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/497efa6f-e88d-4fbd-95df-de9262b077b4.log
+      - contentHash: 88fab8d41fb74ccde3b68517173e3342a2b10f270ddf182be2a8919ceb19a5e4
+        ref: docs/superpowers/reports/release-v0-1-1.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/release-v0-1-1.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: ca02a40c3fe8c13b4142e0acc91270a4d3c4a2520b9d504aebaa56fbda3fc2e5
+        cwd: .
+        deliveryInputs: {}
+        environment: 04ccae1c7c045f5439fb27c39cbf20d76904034462a8ad6bf6a45206896eea2d
+        exitCode: 1
+        inputAfter: 01ba53e542e1ff999169e36b09725a46f9e1d3ed915d6b85166b0bda5422b1fe
+        inputBefore: 01ba53e542e1ff999169e36b09725a46f9e1d3ed915d6b85166b0bda5422b1fe
+        manifestHash: 35f972cc4c61da0480129d01dcdb86ff7a6000ec04df9886d1b4c5ed2a9c7d6f
+        manifestRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/80b32719-de23-49f4-8675-a541accd252b.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/e6e1ba4c-da66-4370-a9f8-4b392bf6773f.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - sequence: 9
         value:
           boundBranch: comet/release-v0-1-1
           buildMode: autonomous
@@ -2973,8 +1528,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -2992,24 +1546,155 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.plan:
-        sequence: 26
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: release-v0-1-1
+              changeDir: openspec/changes/release-v0-1-1
+              workspaceBaseline:
+                ref: dd42085c-1379-4815-9240-56f2ca54e991
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
+                proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
+                  Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
+                  Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
+                  CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main
+                  CI 交付，再以精确 main 提交运行现有
+                  Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
+                  偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
+                  worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
+                requirementsEvidence:
+                  contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
+                  ref: openspec/changes/release-v0-1-1
+                sourceEvidence:
+                  contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
+                  ref: openspec/changes/release-v0-1-1
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/release-v0-1-1/design.md
+      - sequence: 8
+        value:
+          contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
+          ref: openspec/changes/release-v0-1-1/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+          handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
+          proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
+            Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
+            Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
+            CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
+            交付，再以精确 main 提交运行现有 Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原
+            Desktop 偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
+            thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
+          requirementsEvidence:
+            contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
+            ref: openspec/changes/release-v0-1-1
+          sourceEvidence:
+            contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
+            ref: openspec/changes/release-v0-1-1
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: release-v0-1-1
+              changeDir: openspec/changes/release-v0-1-1
+              workspaceBaseline:
+                ref: dd42085c-1379-4815-9240-56f2ca54e991
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+                ref: openspec/changes/release-v0-1-1
+      - sequence: 2
+        value:
+          contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+          ref: openspec/changes/release-v0-1-1
+      - sequence: 4
+        value:
+          contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
+            ref: openspec/changes/release-v0-1-1/design.md
+          plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          planEvidence:
+            contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
+            ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
+      - sequence: 12
+        value:
+          contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
+          ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+      - sequence: 15
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: release-v0-1-1
+              changeDir: openspec/changes/release-v0-1-1
+              workspaceBaseline:
+                ref: dd42085c-1379-4815-9240-56f2ca54e991
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+                proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                  service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                  service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                  补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+                requirementsEvidence:
+                  contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                  ref: openspec/changes/release-v0-1-1
+                sourceEvidence:
+                  contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                  ref: openspec/changes/release-v0-1-1
+      - sequence: 14
+        value:
+          handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+          handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+          proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+            service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+            service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+            补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+          requirementsEvidence:
+            contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+            ref: openspec/changes/release-v0-1-1
+          sourceEvidence:
+            contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+            ref: openspec/changes/release-v0-1-1
+      - sequence: 16
+        value:
+          designDoc: openspec/changes/release-v0-1-1/design.md
+      - sequence: 17
+        value:
+          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+          ref: openspec/changes/release-v0-1-1/design.md
+      - sequence: 18
         value:
           designEvidence:
             contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
             ref: openspec/changes/release-v0-1-1/design.md
           plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
           planEvidence:
-            contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+            contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
             ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-          taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
-      full.build.plan.evidence:
-        sequence: 27
+          taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
+      - sequence: 19
         value:
-          contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+          contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
           ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-      full.design.confirm:
-        sequence: 23
+      - sequence: 23
         value:
           choice: approved
           proposal:
@@ -3031,17 +1716,7 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
                   ref: openspec/changes/release-v0-1-1
-      full.design.document:
-        sequence: 24
-        value:
-          designDoc: openspec/changes/release-v0-1-1/design.md
-      full.design.evidence:
-        sequence: 25
-        value:
-          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
-          ref: openspec/changes/release-v0-1-1/design.md
-      full.design.handoff:
-        sequence: 22
+      - sequence: 22
         value:
           handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
           handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
@@ -3054,37 +1729,1562 @@ run_checkpoint:
           sourceEvidence:
             contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
             ref: openspec/changes/release-v0-1-1
-      full.open:
-        sequence: 1
+      - sequence: 24
         value:
-          event: open-complete
-      full.open.confirm:
-        sequence: 3
+          designDoc: openspec/changes/release-v0-1-1/design.md
+      - sequence: 25
         value:
-          choice: approved
-          proposal:
-            input:
-              change: release-v0-1-1
-              changeDir: openspec/changes/release-v0-1-1
-              workspaceBaseline:
-                ref: dd42085c-1379-4815-9240-56f2ca54e991
-            outputs:
-              full.open:
-                event: open-complete
-              full.open.evidence:
-                contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-                ref: openspec/changes/release-v0-1-1
-      full.open.evidence:
-        sequence: 2
+          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+          ref: openspec/changes/release-v0-1-1/design.md
+      - sequence: 26
         value:
-          contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-          ref: openspec/changes/release-v0-1-1
-      full.open.revalidate:
-        sequence: 4
+          designEvidence:
+            contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+            ref: openspec/changes/release-v0-1-1/design.md
+          plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          planEvidence:
+            contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+            ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
+      - sequence: 27
         value:
-          contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
-    children: []
-    lineage: []
-  sourceRevision: 40
-  sourceHash: dccfe99d0e5616bfe97bebb33086c639ee34fd223152266abffe5f0ce7c558ec
-check_epoch: 4
+          contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+          ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+      - sequence: 28
+        value:
+          event: build-complete
+      - sequence: 29
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: dfbbfc01e337628a9317a238ee8d1c5f48bd6764fd523ef4c38e98c9ea675d5f
+          cwd: .
+          environment: ecf9bed91cec6fba07dfa8a03b8c1ff61e027b7a69f909d3f284afcf63c9a22c
+          exitCode: 0
+          inputAfter: 255abec6b6a640b037ad529054009cc1e65c096eda8a121fb60006d7db124f8b
+          inputBefore: 255abec6b6a640b037ad529054009cc1e65c096eda8a121fb60006d7db124f8b
+          manifestHash: d1c5bb375f353fb05f8547e1395dba744cedb005b27f0868dff9ce8de7d3d0eb
+          manifestRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/4b5ecc9e-8530-4435-bc21-a2ae17103194.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/497efa6f-e88d-4fbd-95df-de9262b077b4.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 30
+        value:
+          contentHash: dfbbfc01e337628a9317a238ee8d1c5f48bd6764fd523ef4c38e98c9ea675d5f
+          ref: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/497efa6f-e88d-4fbd-95df-de9262b077b4.log
+      - sequence: 32
+        value:
+          contentHash: 88fab8d41fb74ccde3b68517173e3342a2b10f270ddf182be2a8919ceb19a5e4
+          ref: docs/superpowers/reports/release-v0-1-1.md
+      - sequence: 31
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/release-v0-1-1.md
+      - sequence: 33
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: ca02a40c3fe8c13b4142e0acc91270a4d3c4a2520b9d504aebaa56fbda3fc2e5
+          cwd: .
+          deliveryInputs: {}
+          environment: 04ccae1c7c045f5439fb27c39cbf20d76904034462a8ad6bf6a45206896eea2d
+          exitCode: 1
+          inputAfter: 01ba53e542e1ff999169e36b09725a46f9e1d3ed915d6b85166b0bda5422b1fe
+          inputBefore: 01ba53e542e1ff999169e36b09725a46f9e1d3ed915d6b85166b0bda5422b1fe
+          manifestHash: 35f972cc4c61da0480129d01dcdb86ff7a6000ec04df9886d1b4c5ed2a9c7d6f
+          manifestRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/80b32719-de23-49f4-8675-a541accd252b.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/fc4a8b23f811d52e8528e867986982fd186b1f72adc41f8654c66fc393848224/e6e1ba4c-da66-4370-a9f8-4b392bf6773f.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 34
+        value:
+          designEvidence:
+            contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+            ref: openspec/changes/release-v0-1-1/design.md
+          plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          planEvidence:
+            contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+            ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
+      - sequence: 35
+        value:
+          contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+          ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.design.handoff
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 12
+        left: null
+        right: 27
+        height: 2
+      - key: full.design.confirm
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 14
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 13
+        left: 30
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 29
+        right: 31
+        height: 3
+      - key: full.build.plan
+        value: 15
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 16
+        left: 33
+        right: 34
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 35
+        right: 31
+        height: 3
+      - key: full.design.handoff
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 17
+        left: null
+        right: 37
+        height: 2
+      - key: full.design.confirm
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 14
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 18
+        left: 40
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 39
+        right: 41
+        height: 3
+      - key: full.build.plan
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 20
+        left: 43
+        right: 44
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 45
+        right: 41
+        height: 3
+      - key: full.build.execute
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 19
+        left: 47
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 20
+        left: 48
+        right: 44
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 49
+        right: 41
+        height: 4
+      - key: full.build.check.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 22
+        left: null
+        right: 51
+        height: 2
+      - key: full.build.plan
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 20
+        left: 53
+        right: 44
+        height: 2
+      - key: full.build.execute
+        value: 21
+        left: 52
+        right: 54
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 41
+        height: 4
+      - key: full.verify.run
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 24
+        left: null
+        right: 57
+        height: 2
+      - key: full.design.handoff
+        value: 18
+        left: 40
+        right: 58
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 59
+        height: 4
+      - key: full.verify.check
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 24
+        left: 61
+        right: 57
+        height: 2
+      - key: full.design.handoff
+        value: 18
+        left: 40
+        right: 62
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 63
+        height: 4
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 65
+        right: 66
+        height: 2
+      - key: full.design.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 68
+        right: 69
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: 71
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 70
+        right: 72
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 67
+        right: 73
+        height: 4
+      - key: full.build.plan
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 38
+        left: 75
+        right: 76
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 65
+        right: 77
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 78
+        right: 73
+        height: 4
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 39
+        left: null
+        right: 80
+        height: 2
+      - key: full.design.confirm
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: 83
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 41
+        left: 82
+        right: 84
+        height: 3
+      - key: full.build.plan
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 44
+        left: 86
+        right: 87
+        height: 2
+      - key: full.design.document
+        value: 41
+        left: 88
+        right: 84
+        height: 3
+      - key: full.design.handoff
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 45
+        left: null
+        right: 90
+        height: 2
+      - key: full.design.confirm
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 46
+        left: 93
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 47
+        left: 92
+        right: 94
+        height: 3
+      - key: full.build.plan
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 50
+        left: 96
+        right: 97
+        height: 2
+      - key: full.design.document
+        value: 47
+        left: 98
+        right: 94
+        height: 3
+      - key: full.build.execute
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 49
+        left: 100
+        right: null
+        height: 2
+      - key: full.build.plan.evidence
+        value: 50
+        left: 101
+        right: 97
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 102
+        right: 94
+        height: 4
+      - key: full.build.check.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 52
+        left: null
+        right: 104
+        height: 2
+      - key: full.build.plan
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 50
+        left: 106
+        right: 97
+        height: 2
+      - key: full.build.execute
+        value: 51
+        left: 105
+        right: 107
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 108
+        right: 94
+        height: 4
+      - key: full.verify.run
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 54
+        left: null
+        right: 110
+        height: 2
+      - key: full.design.handoff
+        value: 46
+        left: 93
+        right: 111
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 108
+        right: 112
+        height: 4
+      - key: full.verify.check
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 54
+        left: 114
+        right: 110
+        height: 2
+      - key: full.design.handoff
+        value: 46
+        left: 93
+        right: 115
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 108
+        right: 116
+        height: 4
+      - key: full.build.plan
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 58
+        left: 118
+        right: 97
+        height: 2
+      - key: full.build.execute
+        value: 51
+        left: 105
+        right: 119
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 120
+        right: 116
+        height: 4
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 34
+        left: 122
+        right: 123
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: 125
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 122
+        right: 126
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 128
+        right: 129
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 130
+        right: 126
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: 132
+        right: 133
+        height: 2
+      - key: full.design.handoff
+        value: 32
+        left: 134
+        right: 129
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 135
+        right: 126
+        height: 4
+      - key: full.build.check
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 53
+        left: 137
+        right: 138
+        height: 2
+      - key: full.build.execute
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 45
+        left: 141
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 57
+        left: 140
+        right: 142
+        height: 3
+      - key: full.build.confirm
+        value: 28
+        left: 139
+        right: 143
+        height: 4
+      - key: full.design.evidence
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 46
+        left: 145
+        right: 129
+        height: 2
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 54
+        left: 148
+        right: 149
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 147
+        right: 150
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 146
+        right: 151
+        height: 4
+      - key: full.design.document
+        value: 47
+        left: 144
+        right: 152
+        height: 5
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: 154
+        height: 2
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 157
+        right: 158
+        height: 2
+      - key: full.open
+        value: 33
+        left: 156
+        right: 159
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: 162
+        right: 163
+        height: 2
+      - key: full.design.confirm
+        value: 29
+        left: 161
+        right: 164
+        height: 3
+      - key: full.open
+        value: 33
+        left: 165
+        right: 159
+        height: 4
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: 170
+        right: 171
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 173
+        right: 174
+        height: 2
+      - key: full.open
+        value: 33
+        left: 172
+        right: 175
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 177
+        right: 178
+        height: 2
+      - key: full.design.document
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: 180
+        right: 181
+        height: 2
+      - key: full.design.confirm
+        value: 29
+        left: 179
+        right: 182
+        height: 3
+      - key: full.open
+        value: 33
+        left: 183
+        right: 175
+        height: 4
+      - key: full.design.confirm
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 41
+        left: 185
+        right: 186
+        height: 2
+      - key: full.build.plan
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 39
+        left: 188
+        right: null
+        height: 2
+      - key: full.design.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: 190
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 41
+        left: 189
+        right: 191
+        height: 3
+      - key: full.design.confirm
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 47
+        left: 193
+        right: 194
+        height: 2
+      - key: full.build.plan
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 45
+        left: 196
+        right: null
+        height: 2
+      - key: full.design.evidence
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 46
+        left: 198
+        right: null
+        height: 2
+      - key: full.design.document
+        value: 47
+        left: 197
+        right: 199
+        height: 3
+      - key: full.build.execute
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 52
+        left: null
+        right: 201
+        height: 2
+      - key: full.build.plan.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 45
+        left: 203
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 49
+        left: 202
+        right: 204
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 205
+        right: 199
+        height: 4
+      - key: full.build.check
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.execute
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 53
+        left: 207
+        right: 208
+        height: 2
+      - key: full.build.plan
+        value: 49
+        left: 209
+        right: 204
+        height: 3
+      - key: full.verify.run
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 46
+        left: 198
+        right: 211
+        height: 2
+      - key: full.design.document
+        value: 47
+        left: 210
+        right: 212
+        height: 4
+      - key: full.build.plan
+        value: 57
+        left: 209
+        right: 204
+        height: 3
+      - key: full.verify.check
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 54
+        left: 215
+        right: 216
+        height: 2
+      - key: full.design.handoff
+        value: 46
+        left: 198
+        right: 217
+        height: 3
+      - key: full.design.document
+        value: 47
+        left: 214
+        right: 218
+        height: 4
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 28
+      - 32
+      - 36
+      - 38
+      - 42
+      - 46
+      - 50
+      - 56
+      - 60
+      - 64
+      - 74
+      - 79
+      - 81
+      - 85
+      - 89
+      - 91
+      - 95
+      - 99
+      - 103
+      - 109
+      - 113
+      - 117
+      - 121
+      - 124
+      - 127
+      - 131
+      - 136
+      - 153
+      - 155
+      - 160
+      - 166
+      - 167
+      - 168
+      - 169
+      - 176
+      - 184
+      - 187
+      - 192
+      - 195
+      - 200
+      - 206
+      - 213
+      - 219
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actionContexts
+          - release-v0-1-1:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - release-v0-1-1:11
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - release-v0-1-1:13
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - release-v0-1-1:14
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - release-v0-1-1:16
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - release-v0-1-1:18
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - release-v0-1-1:20
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - release-v0-1-1:21
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - release-v0-1-1:22
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - release-v0-1-1:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - release-v0-1-1:26
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - release-v0-1-1:28
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - release-v0-1-1:29
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - release-v0-1-1:31
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - release-v0-1-1:33
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - release-v0-1-1:34
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - release-v0-1-1:36
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - release-v0-1-1:4
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - release-v0-1-1:5
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - release-v0-1-1:7
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - release-v0-1-1:9
+          - results
+        map: 33
+      - path:
+          - outputs
+        map: 34
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 35
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 36
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 37
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 38
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 39
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 40
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 41
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 42
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 43
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 44
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 45
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 46
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 47
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 48
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 49
+  storageHash: ce053dedc8f8ecea2b79aef690ffdb61e5993fea3e79fe9eb26bcb6e58a9a66d
+check_epoch: 6
