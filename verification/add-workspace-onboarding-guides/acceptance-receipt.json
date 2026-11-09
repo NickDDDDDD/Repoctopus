@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "kind": "WorkspaceGuidesAcceptanceEvidence",
+  "implementationCommit": "4372d098d7266a00c2fbc7df91482860db2ace7f",
+  "candidateSha256": "e1bf1f9c6600c0d139d9ee535cfa4a0cdb4b24614fe2725f08673520cf3c75ea",
+  "candidateContentSha256": "da55bf6bff556ffd71f6c891f23156df95cab80b3063708edcfb65d68b446af3",
+  "candidatePublished": false,
+  "packageE2E": "passed",
+  "targetedRegressionTestsPassed": 27,
+  "generatedMarkdownRender": {
+    "renderer": "GitHub GFM markdown API",
+    "readmeHeading": true,
+    "guideHeading": true,
+    "repositoryTables": true
+  },
+  "cases": [
+    {
+      "name": "new-multirepository-workspace",
+      "repositoryCount": 3,
+      "realWindowsTTY": true,
+      "rejectPreservedMissingGuides": true,
+      "approvalGeneratedAllGuides": true,
+      "localLinksChecked": 5,
+      "tutorialCodeBlocksExecuted": ["start", "status", "resume"],
+      "runId": "change-workspace-verify-workspace-guides-d80d58feea520cd1"
+    },
+    {
+      "name": "existing-single-repository",
+      "repositoryCount": 1,
+      "realWindowsTTY": true,
+      "originalTeamBytesPreserved": true,
+      "localLinksChecked": 5,
+      "tutorialCodeBlocksExecuted": ["start", "status", "resume"],
+      "runId": "change-application-verify-workspace-guides-d83f189d694274cf"
+    },
+    {
+      "name": "backfill-existing-workspace",
+      "realWindowsTTY": true,
+      "usedExistingSharedConfigurationAsCandidate": true,
+      "restoredAllMissingGuides": true,
+      "existingPublicRunStateUnchanged": true
+    }
+  ]
+}

@@ -54,4 +54,4 @@ base-ref: b95ae3eb459c4cd4de838116fe68679caaea1996
 
 ## 正式检查与交付
 
-所有实现、报告、任务完成事实先提交并 push，然后使用 Comet 当前完整入口 `npm.cmd run verify`（`VITEST_MAX_WORKERS=2`）执行 Guard 并提交真实收据。后续 Verify/Archive 仅按同一 Run 的 continuation 执行；归档与交付遵循实际用户授权，不在此计划暗示已经发布新 Release。
+所有实现、报告、任务完成事实先提交并 push。Build Guard 使用 check policy 中的完整构建入口 `npm.cmd run build`；Verify Guard 使用标准完整验收入口 `npm.cmd run verify`（`VITEST_MAX_WORKERS=2`），各自提交真实收据。后续仅按同一 Run 的 continuation 执行；归档与交付遵循实际用户授权，不在此计划暗示已经发布新 Release。
