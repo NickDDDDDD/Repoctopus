@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 6e311168776929885ee440c6a19425d44fe454886398e56f75af371ae786ccf1
+  hash: a296cf631bf05b4cc48b2ff8d73946f9c29171304eee60fee90196938906d15c
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 13
+    sequence: 14
     actions:
       - attempt: 1
         claim:
@@ -639,6 +639,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-preserve-verify-completions
+          token: portable-e2585798d7106652af7b972e529f917a427f235351d93989a9bcc06104e5a250
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: preserve-build-completions-on-verify-repair:13
         input:
           input:
@@ -762,16 +771,163 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
         inputHash: 96ba7f7f7c982aa8ff5eeffdc46b7ea1b534c2b3afefb373d744e1d71d9e14d3
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:13
+          attempt: 1
+          claimToken: portable-e2585798d7106652af7b972e529f917a427f235351d93989a9bcc06104e5a250
+          inputHash: 96ba7f7f7c982aa8ff5eeffdc46b7ea1b534c2b3afefb373d744e1d71d9e14d3
+          outcomeId: d03300e2-dd0e-4e64-937b-ecf8aa9bb9c0
+          output:
+            event: build-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 8f1773578662c4d8053ea494a15303f64dd8727cdb2d22e166f6692c3a804fce
+            outcomeId: d03300e2-dd0e-4e64-937b-ecf8aa9bb9c0
         reconciliations: []
         ref: comet-build
         requiredCapabilities: []
         retry: manual
         runId: preserve-build-completions-on-verify-repair
-        status: pending
+        status: succeeded
         stepId: full.build.execute
         type: invoke_skill
+      - attempt: 1
+        id: preserve-build-completions-on-verify-repair:14
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs:
+            full.build.configure:
+              boundBranch: codex/preserve-build-completions-on-verify-repair
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: preserve-build-completions-on-verify-repair
+                  changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+                  workspaceBaseline:
+                    ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/preserve-build-completions-on-verify-repair
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+                ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+              plan: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+              planEvidence:
+                contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+                ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+              taskRevision: 532da6a81ca63a15fb60d33e2725af91757d6572b45546eec230e20f5c0549d7
+            full.build.plan.evidence:
+              contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+              ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: preserve-build-completions-on-verify-repair
+                  changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+                  workspaceBaseline:
+                    ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+                    handoffHash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+                    proposal: 按已批准的十项任务实施选择性 Verify 返工：保留 Plan→Execute→Check→Verify。Runtime 从失败
+                      Bundle 的 Acceptance Trace、当前 Plan 与依赖闭包计算影响范围，使用未受影响机器
+                      Receipt 的真实输入/产物证明保留原 completion。相同内容 Plan 复用原身份，真实计划变化才新
+                      revision；Task 已完成的修复仍使用普通 Execute。增加 Work 权威的内部
+                      revise-implementation 分类，不改 continue-build 同 Work retry
+                      语义，不新增阶段/Work kind。Build Protocol 使用单一 schema 3 保存修复依据，原
+                      Package Completion 和 Host result 结构不改；不支持旧开发 checkpoint
+                      迁移。未知范围或证明不可观察稳定阻断，全局影响有依据时允许全量重验。Plan/Execute/Check 的 CAS
+                      接受前重验依赖，保证跨进程恢复不重放。沿既有 Trace/OTLP 记录真实原因和保留/失效数量。只读
+                      builder check 无重大未决问题；尚未实施或宣称新回归通过。不修改已批准 delta
+                      specs，不引入第三方代码/依赖或新配置开关。本 Change 建议采用
+                      autonomous、TDD、thorough，沿用已批准 worktree；执行配置仍等待用户明确选择。
+                    requirementsEvidence:
+                      contentHash: c891c2a9790fd8c19e7bc5585fccd510f45cc5f93c6716d42b1b808be261a053
+                      ref: openspec/changes/preserve-build-completions-on-verify-repair
+                    sourceEvidence:
+                      contentHash: 3f1c7cca48ae9ebb5acb891168479a9145eda9eddace62815c8650749e2aad9f
+                      ref: openspec/changes/preserve-build-completions-on-verify-repair
+            full.design.document:
+              designDoc: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+            full.design.evidence:
+              contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+              ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+              handoffHash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+              proposal: 按已批准的十项任务实施选择性 Verify 返工：保留 Plan→Execute→Check→Verify。Runtime 从失败
+                Bundle 的 Acceptance Trace、当前 Plan 与依赖闭包计算影响范围，使用未受影响机器 Receipt
+                的真实输入/产物证明保留原 completion。相同内容 Plan 复用原身份，真实计划变化才新 revision；Task
+                已完成的修复仍使用普通 Execute。增加 Work 权威的内部 revise-implementation 分类，不改
+                continue-build 同 Work retry 语义，不新增阶段/Work kind。Build Protocol
+                使用单一 schema 3 保存修复依据，原 Package Completion 和 Host result
+                结构不改；不支持旧开发 checkpoint
+                迁移。未知范围或证明不可观察稳定阻断，全局影响有依据时允许全量重验。Plan/Execute/Check 的 CAS
+                接受前重验依赖，保证跨进程恢复不重放。沿既有 Trace/OTLP 记录真实原因和保留/失效数量。只读 builder
+                check 无重大未决问题；尚未实施或宣称新回归通过。不修改已批准 delta
+                specs，不引入第三方代码/依赖或新配置开关。本 Change 建议采用
+                autonomous、TDD、thorough，沿用已批准 worktree；执行配置仍等待用户明确选择。
+              requirementsEvidence:
+                contentHash: c891c2a9790fd8c19e7bc5585fccd510f45cc5f93c6716d42b1b808be261a053
+                ref: openspec/changes/preserve-build-completions-on-verify-repair
+              sourceEvidence:
+                contentHash: 3f1c7cca48ae9ebb5acb891168479a9145eda9eddace62815c8650749e2aad9f
+                ref: openspec/changes/preserve-build-completions-on-verify-repair
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: preserve-build-completions-on-verify-repair
+                  changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+                  workspaceBaseline:
+                    ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+                    ref: openspec/changes/preserve-build-completions-on-verify-repair
+            full.open.evidence:
+              contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+              ref: openspec/changes/preserve-build-completions-on-verify-repair
+            full.open.revalidate:
+              contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+        inputHash: 34fd31e00359caed11a3875092ee17598ff9d3e5fc5402f62d2e44fa69aa0aae
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: pending
+        stepId: full.build.check
+        type: call_tool
     actionContexts:
       preserve-build-completions-on-verify-repair:1:
         results: {}
@@ -1042,6 +1198,151 @@ run_checkpoint:
             value:
               contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
         sequence: 13
+      preserve-build-completions-on-verify-repair:14:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/preserve-build-completions-on-verify-repair
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: preserve-build-completions-on-verify-repair
+                  changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+                  workspaceBaseline:
+                    ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/preserve-build-completions-on-verify-repair
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+                ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+              plan: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+              planEvidence:
+                contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+                ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+              taskRevision: 532da6a81ca63a15fb60d33e2725af91757d6572b45546eec230e20f5c0549d7
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+              ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: preserve-build-completions-on-verify-repair
+                  changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+                  workspaceBaseline:
+                    ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+                    handoffHash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+                    proposal: 按已批准的十项任务实施选择性 Verify 返工：保留 Plan→Execute→Check→Verify。Runtime 从失败
+                      Bundle 的 Acceptance Trace、当前 Plan 与依赖闭包计算影响范围，使用未受影响机器
+                      Receipt 的真实输入/产物证明保留原 completion。相同内容 Plan 复用原身份，真实计划变化才新
+                      revision；Task 已完成的修复仍使用普通 Execute。增加 Work 权威的内部
+                      revise-implementation 分类，不改 continue-build 同 Work retry
+                      语义，不新增阶段/Work kind。Build Protocol 使用单一 schema 3 保存修复依据，原
+                      Package Completion 和 Host result 结构不改；不支持旧开发 checkpoint
+                      迁移。未知范围或证明不可观察稳定阻断，全局影响有依据时允许全量重验。Plan/Execute/Check 的 CAS
+                      接受前重验依赖，保证跨进程恢复不重放。沿既有 Trace/OTLP 记录真实原因和保留/失效数量。只读
+                      builder check 无重大未决问题；尚未实施或宣称新回归通过。不修改已批准 delta
+                      specs，不引入第三方代码/依赖或新配置开关。本 Change 建议采用
+                      autonomous、TDD、thorough，沿用已批准 worktree；执行配置仍等待用户明确选择。
+                    requirementsEvidence:
+                      contentHash: c891c2a9790fd8c19e7bc5585fccd510f45cc5f93c6716d42b1b808be261a053
+                      ref: openspec/changes/preserve-build-completions-on-verify-repair
+                    sourceEvidence:
+                      contentHash: 3f1c7cca48ae9ebb5acb891168479a9145eda9eddace62815c8650749e2aad9f
+                      ref: openspec/changes/preserve-build-completions-on-verify-repair
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+              ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+              handoffHash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+              proposal: 按已批准的十项任务实施选择性 Verify 返工：保留 Plan→Execute→Check→Verify。Runtime 从失败
+                Bundle 的 Acceptance Trace、当前 Plan 与依赖闭包计算影响范围，使用未受影响机器 Receipt
+                的真实输入/产物证明保留原 completion。相同内容 Plan 复用原身份，真实计划变化才新 revision；Task
+                已完成的修复仍使用普通 Execute。增加 Work 权威的内部 revise-implementation 分类，不改
+                continue-build 同 Work retry 语义，不新增阶段/Work kind。Build Protocol
+                使用单一 schema 3 保存修复依据，原 Package Completion 和 Host result
+                结构不改；不支持旧开发 checkpoint
+                迁移。未知范围或证明不可观察稳定阻断，全局影响有依据时允许全量重验。Plan/Execute/Check 的 CAS
+                接受前重验依赖，保证跨进程恢复不重放。沿既有 Trace/OTLP 记录真实原因和保留/失效数量。只读 builder
+                check 无重大未决问题；尚未实施或宣称新回归通过。不修改已批准 delta
+                specs，不引入第三方代码/依赖或新配置开关。本 Change 建议采用
+                autonomous、TDD、thorough，沿用已批准 worktree；执行配置仍等待用户明确选择。
+              requirementsEvidence:
+                contentHash: c891c2a9790fd8c19e7bc5585fccd510f45cc5f93c6716d42b1b808be261a053
+                ref: openspec/changes/preserve-build-completions-on-verify-repair
+              sourceEvidence:
+                contentHash: 3f1c7cca48ae9ebb5acb891168479a9145eda9eddace62815c8650749e2aad9f
+                ref: openspec/changes/preserve-build-completions-on-verify-repair
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: preserve-build-completions-on-verify-repair
+                  changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+                  workspaceBaseline:
+                    ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+                    ref: openspec/changes/preserve-build-completions-on-verify-repair
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+              ref: openspec/changes/preserve-build-completions-on-verify-repair
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+        sequence: 14
       preserve-build-completions-on-verify-repair:4:
         results:
           full.open:
@@ -1832,6 +2133,10 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
+      full.build.execute:
+        sequence: 13
+        value:
+          event: build-complete
       full.build.plan:
         sequence: 11
         value:
@@ -1941,6 +2246,6 @@ run_checkpoint:
           contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
     children: []
     lineage: []
-  sourceRevision: 19
-  sourceHash: 3d6a84f6f7d657eec794fd167a5da5463d38905baa0fd53817a2a99787cde70b
+  sourceRevision: 21
+  sourceHash: 4b83b9ce7a5f2285600d7245aa0e9e7528dc57097134c66e9886c5b4112a167f
 check_epoch: 2
