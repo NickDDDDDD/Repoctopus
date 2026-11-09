@@ -50,6 +50,10 @@ Repoctopus 的四包选择性保留是对现有多仓包模型的适配：从失
 
 ## 完整门禁与交付边界
 
+首轮正式 Build Guard 通过。首轮正式 Verify 完整运行约 18 分 49 秒：203 个测试文件通过、1 个跳过，1171 项测试通过、5 项跳过；唯一失败是 `test/project-composition.test.ts` 仍绑定旧 Runtime 实现的组合摘要。核对后确认 builtin catalog、组装选择、foundation workflow 与项目配置均未改变；本次 Runtime/Skill 源身份改变产生新摘要 `sha256:94ae82c6ce36b21d2007f3a47dd4acf49e8e4135697199efc4acb713b065a8f0`。更新了该精确回归基线，保留所有身份、注册清单、隔离和 daemon 排除断言，单项复测通过；没有增加兼容摘要或放宽 Validator。原始失败在外部 `full-verify-first.log` 保留。源码和最终安装包的 CLI bytes 仍相同。
+
+Comet 按失败收据返回同一 Run 的 Build Plan，原十项任务和执行配置保持完成及批准，沿用原计划修正此测试基线后重新执行完整门禁；没有重开 Open/Design 或修改 Store 绕过。
+
 同一 Run 固定使用 `.comet/check-policy.json` 中的精确命令：
 
 1. Build：`comet guard preserve-build-completions-on-verify-repair build --apply --local -- npm.cmd run build`。
