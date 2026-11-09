@@ -1,3 +1,9 @@
+---
+comet_change: release-v0-1-1
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
