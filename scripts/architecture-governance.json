@@ -30,6 +30,7 @@
         "app/desktop/renderer/**",
         "app/desktop/shared/**",
         "domains/composition/**",
+        "platform/product/**",
         "plugins/builtin-catalog.ts",
         "plugins/action/**",
         "plugins/application/**",

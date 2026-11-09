@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { PRODUCT_VERSION } from '../platform/product/version.js';
 
 import type { DeliveryEvent, DeliveryTelemetryPort } from '../domains/delivery/ports.js';
 import type { DeliveryState } from '../domains/delivery/types.js';
@@ -34,7 +35,7 @@ export function observationDestinationsFromEnvironment(
     ...(deployment.metrics.url ? { metric: deployment.metrics.url } : {}),
   };
   if (deployment.enabled) {
-    const resource = createRepoctopusResource('repoctopus-runtime', '0.1.0', environment);
+    const resource = createRepoctopusResource('repoctopus-runtime', PRODUCT_VERSION, environment);
     destinations.push({
       id: 'remote',
       ...(deployment.baseEndpoint ? { endpoint: deployment.baseEndpoint } : {}),
@@ -62,8 +63,11 @@ export function observationDestinationsFromEnvironment(
       id: 'desktop',
       endpoint: desktop,
       timeoutMillis: 5_000,
-      resourceAttributes: createRepoctopusResource('repoctopus-runtime', '0.1.0', environment)
-        .attributes as Readonly<Record<string, string | number | boolean>>,
+      resourceAttributes: createRepoctopusResource(
+        'repoctopus-runtime',
+        PRODUCT_VERSION,
+        environment,
+      ).attributes as Readonly<Record<string, string | number | boolean>>,
       ...(token ? { headers: { authorization: `Bearer ${token}` } } : {}),
     });
   }

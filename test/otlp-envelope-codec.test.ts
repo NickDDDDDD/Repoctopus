@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import metadata from '../package.json' with { type: 'json' };
 
 import {
   decodeObservationOtlpJson,
@@ -59,6 +60,22 @@ function payload(signal: 'trace' | 'log' | 'metric') {
 }
 
 describe('canonical OTLP envelope codec', () => {
+  it.each(['trace', 'log', 'metric'] as const)(
+    'reports the package version in the %s scope',
+    (signal) => {
+      const [resourceKey, scopeKey] = {
+        trace: ['resourceSpans', 'scopeSpans'],
+        log: ['resourceLogs', 'scopeLogs'],
+        metric: ['resourceMetrics', 'scopeMetrics'],
+      }[signal] as [string, string];
+      expect(payload(signal)).toMatchObject({
+        [resourceKey]: [
+          { [scopeKey]: [{ scope: { name: 'repoctopus-runtime', version: metadata.version } }] },
+        ],
+      });
+    },
+  );
+
   it('emits queryable resource and event attributes while remaining reversible for Desktop', () => {
     const log = payload('log');
     expect(JSON.stringify(log)).toContain('company-repoctopus');

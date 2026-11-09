@@ -198,6 +198,15 @@ describe('published package', () => {
       }),
     );
     const installedPackage = path.join(installation, 'node_modules', 'repoctopus');
+    const installedMetadata = JSON.parse(
+      await readFile(path.join(installedPackage, 'package.json'), 'utf8'),
+    ) as { version: string };
+    const version = await execFileAsync(
+      process.execPath,
+      [path.join(installedPackage, 'bin', 'repoctopus.js'), '--version'],
+      { cwd: workspace },
+    );
+    expect(version.stdout.trim()).toBe(installedMetadata.version);
     const inspectedSpecification = await runCli<{
       changeId: string;
       provider: { id: string; version: string };
