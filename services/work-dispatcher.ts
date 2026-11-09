@@ -87,6 +87,7 @@ function createChangeInputs(input: {
           planEvidence: protocol.planEvidence,
           packageCompletions: protocol.packageCompletions,
           verifyRepair: protocol.verifyRepair,
+          invalidations: protocol.invalidations,
           currentPackage:
             plan?.packages.find((candidate) => candidate.packageId === input.work.packageId) ??
             null,
@@ -304,6 +305,7 @@ export class WorkDispatcher extends Service {
   async acceptValidatedOutcome(input: {
     outcome: ClaimedActionOutcome;
     validation: WorkOutcomeValidationRecord;
+    reobserve?: () => Promise<void>;
   }): Promise<WorkOutcomeAcceptance> {
     const state = await this.ctx.runStore.loadRun(input.outcome.runId);
     const work = state.changeLifecycle?.currentWork;
@@ -328,6 +330,7 @@ export class WorkDispatcher extends Service {
       outcome: input.outcome,
       receipt,
       validation: input.validation,
+      ...(input.reobserve ? { reobserve: input.reobserve } : {}),
     });
     return {
       intent,

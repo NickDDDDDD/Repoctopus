@@ -13,7 +13,11 @@ import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from '../domai
 import type { RunState } from '../domains/engine/types.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import { WorkExecutionAuthority } from '../services/work-execution-authority.js';
-import { createAcceptedBuildWorkOutcome } from '../domains/work-execution/acceptance.js';
+import { WorkDispatcher } from '../services/work-dispatcher.js';
+import {
+  createAcceptedBuildWorkOutcome,
+  StaleWorkOutcomeValidationError,
+} from '../domains/work-execution/acceptance.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 
@@ -109,15 +113,17 @@ describe('Work execution Host submission identity', () => {
     Object.defineProperty(authority, 'ctx', {
       value: {
         runStore: {
-          commitGuarded: <T>(
+          commitGuarded: async <T>(
             _runId: string,
-            reduce: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
-              state?: RunState;
-              event?: TrajectoryEvent;
-              value: T;
-            },
+            reduce: (input: { state: RunState; trajectory: TrajectoryEvent[] }) =>
+              | {
+                  state?: RunState;
+                  event?: TrajectoryEvent;
+                  value: T;
+                }
+              | Promise<{ state?: RunState; event?: TrajectoryEvent; value: T }>,
           ) => {
-            const reduced = reduce({ state, trajectory });
+            const reduced = await reduce({ state, trajectory });
             if (reduced.state) state = reduced.state;
             if (reduced.event) trajectory = [...trajectory, reduced.event];
             return Promise.resolve(reduced.value);
@@ -262,6 +268,73 @@ describe('Work execution Host submission identity', () => {
     });
     expect(fixture.getState().workExecution?.acceptedSubmission).toBeUndefined();
     expect(fixture.getState().workExecution?.actionOutcome).toBeUndefined();
+    expect(fixture.getState().workExecution?.receiptId).toBeUndefined();
+  });
+  it('reobserves external evidence inside terminal CAS before consuming the submitted Outcome', async () => {
+    const fixture = validatedAcceptanceHarness();
+    const reobserve = vi
+      .fn()
+      .mockRejectedValue(
+        new StaleWorkOutcomeValidationError(
+          'Retained B inputs changed after Action receipt creation',
+        ),
+      );
+    await expect(
+      fixture.authority.bindValidatedOutcome({
+        intent: fixture.intent,
+        outcome: fixture.actionOutcome,
+        receipt: fixture.receipt,
+        validation: fixture.validation,
+        reobserve,
+      }),
+    ).rejects.toThrow(/Retained B inputs/u);
+    expect(reobserve).toHaveBeenCalledOnce();
+    expect(fixture.getState().workExecution).toMatchObject({
+      status: 'submitted',
+      pendingSubmission: { submissionId: fixture.validation.submissionId },
+    });
+    expect(fixture.getState().workExecution?.acceptedSubmission).toBeUndefined();
+    expect(fixture.getState().workExecution?.receiptId).toBeUndefined();
+  });
+  it('rejects input drift injected after actionDispatcher.complete and preserves the original submission', async () => {
+    const fixture = validatedAcceptanceHarness();
+    let externalCurrent = true;
+    const dispatcher = Object.create(WorkDispatcher.prototype) as WorkDispatcher;
+    const complete = vi.fn().mockImplementation(() => {
+      externalCurrent = false;
+      return Promise.resolve(fixture.receipt);
+    });
+    Object.defineProperties(dispatcher, {
+      contributors: { value: new Map([['manual', {}]]) },
+      ctx: {
+        value: {
+          runStore: { loadRun: () => Promise.resolve(fixture.getState()) },
+          actionDispatcher: { complete },
+          workExecutionAuthority: {
+            loadIntent: () => Promise.resolve(fixture.intent),
+            bindValidatedOutcome: fixture.authority.bindValidatedOutcome.bind(fixture.authority),
+          },
+        },
+      },
+    });
+    await expect(
+      dispatcher.acceptValidatedOutcome({
+        outcome: fixture.actionOutcome,
+        validation: fixture.validation,
+        reobserve: () => {
+          if (!externalCurrent)
+            return Promise.reject(
+              new StaleWorkOutcomeValidationError('B input drift after Action completion'),
+            );
+          return Promise.resolve();
+        },
+      }),
+    ).rejects.toThrow(/B input drift/u);
+    expect(complete).toHaveBeenCalledOnce();
+    expect(fixture.getState().workExecution).toMatchObject({
+      status: 'submitted',
+      pendingSubmission: { submissionId: fixture.validation.submissionId },
+    });
     expect(fixture.getState().workExecution?.receiptId).toBeUndefined();
   });
 

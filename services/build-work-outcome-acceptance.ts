@@ -151,6 +151,17 @@ export class BuildWorkOutcomeAcceptanceCoordinator {
             disposition.validation.outcomeId,
           ),
           validation: disposition.validation,
+          reobserve: async () => {
+            try {
+              const observed = await input.reobserveValidationInput();
+              if (canonicalJson(observed) !== canonicalJson(input.validationInput))
+                throw new Error('external validation facts changed');
+            } catch (error) {
+              throw new StaleWorkOutcomeValidationError(
+                `Build Work inputs changed inside terminal acceptance: ${error instanceof Error ? error.message : String(error)}`,
+              );
+            }
+          },
         }),
       };
     } catch (error) {

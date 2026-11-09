@@ -12,7 +12,7 @@ import {
   type EvidenceDependencyRecord,
 } from '../evidence/dependencies.js';
 import { isProtectedBranch, normalizeProtectedBranchPatterns } from '../delivery/branch-policy.js';
-import { assertVerifyRepair } from './verify-repair.js';
+import { assertVerifyRepair, type VerifyRepair } from './verify-repair.js';
 
 export type Digest = `sha256:${string}`;
 export type ExecutionIsolation = 'current' | 'branch' | 'worktree';
@@ -1011,7 +1011,7 @@ export interface BuildProtocolState {
   packageCompletions: readonly PackageCompletionEvidence[];
   checkEvidence: BuildCheckEvidence | null;
   invalidations: readonly BuildInvalidation[];
-  verifyRepair: import('./verify-repair.js').VerifyRepair | null;
+  verifyRepair: VerifyRepair | null;
   authorizationEnvelope: BuildPlanAuthorizationEnvelope | null;
   suspension: BuildProtocolSuspension | null;
   revision: number;
@@ -1023,12 +1023,10 @@ export function reuseEquivalentBuildPlan(
   candidate: BuildPlan,
 ): BuildPlan {
   if (!previous) return candidate;
-  const semantics = ({
-    revision: _revision,
-    planId: _planId,
-    digest: _digest,
-    ...facts
-  }: BuildPlan) => facts;
+  const semantics = (plan: BuildPlan) =>
+    Object.fromEntries(
+      Object.entries(plan).filter(([key]) => !['revision', 'planId', 'digest'].includes(key)),
+    );
   return canonicalJson(semantics(previous)) === canonicalJson(semantics(candidate))
     ? previous
     : candidate;
@@ -1043,14 +1041,24 @@ export function assertBuildProtocolState(value: unknown): asserts value is Build
   if (
     !Object.hasOwn(state, 'verifyRepair') ||
     !Array.isArray(state.packageCompletions) ||
-    !Array.isArray(state.invalidations)
+    !Array.isArray(state.invalidations) ||
+    !Array.isArray(state.plans)
   )
     throw new Error('Invalid Build Protocol shape');
+  for (const completion of state.packageCompletions as readonly PackageCompletionEvidence[]) {
+    const workPackage = state.plans
+      .flatMap((p: BuildPlan) => p.packages)
+      .find((p) => p.packageId === completion.packageId && p.digest === completion.packageDigest);
+    if (!workPackage) throw new Error('Package completion does not bind an accepted contract');
+    assertPackageCompletionEvidence(completion, workPackage);
+  }
   if (state.verifyRepair !== null) {
     assertVerifyRepair(state.verifyRepair);
     const repair = state.verifyRepair;
     if (
-      !state.invalidations.some((i) => i.digest === repair.scope.invalidationDigest) ||
+      !state.invalidations.some(
+        (i: BuildInvalidation) => i.digest === repair.scope.invalidationDigest,
+      ) ||
       repair.retained.some(
         (r) =>
           !state.plans.some((p) =>
@@ -1097,7 +1105,7 @@ export type BuildProtocolObservation =
   | {
       kind: 'revision-required';
       invalidation: BuildInvalidation;
-      verifyRepair?: import('./verify-repair.js').VerifyRepair;
+      verifyRepair?: VerifyRepair;
     }
   | { kind: 'retry'; action: BuildActionKind };
 
@@ -1439,7 +1447,11 @@ export function advanceBuildProtocol(
       ...state.packageCompletions.filter(
         (c) => !observation.retentionInvalidation?.affectedPackageIds.includes(c.packageId),
       ),
-      observation.completion,
+      ...(!observation.retentionInvalidation?.affectedPackageIds.includes(
+        observation.completion.packageId,
+      )
+        ? [observation.completion]
+        : []),
     ];
     const allCompleted = state.plan.packages.every((candidate) =>
       packageCompletions.some((completion) => completion.packageId === candidate.packageId),
@@ -1601,6 +1613,27 @@ export interface PackageCompletionEvidence {
   workspaceCheckpointDigest: Digest;
   implementationDigest: Digest;
   digest: Digest;
+}
+
+export function assertPackageCompletionEvidence(
+  value: PackageCompletionEvidence,
+  workPackage: WorkPackage,
+): void {
+  try {
+    const reconstructed = createPackageCompletionEvidence({
+      workPackage,
+      executionId: value.executionId,
+      acceptanceEvidenceIds: value.acceptanceEvidenceIds,
+      testEvidenceIds: value.testEvidenceIds,
+      tddMode: value.tddEvidence ? 'tdd' : 'direct',
+      tddEvidence: value.tddEvidence,
+      workspaceCheckpointDigest: value.workspaceCheckpointDigest,
+      implementationDigest: value.implementationDigest,
+    });
+    if (canonicalJson(reconstructed) !== canonicalJson(value)) throw new Error('identity mismatch');
+  } catch {
+    throw new Error('Invalid package completion shape, digest or identity');
+  }
 }
 
 export function createPackageCompletionEvidence(input: {

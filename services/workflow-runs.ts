@@ -3,7 +3,10 @@ import {
   createVerifyRepair,
   type VerifyRepair,
 } from '../domains/change-lifecycle/verify-repair.js';
-import { reuseEquivalentBuildPlan } from '../domains/change-lifecycle/build-protocol.js';
+import {
+  reuseEquivalentBuildPlan,
+  assertBuildProtocolState,
+} from '../domains/change-lifecycle/build-protocol.js';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
 import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
@@ -3684,6 +3687,10 @@ export class WorkflowRuns extends Service {
               const planned = await this.coordinator.acceptChangeObservation(
                 runId,
                 planObservation,
+                {
+                  reobserve: async (latest) =>
+                    this.assertVerifyRepairRetentionCurrent(latest, repairRetention),
+                },
               );
               const evidence = createPlanEvidence({
                 plan,
@@ -3771,6 +3778,7 @@ export class WorkflowRuns extends Service {
                   planDigest: plan.digest,
                   ...(nextPackage ? { packageDigest: nextPackage.digest } : {}),
                   planEvidenceId: evidence.evidenceId,
+                  verifyRepairDigest: protocol.verifyRepair?.digest ?? null,
                   completedPackageIds: [...completedPackageIds].sort(),
                 },
               });
@@ -4012,7 +4020,11 @@ export class WorkflowRuns extends Service {
                       !repairRetention?.invalidation?.affectedPackageIds.includes(entry.packageId),
                   )
                   .map((entry) => entry.packageId),
-                completion.packageId,
+                ...(!repairRetention?.invalidation?.affectedPackageIds.includes(
+                  completion.packageId,
+                )
+                  ? [completion.packageId]
+                  : []),
               ]);
               const taskSetBeforeCompletion = await this.ctx.specification.tasks(
                 lifecycle.identity.changeId,
@@ -4094,6 +4106,7 @@ export class WorkflowRuns extends Service {
                       workspaceCheckpointDigest: workspaceCheckpoint.digest,
                       planDigest: plan.digest,
                       packageDigest: nextPackage.digest,
+                      verifyRepairDigest: protocol.verifyRepair?.digest ?? null,
                       completedPackageIds: [...completedIds].sort(),
                     }
                   : {
@@ -4101,6 +4114,7 @@ export class WorkflowRuns extends Service {
                       bindingStateDigest: binding.stateDigest,
                       workspaceCheckpointDigest: workspaceCheckpoint.digest,
                       planDigest: plan.digest,
+                      verifyRepairDigest: protocol.verifyRepair?.digest ?? null,
                       completedPackageIds: [...completedIds].sort(),
                     },
               });
@@ -4200,6 +4214,10 @@ export class WorkflowRuns extends Service {
               const completed = await this.coordinator.acceptChangeObservation(
                 runId,
                 packageObservation,
+                {
+                  reobserve: async (latest) =>
+                    this.assertVerifyRepairRetentionCurrent(latest, repairRetention),
+                },
               );
               await this.ctx.workExecutionAuthority.recordWorkCreated(runId, nextWork);
               return { ...completed, value: await this.coordinator.status(runId) };
@@ -4564,6 +4582,7 @@ export class WorkflowRuns extends Service {
                     bindingStateDigest: binding.stateDigest,
                     planDigest: plan.digest,
                     invalidationDigest: invalidation.digest,
+                    verifyRepairDigest: protocol.verifyRepair?.digest ?? null,
                   },
                 });
                 const revised = await this.classifyAndApplyRecovery({
@@ -4783,6 +4802,10 @@ export class WorkflowRuns extends Service {
               const checked = await this.coordinator.acceptChangeObservation(
                 runId,
                 checkObservation,
+                {
+                  reobserve: async (latest) =>
+                    this.assertVerifyRepairRetentionCurrent(latest, repairRetention),
+                },
               );
               await this.ctx.workExecutionAuthority.recordWorkCreated(runId, verifyWork);
               return { ...checked, value: await this.coordinator.status(runId) };
@@ -5075,8 +5098,17 @@ export class WorkflowRuns extends Service {
     });
   }
 
+  private async assertVerifyRepairRetentionCurrent(
+    state: RunState,
+    expected: Awaited<ReturnType<WorkflowRuns['observeVerifyRepairRetention']>>,
+  ) {
+    if (canonicalJson(await this.observeVerifyRepairRetention(state)) !== canonicalJson(expected))
+      throw new Error('Retained machine evidence changed before the protected lifecycle commit');
+  }
+
   private async observeVerifyRepairRetention(state: RunState) {
     const protocol = state.changeLifecycle?.buildProtocol;
+    if (protocol) assertBuildProtocolState(protocol);
     const repair = protocol?.verifyRepair;
     if (!repair || !protocol.plan) return null;
     const retained = repair.retained.filter((r) =>

@@ -216,6 +216,8 @@ export class FileRuntimeStore {
         if (state.changeLifecycle?.verificationInput) {
           assertVerificationInput(state.changeLifecycle.verificationInput);
         }
+        if (state.changeLifecycle?.buildProtocol)
+          assertBuildProtocolState(state.changeLifecycle.buildProtocol);
         const result = await operation({ state, workflow, trajectory });
         if (result.state && result.event) {
           await this.commitUnlocked(

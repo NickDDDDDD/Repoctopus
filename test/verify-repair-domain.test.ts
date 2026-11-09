@@ -15,6 +15,7 @@ import {
   createBuildPlan,
   reuseEquivalentBuildPlan,
   assertBuildProtocolState,
+  createPackageCompletionEvidence,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { classifyRecoveryObservation } from '../domains/runtime/recovery.js';
 import { verifyRepairFixture, repairDigest as sha } from './helpers/verify-repair-fixture.js';
@@ -92,6 +93,63 @@ function evidence(dependencies: readonly string[] = []) {
 }
 
 describe('Verify implementation repair scope', () => {
+  it('does not retain the newly submitted completion when repair invalidates its prerequisite', () => {
+    const f = evidence(['a']);
+    const initial = createBuildInvalidation({
+      source: 'verify',
+      plan: f.plan,
+      classification: 'implementation',
+      affectedPackageIds: [f.plan.packages[1]!.packageId],
+      packageCompletions: f.protocol.packageCompletions,
+      reason: 'B failed',
+    });
+    let state = advanceBuildProtocol(f.protocol, {
+      kind: 'revision-required',
+      invalidation: initial,
+    });
+    const next = () =>
+      advanceBuildWorkspaceCheckpoint({
+        current: state.workspaceCheckpoint!,
+        observed: state.workspaceCheckpoint!.repositories,
+        writableRepositoryIds: ['workspace'],
+        relations: { workspace: 'unchanged' },
+      });
+    state = advanceBuildProtocol(state, {
+      kind: 'plan-accepted',
+      plan: f.plan,
+      workspaceCheckpoint: next(),
+    });
+    state = advanceBuildProtocol(state, {
+      kind: 'plan-evidence-accepted',
+      evidence: f.protocol.planEvidence!,
+    });
+    const checkpoint = next();
+    const completion = createPackageCompletionEvidence({
+      workPackage: f.plan.packages[1]!,
+      executionId: 'repair-B',
+      acceptanceEvidenceIds: ['repair-B-green'],
+      testEvidenceIds: ['repair-B-regression'],
+      tddMode: 'direct',
+      workspaceCheckpointDigest: checkpoint.digest,
+      implementationDigest: sha('repair-B'),
+    });
+    const retentionInvalidation = createBuildInvalidation({
+      source: 'verify',
+      plan: f.plan,
+      classification: 'implementation',
+      affectedPackageIds: [f.plan.packages[0]!.packageId],
+      packageCompletions: state.packageCompletions,
+      reason: 'B repair changed an input of A',
+    });
+    state = advanceBuildProtocol(state, {
+      kind: 'package-completed',
+      completion,
+      workspaceCheckpoint: checkpoint,
+      retentionInvalidation,
+    });
+    expect(state.packageCompletions).toEqual(f.protocol.packageCompletions.slice(2));
+    expect(state.currentAction).toBe('execute');
+  });
   it('retains the exact three independently proved completion identities', () => {
     const f = evidence();
     const facts = f.derive();
@@ -251,6 +309,9 @@ describe('Verify implementation repair scope', () => {
     });
     state = JSON.parse(JSON.stringify(state)) as typeof state;
     assertBuildProtocolState(state);
+    const damaged = structuredClone(state);
+    damaged.packageCompletions[0]!.completionId = 'damaged-completion-id';
+    expect(() => assertBuildProtocolState(damaged)).toThrow(/completion/u);
     expect(state.packageCompletions).toEqual(f.protocol.packageCompletions.slice(1));
     const checkpoint = advanceBuildWorkspaceCheckpoint({
       current: state.workspaceCheckpoint!,

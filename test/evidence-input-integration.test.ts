@@ -110,6 +110,56 @@ if(id==='c'&&!fs.readFileSync('dist/value.txt','utf8'))throw Error('missing deri
   return { workspace, app, counts };
 }
 
+it('revalidates declared cross-repository inputs without invalidating independent packages', async () => {
+  const { workspace, app } = await fixture();
+  await writeFile(path.join(workspace, 'shared.txt'), 'shared-one');
+  const config = JSON.parse(
+    await readFile(path.join(workspace, 'repoctopus.yaml'), 'utf8'),
+  ) as SharedProjectConfig;
+  const b = config.profiles[0]!.nodes.find((n) => n.id === 'b')! as CommandNodeConfig;
+  b.inputs = parseEvidenceInputPolicy({
+    schemaVersion: 1,
+    repositories: [
+      { repository: 'app', files: ['b.txt', 'runner.mjs'], outputs: [] },
+      { repository: 'workspace', files: ['shared.txt'], outputs: [] },
+    ],
+  });
+  await writeFile(path.join(workspace, 'repoctopus.yaml'), JSON.stringify(config));
+  await writeFile(
+    path.join(app, 'runner.mjs'),
+    (await readFile(path.join(app, 'runner.mjs'), 'utf8')) +
+      "\nif(id==='b'&&!fs.readFileSync(new URL('../workspace/shared.txt',import.meta.url),'utf8'))throw Error('missing shared input');\n",
+  );
+  const evidence = await boot(workspace);
+  const first = await evidence.run('verify', 'cross-repository');
+  const status = evidence.status.bind(evidence);
+  vi.spyOn(evidence, 'status').mockImplementation(async (id) => {
+    const s = await status(id);
+    return {
+      ...s,
+      context: {
+        ...s.context,
+        workflowBinding: {
+          workflowRunId: 'cross-run',
+          workflowActionId: 'cross-work',
+          workflowStepId: 'verify',
+        },
+      },
+    };
+  });
+  vi.spyOn(contexts.at(-1)!.runStore, 'loadRun').mockResolvedValue({
+    runId: 'cross-run',
+  } as RunState);
+  await writeFile(path.join(workspace, 'shared.txt'), 'shared-two');
+  const ids = Object.fromEntries(first.receipts.map((r) => [r.nodeId, r.receiptId]));
+  const assessed = await evidence.assessSelectedReceiptInputs('cross-repository', 'cross-run', [
+    ids.a!,
+    ids.b!,
+  ]);
+  expect(assessed[ids.a!]).toBe('same');
+  expect(assessed[ids.b!]).toBe('drift');
+});
+
 it('revalidates selected receipts against real files and derived bytes without whole-Bundle invalidation', async () => {
   const { workspace, app, counts } = await fixture();
   const evidence = await boot(workspace);

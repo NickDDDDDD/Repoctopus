@@ -69,6 +69,28 @@ describe('telemetry mapping', () => {
       'repoctopus.recovery.reason_code': 'package-not-completable',
     });
     expect(JSON.stringify(metric)).not.toMatch(/sha256:|C:\/private|decision/u);
+    event.data = {
+      ...event.data,
+      authority: 'work',
+      action: 'revise-implementation',
+      reasonCode: 'implementation-failed',
+    };
+    expect(workflowEventMetricAttributes(batch, event)).toMatchObject({
+      'repoctopus.recovery.authority': 'work',
+      'repoctopus.recovery.action': 'revise-implementation',
+    });
+    event.type = 'change.lifecycle.transitioned';
+    event.data = {
+      verifyRepair: { affectedPackageCount: 1, retainedPackageCount: 3, digest: 'private-digest' },
+      path: 'C:/private',
+    };
+    expect(safeEventAttributes(batch, event)).toMatchObject({
+      'repoctopus.recovery.affected_package_count': 1,
+      'repoctopus.recovery.retained_package_count': 3,
+    });
+    expect(JSON.stringify(workflowEventMetricAttributes(batch, event))).not.toMatch(
+      /private|package_count/u,
+    );
   });
 
   it('exports allowlisted metadata and drops paths, summaries and credentials', () => {

@@ -1509,10 +1509,11 @@ export class WorkExecutionAuthority extends Service {
     outcome: ClaimedActionOutcome;
     receipt: ActionReceipt;
     validation: WorkOutcomeValidationRecord;
+    reobserve?: () => Promise<void>;
   }): Promise<WorkExecutionCheckpoint> {
     const result = await this.ctx.runStore.commitGuarded(
       input.intent.runId,
-      ({ state, trajectory }) => {
+      async ({ state, trajectory }) => {
         const current = state.workExecution;
         const work = state.changeLifecycle?.currentWork;
         const { validationDigest, outcomeId, ...validationIdentity } = input.validation;
@@ -1603,6 +1604,7 @@ export class WorkExecutionAuthority extends Service {
         ) {
           throw new Error('Validated Work Outcome or Receipt identity changed before commit');
         }
+        await input.reobserve?.();
         const timestamp = new Date().toISOString();
         const checkpoint: WorkExecutionCheckpoint = {
           ...current,

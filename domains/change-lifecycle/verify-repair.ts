@@ -194,7 +194,7 @@ export function assertVerifyRepair(value: unknown): asserts value is VerifyRepai
     !/^sha256:[a-f0-9]{64}$/u.test(repair.scope.invalidationDigest) ||
     !Array.isArray(repair.retained) ||
     repair.retained.some(
-      (r) =>
+      (r: VerifyRepairRetention) =>
         !r ||
         !r.completionId ||
         !r.packageId ||
@@ -202,7 +202,8 @@ export function assertVerifyRepair(value: unknown): asserts value is VerifyRepai
         !ids(r.receiptIds) ||
         repair.scope.affectedPackageIds.includes(r.packageId),
     ) ||
-    new Set(repair.retained.map((r) => r.packageId)).size !== repair.retained.length ||
+    new Set(repair.retained.map((r: VerifyRepairRetention) => r.packageId)).size !==
+      repair.retained.length ||
     digest !== hash(body)
   )
     throw new Error('Invalid Verify repair shape or digest');
