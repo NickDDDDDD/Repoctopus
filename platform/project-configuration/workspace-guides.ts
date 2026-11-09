@@ -52,7 +52,7 @@ async function source(
 
 export function mergeWorkspaceGuide(before: string | null, guide: WorkspaceGuide): string {
   const ending = before?.includes('\r\n') ? '\r\n' : '\n';
-  const block = `<${guide.tag}>${ending}<!-- Managed by Repoctopus. Keep team content outside this block. -->${ending}${guide.content.replaceAll('\n', ending)}${ending}</${guide.tag}>`;
+  const block = `<${guide.tag}>${ending}<!-- Managed by Repoctopus. Keep team content outside this block. -->${ending}${ending}${guide.content.replaceAll('\n', ending)}${ending}${ending}</${guide.tag}>`;
   const original = before ?? '';
   let start: number | null = null;
   let end: number | null = null;

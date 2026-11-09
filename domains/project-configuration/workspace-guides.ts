@@ -84,6 +84,7 @@ export function renderWorkspaceGuides(config: SharedProjectConfig): WorkspaceGui
     single
       ? '这是单仓布局，当前业务仓就是 Workspace。'
       : '这是多仓布局，请检出 Workspace 和本任务涉及的业务仓，按共享相对路径放置。',
+    '',
     '| 仓库 ID | 共享相对路径 | 用途 |',
     '| --- | --- | --- |',
     ...repositories,
