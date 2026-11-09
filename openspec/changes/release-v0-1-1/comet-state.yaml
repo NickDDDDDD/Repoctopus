@@ -26,12 +26,12 @@ archived: false
 bound_branch: comet/release-v0-1-1
 direct_override: false
 handoff_context: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-handoff_hash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+handoff_hash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 07f6b34d49af3dd59da6dd4eb922335696b9ed2e91b2efee35674a368deb87e5
+  hash: b8a364db32f9a02c89f4b271a5679bcd9d7b20d50e9a65d644644f8450c777cc
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 3
+      checkEpoch: 4
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -66,7 +66,7 @@ run_checkpoint:
       designDoc: openspec/changes/release-v0-1-1/design.md
       directOverride: false
       handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-      handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+      handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
       isolation: worktree
       language: zh-CN
       phase: build
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 20
+    sequence: 28
     actions:
       - attempt: 1
         claim:
@@ -1014,6 +1014,309 @@ run_checkpoint:
                 ref: openspec/changes/release-v0-1-1
         inputHash: 4142bc97f57f8c55d18ebcf5859a48ca4526bcc64ef6b3a5c23108b135128bd5
         protocolVersion: 1
+        reason: 命令 revise-plan 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: cancelled
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        id: release-v0-1-1:21
+        input:
+          activation:
+            expectedRevision: 29
+            fromPhase: build
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs: {}
+        inputHash: 033d2c4dd91b052b198ebf40b14e066f42856c573780fcc36fffddfbb55fe9c8
+        protocolVersion: 1
+        reason: 命令 revise-design 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: cancelled
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d456705501fa091334005f8c6cfe15e92de3ae3b771a2fa6def2ef71af3d5e96
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: release-v0-1-1:22
+        input:
+          activation:
+            expectedRevision: 30
+            fromPhase: build
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs: {}
+        inputHash: b339d8266df2fcda01f3ef34965b2beef55ef68ccf206cd234dcd6052491fd30
+        outcome:
+          actionId: release-v0-1-1:22
+          attempt: 1
+          claimToken: portable-d456705501fa091334005f8c6cfe15e92de3ae3b771a2fa6def2ef71af3d5e96
+          inputHash: b339d8266df2fcda01f3ef34965b2beef55ef68ccf206cd234dcd6052491fd30
+          outcomeId: c4582a8d-9c96-475d-a511-2d8bff9d06fe
+          output:
+            handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+            handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+            proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+              勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+              runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+            requirementsEvidence:
+              contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+              ref: openspec/changes/release-v0-1-1
+            sourceEvidence:
+              contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+              ref: openspec/changes/release-v0-1-1
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5078bdc1c473115ff4a6686df45442891724add6159d475c43fab53c454c2942
+            outcomeId: c4582a8d-9c96-475d-a511-2d8bff9d06fe
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-5a76dc5e71b4e9d77291b68acee4113c343243a468f152fa67e44c6659fca6b5
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: release-v0-1-1:24
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+                    requirementsEvidence:
+                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                      ref: openspec/changes/release-v0-1-1
+            full.design.handoff:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+              requirementsEvidence:
+                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                ref: openspec/changes/release-v0-1-1
+        inputHash: c95ead4ca135052a9576da4ae2026a487409dbf18d4b802678c4dc44446e904c
+        outcome:
+          actionId: release-v0-1-1:24
+          attempt: 1
+          claimToken: portable-5a76dc5e71b4e9d77291b68acee4113c343243a468f152fa67e44c6659fca6b5
+          inputHash: c95ead4ca135052a9576da4ae2026a487409dbf18d4b802678c4dc44446e904c
+          outcomeId: 6815e557-dd0f-44aa-bb7f-526c6453043e
+          output:
+            designDoc: openspec/changes/release-v0-1-1/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 889485cce47a60349ac79dc54fdc3922c6f8501a12c08c9685b48ab95653f2fc
+            outcomeId: 6815e557-dd0f-44aa-bb7f-526c6453043e
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-a619258d1a885c456c6f3caab7efb56952f4cfd2ec9f0b7a9ca59b499717c2d0
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: release-v0-1-1:26
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+                    requirementsEvidence:
+                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                      ref: openspec/changes/release-v0-1-1
+            full.design.document:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+            full.design.evidence:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+              requirementsEvidence:
+                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                ref: openspec/changes/release-v0-1-1
+        inputHash: 44433334f338560fcc63e7869d50560dc4890ba7328374c0911d1c3539219717
+        outcome:
+          actionId: release-v0-1-1:26
+          attempt: 1
+          claimToken: portable-a619258d1a885c456c6f3caab7efb56952f4cfd2ec9f0b7a9ca59b499717c2d0
+          inputHash: 44433334f338560fcc63e7869d50560dc4890ba7328374c0911d1c3539219717
+          outcomeId: cb550812-ddf4-4ea6-bf9b-c91004930122
+          output:
+            designEvidence:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+            plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+            planEvidence:
+              contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+            taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 14a59ae517355c507ae7b2a808459278858bad0cc36158bff31be01b7012bc05
+            outcomeId: cb550812-ddf4-4ea6-bf9b-c91004930122
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: release-v0-1-1:28
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.build.plan:
+              designEvidence:
+                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+                ref: openspec/changes/release-v0-1-1/design.md
+              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              planEvidence:
+                contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
+            full.build.plan.evidence:
+              contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+                    requirementsEvidence:
+                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                      ref: openspec/changes/release-v0-1-1
+            full.design.document:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+            full.design.evidence:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+              requirementsEvidence:
+                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                ref: openspec/changes/release-v0-1-1
+        inputHash: 6692a5a27638d7260e7c70d3afada52426384d21b2b0b7067b622e4709a94a64
+        protocolVersion: 1
         receipts: []
         reconciliations: []
         ref: comet-build
@@ -1028,6 +1331,14 @@ run_checkpoint:
         name: revise-design
         inputHash: ed99e8b6701dcdfa2c40efa491ca6d0bbfa20eb28942fae559abfefdd83169a1
         actionId: release-v0-1-1:14
+      - id: b73e94522d0968af99e4799bb96c1f66b1fd19fdce6e1f0a9c93fb4e3c48688f
+        name: revise-plan
+        inputHash: 073a1072e514e2f69550bd82aaf44b48ed1b2a53e95a135f0d2050480e22656f
+        actionId: release-v0-1-1:21
+      - id: cb5ac61aeeabd4908f2e8a21fef148fc586e1619020ce8d68a731d9883a66bbe
+        name: revise-design
+        inputHash: e33371423a7849b2b5217c08ba6f7d30f925d0593ad6ab310eb9859f49c0a9bd
+        actionId: release-v0-1-1:22
     actionContexts:
       release-v0-1-1:1:
         results: {}
@@ -1445,6 +1756,166 @@ run_checkpoint:
                 contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
                 ref: openspec/changes/release-v0-1-1
         sequence: 20
+      release-v0-1-1:21:
+        results: {}
+        sequence: 21
+      release-v0-1-1:22:
+        results: {}
+        sequence: 22
+      release-v0-1-1:24:
+        results:
+          full.design.confirm:
+            sequence: 23
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+                    requirementsEvidence:
+                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                      ref: openspec/changes/release-v0-1-1
+          full.design.handoff:
+            sequence: 22
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+              requirementsEvidence:
+                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                ref: openspec/changes/release-v0-1-1
+        sequence: 24
+      release-v0-1-1:26:
+        results:
+          full.design.confirm:
+            sequence: 23
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+                    requirementsEvidence:
+                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                      ref: openspec/changes/release-v0-1-1
+          full.design.document:
+            sequence: 24
+            value:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+          full.design.evidence:
+            sequence: 25
+            value:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+          full.design.handoff:
+            sequence: 22
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+              requirementsEvidence:
+                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                ref: openspec/changes/release-v0-1-1
+        sequence: 26
+      release-v0-1-1:28:
+        results:
+          full.build.plan:
+            sequence: 26
+            value:
+              designEvidence:
+                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+                ref: openspec/changes/release-v0-1-1/design.md
+              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              planEvidence:
+                contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
+          full.build.plan.evidence:
+            sequence: 27
+            value:
+              contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          full.design.confirm:
+            sequence: 23
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+                    requirementsEvidence:
+                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                      ref: openspec/changes/release-v0-1-1
+          full.design.document:
+            sequence: 24
+            value:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+          full.design.evidence:
+            sequence: 25
+            value:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+          full.design.handoff:
+            sequence: 22
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+              requirementsEvidence:
+                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                ref: openspec/changes/release-v0-1-1
+        sequence: 28
       release-v0-1-1:4:
         results:
           full.open:
@@ -1963,6 +2434,52 @@ run_checkpoint:
           id: classic-design-49a943cf7ec0dc808e1fa59576e7434c7c2e154d56d47d87f9b314a7d651e4b5-approved
           choice: approved
           proposalHash: 49a943cf7ec0dc808e1fa59576e7434c7c2e154d56d47d87f9b314a7d651e4b5
+      - id: release-v0-1-1:23
+        stepId: full.design.confirm
+        sequence: 23
+        status: resolved
+        proposal:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+              requirementsEvidence:
+                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                ref: openspec/changes/release-v0-1-1
+        proposalHash: 208e8de15064f7ee8cf549d59dd9ac36c6f43599ae7b7d598883f3a0e069a8b6
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 22
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+              requirementsEvidence:
+                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                ref: openspec/changes/release-v0-1-1
+        decision:
+          id: classic-design-208e8de15064f7ee8cf549d59dd9ac36c6f43599ae7b7d598883f3a0e069a8b6-approved
+          choice: approved
+          proposalHash: 208e8de15064f7ee8cf549d59dd9ac36c6f43599ae7b7d598883f3a0e069a8b6
     evidenceWaits:
       - id: release-v0-1-1:2
         stepId: full.open.evidence
@@ -2325,6 +2842,124 @@ run_checkpoint:
           ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
           contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
           submissionId: 19441ac8-f365-4663-bcb2-54a0205060d5
+      - id: release-v0-1-1:25
+        stepId: full.design.evidence
+        sequence: 25
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 23
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+                    requirementsEvidence:
+                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                      ref: openspec/changes/release-v0-1-1
+          full.design.document:
+            sequence: 24
+            value:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+          full.design.handoff:
+            sequence: 22
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+              requirementsEvidence:
+                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                ref: openspec/changes/release-v0-1-1
+        receipt:
+          ref: openspec/changes/release-v0-1-1/design.md
+          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+          submissionId: 31577d20-8126-44fb-8e37-e3dd701e1fa9
+      - id: release-v0-1-1:27
+        stepId: full.build.plan.evidence
+        sequence: 27
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.plan:
+            sequence: 26
+            value:
+              designEvidence:
+                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+                ref: openspec/changes/release-v0-1-1/design.md
+              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              planEvidence:
+                contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
+          full.design.confirm:
+            sequence: 23
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+                    proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                      勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                      runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+                    requirementsEvidence:
+                      contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                      ref: openspec/changes/release-v0-1-1
+          full.design.document:
+            sequence: 24
+            value:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+          full.design.evidence:
+            sequence: 25
+            value:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+          full.design.handoff:
+            sequence: 22
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+              proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
+              requirementsEvidence:
+                contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
+                ref: openspec/changes/release-v0-1-1
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
+          submissionId: 16b0b674-015c-48a0-a740-441ba0c0bb4d
     ready: []
     joins: {}
     outputs:
@@ -2358,23 +2993,23 @@ run_checkpoint:
                 subagentDispatch: null
                 tddMode: tdd
       full.build.plan:
-        sequence: 18
+        sequence: 26
         value:
           designEvidence:
             contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
             ref: openspec/changes/release-v0-1-1/design.md
           plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
           planEvidence:
-            contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
+            contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
             ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
-          taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
+          taskRevision: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
       full.build.plan.evidence:
-        sequence: 19
+        sequence: 27
         value:
-          contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
+          contentHash: 94ca0f551609bb96ff27db419f8259d98d2723636ef961dbabbcb3eae35e4a68
           ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
       full.design.confirm:
-        sequence: 15
+        sequence: 23
         value:
           choice: approved
           proposal:
@@ -2386,40 +3021,38 @@ run_checkpoint:
             outputs:
               full.design.handoff:
                 handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-                proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-                  service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-                  service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-                  补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+                handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+                proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+                  勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+                  runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
                 requirementsEvidence:
-                  contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                  contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
                   ref: openspec/changes/release-v0-1-1
                 sourceEvidence:
-                  contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                  contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
                   ref: openspec/changes/release-v0-1-1
       full.design.document:
-        sequence: 16
+        sequence: 24
         value:
           designDoc: openspec/changes/release-v0-1-1/design.md
       full.design.evidence:
-        sequence: 17
+        sequence: 25
         value:
           contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
           ref: openspec/changes/release-v0-1-1/design.md
       full.design.handoff:
-        sequence: 14
+        sequence: 22
         value:
           handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-          handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
-          proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
-            service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
-            service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
-            补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+          handoffHash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
+          proposal: 沿用当前 v0.1.1 设计和全部发布门禁，仅澄清 task2.2 的阶段顺序：Build
+            勾选代表独立审查、真实候选消费证据、报告和完整命令入口就绪；标准完整Verify由随后同一CometRun的Guard实际执行，成功前禁止Archive。不把尚未发生的Verify/Pub提前声明完成，不删除、不降低验证。源码和候选字节不变，5个稳定TaskID、autonomous/TDD/thorough配置及已有实现保留，阶段检查仍精确npm.cmd
+            runbuild/runverify，远端仍要求mainCI和同一Windows候选。当前Agent依范围内代理审批核对这份任务措辞，实际公开Release授权沿用。
           requirementsEvidence:
-            contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+            contentHash: a6a07e7cff4cf8dc0a93684fb5be4ec4eab5af40cf2a58827e929a94ec24a9e9
             ref: openspec/changes/release-v0-1-1
           sourceEvidence:
-            contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+            contentHash: 1b0a637d86ae00e89d7db378a3101a678cdfd31a1d52d93899f9fd78569f340c
             ref: openspec/changes/release-v0-1-1
       full.open:
         sequence: 1
@@ -2452,6 +3085,6 @@ run_checkpoint:
           contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
     children: []
     lineage: []
-  sourceRevision: 29
-  sourceHash: f381359b01f2147efbb25577cbb5ac4303bfb1e9957a301a8b5a5f9deb695632
-check_epoch: 3
+  sourceRevision: 40
+  sourceHash: dccfe99d0e5616bfe97bebb33086c639ee34fd223152266abffe5f0ce7c558ec
+check_epoch: 4

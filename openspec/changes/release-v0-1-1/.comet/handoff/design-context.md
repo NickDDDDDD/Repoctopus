@@ -3,7 +3,7 @@
 - Change: release-v0-1-1
 - Phase: design
 - Mode: compact
-- Context hash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+- Context hash: 0699bd3041af83dd23ac51efe40701e0b167b393924792486f8c4ac324002d4b
 
 Generated-by: comet-handoff.sh
 Task hash policy: task-content-v1. Read tasks.md for live completion; excerpts are design-time context.
@@ -133,8 +133,8 @@ Change 内任务完成版本维护、独立消费验证与可执行的发布输�
 ## openspec/changes/release-v0-1-1/tasks.md
 
 - Source: openspec/changes/release-v0-1-1/tasks.md
-- Lines: 1-19
-- SHA256: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
+- Lines: 1-20
+- SHA256: 3d861293e429adfd4199dd05c562fec06251d2d8299c6ea1c9535e8a58049e75
 
 ```md
 # Tasks
@@ -148,10 +148,11 @@ Change 内任务完成版本维护、独立消费验证与可执行的发布输�
 ## 2. 独立消费与发布准备验收
 
 - [ ] 2.1 从精确提交构建 v0.1.1 tarball 并生产安装，运行包 E2E 与实际 CLI/npx 版本核对；在独立 Workspace 通过真实终端批准初始化，检查 README、AGENTS 与本地教程，核对旧版资产未改动，保存候选内容摘要、完整提交及命令退出码。 <!-- comet-task:f19287c7-e367-4339-9a59-6bc74ee47212 -->
-- [ ] 2.2 完成独立审查并保存带候选身份的正式验证报告，执行标准完整仓库 Verify；核对既有 Prepare/Publish 输入、main CI 前置条件及失败恢复步骤可执行，不以本地构建通过代替 Windows 安装器或公开下载结果。 <!-- comet-task:69069919-0b12-4c75-a531-1b1a821e809f -->
+- [ ] 2.2 完成独立审查并保存带候选身份的正式验证报告，核对标准完整仓库 Verify 入口及证据条件；完整检查交给随后 Comet 阶段 Guard 真实执行，通过前不得归档。核对既有 Prepare/Publish 输入、main CI 前置条件及失败恢复步骤可执行，不以本地构建通过代替 Windows 安装器或公开下载结果。 <!-- comet-task:69069919-0b12-4c75-a531-1b1a821e809f -->
 
 ## Workflow follow-up
 
+- 由 Comet Build/Verify Guard 执行精确的标准构建与完整验证命令；实现任务完成不代表阶段检查或发布已通过。
 - 按同一 Comet Run 完成 Archive、版本维护 PR 和 main 交付，保留已验证实现的提交祖先关系。
 - main 上该精确版本提交的 push CI 成功后，按已获用户授权启动既有 Release prepare；候选必须通过 CLI/npx 和 Windows 安装器验收。
 - 核对原候选工件、草稿、提交、Tag 与摘要后启动 publish，等待 public-smoke 并核对实际公开资产；保存外部回执后才报告 v0.1.1 已发布。
