@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "runId": "change-verify-selective-repair-verify-selective-repair-a1d57a2c5fdc5fb2",
+  "planId": "build-plan:ad2b6d3865bda13ab440ff53",
+  "originalCompletions": [
+    "package-completion:db2aac2504177f897b7efef6",
+    "package-completion:830eaeb4256183b3a656e2d6",
+    "package-completion:53903264d1bf68c86a91fc2b",
+    "package-completion:d859ecb1e3b873b23ad0b534"
+  ],
+  "finalCompletions": [
+    "package-completion:830eaeb4256183b3a656e2d6",
+    "package-completion:53903264d1bf68c86a91fc2b",
+    "package-completion:d859ecb1e3b873b23ad0b534",
+    "package-completion:c461ac17f0e7a6c465f2ee4f"
+  ],
+  "executeCounts": {
+    "a": 2,
+    "b": 1,
+    "c": 1,
+    "d": 1
+  },
+  "machineCounts": {
+    "a": 2,
+    "b": 1,
+    "c": 1,
+    "d": 1
+  },
+  "coldRecoveryEpochs": [14, 16, 17, 18],
+  "unauthorizedEntrypointsRejected": true,
+  "gate": "satisfied",
+  "finalPhase": "archive",
+  "taskFactsUnchanged": true,
+  "at": "2026-11-09T11:01:21.367Z"
+}

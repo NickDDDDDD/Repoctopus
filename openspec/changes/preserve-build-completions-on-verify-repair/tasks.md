@@ -15,9 +15,9 @@
 
 ## 3. 恢复与交付验证准备
 
-- [ ] 3.1 在失败持久化、修复 Plan 接受、单包修复完成及新 Check 接受后分别退出并以新进程 resume/next；验收同一 Run、稳定保留凭证、正确修复进度和无重复 Execute，不重复审批有效配置。 <!-- comet-task:ae91bbe7-9ad9-48b4-8239-2ccc013b261e -->
-- [ ] 3.2 使用本次实际打包安装的公共 CLI 在全新多仓实验目录完成四包局部失败→修复→Check→Verify 场景，保存节点/Execute 次数、Plan/completion/Gate 身份及负例；不得以源码内部调用或手改 Store 冒充安装包验收。 <!-- comet-task:ca51bd44-ea75-4e37-b880-c464bde108bb -->
-- [ ] 3.3 完成当前实现的独立审查，整理真实 RED/GREEN、相关回归和多仓安装包回执，固定验证报告及 check-policy 的完整命令入口，确保后续 Comet Verify 可以实际执行；此勾选不宣称后续完整阶段检查、归档、CI 或发布已经完成。 <!-- comet-task:996f4530-3aae-4e0a-8671-23d51e0ff58b -->
+- [x] 3.1 在失败持久化、修复 Plan 接受、单包修复完成及新 Check 接受后分别退出并以新进程 resume/next；验收同一 Run、稳定保留凭证、正确修复进度和无重复 Execute，不重复审批有效配置。 <!-- comet-task:ae91bbe7-9ad9-48b4-8239-2ccc013b261e -->
+- [x] 3.2 使用本次实际打包安装的公共 CLI 在全新多仓实验目录完成四包局部失败→修复→Check→Verify 场景，保存节点/Execute 次数、Plan/completion/Gate 身份及负例；不得以源码内部调用或手改 Store 冒充安装包验收。 <!-- comet-task:ca51bd44-ea75-4e37-b880-c464bde108bb -->
+- [x] 3.3 完成当前实现的独立审查，整理真实 RED/GREEN、相关回归和多仓安装包回执，固定验证报告及 check-policy 的完整命令入口，确保后续 Comet Verify 可以实际执行；此勾选不宣称后续完整阶段检查、归档、CI 或发布已经完成。 <!-- comet-task:996f4530-3aae-4e0a-8671-23d51e0ff58b -->
 
 ## Workflow follow-up
 
