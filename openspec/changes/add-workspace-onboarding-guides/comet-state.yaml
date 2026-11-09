@@ -2,19 +2,19 @@
 change_id: f9193ea8-6bba-4272-939c-acf3231b02d3
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: 2aa052b29275d0f98112bf851ae1bef12ab99b3a
-design_doc: null
-plan: null
+design_doc: openspec/changes/add-workspace-onboarding-guides/design.md
+plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: comet/add-workspace-onboarding-guides
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
 handoff_hash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 865ee0d536abe75ef7d0e792d1a60c58db663f2a8e8e8460c6b7090e8edaf5cf
+  hash: f0f67257b418dc6bed57e4b54e8e4cc5d2152512b06286ed64611d4700600173
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,32 +56,32 @@ run_checkpoint:
       baseRef: 2aa052b29275d0f98112bf851ae1bef12ab99b3a
       boundBranch: comet/add-workspace-onboarding-guides
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-09
-      designDoc: null
-      directOverride: null
+      designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+      directOverride: false
       handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
       handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
       isolation: worktree
       language: zh-CN
-      phase: design
-      plan: null
+      phase: build
+      plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 6
+    status: running
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -256,10 +256,755 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c7a2d8748cbea013d4a2ab85a5a40a420d75b144352bbb52f40cb4fbd506c056
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:7
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                    handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                    proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                      的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                      containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store
+                      Intent/Receipt 恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧
+                      confirmed 请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run
+                      的 continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                      Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                      review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                      autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                    requirementsEvidence:
+                      contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                      ref: openspec/changes/add-workspace-onboarding-guides
+                    sourceEvidence:
+                      contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                      ref: openspec/changes/add-workspace-onboarding-guides
+            full.design.handoff:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                    ref: openspec/changes/add-workspace-onboarding-guides
+            full.open.evidence:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+            full.open.revalidate:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        inputHash: 31aad1446a45a28e753469c086e2acc69221df30952921887e5b52c0fb078624
+        outcome:
+          actionId: add-workspace-onboarding-guides:7
+          attempt: 1
+          claimToken: portable-c7a2d8748cbea013d4a2ab85a5a40a420d75b144352bbb52f40cb4fbd506c056
+          inputHash: 31aad1446a45a28e753469c086e2acc69221df30952921887e5b52c0fb078624
+          outcomeId: 94dd4c62-ad30-4c06-ba91-5c42117ba122
+          output:
+            designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c09c5278abab5ef318d28939833d1726c70f3f2b79de8cd2e403ab4988fc6c68
+            outcomeId: 94dd4c62-ad30-4c06-ba91-5c42117ba122
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-18f9b6b7cdfb35e8deb4e44a55d59d16c6133a014e7dfce36a38ebe3b02ce664
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:9
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                    handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                    proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                      的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                      containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store
+                      Intent/Receipt 恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧
+                      confirmed 请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run
+                      的 continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                      Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                      review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                      autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                    requirementsEvidence:
+                      contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                      ref: openspec/changes/add-workspace-onboarding-guides
+                    sourceEvidence:
+                      contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                      ref: openspec/changes/add-workspace-onboarding-guides
+            full.design.document:
+              designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+            full.design.evidence:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                    ref: openspec/changes/add-workspace-onboarding-guides
+            full.open.evidence:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+            full.open.revalidate:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        inputHash: a87c7eafa7460512f5bb72c814ce9ed4faafd1d5a0664f796a570db1245fe734
+        outcome:
+          actionId: add-workspace-onboarding-guides:9
+          attempt: 1
+          claimToken: portable-18f9b6b7cdfb35e8deb4e44a55d59d16c6133a014e7dfce36a38ebe3b02ce664
+          inputHash: a87c7eafa7460512f5bb72c814ce9ed4faafd1d5a0664f796a570db1245fe734
+          outcomeId: 1e8dcbc1-e750-4a6b-b1e1-aafb58577a84
+          output:
+            boundBranch: comet/add-workspace-onboarding-guides
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 77bf1093606aceca1ce23fe244850b6d624b95168aca8bf2f732130c101f70a7
+            outcomeId: 1e8dcbc1-e750-4a6b-b1e1-aafb58577a84
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-360ce63b7199d11b419742227035b87493210cade80eee39596d76c76e757d7c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:11
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.build.configure:
+              boundBranch: comet/add-workspace-onboarding-guides
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/add-workspace-onboarding-guides
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                    handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                    proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                      的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                      containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store
+                      Intent/Receipt 恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧
+                      confirmed 请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run
+                      的 continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                      Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                      review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                      autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                    requirementsEvidence:
+                      contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                      ref: openspec/changes/add-workspace-onboarding-guides
+                    sourceEvidence:
+                      contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                      ref: openspec/changes/add-workspace-onboarding-guides
+            full.design.document:
+              designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+            full.design.evidence:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                    ref: openspec/changes/add-workspace-onboarding-guides
+            full.open.evidence:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+            full.open.revalidate:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        inputHash: cd2901386385feb91333523926178a256e6cd5f93f37fd3e925413cddb4ac477
+        outcome:
+          actionId: add-workspace-onboarding-guides:11
+          attempt: 1
+          claimToken: portable-360ce63b7199d11b419742227035b87493210cade80eee39596d76c76e757d7c
+          inputHash: cd2901386385feb91333523926178a256e6cd5f93f37fd3e925413cddb4ac477
+          outcomeId: 5c830dc3-165f-4690-b584-e31c180badae
+          output:
+            designEvidence:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+            plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+            planEvidence:
+              contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+              ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+            taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0c0adb39f8a4f5e37b7c50eb27cd7f9cae03c3d9aca58850e001333fdf8fb70a
+            outcomeId: 5c830dc3-165f-4690-b584-e31c180badae
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: add-workspace-onboarding-guides:13
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.build.configure:
+              boundBranch: comet/add-workspace-onboarding-guides
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/add-workspace-onboarding-guides
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+                ref: openspec/changes/add-workspace-onboarding-guides/design.md
+              plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+              planEvidence:
+                contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+                ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+              taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+            full.build.plan.evidence:
+              contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+              ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                    handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                    proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                      的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                      containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store
+                      Intent/Receipt 恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧
+                      confirmed 请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run
+                      的 continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                      Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                      review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                      autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                    requirementsEvidence:
+                      contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                      ref: openspec/changes/add-workspace-onboarding-guides
+                    sourceEvidence:
+                      contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                      ref: openspec/changes/add-workspace-onboarding-guides
+            full.design.document:
+              designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+            full.design.evidence:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                    ref: openspec/changes/add-workspace-onboarding-guides
+            full.open.evidence:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+            full.open.revalidate:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        inputHash: 6ccc086d7a195475b4a4afdf255cda571813dc3827ef67b0e10d8e466b160fa7
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
     actionContexts:
       add-workspace-onboarding-guides:1:
         results: {}
         sequence: 1
+      add-workspace-onboarding-guides:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/add-workspace-onboarding-guides
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/add-workspace-onboarding-guides
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                    handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                    proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                      的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                      containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store
+                      Intent/Receipt 恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧
+                      confirmed 请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run
+                      的 continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                      Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                      review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                      autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                    requirementsEvidence:
+                      contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                      ref: openspec/changes/add-workspace-onboarding-guides
+                    sourceEvidence:
+                      contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                      ref: openspec/changes/add-workspace-onboarding-guides
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                    ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        sequence: 11
+      add-workspace-onboarding-guides:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/add-workspace-onboarding-guides
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/add-workspace-onboarding-guides
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+                ref: openspec/changes/add-workspace-onboarding-guides/design.md
+              plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+              planEvidence:
+                contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+                ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+              taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+              ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                    handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                    proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                      的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                      containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store
+                      Intent/Receipt 恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧
+                      confirmed 请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run
+                      的 continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                      Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                      review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                      autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                    requirementsEvidence:
+                      contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                      ref: openspec/changes/add-workspace-onboarding-guides
+                    sourceEvidence:
+                      contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                      ref: openspec/changes/add-workspace-onboarding-guides
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                    ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        sequence: 13
       add-workspace-onboarding-guides:4:
         results:
           full.open:
@@ -320,6 +1065,177 @@ run_checkpoint:
             value:
               contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
         sequence: 5
+      add-workspace-onboarding-guides:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                    handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                    proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                      的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                      containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store
+                      Intent/Receipt 恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧
+                      confirmed 请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run
+                      的 continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                      Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                      review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                      autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                    requirementsEvidence:
+                      contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                      ref: openspec/changes/add-workspace-onboarding-guides
+                    sourceEvidence:
+                      contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                      ref: openspec/changes/add-workspace-onboarding-guides
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                    ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        sequence: 7
+      add-workspace-onboarding-guides:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                    handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                    proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                      的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                      containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store
+                      Intent/Receipt 恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧
+                      confirmed 请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run
+                      的 continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                      Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                      review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                      autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                    requirementsEvidence:
+                      contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                      ref: openspec/changes/add-workspace-onboarding-guides
+                    sourceEvidence:
+                      contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                      ref: openspec/changes/add-workspace-onboarding-guides
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                    ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        sequence: 9
     waits:
       - id: add-workspace-onboarding-guides:3
         stepId: full.open.confirm
@@ -358,7 +1274,7 @@ run_checkpoint:
       - id: add-workspace-onboarding-guides:6
         stepId: full.design.confirm
         sequence: 6
-        status: pending
+        status: resolved
         proposal:
           input:
             change: add-workspace-onboarding-guides
@@ -438,6 +1354,135 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        decision:
+          id: classic-design-e9dd6016714dbb0f88412fb82eb5333e73940048c0e99ef69346dfa32a02ae28-approved
+          choice: approved
+          proposalHash: e9dd6016714dbb0f88412fb82eb5333e73940048c0e99ef69346dfa32a02ae28
+      - id: add-workspace-onboarding-guides:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.build.configure:
+              boundBranch: comet/add-workspace-onboarding-guides
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 0ae4f64d0ab01767b17b271eba1c1051a8359b0aa14d22543e6f052f30e28621
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/add-workspace-onboarding-guides
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                    handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                    proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                      的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                      containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store
+                      Intent/Receipt 恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧
+                      confirmed 请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run
+                      的 continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                      Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                      review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                      autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                    requirementsEvidence:
+                      contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                      ref: openspec/changes/add-workspace-onboarding-guides
+                    sourceEvidence:
+                      contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                      ref: openspec/changes/add-workspace-onboarding-guides
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                    ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        decision:
+          id: 9111545e-9f01-4641-acdf-e8c7d0fcfb78
+          choice: approved
+          proposalHash: 0ae4f64d0ab01767b17b271eba1c1051a8359b0aa14d22543e6f052f30e28621
     evidenceWaits:
       - id: add-workspace-onboarding-guides:2
         stepId: full.open.evidence
@@ -453,9 +1498,321 @@ run_checkpoint:
           ref: openspec/changes/add-workspace-onboarding-guides
           contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
           submissionId: 3aedc360-89b9-4752-868d-3ab12ba3ef28
+      - id: add-workspace-onboarding-guides:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                    handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                    proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                      的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                      containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store
+                      Intent/Receipt 恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧
+                      confirmed 请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run
+                      的 continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                      Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                      review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                      autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                    requirementsEvidence:
+                      contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                      ref: openspec/changes/add-workspace-onboarding-guides
+                    sourceEvidence:
+                      contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                      ref: openspec/changes/add-workspace-onboarding-guides
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                    ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        receipt:
+          ref: openspec/changes/add-workspace-onboarding-guides/design.md
+          contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+          submissionId: ad387f40-5f5d-48cf-94a9-d99261baa9e4
+      - id: add-workspace-onboarding-guides:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/add-workspace-onboarding-guides
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/add-workspace-onboarding-guides
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+                ref: openspec/changes/add-workspace-onboarding-guides/design.md
+              plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+              planEvidence:
+                contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+                ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+              taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                    handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                    proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                      的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                      containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store
+                      Intent/Receipt 恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧
+                      confirmed 请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run
+                      的 continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                      Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                      review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                      autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                    requirementsEvidence:
+                      contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                      ref: openspec/changes/add-workspace-onboarding-guides
+                    sourceEvidence:
+                      contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                      ref: openspec/changes/add-workspace-onboarding-guides
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: add-workspace-onboarding-guides
+                  changeDir: openspec/changes/add-workspace-onboarding-guides
+                  workspaceBaseline:
+                    ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                    ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+          submissionId: 68b9f948-32a0-47e5-a608-44325054a097
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: comet/add-workspace-onboarding-guides
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: add-workspace-onboarding-guides
+              changeDir: openspec/changes/add-workspace-onboarding-guides
+              workspaceBaseline:
+                ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+            outputs:
+              full.build.configure:
+                boundBranch: comet/add-workspace-onboarding-guides
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+            ref: openspec/changes/add-workspace-onboarding-guides/design.md
+          plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          planEvidence:
+            contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+            ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+          ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: add-workspace-onboarding-guides
+              changeDir: openspec/changes/add-workspace-onboarding-guides
+              workspaceBaseline:
+                ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                  的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                  containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                  恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                  请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                  continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                  Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                  review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                  autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                requirementsEvidence:
+                  contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                  ref: openspec/changes/add-workspace-onboarding-guides
+                sourceEvidence:
+                  contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                  ref: openspec/changes/add-workspace-onboarding-guides
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+          ref: openspec/changes/add-workspace-onboarding-guides/design.md
       full.design.handoff:
         sequence: 5
         value:
@@ -507,6 +1864,6 @@ run_checkpoint:
           contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
     children: []
     lineage: []
-  sourceRevision: 9
-  sourceHash: 8c0ab0ae152bd15c15c9bcaa20d8c6eb341e4da90028692f389dd53cc53b16d8
-check_epoch: 1
+  sourceRevision: 19
+  sourceHash: cce1c867b95d3ff85fd08bf55c5677abecf3cad72d17405b6194d8273be9d0a8
+check_epoch: 2

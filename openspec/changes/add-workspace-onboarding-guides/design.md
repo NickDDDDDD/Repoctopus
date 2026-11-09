@@ -1,3 +1,9 @@
+---
+comet_change: add-workspace-onboarding-guides
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
