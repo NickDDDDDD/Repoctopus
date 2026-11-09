@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { createServer } from 'node:http';
-import { cp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { access, cp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -426,6 +426,39 @@ describe('public Change Run Desktop activation', () => {
             'main',
           ],
         });
+        if (!started.diagnostics.some(({ code }) => code === 'desktop.activation.started')) {
+          const trajectory = await readFile(
+            path.join(workspace, '.repoctopus', 'runs', started.runId!, 'trajectory.jsonl'),
+            'utf8',
+          ).catch((error: unknown) => String(error));
+          const sourceArtifacts = await Promise.all(
+            ['node_modules/electron/dist/electron.exe', 'dist/desktop/main.js'].map(
+              async (relativePath) => ({
+                relativePath,
+                available: await access(path.join(productRoot, relativePath)).then(
+                  () => true,
+                  () => false,
+                ),
+              }),
+            ),
+          );
+          process.stderr.write(
+            `${JSON.stringify({
+              desktopActivationFailure: {
+                workspace,
+                runId: started.runId,
+                sourceArtifacts,
+                parentDesktopOverridePresent: Boolean(process.env.REPOCTOPUS_DESKTOP_EXECUTABLE),
+                parentElectronNodeModePresent: Boolean(process.env.ELECTRON_RUN_AS_NODE),
+                fixtureDesktopOverridePresent: Boolean(environment.REPOCTOPUS_DESKTOP_EXECUTABLE),
+                fixtureElectronNodeModePresent: Boolean(environment.ELECTRON_RUN_AS_NODE),
+                activationEvents: trajectory
+                  .split('\n')
+                  .filter((line) => line.includes('desktop.activation')),
+              },
+            })}\n`,
+          );
+        }
         expect(started.diagnostics).toContainEqual(
           expect.objectContaining({ code: 'desktop.activation.started' }),
         );
