@@ -54,6 +54,8 @@ Repoctopus 的四包选择性保留是对现有多仓包模型的适配：从失
 
 Comet 按失败收据返回同一 Run 的 Build Plan，原十项任务和执行配置保持完成及批准，沿用原计划修正此测试基线后重新执行完整门禁；没有重开 Open/Design 或修改 Store 绕过。
 
+提前补跑首轮失败后未执行的检查时，现有 `check:managed-execution-report` 要求绑定当前包内容的机器报告。新增 `verification/preserve-build-completions-on-verify-repair/verification-report.md`，保留原检查规则。完整 Build 包共 472 文件、6076777 bytes，语义内容 SHA-256 为 `9407874f194d51dead05fb13ec03c7045c040db59917cdd115bcccfe365f8cbd`。逐文件比较确认与完整多仓实验包的差异为新增七个桌面构建资源，以及采用说明标题；现有 Runtime/CLI/Skill bytes 全部相同。该完整包另行安装后公开 resume 及全部最终断言再次通过，A=2、B/C/D=1；真实 Run 的 doctor 通过。两包差异和报告证明范围明确保存，不声称不同 tarball 完全相同或已经完成新的桌面交互验收。
+
 同一 Run 固定使用 `.comet/check-policy.json` 中的精确命令：
 
 1. Build：`comet guard preserve-build-completions-on-verify-repair build --apply --local -- npm.cmd run build`。

@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v2
-  hash: f5baa14a1807aa3332a310612265ef56121abb7d231f494e5b2dd12081a4119c
+  hash: 9a7980758d28e11307c1c51eb6fdded4fe921482853dcd9fdeb703fb54769519
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: fail
       workflow: full
     status: running
-    sequence: 21
+    sequence: 22
     actions:
       - attempt: 1
         claim:
@@ -591,7 +591,47 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-preserve-verify-completions
+          token: portable-fa88455caa75f768cb07121a660f628b939f5f1201619519ca606571178405b0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: preserve-build-completions-on-verify-repair:21
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 0cd7f2c0f6ad73dd5775774fd40731c43851684904191cb7fa4e0ff2968c1675
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:21
+          attempt: 1
+          claimToken: portable-fa88455caa75f768cb07121a660f628b939f5f1201619519ca606571178405b0
+          inputHash: 0cd7f2c0f6ad73dd5775774fd40731c43851684904191cb7fa4e0ff2968c1675
+          outcomeId: 317f0d75-1593-4dbf-8ea2-26f1ed79bc3a
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d086a5b80fa420de8ace395feb2dfad2c0bd177f570a783740a7c9321da1255d
+            outcomeId: 317f0d75-1593-4dbf-8ea2-26f1ed79bc3a
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        id: preserve-build-completions-on-verify-repair:22
         input:
           input:
             change: preserve-build-completions-on-verify-repair
@@ -603,13 +643,13 @@ run_checkpoint:
         protocolVersion: 1
         receipts: []
         reconciliations: []
-        ref: comet-build
+        ref: classic-check
         requiredCapabilities: []
         retry: manual
         runId: preserve-build-completions-on-verify-repair
         status: pending
-        stepId: full.build.execute
-        type: invoke_skill
+        stepId: full.build.check
+        type: call_tool
     actionContexts:
       preserve-build-completions-on-verify-repair:1:
         results: {}
@@ -635,6 +675,9 @@ run_checkpoint:
       preserve-build-completions-on-verify-repair:21:
         results: {}
         sequence: 21
+      preserve-build-completions-on-verify-repair:22:
+        results: {}
+        sequence: 22
       preserve-build-completions-on-verify-repair:4:
         results: {}
         sequence: 4
@@ -808,8 +851,8 @@ run_checkpoint:
     outputs: {}
     children: []
     lineage: []
-  sourceRevision: 32
-  sourceHash: 09c7a74864bf83444298320ff6cf19b28bf42687c3d9b46694296a4fa37c6f44
+  sourceRevision: 34
+  sourceHash: 225c4c553bceb85d1e286703959a162015a03e58097364dd442adb3110aa4474
   pool:
     version: 3
     values:
@@ -1159,6 +1202,9 @@ run_checkpoint:
         value:
           contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
           ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+      - sequence: 21
+        value:
+          event: build-complete
     nodes:
       - key: full.open
         value: 0
@@ -1605,6 +1651,26 @@ run_checkpoint:
         left: 87
         right: 84
         height: 5
+      - key: full.build.execute
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 71
+        right: 89
+        height: 3
+      - key: full.build.plan
+        value: 36
+        left: 90
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 91
+        right: 84
+        height: 5
       - key: full.open
         value: 24
         left: null
@@ -1617,8 +1683,8 @@ run_checkpoint:
         height: 1
       - key: full.open.confirm
         value: 25
-        left: 89
-        right: 90
+        left: 93
+        right: 94
         height: 2
       - key: full.open.revalidate
         value: 27
@@ -1628,12 +1694,12 @@ run_checkpoint:
       - key: full.open.evidence
         value: 26
         left: null
-        right: 92
+        right: 96
         height: 2
       - key: full.open.confirm
         value: 25
-        left: 89
-        right: 93
+        left: 93
+        right: 97
         height: 3
       - key: full.design.confirm
         value: 20
@@ -1647,13 +1713,13 @@ run_checkpoint:
         height: 1
       - key: full.design.handoff
         value: 23
-        left: 95
-        right: 96
+        left: 99
+        right: 100
         height: 2
       - key: full.open.confirm
         value: 25
-        left: 97
-        right: 93
+        left: 101
+        right: 97
         height: 3
       - key: full.design.confirm
         value: 20
@@ -1667,18 +1733,18 @@ run_checkpoint:
         height: 1
       - key: full.design.document
         value: 21
-        left: 99
-        right: 100
+        left: 103
+        right: 104
         height: 2
       - key: full.design.handoff
         value: 23
-        left: 101
-        right: 96
+        left: 105
+        right: 100
         height: 3
       - key: full.open.confirm
         value: 25
-        left: 102
-        right: 93
+        left: 106
+        right: 97
         height: 4
       - key: full.open.evidence
         value: 26
@@ -1688,7 +1754,7 @@ run_checkpoint:
       - key: full.open
         value: 24
         left: null
-        right: 104
+        right: 108
         height: 2
       - key: full.design.handoff
         value: 23
@@ -1707,13 +1773,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 26
-        left: 107
-        right: 108
+        left: 111
+        right: 112
         height: 2
       - key: full.open
         value: 24
-        left: 106
-        right: 109
+        left: 110
+        right: 113
         height: 3
       - key: full.build.configure
         value: 18
@@ -1732,18 +1798,18 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 22
-        left: 112
-        right: 113
+        left: 116
+        right: 117
         height: 2
       - key: full.design.confirm
         value: 20
-        left: 111
-        right: 114
+        left: 115
+        right: 118
         height: 3
       - key: full.open
         value: 24
-        left: 115
-        right: 109
+        left: 119
+        right: 113
         height: 4
       - key: full.open
         value: 24
@@ -1762,8 +1828,8 @@ run_checkpoint:
         height: 1
       - key: full.design.document
         value: 21
-        left: 118
-        right: 119
+        left: 122
+        right: 123
         height: 2
       - key: full.open.confirm
         value: 25
@@ -1777,13 +1843,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 26
-        left: 121
-        right: 122
+        left: 125
+        right: 126
         height: 2
       - key: full.open
         value: 24
-        left: 120
-        right: 123
+        left: 124
+        right: 127
         height: 3
       - key: full.build.configure
         value: 18
@@ -1797,8 +1863,8 @@ run_checkpoint:
         height: 1
       - key: full.build.confirm
         value: 19
-        left: 125
-        right: 126
+        left: 129
+        right: 130
         height: 2
       - key: full.design.document
         value: 21
@@ -1812,18 +1878,18 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 22
-        left: 128
-        right: 129
+        left: 132
+        right: 133
         height: 2
       - key: full.design.confirm
         value: 20
-        left: 127
-        right: 130
+        left: 131
+        right: 134
         height: 3
       - key: full.open
         value: 24
-        left: 131
-        right: 123
+        left: 135
+        right: 127
         height: 4
       - key: full.build.check
         value: 31
@@ -1832,7 +1898,7 @@ run_checkpoint:
         height: 1
       - key: full.build.configure
         value: 18
-        left: 133
+        left: 137
         right: null
         height: 2
       - key: full.build.execute
@@ -1847,23 +1913,23 @@ run_checkpoint:
         height: 1
       - key: full.build.plan
         value: 28
-        left: 135
-        right: 136
+        left: 139
+        right: 140
         height: 2
       - key: full.build.confirm
         value: 19
-        left: 134
-        right: 137
+        left: 138
+        right: 141
         height: 3
       - key: full.open
         value: 24
-        left: 130
-        right: 123
+        left: 134
+        right: 127
         height: 3
       - key: full.design.confirm
         value: 20
-        left: 138
-        right: 139
+        left: 142
+        right: 143
         height: 4
       - key: full.build.check
         value: 31
@@ -1877,13 +1943,13 @@ run_checkpoint:
         height: 1
       - key: full.build.check.evidence
         value: 32
-        left: 141
-        right: 142
+        left: 145
+        right: 146
         height: 2
       - key: full.build.confirm
         value: 19
-        left: 143
-        right: 137
+        left: 147
+        right: 141
         height: 3
       - key: full.verify.run
         value: 34
@@ -1893,32 +1959,32 @@ run_checkpoint:
       - key: full.open.revalidate
         value: 27
         left: null
-        right: 145
+        right: 149
         height: 2
       - key: full.open.evidence
         value: 26
-        left: 121
-        right: 146
+        left: 125
+        right: 150
         height: 3
       - key: full.open
         value: 24
-        left: 130
-        right: 147
+        left: 134
+        right: 151
         height: 4
       - key: full.design.confirm
         value: 20
-        left: 144
-        right: 148
+        left: 148
+        right: 152
         height: 5
       - key: full.build.plan
         value: 36
-        left: 135
-        right: 136
+        left: 139
+        right: 140
         height: 2
       - key: full.build.confirm
         value: 19
-        left: 143
-        right: 150
+        left: 147
+        right: 154
         height: 3
       - key: full.open.revalidate
         value: 27
@@ -1927,8 +1993,8 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 26
-        left: 121
-        right: 152
+        left: 125
+        right: 156
         height: 2
       - key: full.verify.report.evidence
         value: 33
@@ -1937,23 +2003,23 @@ run_checkpoint:
         height: 1
       - key: full.verify.run
         value: 34
-        left: 154
+        left: 158
         right: null
         height: 2
       - key: full.verify.check
         value: 35
-        left: 153
-        right: 155
+        left: 157
+        right: 159
         height: 3
       - key: full.open
         value: 24
-        left: 130
-        right: 156
+        left: 134
+        right: 160
         height: 4
       - key: full.design.confirm
         value: 20
-        left: 151
-        right: 157
+        left: 155
+        right: 161
         height: 5
     maps:
       - null
@@ -1974,19 +2040,20 @@ run_checkpoint:
       - 80
       - 85
       - 88
-      - 91
-      - 94
+      - 92
+      - 95
       - 98
-      - 103
-      - 105
-      - 110
-      - 116
-      - 117
-      - 124
-      - 132
-      - 140
-      - 149
-      - 158
+      - 102
+      - 107
+      - 109
+      - 114
+      - 120
+      - 121
+      - 128
+      - 136
+      - 144
+      - 153
+      - 162
     bindings:
       - path:
           - actions
@@ -2061,6 +2128,12 @@ run_checkpoint:
           - outputs
         map: 10
       - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
           - actionContexts
           - preserve-build-completions-on-verify-repair:1
           - results
@@ -2102,71 +2175,76 @@ run_checkpoint:
         map: 17
       - path:
           - actionContexts
-          - preserve-build-completions-on-verify-repair:4
+          - preserve-build-completions-on-verify-repair:22
           - results
         map: 18
       - path:
           - actionContexts
-          - preserve-build-completions-on-verify-repair:5
+          - preserve-build-completions-on-verify-repair:4
           - results
         map: 19
       - path:
           - actionContexts
-          - preserve-build-completions-on-verify-repair:7
+          - preserve-build-completions-on-verify-repair:5
           - results
         map: 20
       - path:
           - actionContexts
-          - preserve-build-completions-on-verify-repair:9
+          - preserve-build-completions-on-verify-repair:7
           - results
         map: 21
       - path:
-          - outputs
-        map: 17
-      - path:
-          - waits
-          - "0"
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:9
           - results
         map: 22
       - path:
+          - outputs
+        map: 18
+      - path:
           - waits
-          - "1"
+          - "0"
           - results
         map: 23
       - path:
           - waits
-          - "2"
+          - "1"
           - results
         map: 24
       - path:
-          - evidenceWaits
-          - "0"
+          - waits
+          - "2"
           - results
         map: 25
       - path:
           - evidenceWaits
-          - "1"
+          - "0"
           - results
         map: 26
       - path:
           - evidenceWaits
-          - "2"
+          - "1"
           - results
         map: 27
       - path:
           - evidenceWaits
-          - "3"
+          - "2"
           - results
         map: 28
       - path:
           - evidenceWaits
-          - "4"
+          - "3"
           - results
         map: 29
       - path:
           - evidenceWaits
-          - "5"
+          - "4"
           - results
         map: 30
-  storageHash: 6fef70cd17133a946bb54b5c769a7bea3390bda5137d6a20d4cc478589dd84e6
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 31
+  storageHash: 69768df9f484099b2f2110d2700b24ac847a5e32ad32bd23af2477cab4f3e74d
 check_epoch: 4
