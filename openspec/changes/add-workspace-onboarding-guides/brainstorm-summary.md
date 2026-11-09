@@ -7,6 +7,7 @@
 ## 已确认事实
 
 - 用户已选择独立 Comet Classic change，调查、设计并修复此缺口。
+- 用户已批准 Open 当前四类产物，Comet Guard 已将原 Run 推进到 Design；Design 方案与执行配置尚待本阶段确认。
 - 当前获批 apply 负责 Root / Store / pointer、`repoctopus.yaml` 和 `.gitignore`，没有安装 Workspace 指南。
 - 共享 README 和 Agent 指令必须保留团队自有内容；Workspace 既可独立于多仓业务仓，也可嵌入单仓。
 - Runtime 是 Work、Skill 内容、阶段推进和审批的权威；引导文件不能代替其验证。
@@ -31,3 +32,11 @@
 ## 验收场景草案
 
 空白多仓 Workspace、已有 README/AGENTS 的单仓、拒绝/请求修改审批、相同请求重试与部分引导写入后重启、受管区块损坏、非普通文件或路径冲突、实际 tarball 独立安装后的初始化与启动/恢复说明。
+
+## Design 复核结果
+
+- 原 apply 的 confirmed 分支在写入之前返回；保持这个语义，已有项目补齐文档使用新的获批接入请求，不把包升级等同于旧授权扩大。
+- 现有文件适配器提供 containedRoot、exclusive 与 beforeCommit，可以复用父目录身份校验及原子写入，不需要新的 journal、文件锁服务或状态迁移。
+- 根 README 与 AGENTS 只留短入口，完整教程按需读取；包内模板、相对链接和公共 CLI 示例纳入实际消费验收。
+- Windows 真实 PTY 探针成功，stdin/stdout 均为 TTY；交互式安装包 review 验收可执行，无需新增依赖或生产测试绕过。
+- 无需 Spec Patch；任务仍为已批准的 5 项。候选执行配置为 autonomous + TDD + thorough，沿用已建立的 worktree，待 Design 决策时与方案一并确认。
