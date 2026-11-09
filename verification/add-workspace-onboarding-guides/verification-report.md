@@ -31,3 +31,7 @@ Package content bytes: `6000100`
 自动化入口为 `npm test -- test/workspace-guides.test.ts test/project-onboarding.test.ts` 与 `REPOCTOPUS_PACKAGE_CANDIDATE=<实际候选> npm run test:package-e2e`。交互批准由实际 `project review` 接收终端输入，未绕过安装包 CLI。包身份、场景结果和恢复身份摘要见同目录 `acceptance-receipt.json`；完整原始命令、输出与独立审查报告保存在本次会话 Evidence 中。
 
 正式 Build Guard 使用 check policy 声明的完整构建 `npm.cmd run build`；Verify Guard 使用标准完整验收 `npm.cmd run verify`，由同一 Comet Run 提交各自真实收据。本报告的写入不代表该后续 Guard、CI、归档、PR 或 Release 已完成。最终状态与完整检查退出码以该 Run 的实际回执为准。
+
+## 首轮完整检查与复核
+
+首轮正式 Verify 的类型、Lint 与构建通过；测试为 1139 通过、1 失败、5 跳过。失败来自既有真实 Desktop 激活 E2E：预期 `desktop.activation.started`，实际为 `desktop.activation.unavailable`，耗时约 4.38 秒。该通用诊断不能确定是文件解析还是进程启动失败，不能据此断言根因。随后不修改产品或断言，单独运行真实激活测试通过；再将完整激活套件与 Desktop Host 套件一起运行，4 项全部通过。未发现本 Change 改写桌面构建文件的路径，尚未稳定复现首次失败，因此保留原始失败日志，不作推测性补丁。Comet 已保留 5/5 完成任务与原配置退回 Build；重新提交现有计划并执行同一标准完整检查。最终通过与否仍以实际 Guard 收据为准，不以针对性重跑取代完整验收。
