@@ -18,7 +18,11 @@ import type { OpenSpecStoreBindingProposal } from '../../domains/project-configu
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
 import { loadProjectConfig } from './file-config.js';
 import { ensureRepoctopusGitignore } from './gitignore.js';
-import { installWorkspaceGuides, planWorkspaceGuides } from './workspace-guides.js';
+import {
+  installWorkspaceGuides,
+  planWorkspaceGuides,
+  verifyWorkspaceGuides,
+} from './workspace-guides.js';
 import {
   createStoreBindingIntent,
   createStoreBindingReceipt,
@@ -523,13 +527,17 @@ export async function applyProjectConfigurationDecision(
   await installWorkspaceGuides(workspace, guides, (file) => input.hooks?.afterGuideWrite?.(file));
   await ensureRepoctopusGitignore(workspace);
   if (currentDigest !== candidateDigest) {
-    await atomicWriteText(configFile, stringify(state.request.candidateConfig, { lineWidth: 0 }));
+    await atomicWriteText(configFile, stringify(state.request.candidateConfig, { lineWidth: 0 }), {
+      containedRoot: workspace,
+      beforeCommit: () => verifyWorkspaceGuides(workspace, guides),
+    });
   }
   const written = await loadProjectConfig(workspace);
   const writtenDigest = hashProjectConfig(written.shared);
   if (writtenDigest !== candidateDigest) {
     throw new Error('Written project configuration does not match the approved digest');
   }
+  await verifyWorkspaceGuides(workspace, guides);
   await atomicWriteJson(
     draftFile,
     { ...draft, status: 'confirmed' } satisfies ProjectDetectionDraft,

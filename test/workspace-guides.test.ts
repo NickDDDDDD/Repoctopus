@@ -65,6 +65,8 @@ describe('Workspace guide ownership', () => {
     '<repoctopus-workspace>\n<repoctopus-workspace>\n</repoctopus-workspace>',
     '<repoctopus-workspace>\nA\n</repoctopus-workspace>\n<repoctopus-workspace>\nB\n</repoctopus-workspace>',
     '</repoctopus-workspace>\n<repoctopus-workspace>',
+    '<repoctopus-workspace >\nOld\n</repoctopus-workspace >',
+    '<repoctopus-workspace/>',
   ])('rejects ambiguous ownership rather than editing malformed blocks: %s', (before) => {
     expect(() => mergeWorkspaceGuide(before, guide)).toThrow(/managed block/u);
   });
@@ -116,6 +118,20 @@ describe('Workspace guide ownership', () => {
     await expect(installWorkspaceGuides(workspace, plan)).rejects.toThrow(/changed/u);
     expect(await readFile(path.join(workspace, 'README.md'), 'utf8')).toBe(
       'Concurrent user content',
+    );
+  });
+
+  it('rechecks all materialized guides when a later write changes an earlier file', async () => {
+    const workspace = await root();
+    const plan = await planWorkspaceGuides(workspace, config);
+    await expect(
+      installWorkspaceGuides(workspace, plan, async (file) => {
+        if (file === 'AGENTS.md')
+          await writeFile(path.join(workspace, 'README.md'), '# Concurrent team edit');
+      }),
+    ).rejects.toThrow(/guide.*changed|guide.*materialized/iu);
+    expect(await readFile(path.join(workspace, 'README.md'), 'utf8')).toBe(
+      '# Concurrent team edit',
     );
   });
 

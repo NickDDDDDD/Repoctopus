@@ -1,4 +1,5 @@
 import { createInterface } from 'node:readline/promises';
+import { WORKSPACE_GUIDE_FILES } from '../../domains/project-configuration/workspace-guides.js';
 
 import type {
   ProjectConfigurationDecision,
@@ -13,7 +14,7 @@ export async function reviewProjectConfigurationDecision(options: {
   const terminal = createInterface({ input: options.input, output: options.output });
   try {
     options.output.write(
-      `\nProject configuration approval\nDraft: ${options.request.draftId}\nSnapshot: ${options.request.snapshotDigest}\nCandidate: ${options.request.candidateConfigDigest}\nUnresolved findings: ${options.request.unresolved.length}\nReconcile changed: ${options.request.reconcile?.changed ?? false}\n\n1) Approve\n2) Request changes\n3) Reject\n`,
+      `\nProject configuration approval\nDraft: ${options.request.draftId}\nSnapshot: ${options.request.snapshotDigest}\nCandidate: ${options.request.candidateConfigDigest}\nUnresolved findings: ${options.request.unresolved.length}\nReconcile changed: ${options.request.reconcile?.changed ?? false}\nWorkspace guides: ${WORKSPACE_GUIDE_FILES.join(', ')}\nOnly Repoctopus managed blocks are installed or updated; team content is preserved.\n\n1) Approve\n2) Request changes\n3) Reject\n`,
     );
     const answer = (await terminal.question('Decision [1-3]: ')).trim();
     const decision: ProjectConfigurationDecision =

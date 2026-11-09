@@ -101,7 +101,8 @@ repoctopus project review --workspace . --request $request
 1. 先持久化 `prepare-root` Intent。根缺失时调用仓库固定的 OpenSpec 官方 `init`，根健康时保持内容不变；随后重新观察精确 Workspace Root。
 2. 健康证明成立后才执行 `store register`，并通过显式 `context --store <id>` 核对 Store metadata、registry 和 checkout。
 3. 为每个选择安装的业务仓分别保存 Intent，重新比较 `openspec/config.yaml` 的 `before` 内容，原子写入并保存 Receipt。
-4. 所有前置步骤成功后才发布 `repoctopus.yaml` 与完成状态。
+4. 在 Workspace 安装 `README.md`、`AGENTS.md` 的 Repoctopus 受管区块与 `docs/repoctopus/workspace-guide.md` 本地教程；保留团队原有文本。引导目标在 Store 副作用前统一预检，冲突或不安全路径会阻断。
+5. 引导和 `.gitignore` 成功后才发布 `repoctopus.yaml` 与完成状态。
 
 流程绝不调用会删除目录的命令，也不使用 `store setup` 或手工拼装 OpenSpec 私有文件。进程若在官方初始化、登记或 pointer 写入与 Receipt 之间退出，重试会从同一 request 的 Intent 和当前真实状态重新观察：只有可证明由该初始化产生的标准 manifest 或完全相同的 pointer 内容才能补记 `recovered`；出现用户文件、部分根、Store 冲突或身份漂移时停止并保留诊断，不覆盖或删除。生成的 Workspace Root、Store metadata 和业务仓 pointer 仍是各仓普通 Git 变化，必须走后续正常 Change/Delivery 发布流程，接入 apply 本身不 commit、push 或创建 MR。
 
@@ -138,6 +139,21 @@ repoctopus evidence inspect --workspace . --attempt $run.runId --json
 
 3. 在本机登记团队已批准的 Store ID。沿用第 1 至 4 步，以现有 `repoctopus.yaml` 为候选，核对审批预览只包含预期登记或 pointer。工作区配置已被审批且根健康时，仍需完成本机登记。详见 [OpenSpec Store](specification.md#workspacestore-与实现仓)。
 4. 从启动 Agent 或 CLI 的环境注入团队要求的发布凭据和 Collector Header。用 `repoctopus evidence plan --workspace . --profile verify --json` 检查仓库和 Profile 能否解析。
+
+## 补齐或更新 Workspace 引导
+
+旧版 `v0.1.0` 不生成 README 和 Agent 引导。先安装团队指定、包含此功能的新版本 CLI；已经接入的项目无需删除配置、规格或历史 Run。在 Workspace 根目录运行 `project detect`，使用团队原 Store ID；若父目录还有无关仓库，先调整扫描范围。保留现有共享配置作为候选：
+
+```powershell
+$storeId = Read-Host 'repoctopus.yaml 中的团队 Store ID'
+$detected = repoctopus.cmd project detect --workspace . --scan-root .. --store $storeId --json | ConvertFrom-Json
+$prepared = repoctopus.cmd project prepare --workspace . --draft $detected.result.file --candidate repoctopus.yaml --json | ConvertFrom-Json
+repoctopus.cmd project review --workspace . --request $prepared.result.file
+```
+
+核对本机登记、业务仓 pointer 和受管文件范围后批准。流程复用健康规格根，只创建缺失文件或更新自己的区块；团队原有内容和换行保留。将 README、AGENTS 和本地教程的变更按团队 Git 流程提交。业务仓原有 README 和 Agent 文件不在本次安装范围。
+
+团队自己的说明和 Agent 规则写在受管区块外。残缺或重复标记、目录占位、符号链接以及文件并发变化会返回明确冲突，不会直接覆盖。接入中断时重试原未完成请求，可以补齐剩余文件；已完成请求只返回原结果，升级后要更新引导则重新准备并批准一个请求。
 
 ## 启动第一个 Change
 

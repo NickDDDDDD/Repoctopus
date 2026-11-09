@@ -58,6 +58,13 @@ export function mergeWorkspaceGuide(before: string | null, guide: WorkspaceGuide
   let end: number | null = null;
   let cursor = 0;
   for (const line of original.split('\n')) {
+    const marker = line.trim();
+    if (
+      new RegExp(`^</?${guide.tag}(?=[\\s/>]|$)`, 'u').test(marker) &&
+      marker !== `<${guide.tag}>` &&
+      marker !== `</${guide.tag}>`
+    )
+      throw new Error(`Malformed managed block marker: ${guide.file}`);
     if (line.trim() === `<${guide.tag}>`) {
       if (start !== null) throw new Error(`Duplicate or nested managed block: ${guide.file}`);
       start = cursor + (cursor === 0 && line.startsWith('\uFEFF') ? 1 : 0);
@@ -118,5 +125,17 @@ export async function installWorkspaceGuides(
       },
     });
     await afterWrite?.(write.file);
+  }
+  await verifyWorkspaceGuides(workspace, writes);
+}
+
+export async function verifyWorkspaceGuides(
+  workspace: string,
+  writes: readonly GuideWrite[],
+): Promise<void> {
+  for (const write of writes) {
+    if ((await source(workspace, write.file))?.text !== write.after) {
+      throw new Error(`Workspace guide changed after materialization: ${write.file}`);
+    }
   }
 }
