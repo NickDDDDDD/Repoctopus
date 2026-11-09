@@ -57,4 +57,14 @@ describe('GitHub release workflow contract', () => {
       expect(source).not.toContain('Repoctopus-Desktop-0.1.0-x64-Setup.exe');
     }
   });
+
+  it('pins public npx consumption to the selected release commit when main advances', async () => {
+    const workflow = parse(await read('../.github/workflows/release.yml')) as Workflow;
+    for (const name of ['candidate', 'public-smoke']) {
+      const checkout = workflow.jobs[name]?.steps.find(({ uses }) =>
+        uses?.startsWith('actions/checkout@'),
+      );
+      expect(checkout?.with?.ref).toBe('${{ needs.preflight.outputs.commit }}');
+    }
+  });
 });
