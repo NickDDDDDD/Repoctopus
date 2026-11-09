@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 074b366b-4253-45fb-b4f8-e844840f11e1
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: f47eabf081fa48fb27d020d53b2ccdcda2b2cab3
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-09
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/preserve-build-completions-on-verify-repair
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 9f1572f5316ebc58d7ed7c3d22272e899ee55956a16d018262eb29d886bb2323
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: preserve-build-completions-on-verify-repair
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 7f58d0f63bc63d6ffff93ce3ff32b869df408fecb6df82e2950d903d9e28f80e
+    input:
+      change: preserve-build-completions-on-verify-repair
+      changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+      workspaceBaseline:
+        ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: f47eabf081fa48fb27d020d53b2ccdcda2b2cab3
+      boundBranch: codex/preserve-build-completions-on-verify-repair
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-09
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: preserve-build-completions-on-verify-repair:1
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 0adb1574af2f6ca53e72baa7e1807754f34e895b0c5543c9fc2a4341ef06c170
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      preserve-build-completions-on-verify-repair:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 04cbecd35570b7253cdc9d3947cead7c409f3971eb261054beeead2887e4bd61
