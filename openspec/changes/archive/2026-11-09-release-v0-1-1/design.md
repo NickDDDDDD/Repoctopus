@@ -2,6 +2,8 @@
 comet_change: release-v0-1-1
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-09-release-v0-1-1
+status: final
 ---
 
 # Design
