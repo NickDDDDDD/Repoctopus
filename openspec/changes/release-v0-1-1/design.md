@@ -36,6 +36,8 @@ canonical_spec: openspec
 
 内置插件及桌面 composition 的独立插件版本保留原语义。此处的产品遥测版本是诊断数据，不作为新的执行或审批权威。
 
+保留 `createRepoctopusResource` 现有部署覆盖优先级：显式 OTEL_RESOURCE_ATTRIBUTES 中的 service.version 可以覆盖 Resource 默认值，Instrumentation Scope 仍绑定产品包版本。默认环境的一致性验收和显式覆盖的兼容回归分别执行，后者不豁免前者。独立审查指出原规格的“默认值”措辞不够明确，因此经同一 Run 的 Design 修订及范围内代理审批澄清此边界，不修改配置行为。
+
 ### 验收落在用户能观察的边界
 
 先在包版本更新后得到 CLI/遥测版本的真实失败，再接入共享版本来源转绿。安装包 E2E 比较安装后的公开 --version 与包元数据；npx smoke 增加版本核对；相关遥测回归核对最终 Resource 与三个 OTLP 信号的 Scope。避免仅测试常量等于另一个常量。

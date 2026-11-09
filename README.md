@@ -10,33 +10,34 @@ Repoctopus 按团队配置推进需求确认、设计、实现、验证和归档
 
 ### 获取 CLI
 
-准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。下面以 `v0.1.0` 为例，在 PowerShell 中任选一种方式安装。
+准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。下面以 `v0.1.1` 为例，在 PowerShell 中任选一种方式安装。
 
 **方式一：直接从发布地址安装**
 
 在任意目录打开 PowerShell，运行下面的命令。
 
 ```powershell
-npm.cmd install --global --ignore-scripts --legacy-peer-deps https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.0/repoctopus-0.1.0.tgz
+npm.cmd install --global --ignore-scripts --legacy-peer-deps https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.1/repoctopus-0.1.1.tgz
 ```
 
 **方式二：手动下载 `.tgz` 后安装**
 
-在发布页的 **Assets** 下载 `repoctopus-0.1.0.tgz`，也可以使用团队发给你的同版本文件。[v0.1.0 发布页](https://github.com/NickDDDDDD/Repoctopus/releases/tag/v0.1.0)
+在发布页的 **Assets** 下载 `repoctopus-0.1.1.tgz`，也可以使用团队发给你的同版本文件。[v0.1.1 发布页](https://github.com/NickDDDDDD/Repoctopus/releases/tag/v0.1.1)
 
 在 `.tgz` 文件所在的目录打开 PowerShell，运行下面的命令。
 
 ```powershell
-npm.cmd install --global --ignore-scripts --legacy-peer-deps .\repoctopus-0.1.0.tgz
+npm.cmd install --global --ignore-scripts --legacy-peer-deps .\repoctopus-0.1.1.tgz
 ```
 
 **检查安装**
 
 ```powershell
 repoctopus.cmd --help
+repoctopus.cmd --version
 ```
 
-看到 `Usage: repoctopus ...` 后，继续下方的多仓或单仓接入。接入命令在 Workspace 根目录执行。全局安装后可以在其他终端直接使用 `repoctopus.cmd`。需要临时运行、安装到独立用户目录，或终端找不到命令时，见[安装指南](docs/install.md)。
+确认帮助输出为 `Usage: repoctopus ...`、版本输出为 `0.1.1` 后，继续下方的多仓或单仓接入。接入命令在 Workspace 根目录执行。全局安装后可以在其他终端直接使用 `repoctopus.cmd`。需要临时运行、安装到独立用户目录，或终端找不到命令时，见[安装指南](docs/install.md)。
 
 ### 接入多仓项目
 
@@ -86,7 +87,7 @@ repoctopus.cmd project review --workspace . --request $prepared.result.file
 
 批准后，Repoctopus 准备或复用 Workspace 的 `openspec/`，登记本机的 OpenSpec Store，并写入团队共享的 `repoctopus.yaml`。把生成的共享文件按团队 Git 流程合入远端目标分支。
 
-支持 Workspace 引导的新版本还会生成 `README.md` 使用入口、`AGENTS.md` Agent 入口及 `docs/repoctopus/workspace-guide.md` 本地教程，只维护 Repoctopus 标记区块，保留已有团队内容。之后可以直接在团队仓阅读基本教程。旧 `v0.1.0` 没有自动生成这些引导；升级到包含此功能的版本后，按[补齐本地引导](docs/project-onboarding.md#补齐或更新-workspace-引导)操作。
+`v0.1.1` 会生成 `README.md` 使用入口、`AGENTS.md` Agent 入口及 `docs/repoctopus/workspace-guide.md` 本地教程，只维护 Repoctopus 标记区块，保留已有团队内容。之后可以直接在团队仓阅读基本教程。旧 `v0.1.0` 没有自动生成这些引导；升级后按[补齐本地引导](docs/project-onboarding.md#补齐或更新-workspace-引导)操作。
 
 - **Workspace** 提交 `repoctopus.yaml`、`openspec/`、`.openspec-store/`、变更后的 `.gitignore`，以及生成的 README、AGENTS 和本地教程。草稿和本机配置保存在被忽略的 `.repoctopus/` 中。
 - **多仓中的业务仓** 如果批准了 Store 指向配置，将生成的 `openspec/config.yaml` 提交到它所属的业务仓。

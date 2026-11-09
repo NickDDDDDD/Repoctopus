@@ -76,6 +76,28 @@ describe('canonical OTLP envelope codec', () => {
     },
   );
 
+  it('keeps its product scope identity when deployment overrides the resource version', () => {
+    const encoded: unknown = JSON.parse(
+      Buffer.from(
+        encodeObservationOtlpJson([envelope], 'log', {
+          resourceAttributes: { 'service.version': 'deployment-release' },
+        }),
+      ).toString('utf8'),
+    );
+    expect(encoded).toMatchObject({
+      resourceLogs: [
+        {
+          resource: {
+            attributes: [
+              { key: 'service.version', value: { stringValue: 'deployment-release' } },
+            ],
+          },
+          scopeLogs: [{ scope: { version: metadata.version } }],
+        },
+      ],
+    });
+  });
+
   it('emits queryable resource and event attributes while remaining reversible for Desktop', () => {
     const log = payload('log');
     expect(JSON.stringify(log)).toContain('company-repoctopus');

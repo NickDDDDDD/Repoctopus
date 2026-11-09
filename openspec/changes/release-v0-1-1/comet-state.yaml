@@ -26,12 +26,12 @@ archived: false
 bound_branch: comet/release-v0-1-1
 direct_override: false
 handoff_context: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-handoff_hash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
+handoff_hash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 0de65bf75a67bd5b61b235bfb4084df083b75b23c7766cef90e697d80d530a6c
+  hash: 07f6b34d49af3dd59da6dd4eb922335696b9ed2e91b2efee35674a368deb87e5
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -40,9 +40,9 @@ run_checkpoint:
     workflow:
       id: comet-classic-full
       version: "1"
-      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+      hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
     definitionHashes:
-      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+      '["comet-classic-full","1"]': 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
     initialStateHash: 8766a050c30aac9250397f2409605db41cdcfb0676c4972cdaf9b1b13173fa9a
     input:
       change: release-v0-1-1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 2
+      checkEpoch: 3
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -66,7 +66,7 @@ run_checkpoint:
       designDoc: openspec/changes/release-v0-1-1/design.md
       directOverride: false
       handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-      handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
+      handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
       isolation: worktree
       language: zh-CN
       phase: build
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 13
+    sequence: 20
     actions:
       - attempt: 1
         claim:
@@ -728,6 +728,292 @@ run_checkpoint:
               contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
         inputHash: bcad46324fa3c5532cfa7f195e292b3449cb850778b18f23fddb95a4205977ba
         protocolVersion: 1
+        reason: 命令 revise-design 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: cancelled
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-9c691a026cb8d919bfb8887b850bd94bb1ddf6d4fa8d3cd7f3ad2038ff4f1af1
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: release-v0-1-1:14
+        input:
+          activation:
+            expectedRevision: 19
+            fromPhase: build
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs: {}
+        inputHash: 7a83e620986bdfede81107f8920755c44ababcd0f7e1ce192f9a542ad899d07e
+        outcome:
+          actionId: release-v0-1-1:14
+          attempt: 1
+          claimToken: portable-9c691a026cb8d919bfb8887b850bd94bb1ddf6d4fa8d3cd7f3ad2038ff4f1af1
+          inputHash: 7a83e620986bdfede81107f8920755c44ababcd0f7e1ce192f9a542ad899d07e
+          outcomeId: d8bea464-a1c9-4499-b611-9355fd9e2e32
+          output:
+            handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+            handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+            proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+              service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+              service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+              补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+            requirementsEvidence:
+              contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+              ref: openspec/changes/release-v0-1-1
+            sourceEvidence:
+              contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+              ref: openspec/changes/release-v0-1-1
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: de6f19da992809bfa9936f7f56cb7bc4a78c8067dc2b3644984865591d965427
+            outcomeId: d8bea464-a1c9-4499-b611-9355fd9e2e32
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-38ef7f7a988c4f75e582e2fe1c959127ae17394e284ab8a555d15e83e10dc065
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: release-v0-1-1:16
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+                    requirementsEvidence:
+                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                      ref: openspec/changes/release-v0-1-1
+            full.design.handoff:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+              requirementsEvidence:
+                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                ref: openspec/changes/release-v0-1-1
+        inputHash: 64577877e52544d446b4b6595aa518757a52eb687e32a827249a15d98eb6bc8c
+        outcome:
+          actionId: release-v0-1-1:16
+          attempt: 1
+          claimToken: portable-38ef7f7a988c4f75e582e2fe1c959127ae17394e284ab8a555d15e83e10dc065
+          inputHash: 64577877e52544d446b4b6595aa518757a52eb687e32a827249a15d98eb6bc8c
+          outcomeId: a84a47bb-d80c-4eba-b04f-bcd664b2c351
+          output:
+            designDoc: openspec/changes/release-v0-1-1/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6973307b22ab5ee6f23a818c9f4bad70c6909ceb2df19946af265a10c37a25c5
+            outcomeId: a84a47bb-d80c-4eba-b04f-bcd664b2c351
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-27e7b9d55700bfcb54bc6f7f74408d3f16fd437a9f59c31fa49e4102708c3e91
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: release-v0-1-1:18
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+                    requirementsEvidence:
+                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                      ref: openspec/changes/release-v0-1-1
+            full.design.document:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+            full.design.evidence:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+              requirementsEvidence:
+                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                ref: openspec/changes/release-v0-1-1
+        inputHash: bef5eeb07bd3a8d12338ce92b269e02e46070aadfb1e8434192190fb6bff61bc
+        outcome:
+          actionId: release-v0-1-1:18
+          attempt: 1
+          claimToken: portable-27e7b9d55700bfcb54bc6f7f74408d3f16fd437a9f59c31fa49e4102708c3e91
+          inputHash: bef5eeb07bd3a8d12338ce92b269e02e46070aadfb1e8434192190fb6bff61bc
+          outcomeId: b4db03fb-ad09-418e-87e3-dae19b41ccb9
+          output:
+            designEvidence:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+            plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+            planEvidence:
+              contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
+              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+            taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f033b9b13f2f56eecc4aebb15d736cc9d794f5abe332a437268176eb8c76704e
+            outcomeId: b4db03fb-ad09-418e-87e3-dae19b41ccb9
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: release-v0-1-1
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: release-v0-1-1:20
+        input:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.build.plan:
+              designEvidence:
+                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+                ref: openspec/changes/release-v0-1-1/design.md
+              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              planEvidence:
+                contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
+                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
+            full.build.plan.evidence:
+              contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
+              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+                    requirementsEvidence:
+                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                      ref: openspec/changes/release-v0-1-1
+            full.design.document:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+            full.design.evidence:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+              requirementsEvidence:
+                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                ref: openspec/changes/release-v0-1-1
+        inputHash: 4142bc97f57f8c55d18ebcf5859a48ca4526bcc64ef6b3a5c23108b135128bd5
+        protocolVersion: 1
         receipts: []
         reconciliations: []
         ref: comet-build
@@ -737,6 +1023,11 @@ run_checkpoint:
         status: pending
         stepId: full.build.execute
         type: invoke_skill
+    commands:
+      - id: 8eb4a79324548b7375bb4b36c54690afd1102e4c0c52ee1e0a97502b50b8461a
+        name: revise-design
+        inputHash: ed99e8b6701dcdfa2c40efa491ca6d0bbfa20eb28942fae559abfefdd83169a1
+        actionId: release-v0-1-1:14
     actionContexts:
       release-v0-1-1:1:
         results: {}
@@ -991,6 +1282,169 @@ run_checkpoint:
             value:
               contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
         sequence: 13
+      release-v0-1-1:14:
+        results: {}
+        sequence: 14
+      release-v0-1-1:16:
+        results:
+          full.design.confirm:
+            sequence: 15
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+                    requirementsEvidence:
+                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                      ref: openspec/changes/release-v0-1-1
+          full.design.handoff:
+            sequence: 14
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+              requirementsEvidence:
+                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                ref: openspec/changes/release-v0-1-1
+        sequence: 16
+      release-v0-1-1:18:
+        results:
+          full.design.confirm:
+            sequence: 15
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+                    requirementsEvidence:
+                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                      ref: openspec/changes/release-v0-1-1
+          full.design.document:
+            sequence: 16
+            value:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+          full.design.evidence:
+            sequence: 17
+            value:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+          full.design.handoff:
+            sequence: 14
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+              requirementsEvidence:
+                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                ref: openspec/changes/release-v0-1-1
+        sequence: 18
+      release-v0-1-1:20:
+        results:
+          full.build.plan:
+            sequence: 18
+            value:
+              designEvidence:
+                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+                ref: openspec/changes/release-v0-1-1/design.md
+              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              planEvidence:
+                contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
+                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
+          full.build.plan.evidence:
+            sequence: 19
+            value:
+              contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
+              ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          full.design.confirm:
+            sequence: 15
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+                    requirementsEvidence:
+                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                      ref: openspec/changes/release-v0-1-1
+          full.design.document:
+            sequence: 16
+            value:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+          full.design.evidence:
+            sequence: 17
+            value:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+          full.design.handoff:
+            sequence: 14
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+              requirementsEvidence:
+                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                ref: openspec/changes/release-v0-1-1
+        sequence: 20
       release-v0-1-1:4:
         results:
           full.open:
@@ -1461,6 +1915,54 @@ run_checkpoint:
           id: f292e45e-9397-472d-9210-87465b003ea7
           choice: approved
           proposalHash: 37652ee97265f3e3180048e97eafce5b0c543957c2d813a6659ed181ffdefb64
+      - id: release-v0-1-1:15
+        stepId: full.design.confirm
+        sequence: 15
+        status: resolved
+        proposal:
+          input:
+            change: release-v0-1-1
+            changeDir: openspec/changes/release-v0-1-1
+            workspaceBaseline:
+              ref: dd42085c-1379-4815-9240-56f2ca54e991
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+              requirementsEvidence:
+                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                ref: openspec/changes/release-v0-1-1
+        proposalHash: 49a943cf7ec0dc808e1fa59576e7434c7c2e154d56d47d87f9b314a7d651e4b5
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 14
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+              requirementsEvidence:
+                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                ref: openspec/changes/release-v0-1-1
+        decision:
+          id: classic-design-49a943cf7ec0dc808e1fa59576e7434c7c2e154d56d47d87f9b314a7d651e4b5-approved
+          choice: approved
+          proposalHash: 49a943cf7ec0dc808e1fa59576e7434c7c2e154d56d47d87f9b314a7d651e4b5
     evidenceWaits:
       - id: release-v0-1-1:2
         stepId: full.open.evidence
@@ -1701,6 +2203,128 @@ run_checkpoint:
           ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
           contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
           submissionId: 9e8aa0ca-cc69-437a-926c-f9409e40da60
+      - id: release-v0-1-1:17
+        stepId: full.design.evidence
+        sequence: 17
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 15
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+                    requirementsEvidence:
+                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                      ref: openspec/changes/release-v0-1-1
+          full.design.document:
+            sequence: 16
+            value:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+          full.design.handoff:
+            sequence: 14
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+              requirementsEvidence:
+                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                ref: openspec/changes/release-v0-1-1
+        receipt:
+          ref: openspec/changes/release-v0-1-1/design.md
+          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+          submissionId: 0e03183c-56b4-4cc0-b9b3-d4f962f84d99
+      - id: release-v0-1-1:19
+        stepId: full.build.plan.evidence
+        sequence: 19
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.plan:
+            sequence: 18
+            value:
+              designEvidence:
+                contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+                ref: openspec/changes/release-v0-1-1/design.md
+              plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              planEvidence:
+                contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
+                ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+              taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
+          full.design.confirm:
+            sequence: 15
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: release-v0-1-1
+                  changeDir: openspec/changes/release-v0-1-1
+                  workspaceBaseline:
+                    ref: dd42085c-1379-4815-9240-56f2ca54e991
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+                    handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+                    proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                      service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                      service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                      补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+                    requirementsEvidence:
+                      contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                      ref: openspec/changes/release-v0-1-1
+                    sourceEvidence:
+                      contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                      ref: openspec/changes/release-v0-1-1
+          full.design.document:
+            sequence: 16
+            value:
+              designDoc: openspec/changes/release-v0-1-1/design.md
+          full.design.evidence:
+            sequence: 17
+            value:
+              contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
+              ref: openspec/changes/release-v0-1-1/design.md
+          full.design.handoff:
+            sequence: 14
+            value:
+              handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
+              handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+              proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
+              requirementsEvidence:
+                contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
+                ref: openspec/changes/release-v0-1-1
+              sourceEvidence:
+                contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
+                ref: openspec/changes/release-v0-1-1
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
+          contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
+          submissionId: 19441ac8-f365-4663-bcb2-54a0205060d5
     ready: []
     joins: {}
     outputs:
@@ -1734,23 +2358,23 @@ run_checkpoint:
                 subagentDispatch: null
                 tddMode: tdd
       full.build.plan:
-        sequence: 11
+        sequence: 18
         value:
           designEvidence:
-            contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
+            contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
             ref: openspec/changes/release-v0-1-1/design.md
           plan: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
           planEvidence:
-            contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
+            contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
             ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
           taskRevision: 4668de0c1fe6a77a900cb5923c8ade06e22e62ed045c579b1e763b34b60d965f
       full.build.plan.evidence:
-        sequence: 12
+        sequence: 19
         value:
-          contentHash: 56e0fb5f2e63f19d05c07125ead9a122de451b2b4ad281a2aacf1c177cb4ddc1
+          contentHash: 4b8631750d4d1c8908cc397618cc866a627ed5f84317d380575ec24ba2468297
           ref: docs/superpowers/plans/2026-11-09-release-v0-1-1.md
       full.design.confirm:
-        sequence: 6
+        sequence: 15
         value:
           choice: approved
           proposal:
@@ -1762,47 +2386,40 @@ run_checkpoint:
             outputs:
               full.design.handoff:
                 handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-                handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-                proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-                  Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-                  Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-                  CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main
-                  CI 交付，再以精确 main 提交运行现有
-                  Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原 Desktop
-                  偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD + thorough，沿用当前
-                  worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
+                handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+                proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+                  service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+                  service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+                  补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
                 requirementsEvidence:
-                  contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
+                  contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
                   ref: openspec/changes/release-v0-1-1
                 sourceEvidence:
-                  contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
+                  contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
                   ref: openspec/changes/release-v0-1-1
       full.design.document:
-        sequence: 7
+        sequence: 16
         value:
           designDoc: openspec/changes/release-v0-1-1/design.md
       full.design.evidence:
-        sequence: 8
+        sequence: 17
         value:
-          contentHash: 9264dd6b56b88b62a05a77d98fa8f5af68e8e783b0f9c0fa56387d8352549813
+          contentHash: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
           ref: openspec/changes/release-v0-1-1/design.md
       full.design.handoff:
-        sequence: 5
+        sequence: 14
         value:
           handoffContext: openspec/changes/release-v0-1-1/.comet/handoff/design-context.json
-          handoffHash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
-          proposal: 沿用已批准方案：根 package.json 提供唯一产品版本；平台侧小模块静态导入元数据供 CLI、Resource 与桌面 OTLP
-            Scope 使用，避免散落常量及消费者 cwd 读取。插件和协议版本独立保持。新增源文件登记既有架构所有权，不新增
-            Service、状态机、依赖或 Spec Patch。更新固定 v0.1.1 示例和测量器文件名派生，以真实
-            CLI/OTLP/npx/包验收及独立 thorough 审查验证。先将版本 Change 验证归档并经 PR/main CI
-            交付，再以精确 main 提交运行现有 Prepare/Publish/public-smoke；使用同一候选，不提前报告发布。原
-            Desktop 偶发失败限制保留，冲突和验证降级停止。执行方式按已批准的 autonomous + TDD +
-            thorough，沿用当前 worktree；当前 Agent 按范围内代理审批授权核对并记录正式设计。
+          handoffHash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
+          proposal: 保留原已批准 v0.1.1 方案，仅澄清独立审查指出的默认产品版本与显式 OTEL Resource 覆盖边界：CLI、默认
+            service.version 和 Instrumentation Scope 来自包元数据；已有部署显式
+            service.version 覆盖优先级不变，Scope/CLI 仍绑定包。Spec Patch
+            补充现有覆盖场景，不豁免默认版本检查、不改配置行为或降低发布验证。经当前任务范围内代理审批处理；已有版本代码及自主/TDD/thorough配置保留，新增显式覆盖回归后继续包、npx、完整Verify和既有发布流程。
           requirementsEvidence:
-            contentHash: 0b04890c6d7c3e4dbaa5d04b8c6432ed7e2e7dda737e647ad84712e3c5ee7487
+            contentHash: c45392f8287c6c38c3b8f3c5849e307f28b55599935bab0a7e21d47532800427
             ref: openspec/changes/release-v0-1-1
           sourceEvidence:
-            contentHash: 7584445192cfd90bd0c42cbece936c7819ef499a44156b40676fd6f1e508f6e8
+            contentHash: 385b24d1603974b095855d3ef9082a5b3ad69a8524e0fc680ad9e6999bbeb1f9
             ref: openspec/changes/release-v0-1-1
       full.open:
         sequence: 1
@@ -1835,6 +2452,6 @@ run_checkpoint:
           contentHash: fed5e01cebf3202d47d99170da438a9e70946990b14d258320219727a8b6469e
     children: []
     lineage: []
-  sourceRevision: 19
-  sourceHash: 418634f23a64dca54455d6d84471b5442c81eb95eb7eb519c2ad66725b2a04ef
-check_epoch: 2
+  sourceRevision: 29
+  sourceHash: f381359b01f2147efbb25577cbb5ac4303bfb1e9957a301a8b5a5f9deb695632
+check_epoch: 3

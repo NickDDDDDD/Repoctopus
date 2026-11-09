@@ -3,7 +3,7 @@
 - Change: release-v0-1-1
 - Phase: design
 - Mode: compact
-- Context hash: a0e53bdfaca24599d29cb7868b7c0b1da3c9462e73de9cd746fbd82bdccafd9a
+- Context hash: fe77136e20675833acc2ca392f25f4c8d1ac70b7cb311af48c0615bf076073b7
 
 Generated-by: comet-handoff.sh
 Task hash policy: task-content-v1. Read tasks.md for live completion; excerpts are design-time context.
@@ -55,10 +55,16 @@ OpenSpec remains the canonical capability spec. This handoff is a deterministic,
 ## openspec/changes/release-v0-1-1/design.md
 
 - Source: openspec/changes/release-v0-1-1/design.md
-- Lines: 1-60
-- SHA256: 907de9753a63f4775974c6835c9d45a8284cf5a3e2b43b2f8ad22dc86a3f1956
+- Lines: 1-68
+- SHA256: defcf79483c216aa90f296a5fbbc091414187f476aad5ab33e9f4a723f44393a
 
 ```md
+---
+comet_change: release-v0-1-1
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
@@ -90,6 +96,8 @@ OpenSpec remains the canonical capability spec. This handoff is a deterministic,
 备选方案是发布时同步多份常量；它不能防止下次发版遗漏。另一个方案是在运行时从当前目录或路径猜测包版本，会混入业务项目身份和额外 I/O，不采用。
 
 内置插件及桌面 composition 的独立插件版本保留原语义。此处的产品遥测版本是诊断数据，不作为新的执行或审批权威。
+
+保留 `createRepoctopusResource` 现有部署覆盖优先级：显式 OTEL_RESOURCE_ATTRIBUTES 中的 service.version 可以覆盖 Resource 默认值，Instrumentation Scope 仍绑定产品包版本。默认环境的一致性验收和显式覆盖的兼容回归分别执行，后者不豁免前者。独立审查指出原规格的“默认值”措辞不够明确，因此经同一 Run 的 Design 修订及范围内代理审批澄清此边界，不修改配置行为。
 
 ### 验收落在用户能观察的边界
 
@@ -166,8 +174,8 @@ created: 2026-11-09
 ## openspec/changes/release-v0-1-1/specs/product-distribution/spec.md
 
 - Source: openspec/changes/release-v0-1-1/specs/product-distribution/spec.md
-- Lines: 1-28
-- SHA256: 92c6c2a5c30c7e3979294fab1a8f4282fbc891c33ff41d7e181f7f86ff79085e
+- Lines: 1-34
+- SHA256: 8b136b70361f8a721a1ed10fc2a45dfd01c438897dce93a59db9490d8b51a0db
 
 ```md
 # Spec Delta
@@ -176,7 +184,7 @@ created: 2026-11-09
 
 ### Requirement: Release 候选绑定已验证的产品提交
 
-Repoctopus MUST 提供由维护者显式启动的 GitHub Release 流程。候选 MUST 绑定远端 `main` 历史中完整 CI 已成功的精确提交，Release Tag MUST 与该提交的包版本对应。候选的 CLI `--version`、产品遥测 `service.version` 与产品观测 Instrumentation Scope 版本 MUST 与包版本一致，并从同一包元数据派生；插件、协议及持久化 schema 的独立版本不得因此被批量改写。
+Repoctopus MUST 提供由维护者显式启动的 GitHub Release 流程。候选 MUST 绑定远端 `main` 历史中完整 CI 已成功的精确提交，Release Tag MUST 与该提交的包版本对应。候选的 CLI `--version`、默认产品遥测 `service.version` 与产品观测 Instrumentation Scope 版本 MUST 与包版本一致，并从同一包元数据派生。显式 OTEL 部署资源覆盖 MUST 保留既有优先级，候选验收 MUST 核对无显式覆盖时的默认版本；插件、协议及持久化 schema 的独立版本不得因此被批量改写。
 
 #### Scenario: 从通过 CI 的提交构建候选
 
@@ -190,9 +198,15 @@ Repoctopus MUST 提供由维护者显式启动的 GitHub Release 流程。候选
 
 #### Scenario: 新版安装包报告产品版本
 
-- **WHEN** 用户在源码仓之外运行新版本实际安装包的 `--version`，或该版本向 Collector 输出产品观测
+- **WHEN** 用户在源码仓之外运行新版本实际安装包的 `--version`，或该版本在未显式覆盖资源版本时向 Collector 输出产品观测
 - **THEN** CLI 版本、资源的 `service.version` 和产品 Instrumentation Scope 版本均与安装包版本一致，不继续报告上一个发布版本
 - **AND** 插件与协议的独立版本仍保持其自身契约
+
+#### Scenario: 既有部署显式覆盖资源版本
+
+- **WHEN** 部署通过现有 OTEL 资源配置显式设置 `service.version`
+- **THEN** 产品 Resource 保留既有覆盖结果，Instrumentation Scope 与 CLI 仍报告实际产品包版本
+- **AND** 默认版本一致性验收仍然执行，显式覆盖不替代或豁免候选默认版本检查
 
 #### Scenario: 版本身份发生漂移
 
