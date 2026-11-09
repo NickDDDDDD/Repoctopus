@@ -18,6 +18,7 @@ import type { OpenSpecStoreBindingProposal } from '../../domains/project-configu
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
 import { loadProjectConfig } from './file-config.js';
 import { ensureRepoctopusGitignore } from './gitignore.js';
+import { installWorkspaceGuides, planWorkspaceGuides } from './workspace-guides.js';
 import {
   createStoreBindingIntent,
   createStoreBindingReceipt,
@@ -426,6 +427,7 @@ export async function applyProjectConfigurationDecision(
     hooks?: {
       afterIntent?(intent: StoreBindingIntent): Promise<void> | void;
       afterPointerWrite?(intent: StoreBindingIntent): Promise<void> | void;
+      afterGuideWrite?(file: string): Promise<void> | void;
     };
   },
   registration: OpenSpecStoreRegistrationPort = new OpenSpecStoreRegistration(),
@@ -501,6 +503,7 @@ export async function applyProjectConfigurationDecision(
   if (state.request.storeBinding?.repositories.some((binding) => binding.selection === 'blocked')) {
     throw new Error('Approved Store binding still contains blocked repository conflicts');
   }
+  const guides = await planWorkspaceGuides(workspace, state.request.candidateConfig);
   await atomicWriteJson(
     stateFile,
     { ...state, status: 'applying', record },
@@ -517,10 +520,11 @@ export async function applyProjectConfigurationDecision(
         ...(input.hooks ? { hooks: input.hooks } : {}),
       })
     : [];
+  await installWorkspaceGuides(workspace, guides, (file) => input.hooks?.afterGuideWrite?.(file));
+  await ensureRepoctopusGitignore(workspace);
   if (currentDigest !== candidateDigest) {
     await atomicWriteText(configFile, stringify(state.request.candidateConfig, { lineWidth: 0 }));
   }
-  await ensureRepoctopusGitignore(workspace);
   const written = await loadProjectConfig(workspace);
   const writtenDigest = hashProjectConfig(written.shared);
   if (writtenDigest !== candidateDigest) {
