@@ -2,6 +2,7 @@
 change: add-workspace-onboarding-guides
 design-doc: openspec/changes/add-workspace-onboarding-guides/design.md
 base-ref: b95ae3eb459c4cd4de838116fe68679caaea1996
+archived-with: 2026-11-09-add-workspace-onboarding-guides
 ---
 
 # Workspace 初始化引导实施计划

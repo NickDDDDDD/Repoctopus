@@ -2,6 +2,8 @@
 comet_change: add-workspace-onboarding-guides
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-09-add-workspace-onboarding-guides
+status: final
 ---
 
 # Design

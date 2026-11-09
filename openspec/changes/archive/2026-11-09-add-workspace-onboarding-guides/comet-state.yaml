@@ -1,0 +1,3378 @@
+# comet-execution: managed-run
+change_id: f9193ea8-6bba-4272-939c-acf3231b02d3
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 2aa052b29275d0f98112bf851ae1bef12ab99b3a
+design_doc: openspec/changes/archive/2026-11-09-add-workspace-onboarding-guides/design.md
+plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/add-workspace-onboarding-guides.md
+branch_status: pending
+created_at: 2026-11-09
+verified_at: 2026-11-09
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/add-workspace-onboarding-guides
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-09-add-workspace-onboarding-guides/.comet/handoff/design-context.json
+handoff_hash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 417bdad8f04c7435503789c88f492ced656ee8c72b2a73527c177d0e6b8288d2
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: add-workspace-onboarding-guides
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    definitionHashes:
+      '["comet-classic-full","1"]': 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    initialStateHash: bfbc973207e77ad684d5426e880dc92c7e7c27696b1364588c5f0d0e7ea304b9
+    input:
+      change: add-workspace-onboarding-guides
+      changeDir: openspec/changes/add-workspace-onboarding-guides
+      workspaceBaseline:
+        ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 2aa052b29275d0f98112bf851ae1bef12ab99b3a
+      boundBranch: comet/add-workspace-onboarding-guides
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 8
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-09
+      designDoc: openspec/changes/archive/2026-11-09-add-workspace-onboarding-guides/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-09-add-workspace-onboarding-guides/.comet/handoff/design-context.json
+      handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/add-workspace-onboarding-guides.md
+      verifiedAt: 2026-11-09
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 35
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-a0f59a24baa8db17da52ae561836392ad7cfdea065ad0595667d3c630fd5f44b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:1
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: d7494eecc8a7db6c9edfd02b80150fe2a2cdc5b2c7b074914a2ab94c353dc54a
+        outcome:
+          actionId: add-workspace-onboarding-guides:1
+          attempt: 1
+          claimToken: portable-a0f59a24baa8db17da52ae561836392ad7cfdea065ad0595667d3c630fd5f44b
+          inputHash: d7494eecc8a7db6c9edfd02b80150fe2a2cdc5b2c7b074914a2ab94c353dc54a
+          outcomeId: dee4023f-6e0c-48f3-82e5-d32c0c7bbb29
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bb979c7aa5307c58c41a386951842f7bc3b6049bf4b295b00c57b2d0c58ef8e3
+            outcomeId: dee4023f-6e0c-48f3-82e5-d32c0c7bbb29
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-d62adacc39590fa2bc15814518c686344819dfddee56b48dcc2f41b21629f18d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:4
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: 79861db699b6506c8ad45178b760f4273b28384a92baebc3e132523c3eb3697d
+        outcome:
+          actionId: add-workspace-onboarding-guides:4
+          attempt: 1
+          claimToken: portable-d62adacc39590fa2bc15814518c686344819dfddee56b48dcc2f41b21629f18d
+          inputHash: 79861db699b6506c8ad45178b760f4273b28384a92baebc3e132523c3eb3697d
+          outcomeId: add-workspace-onboarding-guides:4:1:executor-result
+          output:
+            contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0ab84d0f6c1a0afe908a81ad07af04e2d91cd68f9432af6349c308843ae31cf3
+            outcomeId: add-workspace-onboarding-guides:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-1f34933470be2731ce0e28242a3dfadb448c0524fdf834509b9504b9090a36f4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:5
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: 83c7ba4001a4395bf53c9f3fdbfc849611b178ad3de532052638cdd3cbd82964
+        outcome:
+          actionId: add-workspace-onboarding-guides:5
+          attempt: 1
+          claimToken: portable-1f34933470be2731ce0e28242a3dfadb448c0524fdf834509b9504b9090a36f4
+          inputHash: 83c7ba4001a4395bf53c9f3fdbfc849611b178ad3de532052638cdd3cbd82964
+          outcomeId: 87066359-15de-44df-9266-8772e8df2cb5
+          output:
+            handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+            handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+            proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+              的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+              containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+              恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+              请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+              continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+              Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+              review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议 autonomous
+              + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+            requirementsEvidence:
+              contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+              ref: openspec/changes/add-workspace-onboarding-guides
+            sourceEvidence:
+              contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+              ref: openspec/changes/add-workspace-onboarding-guides
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 21e66d1d873c90cbd8ed23522cf9518566b29de4d98c2c2076a4230c79b72d26
+            outcomeId: 87066359-15de-44df-9266-8772e8df2cb5
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c7a2d8748cbea013d4a2ab85a5a40a420d75b144352bbb52f40cb4fbd506c056
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:7
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: 31aad1446a45a28e753469c086e2acc69221df30952921887e5b52c0fb078624
+        outcome:
+          actionId: add-workspace-onboarding-guides:7
+          attempt: 1
+          claimToken: portable-c7a2d8748cbea013d4a2ab85a5a40a420d75b144352bbb52f40cb4fbd506c056
+          inputHash: 31aad1446a45a28e753469c086e2acc69221df30952921887e5b52c0fb078624
+          outcomeId: 94dd4c62-ad30-4c06-ba91-5c42117ba122
+          output:
+            designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c09c5278abab5ef318d28939833d1726c70f3f2b79de8cd2e403ab4988fc6c68
+            outcomeId: 94dd4c62-ad30-4c06-ba91-5c42117ba122
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-18f9b6b7cdfb35e8deb4e44a55d59d16c6133a014e7dfce36a38ebe3b02ce664
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:9
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: a87c7eafa7460512f5bb72c814ce9ed4faafd1d5a0664f796a570db1245fe734
+        outcome:
+          actionId: add-workspace-onboarding-guides:9
+          attempt: 1
+          claimToken: portable-18f9b6b7cdfb35e8deb4e44a55d59d16c6133a014e7dfce36a38ebe3b02ce664
+          inputHash: a87c7eafa7460512f5bb72c814ce9ed4faafd1d5a0664f796a570db1245fe734
+          outcomeId: 1e8dcbc1-e750-4a6b-b1e1-aafb58577a84
+          output:
+            boundBranch: comet/add-workspace-onboarding-guides
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 77bf1093606aceca1ce23fe244850b6d624b95168aca8bf2f732130c101f70a7
+            outcomeId: 1e8dcbc1-e750-4a6b-b1e1-aafb58577a84
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-360ce63b7199d11b419742227035b87493210cade80eee39596d76c76e757d7c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:11
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: cd2901386385feb91333523926178a256e6cd5f93f37fd3e925413cddb4ac477
+        outcome:
+          actionId: add-workspace-onboarding-guides:11
+          attempt: 1
+          claimToken: portable-360ce63b7199d11b419742227035b87493210cade80eee39596d76c76e757d7c
+          inputHash: cd2901386385feb91333523926178a256e6cd5f93f37fd3e925413cddb4ac477
+          outcomeId: 5c830dc3-165f-4690-b584-e31c180badae
+          output:
+            designEvidence:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+            plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+            planEvidence:
+              contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+              ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+            taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0c0adb39f8a4f5e37b7c50eb27cd7f9cae03c3d9aca58850e001333fdf8fb70a
+            outcomeId: 5c830dc3-165f-4690-b584-e31c180badae
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: add-workspace-onboarding-guides:13
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: 6ccc086d7a195475b4a4afdf255cda571813dc3827ef67b0e10d8e466b160fa7
+        protocolVersion: 1
+        reason: 命令 revise-plan 已取代待执行 Action
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: cancelled
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-267889c2bf684fd2196a78991a7a6069e8963a65be03adf29cb77fd712ec27b8
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:14
+        input:
+          activation:
+            expectedRevision: 19
+            fromPhase: build
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: cf6f22504b685841d35379214a70f0ed3eacae94ec05356062229bdfeb32936b
+        outcome:
+          actionId: add-workspace-onboarding-guides:14
+          attempt: 1
+          claimToken: portable-267889c2bf684fd2196a78991a7a6069e8963a65be03adf29cb77fd712ec27b8
+          inputHash: cf6f22504b685841d35379214a70f0ed3eacae94ec05356062229bdfeb32936b
+          outcomeId: 6951d863-ab20-4293-ae2c-d4ff3a31452a
+          output:
+            designEvidence:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+            plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+            planEvidence:
+              contentHash: b0da236b0d533f2ee2f7dcfc3d33465150ccfa74a061f29e31ead92b3077cd7a
+              ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+            taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 77883ee35d5c761c9dd3e58acceb34dbb39835496b4512c302c99e66dde8c5dc
+            outcomeId: 6951d863-ab20-4293-ae2c-d4ff3a31452a
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-workspace-guides
+          token: portable-beafb445ab94fb4c041d601f233183503e0d093771290c58a46e48edf460f1cf
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:16
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: fb04b6fd50f36a5551f46ddc9e6e3f4c8e6d4729e1e187065235fa8c4b0e3b35
+        outcome:
+          actionId: add-workspace-onboarding-guides:16
+          attempt: 1
+          claimToken: portable-beafb445ab94fb4c041d601f233183503e0d093771290c58a46e48edf460f1cf
+          inputHash: fb04b6fd50f36a5551f46ddc9e6e3f4c8e6d4729e1e187065235fa8c4b0e3b35
+          outcomeId: 56e6f0a0-b25a-4015-a85e-0b571bf8e376
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a44e2627e5938dfa4d88ee58fc0f8edf4c62f377fae4b3f574c4faaf785e236a
+            outcomeId: 56e6f0a0-b25a-4015-a85e-0b571bf8e376
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-2007b4e725c436b371f1a770a29aefccaade9a95dd1e869eaba7c6339cc5ab25
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:17
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: 03586cb960ac8964abac6b5d89f7341e278b2a8cc367ad186c5f5c82e7629019
+        outcome:
+          actionId: add-workspace-onboarding-guides:17
+          attempt: 1
+          claimToken: portable-2007b4e725c436b371f1a770a29aefccaade9a95dd1e869eaba7c6339cc5ab25
+          inputHash: 03586cb960ac8964abac6b5d89f7341e278b2a8cc367ad186c5f5c82e7629019
+          outcomeId: 379e8342-ad25-443f-a882-6ee936e7c9a7
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 57357b88a32c15c9f48bf562aaa19ad1283aa3d0036377ab2dff5de82c051ed3
+            cwd: .
+            environment: 05f11cdfe7cbe3595c498f9afbf3b86e73b6b837fe9b2faadcbc1884d6b9f7fb
+            exitCode: 0
+            inputAfter: 4617b54833e2d48334216e2f95d994be5eecc503aaeb864e93638652e3cfc044
+            inputBefore: 4617b54833e2d48334216e2f95d994be5eecc503aaeb864e93638652e3cfc044
+            manifestHash: 4ca7370592bb2853b883f36535074d8f77e06171905faef9c67dfd47e9b4e5bd
+            manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/12d2286a-1fdc-461e-8fc7-c1ccc18d0544.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/5ce2ce95-930d-4dfe-a5d1-337bb20cd8a4.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 86a5fb821c3e7be2a0e41a9b2837911eecfc91735ea8f29494399f103919fcef
+            outcomeId: 379e8342-ad25-443f-a882-6ee936e7c9a7
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-99b4d938b4fb05c27627322b6135980a216fd54e54aab4c877ef58b62c6cd4b0
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:19
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: a990b8b90d127a68da19b7cd5e1681a88a427d58001528f91621ca078edfeff7
+        outcome:
+          actionId: add-workspace-onboarding-guides:19
+          attempt: 1
+          claimToken: portable-99b4d938b4fb05c27627322b6135980a216fd54e54aab4c877ef58b62c6cd4b0
+          inputHash: a990b8b90d127a68da19b7cd5e1681a88a427d58001528f91621ca078edfeff7
+          outcomeId: 158d91ca-d9c5-40d6-8ccb-afaebab1575c
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/add-workspace-onboarding-guides.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8fe3b4ae45c31d62ff7f68e63d796d732299701fdc5f85a13974359f45842e0d
+            outcomeId: 158d91ca-d9c5-40d6-8ccb-afaebab1575c
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-4c55772bbeffc73d9cb1ac051f420d81d372fa0ef84098064585cf0e15e940ac
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:21
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: 19d9db4f4dc6b80ef8c0895b3e30dac318c7df916bed074519b96dfa9e68e36f
+        outcome:
+          actionId: add-workspace-onboarding-guides:21
+          attempt: 1
+          claimToken: portable-4c55772bbeffc73d9cb1ac051f420d81d372fa0ef84098064585cf0e15e940ac
+          inputHash: 19d9db4f4dc6b80ef8c0895b3e30dac318c7df916bed074519b96dfa9e68e36f
+          outcomeId: c556af94-dd2f-49db-801c-b969f3ff6dcf
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: c0f8ecdb69692274c6997248786f6100076a13db9f1524b830d5e99fb71b6f91
+            cwd: .
+            deliveryInputs: {}
+            environment: c9d9eda84bc871f69aa9643cf297898659c1323e940bec00eb2017516fdc457f
+            exitCode: 1
+            inputAfter: 025af45b3ab80c55db58aac89c4340fba504c2860be2c0a8d813f93e38507507
+            inputBefore: 025af45b3ab80c55db58aac89c4340fba504c2860be2c0a8d813f93e38507507
+            manifestHash: aa309562ffa418b6fe28e3d52a6004d9aaf9c69ad5ea760bc959c412fc79ea8b
+            manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/96711a3d-dccc-482d-be3a-901b540e06ae.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/0358e918-9e12-4d25-828c-96d3f25ad244.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 02540c36ea9fbfd70c69ae53727624519e800b5c30d7c00c7aa2e0dcf774e16b
+            outcomeId: c556af94-dd2f-49db-801c-b969f3ff6dcf
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e9063aac2ded7128d48aad51a3e2366689ef46fda348582be60a5f377b241558
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:22
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: dd4f21295ccb3fdcb1f8444fadc3b77164ffe2ae56a78c6aa63f27ca4d7b8af0
+        outcome:
+          actionId: add-workspace-onboarding-guides:22
+          attempt: 1
+          claimToken: portable-e9063aac2ded7128d48aad51a3e2366689ef46fda348582be60a5f377b241558
+          inputHash: dd4f21295ccb3fdcb1f8444fadc3b77164ffe2ae56a78c6aa63f27ca4d7b8af0
+          outcomeId: 888f3025-e2d4-469a-bdde-cc5f0c336876
+          output:
+            designEvidence:
+              contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+              ref: openspec/changes/add-workspace-onboarding-guides/design.md
+            plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+            planEvidence:
+              contentHash: b0da236b0d533f2ee2f7dcfc3d33465150ccfa74a061f29e31ead92b3077cd7a
+              ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+            taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b728cf3fa43e4377e15cb9a6897a8c9bd87ba8359e3e655c6f4812ccc2dc1857
+            outcomeId: 888f3025-e2d4-469a-bdde-cc5f0c336876
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-workspace-guides
+          token: portable-1f63f173cd82d751cda81d60458dbcd43ebfd6202f4db2f9f74e6cd3522cc89c
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:24
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: dd4f21295ccb3fdcb1f8444fadc3b77164ffe2ae56a78c6aa63f27ca4d7b8af0
+        outcome:
+          actionId: add-workspace-onboarding-guides:24
+          attempt: 1
+          claimToken: portable-1f63f173cd82d751cda81d60458dbcd43ebfd6202f4db2f9f74e6cd3522cc89c
+          inputHash: dd4f21295ccb3fdcb1f8444fadc3b77164ffe2ae56a78c6aa63f27ca4d7b8af0
+          outcomeId: e84da361-d6e8-46b5-bad3-33d107f4e6de
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c915dabee0bcf88fd6cab6153d1e5058d86a0fe289e16fedde9d9ffaf90a0121
+            outcomeId: e84da361-d6e8-46b5-bad3-33d107f4e6de
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-a635253a58adaabca05a7a0984e87610562822bfefe4cdcac0da2b0606f7ba3d
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:25
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: dd4f21295ccb3fdcb1f8444fadc3b77164ffe2ae56a78c6aa63f27ca4d7b8af0
+        outcome:
+          actionId: add-workspace-onboarding-guides:25
+          attempt: 1
+          claimToken: portable-a635253a58adaabca05a7a0984e87610562822bfefe4cdcac0da2b0606f7ba3d
+          inputHash: dd4f21295ccb3fdcb1f8444fadc3b77164ffe2ae56a78c6aa63f27ca4d7b8af0
+          outcomeId: 800a553c-e615-4d41-98fc-48cc0278307a
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: e70ab6b84f62e89618f9768e5496aec73671f62f4787efab1fcb95ca0c873597
+            cwd: .
+            environment: 05f11cdfe7cbe3595c498f9afbf3b86e73b6b837fe9b2faadcbc1884d6b9f7fb
+            exitCode: 0
+            inputAfter: 662ed4808b5faaa5fa07a3faf8f772436a5e72299877a6642218a037c40bee44
+            inputBefore: 662ed4808b5faaa5fa07a3faf8f772436a5e72299877a6642218a037c40bee44
+            manifestHash: d9ba1beaa5fdbec4a8031bbcfa5156149ec1020762f619814140d0d87eb32795
+            manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/b05e681b-849b-48ef-8394-e321b416bbdb.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/d15e2a0d-d04c-415e-be83-724ff8fc0254.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d3effebdb6f22e6c5b62d39bd0d6d07bc24ace4981606ce223ee470349d940c7
+            outcomeId: 800a553c-e615-4d41-98fc-48cc0278307a
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-0fcbcec9e475381d328d3651726e1974aa98d8574527c489dd8ba1d593181ae5
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:27
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: 7843fbb850c66db037c8144e37465c8682f52e31193b29c49b3c3fb38524a2b4
+        outcome:
+          actionId: add-workspace-onboarding-guides:27
+          attempt: 1
+          claimToken: portable-0fcbcec9e475381d328d3651726e1974aa98d8574527c489dd8ba1d593181ae5
+          inputHash: 7843fbb850c66db037c8144e37465c8682f52e31193b29c49b3c3fb38524a2b4
+          outcomeId: 559ac891-1cb1-4d2c-acc0-1d98b1488f64
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/add-workspace-onboarding-guides.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e139e011940cbb0f4fd94cc3f8aaee12f24a074d5cf13cee89af911f4313537a
+            outcomeId: 559ac891-1cb1-4d2c-acc0-1d98b1488f64
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-e2d37f4a7d234fc3fccf79c47ad1ddd39174095313de319df2eba4a4124483b0
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:29
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: 7843fbb850c66db037c8144e37465c8682f52e31193b29c49b3c3fb38524a2b4
+        outcome:
+          actionId: add-workspace-onboarding-guides:29
+          attempt: 1
+          claimToken: portable-e2d37f4a7d234fc3fccf79c47ad1ddd39174095313de319df2eba4a4124483b0
+          inputHash: 7843fbb850c66db037c8144e37465c8682f52e31193b29c49b3c3fb38524a2b4
+          outcomeId: 1ecafb3c-9067-4f3b-93aa-eec6afa81ba9
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: 43f333afbbe884291826063a448cdc8d990c1221e53a76714bd23bb950d7bcf1
+            cwd: .
+            deliveryInputs: {}
+            environment: c9d9eda84bc871f69aa9643cf297898659c1323e940bec00eb2017516fdc457f
+            exitCode: 0
+            inputAfter: a7168f375caef9b176fced204193a5ae81c4c05c1e6548ea6c4a73bff0fb1b9b
+            inputBefore: a7168f375caef9b176fced204193a5ae81c4c05c1e6548ea6c4a73bff0fb1b9b
+            manifestHash: d9ba1beaa5fdbec4a8031bbcfa5156149ec1020762f619814140d0d87eb32795
+            manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/a60c1b4b-b94e-452e-aa26-3080cf2af25e.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/a94df10a-5386-4cb0-8f05-cb832261aa7e.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f12760092f890ab4f3f8baa9d434dae93e71cbc2daf7a5eca1cc113dfbf1a9bd
+            outcomeId: 1ecafb3c-9067-4f3b-93aa-eec6afa81ba9
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c7362839390dfef9790e88fd3a8777f620ac50aa2d4180d0fa5594ab5fd82c0b
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:31
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: ef1356523f7a8025c67c0535b319af2db1cce6b20bf708ac99354500d8bc9419
+        outcome:
+          actionId: add-workspace-onboarding-guides:31
+          attempt: 1
+          claimToken: portable-c7362839390dfef9790e88fd3a8777f620ac50aa2d4180d0fa5594ab5fd82c0b
+          inputHash: ef1356523f7a8025c67c0535b319af2db1cce6b20bf708ac99354500d8bc9419
+          outcomeId: 62b5d06a-a085-43c2-a231-bce438c64215
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 完成 Workspace README、AGENTS
+              和本地教程的获批生成与已有团队补齐；保留团队区块外字节、支持原请求恢复。5/5任务完成，真实候选包与Windows
+              PTY验收通过，完整Verify实际执行通过1140项测试及全部后续检查，独立thorough审查无遗留阻塞。首轮桌面激活偶发失败原证据保留、根因未定，原样完整复跑通过，未作推测性补丁。归档仅此Change并同步project-configuration/product-distribution主规格，保留其余三个活动提案和实验现场；推送origin当前隔离分支，创建目标main的PR。本Change不发布Release、不改公开v0.1.0资产。
+            targetBranch: comet/add-workspace-onboarding-guides
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fbcb0bce30f56e8fe1745485177d0f9a6b63d610e63db35a6abe19a0592e5ca2
+            outcomeId: 62b5d06a-a085-43c2-a231-bce438c64215
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-38907abe294850a0de578c6d420657b522b9454bddb305c668e8643a8f3bac72
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:33
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: fdb1c087f853aa9ea763202ab152567b61657cacf62dbaabac1b36fa3c127b67
+        outcome:
+          actionId: add-workspace-onboarding-guides:33
+          attempt: 1
+          claimToken: portable-38907abe294850a0de578c6d420657b522b9454bddb305c668e8643a8f3bac72
+          inputHash: fdb1c087f853aa9ea763202ab152567b61657cacf62dbaabac1b36fa3c127b67
+          outcomeId: 39787f4e-9446-4958-b8e7-a8bf366f244e
+          output:
+            baseCommit: bf6db472710361224121e9e8cb01a79cd47ee516
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/add-workspace-onboarding-guides
+            verifiedBranch: comet/add-workspace-onboarding-guides
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 4f479ae3db93132c92a654edef5619349301da85ece83c8d29e1ae8ced6f7b04
+            outcomeId: 39787f4e-9446-4958-b8e7-a8bf366f244e
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-eced6dd0e94aecb3a20811e6e4c478d920c8fa63fc8570a5531fd4017f318f39
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: add-workspace-onboarding-guides:34
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: f0467c56d689760480d49b4b93d4a13710424490f94d051c77e1a8b49b461751
+        outcome:
+          actionId: add-workspace-onboarding-guides:34
+          artifacts:
+            - sha256: 2d10a20a8124f36bcb79628256db9eeeb033a66fbff4ee3d5424f480e588230d
+              uri: openspec/changes/archive/2026-11-09-add-workspace-onboarding-guides/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-eced6dd0e94aecb3a20811e6e4c478d920c8fa63fc8570a5531fd4017f318f39
+          inputHash: f0467c56d689760480d49b4b93d4a13710424490f94d051c77e1a8b49b461751
+          outcomeId: 0d247ac9-547d-4ebe-8253-b813ee08dc6c
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-09-add-workspace-onboarding-guides
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5341e69c96813fcd69a54669963bba6333b20e046ac4e9fca9d85f7487862e77
+            outcomeId: 0d247ac9-547d-4ebe-8253-b813ee08dc6c
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: add-workspace-onboarding-guides:35
+        input:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs: {}
+        inputHash: 011683013b31516b7b4df75809cf3143eaff0bd3f6151ee09cccec349c08850e
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: add-workspace-onboarding-guides
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    commands:
+      - id: 48ee78002ac93725818a8fe149a0f5dbe8c9423ce42ad42e83e69e418d618070
+        name: revise-plan
+        inputHash: ed99e8b6701dcdfa2c40efa491ca6d0bbfa20eb28942fae559abfefdd83169a1
+        actionId: add-workspace-onboarding-guides:14
+    actionContexts:
+      add-workspace-onboarding-guides:1:
+        results: {}
+        sequence: 1
+      add-workspace-onboarding-guides:11:
+        results: {}
+        sequence: 11
+      add-workspace-onboarding-guides:13:
+        results: {}
+        sequence: 13
+      add-workspace-onboarding-guides:14:
+        results: {}
+        sequence: 14
+      add-workspace-onboarding-guides:16:
+        results: {}
+        sequence: 16
+      add-workspace-onboarding-guides:17:
+        results: {}
+        sequence: 17
+      add-workspace-onboarding-guides:19:
+        results: {}
+        sequence: 19
+      add-workspace-onboarding-guides:21:
+        results: {}
+        sequence: 21
+      add-workspace-onboarding-guides:22:
+        results: {}
+        sequence: 22
+      add-workspace-onboarding-guides:24:
+        results: {}
+        sequence: 24
+      add-workspace-onboarding-guides:25:
+        results: {}
+        sequence: 25
+      add-workspace-onboarding-guides:27:
+        results: {}
+        sequence: 27
+      add-workspace-onboarding-guides:29:
+        results: {}
+        sequence: 29
+      add-workspace-onboarding-guides:31:
+        results: {}
+        sequence: 31
+      add-workspace-onboarding-guides:33:
+        results: {}
+        sequence: 33
+      add-workspace-onboarding-guides:34:
+        results: {}
+        sequence: 34
+      add-workspace-onboarding-guides:35:
+        results: {}
+        sequence: 35
+      add-workspace-onboarding-guides:4:
+        results: {}
+        sequence: 4
+      add-workspace-onboarding-guides:5:
+        results: {}
+        sequence: 5
+      add-workspace-onboarding-guides:7:
+        results: {}
+        sequence: 7
+      add-workspace-onboarding-guides:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: add-workspace-onboarding-guides:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+        proposalHash: 3fb57eea6adb6873a01489b89d4614aadbd620a9746ca8b947b3c70bae4ad5c4
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+          choice: approved
+          proposalHash: 3fb57eea6adb6873a01489b89d4614aadbd620a9746ca8b947b3c70bae4ad5c4
+      - id: add-workspace-onboarding-guides:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+        proposalHash: e9dd6016714dbb0f88412fb82eb5333e73940048c0e99ef69346dfa32a02ae28
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-e9dd6016714dbb0f88412fb82eb5333e73940048c0e99ef69346dfa32a02ae28-approved
+          choice: approved
+          proposalHash: e9dd6016714dbb0f88412fb82eb5333e73940048c0e99ef69346dfa32a02ae28
+      - id: add-workspace-onboarding-guides:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.build.configure:
+              boundBranch: comet/add-workspace-onboarding-guides
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 0ae4f64d0ab01767b17b271eba1c1051a8359b0aa14d22543e6f052f30e28621
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 9111545e-9f01-4641-acdf-e8c7d0fcfb78
+          choice: approved
+          proposalHash: 0ae4f64d0ab01767b17b271eba1c1051a8359b0aa14d22543e6f052f30e28621
+      - id: add-workspace-onboarding-guides:32
+        stepId: full.archive.confirm
+        sequence: 32
+        status: resolved
+        proposal:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 完成 Workspace README、AGENTS
+                和本地教程的获批生成与已有团队补齐；保留团队区块外字节、支持原请求恢复。5/5任务完成，真实候选包与Windows
+                PTY验收通过，完整Verify实际执行通过1140项测试及全部后续检查，独立thorough审查无遗留阻塞。首轮桌面激活偶发失败原证据保留、根因未定，原样完整复跑通过，未作推测性补丁。归档仅此Change并同步project-configuration/product-distribution主规格，保留其余三个活动提案和实验现场；推送origin当前隔离分支，创建目标main的PR。本Change不发布Release、不改公开v0.1.0资产。
+              targetBranch: comet/add-workspace-onboarding-guides
+        proposalHash: 75569ee2fc8d3cba01675543d37e93baf334bab933190c7c3e8b01589b621927
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-75569ee2fc8d3cba01675543d37e93baf334bab933190c7c3e8b01589b621927-pr
+          choice: pr
+          proposalHash: 75569ee2fc8d3cba01675543d37e93baf334bab933190c7c3e8b01589b621927
+    evidenceWaits:
+      - id: add-workspace-onboarding-guides:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/add-workspace-onboarding-guides
+          contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+          submissionId: 3aedc360-89b9-4752-868d-3ab12ba3ef28
+      - id: add-workspace-onboarding-guides:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/add-workspace-onboarding-guides/design.md
+          contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+          submissionId: ad387f40-5f5d-48cf-94a9-d99261baa9e4
+      - id: add-workspace-onboarding-guides:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+          submissionId: 68b9f948-32a0-47e5-a608-44325054a097
+      - id: add-workspace-onboarding-guides:15
+        stepId: full.build.plan.evidence
+        sequence: 15
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          contentHash: b0da236b0d533f2ee2f7dcfc3d33465150ccfa74a061f29e31ead92b3077cd7a
+          submissionId: 6308d58f-7aa3-4997-a630-878315734b3a
+      - id: add-workspace-onboarding-guides:18
+        stepId: full.build.check.evidence
+        sequence: 18
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/5ce2ce95-930d-4dfe-a5d1-337bb20cd8a4.log
+          contentHash: 57357b88a32c15c9f48bf562aaa19ad1283aa3d0036377ab2dff5de82c051ed3
+          submissionId: 67311d1b-4b3b-4f40-87a4-595d71e268b1
+      - id: add-workspace-onboarding-guides:20
+        stepId: full.verify.report.evidence
+        sequence: 20
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/add-workspace-onboarding-guides.md
+          contentHash: 1ed62dd5edbba91e9972ca9a7c812279df04e4c4a5eba73d39c6c2b3e093f6c6
+          submissionId: 35dc704d-becd-4474-8c16-386cea1e92ad
+      - id: add-workspace-onboarding-guides:23
+        stepId: full.build.plan.evidence
+        sequence: 23
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          contentHash: b0da236b0d533f2ee2f7dcfc3d33465150ccfa74a061f29e31ead92b3077cd7a
+          submissionId: 9a09f939-7c19-4a2c-bf8c-7ff7b43c688b
+      - id: add-workspace-onboarding-guides:26
+        stepId: full.build.check.evidence
+        sequence: 26
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/d15e2a0d-d04c-415e-be83-724ff8fc0254.log
+          contentHash: e70ab6b84f62e89618f9768e5496aec73671f62f4787efab1fcb95ca0c873597
+          submissionId: 7fa87eef-9b96-43ff-baa9-373d8c749edd
+      - id: add-workspace-onboarding-guides:28
+        stepId: full.verify.report.evidence
+        sequence: 28
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/add-workspace-onboarding-guides.md
+          contentHash: 1ed62dd5edbba91e9972ca9a7c812279df04e4c4a5eba73d39c6c2b3e093f6c6
+          submissionId: e93fd57e-95bf-46ea-812b-aa8f9eb76f1c
+      - id: add-workspace-onboarding-guides:30
+        stepId: full.verify.check.evidence
+        sequence: 30
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/a94df10a-5386-4cb0-8f05-cb832261aa7e.log
+          contentHash: 43f333afbbe884291826063a448cdc8d990c1221e53a76714bd23bb950d7bcf1
+          submissionId: 1d29160b-511b-4a54-956b-9111adda1354
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 54
+  sourceHash: fe1028f843c181b72557b2f844bb9c655c71dfe21e0c605e93f911708dad7a52
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+              ref: openspec/changes/add-workspace-onboarding-guides
+      - contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+        ref: openspec/changes/add-workspace-onboarding-guides
+      - contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+      - choice: approved
+        proposal:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+              handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+              proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+              requirementsEvidence:
+                contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                ref: openspec/changes/add-workspace-onboarding-guides
+              sourceEvidence:
+                contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                ref: openspec/changes/add-workspace-onboarding-guides
+      - handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+        handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+        proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+          的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+          containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt 恢复，再写引导及
+          gitignore，最后发布共享配置与 confirmed；旧 confirmed
+          请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+          continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+          Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+          review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议 autonomous +
+          TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+        requirementsEvidence:
+          contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+          ref: openspec/changes/add-workspace-onboarding-guides
+        sourceEvidence:
+          contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+          ref: openspec/changes/add-workspace-onboarding-guides
+      - designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+      - contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+        ref: openspec/changes/add-workspace-onboarding-guides/design.md
+      - boundBranch: comet/add-workspace-onboarding-guides
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.build.configure:
+              boundBranch: comet/add-workspace-onboarding-guides
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+          ref: openspec/changes/add-workspace-onboarding-guides/design.md
+        plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+        planEvidence:
+          contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+          ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+        taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+      - contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+        ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+      - designEvidence:
+          contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+          ref: openspec/changes/add-workspace-onboarding-guides/design.md
+        plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+        planEvidence:
+          contentHash: b0da236b0d533f2ee2f7dcfc3d33465150ccfa74a061f29e31ead92b3077cd7a
+          ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+        taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+      - contentHash: b0da236b0d533f2ee2f7dcfc3d33465150ccfa74a061f29e31ead92b3077cd7a
+        ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 57357b88a32c15c9f48bf562aaa19ad1283aa3d0036377ab2dff5de82c051ed3
+        cwd: .
+        environment: 05f11cdfe7cbe3595c498f9afbf3b86e73b6b837fe9b2faadcbc1884d6b9f7fb
+        exitCode: 0
+        inputAfter: 4617b54833e2d48334216e2f95d994be5eecc503aaeb864e93638652e3cfc044
+        inputBefore: 4617b54833e2d48334216e2f95d994be5eecc503aaeb864e93638652e3cfc044
+        manifestHash: 4ca7370592bb2853b883f36535074d8f77e06171905faef9c67dfd47e9b4e5bd
+        manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/12d2286a-1fdc-461e-8fc7-c1ccc18d0544.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/5ce2ce95-930d-4dfe-a5d1-337bb20cd8a4.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 57357b88a32c15c9f48bf562aaa19ad1283aa3d0036377ab2dff5de82c051ed3
+        ref: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/5ce2ce95-930d-4dfe-a5d1-337bb20cd8a4.log
+      - contentHash: 1ed62dd5edbba91e9972ca9a7c812279df04e4c4a5eba73d39c6c2b3e093f6c6
+        ref: docs/superpowers/reports/add-workspace-onboarding-guides.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/add-workspace-onboarding-guides.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: c0f8ecdb69692274c6997248786f6100076a13db9f1524b830d5e99fb71b6f91
+        cwd: .
+        deliveryInputs: {}
+        environment: c9d9eda84bc871f69aa9643cf297898659c1323e940bec00eb2017516fdc457f
+        exitCode: 1
+        inputAfter: 025af45b3ab80c55db58aac89c4340fba504c2860be2c0a8d813f93e38507507
+        inputBefore: 025af45b3ab80c55db58aac89c4340fba504c2860be2c0a8d813f93e38507507
+        manifestHash: aa309562ffa418b6fe28e3d52a6004d9aaf9c69ad5ea760bc959c412fc79ea8b
+        manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/96711a3d-dccc-482d-be3a-901b540e06ae.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/0358e918-9e12-4d25-828c-96d3f25ad244.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: e70ab6b84f62e89618f9768e5496aec73671f62f4787efab1fcb95ca0c873597
+        cwd: .
+        environment: 05f11cdfe7cbe3595c498f9afbf3b86e73b6b837fe9b2faadcbc1884d6b9f7fb
+        exitCode: 0
+        inputAfter: 662ed4808b5faaa5fa07a3faf8f772436a5e72299877a6642218a037c40bee44
+        inputBefore: 662ed4808b5faaa5fa07a3faf8f772436a5e72299877a6642218a037c40bee44
+        manifestHash: d9ba1beaa5fdbec4a8031bbcfa5156149ec1020762f619814140d0d87eb32795
+        manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/b05e681b-849b-48ef-8394-e321b416bbdb.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/d15e2a0d-d04c-415e-be83-724ff8fc0254.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: e70ab6b84f62e89618f9768e5496aec73671f62f4787efab1fcb95ca0c873597
+        ref: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/d15e2a0d-d04c-415e-be83-724ff8fc0254.log
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: 43f333afbbe884291826063a448cdc8d990c1221e53a76714bd23bb950d7bcf1
+        cwd: .
+        deliveryInputs: {}
+        environment: c9d9eda84bc871f69aa9643cf297898659c1323e940bec00eb2017516fdc457f
+        exitCode: 0
+        inputAfter: a7168f375caef9b176fced204193a5ae81c4c05c1e6548ea6c4a73bff0fb1b9b
+        inputBefore: a7168f375caef9b176fced204193a5ae81c4c05c1e6548ea6c4a73bff0fb1b9b
+        manifestHash: d9ba1beaa5fdbec4a8031bbcfa5156149ec1020762f619814140d0d87eb32795
+        manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/a60c1b4b-b94e-452e-aa26-3080cf2af25e.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/a94df10a-5386-4cb0-8f05-cb832261aa7e.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 43f333afbbe884291826063a448cdc8d990c1221e53a76714bd23bb950d7bcf1
+        ref: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/a94df10a-5386-4cb0-8f05-cb832261aa7e.log
+      - choice: pr
+        proposal:
+          input:
+            change: add-workspace-onboarding-guides
+            changeDir: openspec/changes/add-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 完成 Workspace README、AGENTS
+                和本地教程的获批生成与已有团队补齐；保留团队区块外字节、支持原请求恢复。5/5任务完成，真实候选包与Windows
+                PTY验收通过，完整Verify实际执行通过1140项测试及全部后续检查，独立thorough审查无遗留阻塞。首轮桌面激活偶发失败原证据保留、根因未定，原样完整复跑通过，未作推测性补丁。归档仅此Change并同步project-configuration/product-distribution主规格，保留其余三个活动提案和实验现场；推送origin当前隔离分支，创建目标main的PR。本Change不发布Release、不改公开v0.1.0资产。
+              targetBranch: comet/add-workspace-onboarding-guides
+      - prBaseBranch: main
+        remote: origin
+        summary: 完成 Workspace README、AGENTS
+          和本地教程的获批生成与已有团队补齐；保留团队区块外字节、支持原请求恢复。5/5任务完成，真实候选包与Windows
+          PTY验收通过，完整Verify实际执行通过1140项测试及全部后续检查，独立thorough审查无遗留阻塞。首轮桌面激活偶发失败原证据保留、根因未定，原样完整复跑通过，未作推测性补丁。归档仅此Change并同步project-configuration/product-distribution主规格，保留其余三个活动提案和实验现场；推送origin当前隔离分支，创建目标main的PR。本Change不发布Release、不改公开v0.1.0资产。
+        targetBranch: comet/add-workspace-onboarding-guides
+      - baseCommit: bf6db472710361224121e9e8cb01a79cd47ee516
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: comet/add-workspace-onboarding-guides
+        verifiedBranch: comet/add-workspace-onboarding-guides
+      - archiveDirectory: openspec/changes/archive/2026-11-09-add-workspace-onboarding-guides
+      - sequence: 9
+        value:
+          boundBranch: comet/add-workspace-onboarding-guides
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: add-workspace-onboarding-guides
+              changeDir: openspec/changes/add-workspace-onboarding-guides
+              workspaceBaseline:
+                ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+            outputs:
+              full.build.configure:
+                boundBranch: comet/add-workspace-onboarding-guides
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: add-workspace-onboarding-guides
+              changeDir: openspec/changes/add-workspace-onboarding-guides
+              workspaceBaseline:
+                ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+                handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+                proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+                  的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+                  containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+                  恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+                  请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+                  continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+                  Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+                  review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议
+                  autonomous + TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+                requirementsEvidence:
+                  contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+                  ref: openspec/changes/add-workspace-onboarding-guides
+                sourceEvidence:
+                  contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+                  ref: openspec/changes/add-workspace-onboarding-guides
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/add-workspace-onboarding-guides/design.md
+      - sequence: 8
+        value:
+          contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+          ref: openspec/changes/add-workspace-onboarding-guides/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/add-workspace-onboarding-guides/.comet/handoff/design-context.json
+          handoffHash: df26b30b875b0da488688bf5c43fc022877771d112014e2e3bbe3256a3efbea5
+          proposal: 在现有 Cordis ProjectOnboarding 事务内安装 README/AGENTS 短入口与一份本地教程；借鉴固定 Comet
+            的受管区块所有权，保留团队原始字节、换行与规则，拒绝冲突和不安全路径。复用
+            containedRoot/exclusive/提交前检查，先统一预检，沿既有 Store Intent/Receipt
+            恢复，再写引导及 gitignore，最后发布共享配置与 confirmed；旧 confirmed
+            请求不扩大效果，既有团队走新的可信接入审批补齐。AGENTS 仅指向当前公共 CLI、原 Run 的
+            continuation/Work/Skill，Runtime 继续掌握阶段和审批权威。无 Spec
+            Patch、无新依赖/Schema/状态机/IDE文件；真实 tarball 独立安装、真实 Windows PTY
+            review、单仓/多仓、拒绝审批、链接与启动/恢复均纳入验收。保留部分写入现场，不承诺跨文件原子回滚。建议 autonomous +
+            TDD + thorough，沿用现有 worktree，待用户与设计一并批准。
+          requirementsEvidence:
+            contentHash: bd418212bddec537a6590065b2fd37d77febf1273716339d06d7882c1648ddde
+            ref: openspec/changes/add-workspace-onboarding-guides
+          sourceEvidence:
+            contentHash: 7f317cf3e29039e5bd929a1ca3464edd9feae6472cdde91103013473b609ba19
+            ref: openspec/changes/add-workspace-onboarding-guides
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: add-workspace-onboarding-guides
+              changeDir: openspec/changes/add-workspace-onboarding-guides
+              workspaceBaseline:
+                ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+                ref: openspec/changes/add-workspace-onboarding-guides
+      - sequence: 2
+        value:
+          contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+          ref: openspec/changes/add-workspace-onboarding-guides
+      - sequence: 4
+        value:
+          contentHash: 12f3bee7dcb1f66c40db32de559439fae06fc64826d899707ab8297c732ab92d
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+            ref: openspec/changes/add-workspace-onboarding-guides/design.md
+          plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          planEvidence:
+            contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+            ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+      - sequence: 12
+        value:
+          contentHash: 8db783b0a3d980a429c5a831ec18fdd477b807b3d0633e14e87d0cd11029cf39
+          ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+      - sequence: 14
+        value:
+          designEvidence:
+            contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+            ref: openspec/changes/add-workspace-onboarding-guides/design.md
+          plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          planEvidence:
+            contentHash: b0da236b0d533f2ee2f7dcfc3d33465150ccfa74a061f29e31ead92b3077cd7a
+            ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+      - sequence: 15
+        value:
+          contentHash: b0da236b0d533f2ee2f7dcfc3d33465150ccfa74a061f29e31ead92b3077cd7a
+          ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+      - sequence: 16
+        value:
+          event: build-complete
+      - sequence: 17
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 57357b88a32c15c9f48bf562aaa19ad1283aa3d0036377ab2dff5de82c051ed3
+          cwd: .
+          environment: 05f11cdfe7cbe3595c498f9afbf3b86e73b6b837fe9b2faadcbc1884d6b9f7fb
+          exitCode: 0
+          inputAfter: 4617b54833e2d48334216e2f95d994be5eecc503aaeb864e93638652e3cfc044
+          inputBefore: 4617b54833e2d48334216e2f95d994be5eecc503aaeb864e93638652e3cfc044
+          manifestHash: 4ca7370592bb2853b883f36535074d8f77e06171905faef9c67dfd47e9b4e5bd
+          manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/12d2286a-1fdc-461e-8fc7-c1ccc18d0544.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/5ce2ce95-930d-4dfe-a5d1-337bb20cd8a4.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 18
+        value:
+          contentHash: 57357b88a32c15c9f48bf562aaa19ad1283aa3d0036377ab2dff5de82c051ed3
+          ref: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/5ce2ce95-930d-4dfe-a5d1-337bb20cd8a4.log
+      - sequence: 20
+        value:
+          contentHash: 1ed62dd5edbba91e9972ca9a7c812279df04e4c4a5eba73d39c6c2b3e093f6c6
+          ref: docs/superpowers/reports/add-workspace-onboarding-guides.md
+      - sequence: 19
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/add-workspace-onboarding-guides.md
+      - sequence: 21
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: c0f8ecdb69692274c6997248786f6100076a13db9f1524b830d5e99fb71b6f91
+          cwd: .
+          deliveryInputs: {}
+          environment: c9d9eda84bc871f69aa9643cf297898659c1323e940bec00eb2017516fdc457f
+          exitCode: 1
+          inputAfter: 025af45b3ab80c55db58aac89c4340fba504c2860be2c0a8d813f93e38507507
+          inputBefore: 025af45b3ab80c55db58aac89c4340fba504c2860be2c0a8d813f93e38507507
+          manifestHash: aa309562ffa418b6fe28e3d52a6004d9aaf9c69ad5ea760bc959c412fc79ea8b
+          manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/96711a3d-dccc-482d-be3a-901b540e06ae.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/0358e918-9e12-4d25-828c-96d3f25ad244.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 22
+        value:
+          designEvidence:
+            contentHash: 6632108196fc29a1bcec798a9676ca3e503edee240895c106193171da330adb2
+            ref: openspec/changes/add-workspace-onboarding-guides/design.md
+          plan: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          planEvidence:
+            contentHash: b0da236b0d533f2ee2f7dcfc3d33465150ccfa74a061f29e31ead92b3077cd7a
+            ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+          taskRevision: 835dd34d2438cb8a94e933f4c681889f390e4f81549d95b3ddafc0bbd9a96ee8
+      - sequence: 23
+        value:
+          contentHash: b0da236b0d533f2ee2f7dcfc3d33465150ccfa74a061f29e31ead92b3077cd7a
+          ref: docs/superpowers/plans/2026-11-09-add-workspace-onboarding-guides.md
+      - sequence: 24
+        value:
+          event: build-complete
+      - sequence: 25
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: e70ab6b84f62e89618f9768e5496aec73671f62f4787efab1fcb95ca0c873597
+          cwd: .
+          environment: 05f11cdfe7cbe3595c498f9afbf3b86e73b6b837fe9b2faadcbc1884d6b9f7fb
+          exitCode: 0
+          inputAfter: 662ed4808b5faaa5fa07a3faf8f772436a5e72299877a6642218a037c40bee44
+          inputBefore: 662ed4808b5faaa5fa07a3faf8f772436a5e72299877a6642218a037c40bee44
+          manifestHash: d9ba1beaa5fdbec4a8031bbcfa5156149ec1020762f619814140d0d87eb32795
+          manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/b05e681b-849b-48ef-8394-e321b416bbdb.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/d15e2a0d-d04c-415e-be83-724ff8fc0254.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 26
+        value:
+          contentHash: e70ab6b84f62e89618f9768e5496aec73671f62f4787efab1fcb95ca0c873597
+          ref: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/d15e2a0d-d04c-415e-be83-724ff8fc0254.log
+      - sequence: 28
+        value:
+          contentHash: 1ed62dd5edbba91e9972ca9a7c812279df04e4c4a5eba73d39c6c2b3e093f6c6
+          ref: docs/superpowers/reports/add-workspace-onboarding-guides.md
+      - sequence: 27
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/add-workspace-onboarding-guides.md
+      - sequence: 29
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: 43f333afbbe884291826063a448cdc8d990c1221e53a76714bd23bb950d7bcf1
+          cwd: .
+          deliveryInputs: {}
+          environment: c9d9eda84bc871f69aa9643cf297898659c1323e940bec00eb2017516fdc457f
+          exitCode: 0
+          inputAfter: a7168f375caef9b176fced204193a5ae81c4c05c1e6548ea6c4a73bff0fb1b9b
+          inputBefore: a7168f375caef9b176fced204193a5ae81c4c05c1e6548ea6c4a73bff0fb1b9b
+          manifestHash: d9ba1beaa5fdbec4a8031bbcfa5156149ec1020762f619814140d0d87eb32795
+          manifestRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/a60c1b4b-b94e-452e-aa26-3080cf2af25e.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/a94df10a-5386-4cb0-8f05-cb832261aa7e.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 30
+        value:
+          contentHash: 43f333afbbe884291826063a448cdc8d990c1221e53a76714bd23bb950d7bcf1
+          ref: .comet/runtime/classic-sdk-checks/93cf9ae878b00f7a2cf9c2a1777946c432a8eb21b34f3089609e0fe30e8e565d/a94df10a-5386-4cb0-8f05-cb832261aa7e.log
+      - sequence: 32
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: add-workspace-onboarding-guides
+              changeDir: openspec/changes/add-workspace-onboarding-guides
+              workspaceBaseline:
+                ref: ed05ec3e-1797-441f-9414-e43bba1c6aea
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 完成 Workspace README、AGENTS
+                  和本地教程的获批生成与已有团队补齐；保留团队区块外字节、支持原请求恢复。5/5任务完成，真实候选包与Windows
+                  PTY验收通过，完整Verify实际执行通过1140项测试及全部后续检查，独立thorough审查无遗留阻塞。首轮桌面激活偶发失败原证据保留、根因未定，原样完整复跑通过，未作推测性补丁。归档仅此Change并同步project-configuration/product-distribution主规格，保留其余三个活动提案和实验现场；推送origin当前隔离分支，创建目标main的PR。本Change不发布Release、不改公开v0.1.0资产。
+                targetBranch: comet/add-workspace-onboarding-guides
+      - sequence: 31
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 完成 Workspace README、AGENTS
+            和本地教程的获批生成与已有团队补齐；保留团队区块外字节、支持原请求恢复。5/5任务完成，真实候选包与Windows
+            PTY验收通过，完整Verify实际执行通过1140项测试及全部后续检查，独立thorough审查无遗留阻塞。首轮桌面激活偶发失败原证据保留、根因未定，原样完整复跑通过，未作推测性补丁。归档仅此Change并同步project-configuration/product-distribution主规格，保留其余三个活动提案和实验现场；推送origin当前隔离分支，创建目标main的PR。本Change不发布Release、不改公开v0.1.0资产。
+          targetBranch: comet/add-workspace-onboarding-guides
+      - sequence: 33
+        value:
+          baseCommit: bf6db472710361224121e9e8cb01a79cd47ee516
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/add-workspace-onboarding-guides
+          verifiedBranch: comet/add-workspace-onboarding-guides
+      - sequence: 34
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-09-add-workspace-onboarding-guides
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.plan.evidence
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 12
+        left: null
+        right: 27
+        height: 2
+      - key: full.build.execute
+        value: 14
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 12
+        left: 29
+        right: 27
+        height: 2
+      - key: full.build.check
+        value: 15
+        left: null
+        right: null
+        height: 1
+      - key: full.build.execute
+        value: 14
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 16
+        left: 31
+        right: 32
+        height: 2
+      - key: full.build.plan
+        value: 12
+        left: 33
+        right: 27
+        height: 3
+      - key: full.build.plan.evidence
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 17
+        left: 35
+        right: 36
+        height: 2
+      - key: full.build.plan
+        value: 12
+        left: 33
+        right: 37
+        height: 3
+      - key: full.verify.check
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 13
+        left: null
+        right: 39
+        height: 2
+      - key: full.verify.report.evidence
+        value: 17
+        left: 40
+        right: 36
+        height: 3
+      - key: full.build.plan
+        value: 12
+        left: 33
+        right: 41
+        height: 4
+      - key: full.build.check
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 21
+        left: 43
+        right: 32
+        height: 2
+      - key: full.build.plan
+        value: 12
+        left: 44
+        right: 41
+        height: 4
+      - key: full.build.plan.evidence
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 22
+        left: 46
+        right: 47
+        height: 2
+      - key: full.verify.report.evidence
+        value: 17
+        left: 48
+        right: 36
+        height: 3
+      - key: full.build.plan
+        value: 12
+        left: 44
+        right: 49
+        height: 4
+      - key: full.archive.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 25
+        left: 51
+        right: 52
+        height: 2
+      - key: full.build.check.evidence
+        value: 21
+        left: 53
+        right: 32
+        height: 3
+      - key: full.build.plan
+        value: 12
+        left: 54
+        right: 49
+        height: 4
+      - key: full.archive.preflight
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 24
+        left: null
+        right: 56
+        height: 2
+      - key: full.build.check.evidence
+        value: 21
+        left: 52
+        right: 32
+        height: 2
+      - key: full.archive.prepare
+        value: 25
+        left: 57
+        right: 58
+        height: 3
+      - key: full.build.plan
+        value: 12
+        left: 59
+        right: 49
+        height: 4
+      - key: full.archive.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 27
+        left: 61
+        right: 62
+        height: 2
+      - key: full.archive.prepare
+        value: 25
+        left: 63
+        right: 58
+        height: 3
+      - key: full.build.plan
+        value: 12
+        left: 64
+        right: 49
+        height: 4
+      - key: full.build.configure
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 29
+        left: 66
+        right: 67
+        height: 2
+      - key: full.design.evidence
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 33
+        left: 69
+        right: 70
+        height: 2
+      - key: full.open.revalidate
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 36
+        left: null
+        right: 72
+        height: 2
+      - key: full.open.confirm
+        value: 35
+        left: 71
+        right: 73
+        height: 3
+      - key: full.design.document
+        value: 31
+        left: 68
+        right: 74
+        height: 4
+      - key: full.build.plan
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 39
+        left: 76
+        right: 77
+        height: 2
+      - key: full.build.confirm
+        value: 29
+        left: 66
+        right: 78
+        height: 3
+      - key: full.design.document
+        value: 31
+        left: 79
+        right: 74
+        height: 4
+      - key: full.build.plan.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 40
+        left: null
+        right: 81
+        height: 2
+      - key: full.build.execute
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 40
+        left: 83
+        right: 81
+        height: 2
+      - key: full.build.check
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.execute
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 44
+        left: 85
+        right: 86
+        height: 2
+      - key: full.build.plan
+        value: 40
+        left: 87
+        right: 81
+        height: 3
+      - key: full.build.plan.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 45
+        left: 89
+        right: 90
+        height: 2
+      - key: full.build.plan
+        value: 40
+        left: 87
+        right: 91
+        height: 3
+      - key: full.verify.check
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 41
+        left: null
+        right: 93
+        height: 2
+      - key: full.verify.report.evidence
+        value: 45
+        left: 94
+        right: 90
+        height: 3
+      - key: full.build.plan
+        value: 40
+        left: 87
+        right: 95
+        height: 4
+      - key: full.build.plan.evidence
+        value: 49
+        left: null
+        right: 93
+        height: 2
+      - key: full.verify.report.evidence
+        value: 45
+        left: 97
+        right: 90
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: 87
+        right: 98
+        height: 4
+      - key: full.build.execute
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 44
+        left: 85
+        right: 100
+        height: 2
+      - key: full.build.plan
+        value: 48
+        left: 101
+        right: 98
+        height: 4
+      - key: full.build.check
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 52
+        left: 103
+        right: 100
+        height: 2
+      - key: full.build.plan
+        value: 48
+        left: 104
+        right: 98
+        height: 4
+      - key: full.verify.run
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 53
+        left: 97
+        right: 106
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: 104
+        right: 107
+        height: 4
+      - key: full.build.plan.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check.evidence
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 55
+        left: 109
+        right: 110
+        height: 2
+      - key: full.verify.report.evidence
+        value: 53
+        left: 111
+        right: 106
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: 104
+        right: 112
+        height: 4
+      - key: full.archive.confirm
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 58
+        left: 114
+        right: 115
+        height: 2
+      - key: full.build.check.evidence
+        value: 52
+        left: 116
+        right: 100
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: 117
+        right: 112
+        height: 4
+      - key: full.archive.preflight
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 57
+        left: null
+        right: 119
+        height: 2
+      - key: full.build.check.evidence
+        value: 52
+        left: 115
+        right: 100
+        height: 2
+      - key: full.archive.prepare
+        value: 58
+        left: 120
+        right: 121
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: 122
+        right: 112
+        height: 4
+      - key: full.archive.confirm
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 60
+        left: 124
+        right: 125
+        height: 2
+      - key: full.archive.prepare
+        value: 58
+        left: 126
+        right: 121
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: 127
+        right: 112
+        height: 4
+      - key: full.open
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 35
+        left: 129
+        right: 130
+        height: 2
+      - key: full.open.revalidate
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 36
+        left: null
+        right: 132
+        height: 2
+      - key: full.open.confirm
+        value: 35
+        left: 129
+        right: 133
+        height: 3
+      - key: full.design.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 33
+        left: 135
+        right: 136
+        height: 2
+      - key: full.open.confirm
+        value: 35
+        left: 137
+        right: 133
+        height: 3
+      - key: full.design.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 31
+        left: 139
+        right: 140
+        height: 2
+      - key: full.design.handoff
+        value: 33
+        left: 141
+        right: 136
+        height: 3
+      - key: full.open.confirm
+        value: 35
+        left: 142
+        right: 133
+        height: 4
+      - key: full.archive.confirm
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 60
+        left: 144
+        right: 145
+        height: 2
+      - key: full.build.check
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 52
+        left: 147
+        right: 148
+        height: 2
+      - key: full.archive.prepare
+        value: 58
+        left: 146
+        right: 149
+        height: 3
+      - key: full.build.execute
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 30
+        left: 152
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 48
+        left: 151
+        right: 153
+        height: 3
+      - key: full.build.confirm
+        value: 29
+        left: 150
+        right: 154
+        height: 4
+      - key: full.design.handoff
+        value: 33
+        left: 140
+        right: 136
+        height: 2
+      - key: full.open.evidence
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 37
+        left: 157
+        right: 158
+        height: 2
+      - key: full.verify.run
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 53
+        left: null
+        right: 160
+        height: 2
+      - key: full.verify.check.evidence
+        value: 56
+        left: 159
+        right: 161
+        height: 3
+      - key: full.open.confirm
+        value: 35
+        left: 156
+        right: 162
+        height: 4
+      - key: full.design.document
+        value: 31
+        left: 155
+        right: 163
+        height: 5
+      - key: full.open.evidence
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 34
+        left: null
+        right: 165
+        height: 2
+      - key: full.design.handoff
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 36
+        left: 168
+        right: 169
+        height: 2
+      - key: full.open
+        value: 34
+        left: 167
+        right: 170
+        height: 3
+      - key: full.build.configure
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 32
+        left: 173
+        right: 174
+        height: 2
+      - key: full.design.confirm
+        value: 30
+        left: 172
+        right: 175
+        height: 3
+      - key: full.open
+        value: 34
+        left: 176
+        right: 170
+        height: 4
+      - key: full.archive.prepare
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 51
+        left: 178
+        right: 179
+        height: 2
+      - key: full.build.plan
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 49
+        left: 181
+        right: 182
+        height: 2
+      - key: full.verify.run
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 53
+        left: null
+        right: 184
+        height: 2
+      - key: full.verify.check.evidence
+        value: 56
+        left: 183
+        right: 185
+        height: 3
+      - key: full.build.execute
+        value: 50
+        left: 180
+        right: 186
+        height: 4
+      - key: full.open
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 31
+        left: 189
+        right: 190
+        height: 2
+      - key: full.open.confirm
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 36
+        left: 192
+        right: 193
+        height: 2
+      - key: full.open
+        value: 34
+        left: 191
+        right: 194
+        height: 3
+      - key: full.build.configure
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 29
+        left: 196
+        right: 197
+        height: 2
+      - key: full.design.document
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 32
+        left: 199
+        right: 200
+        height: 2
+      - key: full.design.confirm
+        value: 30
+        left: 198
+        right: 201
+        height: 3
+      - key: full.open
+        value: 34
+        left: 202
+        right: 194
+        height: 4
+      - key: full.build.plan
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 40
+        left: null
+        right: 206
+        height: 2
+      - key: full.build.execute
+        value: 42
+        left: 205
+        right: 207
+        height: 3
+      - key: full.build.check.evidence
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 43
+        left: null
+        right: 209
+        height: 2
+      - key: full.build.plan
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 41
+        left: 211
+        right: 212
+        height: 2
+      - key: full.build.execute
+        value: 42
+        left: 210
+        right: 213
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 45
+        left: 216
+        right: 217
+        height: 2
+      - key: full.build.plan.evidence
+        value: 41
+        left: 215
+        right: 218
+        height: 3
+      - key: full.build.execute
+        value: 42
+        left: 210
+        right: 219
+        height: 4
+      - key: full.build.check
+        value: 51
+        left: null
+        right: 209
+        height: 2
+      - key: full.build.plan.evidence
+        value: 49
+        left: 215
+        right: 218
+        height: 3
+      - key: full.build.execute
+        value: 50
+        left: 221
+        right: 222
+        height: 4
+      - key: full.build.check.evidence
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 51
+        left: null
+        right: 224
+        height: 2
+      - key: full.verify.run
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 45
+        left: 216
+        right: 226
+        height: 2
+      - key: full.build.plan.evidence
+        value: 49
+        left: 215
+        right: 227
+        height: 3
+      - key: full.build.execute
+        value: 50
+        left: 225
+        right: 228
+        height: 4
+      - key: full.verify.check
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 53
+        left: 230
+        right: 226
+        height: 2
+      - key: full.build.plan.evidence
+        value: 49
+        left: 215
+        right: 231
+        height: 3
+      - key: full.build.execute
+        value: 50
+        left: 225
+        right: 232
+        height: 4
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 28
+      - 30
+      - 34
+      - 38
+      - 42
+      - 45
+      - 50
+      - 55
+      - 60
+      - 65
+      - 75
+      - 80
+      - 82
+      - 84
+      - 88
+      - 92
+      - 96
+      - 99
+      - 102
+      - 105
+      - 108
+      - 113
+      - 118
+      - 123
+      - 128
+      - 131
+      - 134
+      - 138
+      - 143
+      - 164
+      - 166
+      - 171
+      - 177
+      - 187
+      - 188
+      - 195
+      - 203
+      - 204
+      - 208
+      - 214
+      - 220
+      - 223
+      - 229
+      - 233
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:11
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:13
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:14
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:16
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:17
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:19
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:21
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:22
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:24
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:25
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:27
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:29
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:31
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:33
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:34
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:35
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:4
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:5
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:7
+          - results
+        map: 34
+      - path:
+          - actionContexts
+          - add-workspace-onboarding-guides:9
+          - results
+        map: 35
+      - path:
+          - outputs
+        map: 36
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 37
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 38
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 39
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 40
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 41
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 42
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 43
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 44
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 45
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 46
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 47
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 48
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 49
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 50
+  storageHash: b3755a66e727573d20b71d68cb894ee860ccccdffd85f8fdf92a456eef45af5d
+check_epoch: 8
