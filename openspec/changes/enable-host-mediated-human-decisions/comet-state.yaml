@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v2
-  hash: cca55435a5ae92f338751b28fff0986612711be766bd0a6274568353fa1f7fa6
+  hash: 1d7459396abcde8e725f7dc5d75a352babdd419bda23c6b1b3469f47d63e46c1
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: fail
       workflow: full
     status: running
-    sequence: 19
+    sequence: 22
     actions:
       - attempt: 1
         claim:
@@ -547,7 +547,93 @@ run_checkpoint:
         stepId: full.verify.check
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c8b1fa84e13f8f71577ad5fcab46a2b54cc8d3b7dd996d3897d01cac22e39eee
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: enable-host-mediated-human-decisions:19
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 6ac884325cd80a5124ac99e7dc1b1225fd5427aaf6ba127e0bbdd6a73079ffc5
+        outcome:
+          actionId: enable-host-mediated-human-decisions:19
+          attempt: 1
+          claimToken: portable-c8b1fa84e13f8f71577ad5fcab46a2b54cc8d3b7dd996d3897d01cac22e39eee
+          inputHash: 6ac884325cd80a5124ac99e7dc1b1225fd5427aaf6ba127e0bbdd6a73079ffc5
+          outcomeId: 9402d329-b618-4779-b6b0-4999e2f9b6ed
+          output:
+            designEvidence:
+              contentHash: f8f5cc190127d8eec8337badb22f94059282bed49b565e70edfcd808fc1df93c
+              ref: openspec/changes/enable-host-mediated-human-decisions/design.md
+            plan: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+            planEvidence:
+              contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+              ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+            taskRevision: 6d3384f88693140ee55f9a4ad84400181e0c27bd1163cb8f67d06684003c2eb1
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ff3c93a0facbfdcffab19ddef198fe03d2121a90d735e96b54c7fe6d62915ede
+            outcomeId: 9402d329-b618-4779-b6b0-4999e2f9b6ed
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-host-mediated-human-decisions
+          token: portable-aa74b6677754bdde062d2b4d1221da7645f24d74d783cfc2d75ef45feec5a039
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:21
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 6ac884325cd80a5124ac99e7dc1b1225fd5427aaf6ba127e0bbdd6a73079ffc5
+        outcome:
+          actionId: enable-host-mediated-human-decisions:21
+          attempt: 1
+          claimToken: portable-aa74b6677754bdde062d2b4d1221da7645f24d74d783cfc2d75ef45feec5a039
+          inputHash: 6ac884325cd80a5124ac99e7dc1b1225fd5427aaf6ba127e0bbdd6a73079ffc5
+          outcomeId: b5259dd6-cde0-4d9e-8475-018b0c9c2c37
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0d87187900452f007272bd0ccc7d042390f713de84a93503cf51379cbb7576bd
+            outcomeId: b5259dd6-cde0-4d9e-8475-018b0c9c2c37
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        id: enable-host-mediated-human-decisions:22
         input:
           input:
             change: enable-host-mediated-human-decisions
@@ -559,13 +645,13 @@ run_checkpoint:
         protocolVersion: 1
         receipts: []
         reconciliations: []
-        ref: comet-build
+        ref: classic-check
         requiredCapabilities: []
         retry: manual
         runId: enable-host-mediated-human-decisions
         status: pending
-        stepId: full.build.plan
-        type: invoke_skill
+        stepId: full.build.check
+        type: call_tool
     actionContexts:
       enable-host-mediated-human-decisions:1:
         results: {}
@@ -588,6 +674,12 @@ run_checkpoint:
       enable-host-mediated-human-decisions:19:
         results: {}
         sequence: 19
+      enable-host-mediated-human-decisions:21:
+        results: {}
+        sequence: 21
+      enable-host-mediated-human-decisions:22:
+        results: {}
+        sequence: 22
       enable-host-mediated-human-decisions:4:
         results: {}
         sequence: 4
@@ -746,13 +838,23 @@ run_checkpoint:
           ref: docs/superpowers/reports/enable-host-mediated-human-decisions.md
           contentHash: fa4981529212572371d8292f4caeb59dac23da5c08e332006028ad2cdb74da0b
           submissionId: 5053db9d-005d-4bb6-88e2-93df523f5751
+      - id: enable-host-mediated-human-decisions:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+          contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+          submissionId: b2984d40-1f7a-4122-b94f-8d168dcd0ed5
     ready: []
     joins: {}
     outputs: {}
     children: []
     lineage: []
-  sourceRevision: 29
-  sourceHash: 5a698a71650c912759c0fe4f9b3a93ba89fc880b99fa025b90af02c512c77bc9
+  sourceRevision: 34
+  sourceHash: dc3d3d4a032aa6d593d414af8c1f8b3bca76894d4daba9dc810126b202ce1fbf
   pool:
     version: 3
     values:
@@ -1092,6 +1194,23 @@ run_checkpoint:
           scope: verify
           tier: full
           timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: f8f5cc190127d8eec8337badb22f94059282bed49b565e70edfcd808fc1df93c
+            ref: openspec/changes/enable-host-mediated-human-decisions/design.md
+          plan: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+          planEvidence:
+            contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+            ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+          taskRevision: 6d3384f88693140ee55f9a4ad84400181e0c27bd1163cb8f67d06684003c2eb1
+      - sequence: 20
+        value:
+          contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+          ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+      - sequence: 21
+        value:
+          event: build-complete
     nodes:
       - key: full.open
         value: 0
@@ -1523,6 +1642,41 @@ run_checkpoint:
         left: 73
         right: 84
         height: 5
+      - key: full.build.plan.evidence
+        value: 37
+        left: null
+        right: 60
+        height: 2
+      - key: full.build.plan
+        value: 36
+        left: 72
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 87
+        right: 84
+        height: 5
+      - key: full.build.execute
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 71
+        right: 89
+        height: 3
+      - key: full.build.plan
+        value: 36
+        left: 90
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 91
+        right: 84
+        height: 5
       - key: full.open
         value: 24
         left: null
@@ -1535,8 +1689,8 @@ run_checkpoint:
         height: 1
       - key: full.open.confirm
         value: 25
-        left: 86
-        right: 87
+        left: 93
+        right: 94
         height: 2
       - key: full.open.revalidate
         value: 27
@@ -1546,12 +1700,12 @@ run_checkpoint:
       - key: full.open.evidence
         value: 26
         left: null
-        right: 89
+        right: 96
         height: 2
       - key: full.open.confirm
         value: 25
-        left: 86
-        right: 90
+        left: 93
+        right: 97
         height: 3
       - key: full.design.confirm
         value: 20
@@ -1565,13 +1719,13 @@ run_checkpoint:
         height: 1
       - key: full.design.handoff
         value: 23
-        left: 92
-        right: 93
+        left: 99
+        right: 100
         height: 2
       - key: full.open.confirm
         value: 25
-        left: 94
-        right: 90
+        left: 101
+        right: 97
         height: 3
       - key: full.design.confirm
         value: 20
@@ -1585,18 +1739,18 @@ run_checkpoint:
         height: 1
       - key: full.design.document
         value: 21
-        left: 96
-        right: 97
+        left: 103
+        right: 104
         height: 2
       - key: full.design.handoff
         value: 23
-        left: 98
-        right: 93
+        left: 105
+        right: 100
         height: 3
       - key: full.open.confirm
         value: 25
-        left: 99
-        right: 90
+        left: 106
+        right: 97
         height: 4
       - key: full.open.evidence
         value: 26
@@ -1606,7 +1760,7 @@ run_checkpoint:
       - key: full.open
         value: 24
         left: null
-        right: 101
+        right: 108
         height: 2
       - key: full.design.handoff
         value: 23
@@ -1625,13 +1779,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 26
-        left: 104
-        right: 105
+        left: 111
+        right: 112
         height: 2
       - key: full.open
         value: 24
-        left: 103
-        right: 106
+        left: 110
+        right: 113
         height: 3
       - key: full.build.configure
         value: 18
@@ -1650,18 +1804,18 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 22
-        left: 109
-        right: 110
+        left: 116
+        right: 117
         height: 2
       - key: full.design.confirm
         value: 20
-        left: 108
-        right: 111
+        left: 115
+        right: 118
         height: 3
       - key: full.open
         value: 24
-        left: 112
-        right: 106
+        left: 119
+        right: 113
         height: 4
       - key: full.open
         value: 24
@@ -1680,8 +1834,8 @@ run_checkpoint:
         height: 1
       - key: full.design.document
         value: 21
-        left: 115
-        right: 116
+        left: 122
+        right: 123
         height: 2
       - key: full.open.confirm
         value: 25
@@ -1695,13 +1849,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 26
-        left: 118
-        right: 119
+        left: 125
+        right: 126
         height: 2
       - key: full.open
         value: 24
-        left: 117
-        right: 120
+        left: 124
+        right: 127
         height: 3
       - key: full.build.configure
         value: 18
@@ -1715,8 +1869,8 @@ run_checkpoint:
         height: 1
       - key: full.build.confirm
         value: 19
-        left: 122
-        right: 123
+        left: 129
+        right: 130
         height: 2
       - key: full.design.document
         value: 21
@@ -1730,18 +1884,18 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 22
-        left: 125
-        right: 126
+        left: 132
+        right: 133
         height: 2
       - key: full.design.confirm
         value: 20
-        left: 124
-        right: 127
+        left: 131
+        right: 134
         height: 3
       - key: full.open
         value: 24
-        left: 128
-        right: 120
+        left: 135
+        right: 127
         height: 4
       - key: full.build.check
         value: 31
@@ -1750,7 +1904,7 @@ run_checkpoint:
         height: 1
       - key: full.build.configure
         value: 18
-        left: 130
+        left: 137
         right: null
         height: 2
       - key: full.build.execute
@@ -1765,23 +1919,23 @@ run_checkpoint:
         height: 1
       - key: full.build.plan
         value: 28
-        left: 132
-        right: 133
+        left: 139
+        right: 140
         height: 2
       - key: full.build.confirm
         value: 19
-        left: 131
-        right: 134
+        left: 138
+        right: 141
         height: 3
       - key: full.open
         value: 24
-        left: 127
-        right: 120
+        left: 134
+        right: 127
         height: 3
       - key: full.design.confirm
         value: 20
-        left: 135
-        right: 136
+        left: 142
+        right: 143
         height: 4
       - key: full.build.check
         value: 31
@@ -1795,13 +1949,13 @@ run_checkpoint:
         height: 1
       - key: full.build.check.evidence
         value: 32
-        left: 138
-        right: 139
+        left: 145
+        right: 146
         height: 2
       - key: full.build.confirm
         value: 19
-        left: 140
-        right: 134
+        left: 147
+        right: 141
         height: 3
       - key: full.verify.run
         value: 34
@@ -1811,22 +1965,67 @@ run_checkpoint:
       - key: full.open.revalidate
         value: 27
         left: null
-        right: 142
+        right: 149
         height: 2
       - key: full.open.evidence
         value: 26
-        left: 118
-        right: 143
+        left: 125
+        right: 150
         height: 3
       - key: full.open
         value: 24
-        left: 127
-        right: 144
+        left: 134
+        right: 151
         height: 4
       - key: full.design.confirm
         value: 20
-        left: 141
-        right: 145
+        left: 148
+        right: 152
+        height: 5
+      - key: full.build.plan
+        value: 36
+        left: 139
+        right: 140
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 147
+        right: 154
+        height: 3
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: 125
+        right: 156
+        height: 2
+      - key: full.verify.report.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 34
+        left: 158
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 35
+        left: 157
+        right: 159
+        height: 3
+      - key: full.open
+        value: 24
+        left: 134
+        right: 160
+        height: 4
+      - key: full.design.confirm
+        value: 20
+        left: 155
+        right: 161
         height: 5
     maps:
       - null
@@ -1847,17 +2046,20 @@ run_checkpoint:
       - 80
       - 85
       - 88
-      - 91
+      - 92
       - 95
-      - 100
+      - 98
       - 102
       - 107
-      - 113
+      - 109
       - 114
+      - 120
       - 121
-      - 129
-      - 137
-      - 146
+      - 128
+      - 136
+      - 144
+      - 153
+      - 162
     bindings:
       - path:
           - actions
@@ -1926,6 +2128,18 @@ run_checkpoint:
           - outputs
         map: 10
       - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
           - actionContexts
           - enable-host-mediated-human-decisions:1
           - results
@@ -1962,66 +2176,81 @@ run_checkpoint:
         map: 16
       - path:
           - actionContexts
-          - enable-host-mediated-human-decisions:4
+          - enable-host-mediated-human-decisions:21
           - results
         map: 17
       - path:
           - actionContexts
-          - enable-host-mediated-human-decisions:5
+          - enable-host-mediated-human-decisions:22
           - results
         map: 18
       - path:
           - actionContexts
-          - enable-host-mediated-human-decisions:7
+          - enable-host-mediated-human-decisions:4
           - results
         map: 19
       - path:
           - actionContexts
-          - enable-host-mediated-human-decisions:9
+          - enable-host-mediated-human-decisions:5
           - results
         map: 20
       - path:
-          - outputs
-        map: 16
-      - path:
-          - waits
-          - "0"
+          - actionContexts
+          - enable-host-mediated-human-decisions:7
           - results
         map: 21
       - path:
-          - waits
-          - "1"
+          - actionContexts
+          - enable-host-mediated-human-decisions:9
           - results
         map: 22
       - path:
+          - outputs
+        map: 18
+      - path:
           - waits
-          - "2"
+          - "0"
           - results
         map: 23
       - path:
-          - evidenceWaits
-          - "0"
+          - waits
+          - "1"
           - results
         map: 24
       - path:
-          - evidenceWaits
-          - "1"
+          - waits
+          - "2"
           - results
         map: 25
       - path:
           - evidenceWaits
-          - "2"
+          - "0"
           - results
         map: 26
       - path:
           - evidenceWaits
-          - "3"
+          - "1"
           - results
         map: 27
       - path:
           - evidenceWaits
-          - "4"
+          - "2"
           - results
         map: 28
-  storageHash: cdb8f598c918076822174174f1e941fc356e2ddd484d5cad2a3f24707fa04d45
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 29
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 31
+  storageHash: c905d4d18b1186a2445a605a13a4208c022ff5c764596923278b7e65b3c3b50f
 check_epoch: 4
