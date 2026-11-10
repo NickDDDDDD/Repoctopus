@@ -62,3 +62,9 @@ Comet 按失败收据返回同一 Run 的 Build Plan，原十项任务和执行�
 2. Verify：设置已绑定的 `VITEST_MAX_WORKERS=2` 后执行 `comet guard preserve-build-completions-on-verify-repair verify --report docs/superpowers/reports/preserve-build-completions-on-verify-repair.md --apply --local -- npm.cmd run verify`。
 
 完整结果以该 Run 的 Guard 执行记录、原始日志及返回状态为准，不以本报告中的任务级通过数代替。归档、创建 PR、远端 CI、合入 main 和发布 Release 都是后续交付事实；本报告不预先声明它们完成。
+
+## 归档后 CI 的验收记录纠正
+
+同一 Comet Run 的完整 Verify 最终通过：1172 项测试通过、5 项按环境跳过，全部后续检查通过；原始收据与日志分别保存在外部 `guard-verify-retry.json` 和 `full-verify-passed.log`。用户批准后，2026-11-10 完成正式归档并创建 PR #82。
+
+首轮 Linux CI 为 1171 项通过、6 项跳过，其他检查均通过，最后严格包内容校验正确拦住了报告与 Git checkout 的差异。精确根因是本地 `third_party/comet/source-manifest.json` 有 237 个 CRLF，Git blob 和 Linux checkout 为 LF；JSON 内容相同，其余 471 个包文件字节全部相同。把本地该文件恢复为 Git 原文后重新打包，Windows 得到与 Linux 完全相同的语义身份 `bb6a5e244069667dc561297a26cd20cd4f334e220bd871e280baa5cd6cdcfde8`、472 文件、6076540 bytes。规范包独立安装后，公开 resume 和全部最终断言再次通过，原 Plan、Task、B/C/D 完成事实与 A=2、B/C/D=1 次数保持。机器报告改为绑定规范 Git 字节，保留原 Windows 包和失败 CI 历史；没有修改已封存归档、Runtime 实现或校验算法。PR 后续 CI 结果以实际远端收据为准。

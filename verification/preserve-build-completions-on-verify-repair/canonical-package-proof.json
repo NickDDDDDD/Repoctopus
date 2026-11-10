@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "originalSemanticSha256": "9407874f194d51dead05fb13ec03c7045c040db59917cdd115bcccfe365f8cbd",
+  "canonicalSemanticSha256": "bb6a5e244069667dc561297a26cd20cd4f334e220bd871e280baa5cd6cdcfde8",
+  "changedPackagePaths": ["third_party/comet/source-manifest.json"],
+  "onlyCrlfToLf": true,
+  "bytesRemoved": 237,
+  "manifestJsonIdentical": true,
+  "manifestMatchesGitBlob": true,
+  "allOtherPackageBytesIdentical": true,
+  "cliSha256": "9efe3e7390a83aa0c255ce6933783a0c1672f7e13e6f9b49469c217735337358",
+  "at": "2026-11-10T05:08:27.788Z"
+}
