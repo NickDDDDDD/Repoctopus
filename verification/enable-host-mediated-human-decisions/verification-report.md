@@ -8,7 +8,7 @@ Package files: `476`
 
 Package content bytes: `6144521`
 
-The [verification narrative](../../docs/superpowers/reports/enable-host-mediated-human-decisions.md) distinguishes the actual checks from pending acceptance. The package was independently installed and resumed an isolated three-repository Run in Open/waiting from a fresh process. Its native Host question has been displayed; the real user answer and submission are still pending. This file is a candidate binding, not a claim of completed native UI acceptance or a passed full Guard.
+The [verification narrative](../../docs/superpowers/reports/enable-host-mediated-human-decisions.md) distinguishes the actual checks from pending acceptance. The package was independently installed and resumed an isolated three-repository Run from a fresh process. The real native Open answer was submitted and accepted, cold query/replay retained the original decision, and replay during Design left the entire Run state unchanged. The independent Design answer and final Build boundary check remain pending. This file is a candidate binding, not a claim of a passed full Guard.
 
 Archive SHA-256: `a00f5763555e30d4055d36fc8f6635252c6ff62a56f889950f55289947c72562`.
 

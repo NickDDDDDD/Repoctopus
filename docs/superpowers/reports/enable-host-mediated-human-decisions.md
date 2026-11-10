@@ -38,10 +38,12 @@ Repoctopus 新增 `run decision` 与 `run decide --response-file`；Open/Design 
 
 实际安装包已使用公开 OpenSpec CLI 在独立 XDG registry 初始化 Store，建立 Workspace/frontend/backend 三仓和本地 bare 远端，分别立即 push 分支与提交。实验 Run 为 `change-host-decision-lab-verify-host-decisions-ebaa673679b09daa`。
 
-当前实验停在 Open 等待，`requestId=human-decision:6978864ac54bce30d12a40d4`，提案摘要 `sha256:b2884729a6a050af024a246ba283431860135258f2f1c4f45d04b523b25c13e7`。最终包已从新进程恢复原等待并交付原生提问指引；Host 已展示真实问题，尚在等待真实答复，未提交决定。
+真实原生问题 `call_a512c68bfabb4e798cba62e2167a4f89` 已取得用户“批准 Open，branch 隔离进入 Design”的答复。最终安装包对原 `requestId=human-decision:6978864ac54bce30d12a40d4`、提案摘要 `sha256:b2884729a6a050af024a246ba283431860135258f2f1c4f45d04b523b25c13e7` 接受决定，记录真实 CLI 主体、native/user-response 和答复引用摘要，没有伪装 IDE 身份。
+
+`native-open-cold-query.json`、`native-open-replay.json` 与 `native-open-design-boundary-proof.json` 证明：新进程返回同一原始决定；进入 Design 后重放旧 Open 答复，完整 Run state 不变，stateVersion=65、checkEpoch=4，仍等待独立 Design 请求 `human-decision:9e0a1590d5206c0681bede46`。当前已经展示实验 Design 的独立原生问题，尚未取得答复，也没有提交该决定。
 
 ## 未完成与门禁
 
-真实原生答复、最终包的实验 Open/Design 接受及后继核对尚未完成，不宣称任务 3.2 已通过。当前任务 8/10 完成，3.2 和 4.1 保持未完成。完整 Build/Verify Guard、归档、PR、CI、合入和发布均尚未完成。
+真实原生 Open 答复与接受已经完成；实验 Design 的真实答复和到达 Build 后停止的核对尚未完成，不宣称任务 3.2 已通过。当前任务 8/10 完成，3.2 和 4.1 保持未完成。完整 Build/Verify Guard、归档、PR、CI、合入和发布均尚未完成。
 
 正式检查入口保持 check policy 的精确 argv：`npm.cmd run build` 与 `npm.cmd run verify`，后者绑定 `VITEST_MAX_WORKERS=2`。只有实际验收及任务完成后才向同一 Comet Run 提交阶段收据；本 Change 不发布 Release。
