@@ -39,14 +39,14 @@
       **Blocked by:** 2.4
       **Acceptance:** 观测只来自已持久化决定，可关联原请求且不上传问答正文或凭据；没有新审批后端、SDK 依赖或用遥测提交决定的入口。
       **Requirements:** specification-authority#规划批准的宿主回传绑定当前提案
-- [ ] 3.2 用规范 Git 字节打包并独立安装，在真实多仓目录验证 Open／Design 两次独立审批、isolation、公开 CLI 提交和冷恢复；至少保存一次真实宿主原生问题、用户选择及 Runtime 接受的完整回执。 <!-- comet-task:cb90b94f-8f60-4e40-8e55-c11e34c53123 -->
+- [x] 3.2 用规范 Git 字节打包并独立安装，在真实多仓目录验证 Open／Design 两次独立审批、isolation、公开 CLI 提交和冷恢复；至少保存一次真实宿主原生问题、用户选择及 Runtime 接受的完整回执。 <!-- comet-task:cb90b94f-8f60-4e40-8e55-c11e34c53123 -->
       **Blocked by:** 3.1
       **Acceptance:** 安装包身份、真实交互来源和请求／提案／阶段前后事实可核对；无终端手工决定即可完成宿主路径；模拟 Host 与真实 UI 证据明确区分，未完成真实交互时不宣称验收通过。
       **Requirements:** change-lifecycle#生命周期人工决定通过宿主交互闭环提交, change-lifecycle#宿主人工决定恢复保留原请求及已接受结果, specification-authority#规划批准的宿主回传绑定当前提案
 
 ## 4. 集成验证准备
 
-- [ ] 4.1 完成独立集成审查和相关回归，整理正式验证报告、实际包身份与 RED／GREEN／恢复回执，并固定 Comet 完整 Build／Verify 的精确检查入口。 <!-- comet-task:85e5ae15-673f-49c4-869f-684fe4cd9f36 -->
+- [x] 4.1 完成独立集成审查和相关回归，整理正式验证报告、实际包身份与 RED／GREEN／恢复回执，并固定 Comet 完整 Build／Verify 的精确检查入口。 <!-- comet-task:85e5ae15-673f-49c4-869f-684fe4cd9f36 -->
       **Blocked by:** 3.2
       **Acceptance:** 无未处理阻断发现，源码与验证候选一致；报告不提前宣称后续 Guard、归档、CI、合入或发布已完成，不放宽严格包身份校验。
       **Requirements:** change-lifecycle#生命周期人工决定通过宿主交互闭环提交, change-lifecycle#宿主人工决定恢复保留原请求及已接受结果, specification-authority#规划批准的宿主回传绑定当前提案

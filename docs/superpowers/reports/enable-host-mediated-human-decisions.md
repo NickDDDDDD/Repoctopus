@@ -40,10 +40,12 @@ Repoctopus 新增 `run decision` 与 `run decide --response-file`；Open/Design 
 
 真实原生问题 `call_a512c68bfabb4e798cba62e2167a4f89` 已取得用户“批准 Open，branch 隔离进入 Design”的答复。最终安装包对原 `requestId=human-decision:6978864ac54bce30d12a40d4`、提案摘要 `sha256:b2884729a6a050af024a246ba283431860135258f2f1c4f45d04b523b25c13e7` 接受决定，记录真实 CLI 主体、native/user-response 和答复引用摘要，没有伪装 IDE 身份。
 
-`native-open-cold-query.json`、`native-open-replay.json` 与 `native-open-design-boundary-proof.json` 证明：新进程返回同一原始决定；进入 Design 后重放旧 Open 答复，完整 Run state 不变，stateVersion=65、checkEpoch=4，仍等待独立 Design 请求 `human-decision:9e0a1590d5206c0681bede46`。当前已经展示实验 Design 的独立原生问题，尚未取得答复，也没有提交该决定。
+`native-open-cold-query.json`、`native-open-replay.json` 与 `native-open-design-boundary-proof.json` 证明：新进程返回同一原始决定；进入 Design 后重放旧 Open 答复，完整 Run state 不变，stateVersion=65、checkEpoch=4，仍等待独立 Design 请求 `human-decision:9e0a1590d5206c0681bede46`。
 
-## 未完成与门禁
+用户随后通过原生问题 `call_6339238cbc1e4f25a5687a15f1d31d91` 明确批准该实验 Design。最终安装包接受独立决定，冷查询返回原记录，下一次 pull 才进入 Build。实验在 `build.configure:7adf01fa02c3` 停止，Work 未领取、checkEpoch=5、stateVersion=69；重放 Design 答复后完整 Run state 不变。三个仓均保留原获批分支，没有执行 Build 或交付。[验收回执](../../../verification/enable-host-mediated-human-decisions/acceptance-receipt.json) 记录包身份、两次真实工具调用及最终边界；原始答复和公共 CLI 输出保留在外部 Evidence。
 
-真实原生 Open 答复与接受已经完成；实验 Design 的真实答复和到达 Build 后停止的核对尚未完成，不宣称任务 3.2 已通过。当前任务 8/10 完成，3.2 和 4.1 保持未完成。完整 Build/Verify Guard、归档、PR、CI、合入和发布均尚未完成。
+## 正式阶段门禁与交付边界
 
-正式检查入口保持 check policy 的精确 argv：`npm.cmd run build` 与 `npm.cmd run verify`，后者绑定 `VITEST_MAX_WORKERS=2`。只有实际验收及任务完成后才向同一 Comet Run 提交阶段收据；本 Change 不发布 Release。
+真实安装包的两次原生审批及冷恢复验收已经完成；模拟协议测试与真实用户交互证据分开记录。阶段门禁由同一 Comet Run 的实际 Guard 收据证明，本报告的任务级结果不替代完整 Build/Verify。
+
+正式检查入口保持 check policy 的精确 argv：`npm.cmd run build` 与 `npm.cmd run verify`，后者绑定 `VITEST_MAX_WORKERS=2`。只有实际验收及任务完成后才向同一 Comet Run 提交阶段收据。归档和 Git 交付需要核对该边界的明确授权；本报告不宣称归档、PR、CI、合入或发布已经完成，本 Change 不发布 Release。

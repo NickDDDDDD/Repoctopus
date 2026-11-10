@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "HostDecisionAcceptance",
+  "implementationCommit": "1366973f23098ff5ca3c9629895d1bc149ed2dc4",
+  "packageContentSha256": "612ebd11255374c104fd91ad8fa45676567d35cab8572d698667c96f2c9ec802",
+  "runId": "change-host-decision-lab-verify-host-decisions-ebaa673679b09daa",
+  "nativeQuestions": [
+    {
+      "callId": "call_a512c68bfabb4e798cba62e2167a4f89",
+      "phase": "open",
+      "requestId": "human-decision:6978864ac54bce30d12a40d4",
+      "decision": "approve",
+      "isolation": "branch"
+    },
+    {
+      "callId": "call_6339238cbc1e4f25a5687a15f1d31d91",
+      "phase": "design",
+      "requestId": "human-decision:9e0a1590d5206c0681bede46",
+      "decision": "approve"
+    }
+  ],
+  "assertions": {
+    "realNativeAnswers": true,
+    "independentRequests": true,
+    "originalDecisionsRetained": true,
+    "coldQuerySameDecision": true,
+    "oldOpenCannotApproveDesign": true,
+    "replayLeavesEntireRunUnchanged": true,
+    "allRegisteredBranchesRetained": true,
+    "stoppedAtBuild": true,
+    "buildWorkUnclaimed": true,
+    "deliveryNotExecuted": true
+  },
+  "final": {
+    "phase": "build",
+    "workKind": "build.configure",
+    "workId": "build.configure:7adf01fa02c3",
+    "checkEpoch": 5,
+    "stateVersion": 69
+  },
+  "branches": {
+    "workspace": "change/verify-host-decisions",
+    "frontend": "change/verify-host-decisions",
+    "backend": "change/verify-host-decisions"
+  }
+}

@@ -8,7 +8,7 @@ Package files: `476`
 
 Package content bytes: `6144521`
 
-The [verification narrative](../../docs/superpowers/reports/enable-host-mediated-human-decisions.md) distinguishes the actual checks from pending acceptance. The package was independently installed and resumed an isolated three-repository Run from a fresh process. The real native Open answer was submitted and accepted, cold query/replay retained the original decision, and replay during Design left the entire Run state unchanged. The independent Design answer and final Build boundary check remain pending. This file is a candidate binding, not a claim of a passed full Guard.
+The [verification narrative](../../docs/superpowers/reports/enable-host-mediated-human-decisions.md) distinguishes task-level checks from formal Guard receipts. The package was independently installed and resumed an isolated three-repository Run from a fresh process. Two real native user answers independently approved Open and Design. Cold query/replay retained the original decisions; replay of the old Open answer during Design and the Design answer during Build left the entire Run state unchanged. The experiment stopped at unclaimed Build Configure, with all three registered branches retained and no delivery. The [acceptance receipt](acceptance-receipt.json) binds those facts to this exact package. This file does not replace a full Comet Guard receipt.
 
 Archive SHA-256: `a00f5763555e30d4055d36fc8f6635252c6ff62a56f889950f55289947c72562`.
 
