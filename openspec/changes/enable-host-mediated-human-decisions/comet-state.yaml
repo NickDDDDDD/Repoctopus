@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 9362a890-7c22-49b1-aee9-387d1ff4feac
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 0b513d0da01c863767bf85b7feeb8bd9a2a411f5
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-10
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/enable-host-mediated-human-decisions
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 62876c4c42b7db3deebc425c27a54e0018f76c303b456b6caff7be62b7722c3c
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: enable-host-mediated-human-decisions
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: e1f2a0b54eb4d372b45be85801ff86b4313adb15b1865b93b2564004af6e1693
+    input:
+      change: enable-host-mediated-human-decisions
+      changeDir: openspec/changes/enable-host-mediated-human-decisions
+      workspaceBaseline:
+        ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 0b513d0da01c863767bf85b7feeb8bd9a2a411f5
+      boundBranch: comet/enable-host-mediated-human-decisions
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-10
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: enable-host-mediated-human-decisions:1
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 8182c09046e2b8a7bddae632f24556121a953f6bf5aad114418d0dd8dc9746c9
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      enable-host-mediated-human-decisions:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 2e882242a5b0e7097d46fa2c691fed63ed964fa1f29f315bbe735ee612e475ee
