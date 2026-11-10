@@ -1420,7 +1420,7 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
       output: process.stdout,
       selectIsolation: lifecycle.phase === 'open',
     });
-    const result = await app.context.commandRouter.execute<unknown, SpecificationApprovalState>(
+    const result = await app.context.commandRouter.execute<unknown, LifecycleHumanDecisionView>(
       'run.change.decide',
       {
         runId,

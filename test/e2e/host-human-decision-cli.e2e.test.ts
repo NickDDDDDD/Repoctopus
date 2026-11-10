@@ -176,7 +176,10 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
   const responseFile = path.join(root, 'response.json');
   for (const patch of [
     { runId: 'different-run' },
+    { requestId: 'wrong-request' },
+    { proposalHash: `sha256:${'0'.repeat(64)}` },
     { isolation: 'invalid' },
+    { isolation: 'worktree' },
     { actorId: 'forged-human' },
     { authenticated: true },
   ]) {

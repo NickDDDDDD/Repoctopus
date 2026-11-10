@@ -121,6 +121,32 @@ function prepareInput() {
 }
 
 describe('SpecificationPlanning service', () => {
+  it('checks a pending Host proposal against real Provider identity without persisting an approval', async () => {
+    const workspace = await temporaryDirectory('repoctopus-host-provider-preflight-');
+    cleanup.push(workspace);
+    const running = app(workspace);
+    try {
+      const prepared = await running.planning.prepare(prepareInput());
+      await running.planning.assertCurrentProposal(
+        prepared.changeId,
+        'design',
+        prepared.decisionRequest.requestId,
+        prepared.decisionRequest.proposalHash,
+      );
+      running.specification.provider.version = '2.0.0';
+      await expect(
+        running.planning.assertCurrentProposal(
+          prepared.changeId,
+          'design',
+          prepared.decisionRequest.requestId,
+          prepared.decisionRequest.proposalHash,
+        ),
+      ).rejects.toThrow(/drifted/);
+      expect((await running.planning.status(prepared.changeId))?.decision).toBeNull();
+    } finally {
+      await running.context.fiber.dispose();
+    }
+  });
   it('runs preflight before persisting an approval request and rejects manifest drift', async () => {
     const blockedWorkspace = await temporaryDirectory('repoctopus-spec-preflight-blocked-');
     cleanup.push(blockedWorkspace);
