@@ -1,0 +1,3422 @@
+# comet-execution: managed-run
+change_id: 074b366b-4253-45fb-b4f8-e844840f11e1
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: f47eabf081fa48fb27d020d53b2ccdcda2b2cab3
+design_doc: openspec/changes/archive/2026-11-10-preserve-build-completions-on-verify-repair/design.md
+plan: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+branch_status: pending
+created_at: 2026-11-09
+verified_at: 2026-11-09
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/preserve-build-completions-on-verify-repair
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-10-preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+handoff_hash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: e8870f3090273999c6f0024167ae271d1a85a9d08b3cc6d013d2bf1e4a8f8ed1
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: preserve-build-completions-on-verify-repair
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 7f58d0f63bc63d6ffff93ce3ff32b869df408fecb6df82e2950d903d9e28f80e
+    input:
+      change: preserve-build-completions-on-verify-repair
+      changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+      workspaceBaseline:
+        ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: f47eabf081fa48fb27d020d53b2ccdcda2b2cab3
+      boundBranch: codex/preserve-build-completions-on-verify-repair
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 8
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-09
+      designDoc: openspec/changes/archive/2026-11-10-preserve-build-completions-on-verify-repair/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-10-preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+      handoffHash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+      verifiedAt: 2026-11-09
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 32
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-d9c22869467880ec0e8137a322142b53529e214559b50fce0c39ed11643b8d66
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:1
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 0adb1574af2f6ca53e72baa7e1807754f34e895b0c5543c9fc2a4341ef06c170
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:1
+          attempt: 1
+          claimToken: portable-d9c22869467880ec0e8137a322142b53529e214559b50fce0c39ed11643b8d66
+          inputHash: 0adb1574af2f6ca53e72baa7e1807754f34e895b0c5543c9fc2a4341ef06c170
+          outcomeId: f383de3a-6926-44e4-9437-db39190d27de
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0aaddd60373d361fd023016d2044e82471f54b76804282268773857f91c711ec
+            outcomeId: f383de3a-6926-44e4-9437-db39190d27de
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-09cfc74fc9746d456b8937fdafd1e27c46bcca73833225eb12561682133b4a0b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:4
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: e3418883c05804df6012f63cba9204ca476652c84e2b275bdbea676d37220b06
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:4
+          attempt: 1
+          claimToken: portable-09cfc74fc9746d456b8937fdafd1e27c46bcca73833225eb12561682133b4a0b
+          inputHash: e3418883c05804df6012f63cba9204ca476652c84e2b275bdbea676d37220b06
+          outcomeId: preserve-build-completions-on-verify-repair:4:1:executor-result
+          output:
+            contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e548050f631c5673339b2624b5906c31de53200c1322e4ffa3f66ed6fda8b5b0
+            outcomeId: preserve-build-completions-on-verify-repair:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-edeac36eedf788b4e55d2d97dca550b7b8a4cedbc6790c646b480e9ea799ffa0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:5
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: c8d8657b08494204c848ef2ee12b68b616dd3c0602110639d8843b19139ed905
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:5
+          attempt: 1
+          claimToken: portable-edeac36eedf788b4e55d2d97dca550b7b8a4cedbc6790c646b480e9ea799ffa0
+          inputHash: c8d8657b08494204c848ef2ee12b68b616dd3c0602110639d8843b19139ed905
+          outcomeId: 36030066-8338-4b04-bf5f-41242347b88f
+          output:
+            handoffContext: openspec/changes/preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+            handoffHash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+            proposal: 按已批准的十项任务实施选择性 Verify 返工：保留 Plan→Execute→Check→Verify。Runtime 从失败
+              Bundle 的 Acceptance Trace、当前 Plan 与依赖闭包计算影响范围，使用未受影响机器 Receipt
+              的真实输入/产物证明保留原 completion。相同内容 Plan 复用原身份，真实计划变化才新 revision；Task
+              已完成的修复仍使用普通 Execute。增加 Work 权威的内部 revise-implementation 分类，不改
+              continue-build 同 Work retry 语义，不新增阶段/Work kind。Build Protocol 使用单一
+              schema 3 保存修复依据，原 Package Completion 和 Host result 结构不改；不支持旧开发
+              checkpoint 迁移。未知范围或证明不可观察稳定阻断，全局影响有依据时允许全量重验。Plan/Execute/Check 的
+              CAS 接受前重验依赖，保证跨进程恢复不重放。沿既有 Trace/OTLP 记录真实原因和保留/失效数量。只读 builder
+              check 无重大未决问题；尚未实施或宣称新回归通过。不修改已批准 delta specs，不引入第三方代码/依赖或新配置开关。本
+              Change 建议采用 autonomous、TDD、thorough，沿用已批准 worktree；执行配置仍等待用户明确选择。
+            requirementsEvidence:
+              contentHash: c891c2a9790fd8c19e7bc5585fccd510f45cc5f93c6716d42b1b808be261a053
+              ref: openspec/changes/preserve-build-completions-on-verify-repair
+            sourceEvidence:
+              contentHash: 3f1c7cca48ae9ebb5acb891168479a9145eda9eddace62815c8650749e2aad9f
+              ref: openspec/changes/preserve-build-completions-on-verify-repair
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d68a9600ea6136f6ce1a5cd1e415d10167a7ffc0c8f564d5396353f8da7d2e92
+            outcomeId: 36030066-8338-4b04-bf5f-41242347b88f
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-07a65bbe2777484f07df2c9738b90e795f0ffd76ddd7df49bad59efdde1af10a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:7
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 024e2c2e42fd8c0f8a57d7410e9b3b662e4c466b908adbc6d48b59c91f76062d
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:7
+          attempt: 1
+          claimToken: portable-07a65bbe2777484f07df2c9738b90e795f0ffd76ddd7df49bad59efdde1af10a
+          inputHash: 024e2c2e42fd8c0f8a57d7410e9b3b662e4c466b908adbc6d48b59c91f76062d
+          outcomeId: 3a329cc4-f7a5-4238-8ad2-49b7094b83a6
+          output:
+            designDoc: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d79ddbc8e3ed82dd78181ea1af78718cf0d0fb913fb177e8b602ee62da53c21c
+            outcomeId: 3a329cc4-f7a5-4238-8ad2-49b7094b83a6
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c22e10d6c2affca6a24c3791e1f9e2c46bd70305cbc6ed722ed210b64e38623f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:9
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 34a3df5b598a9e54ce9ea8474e57e328139cb33a67df650ccd9bb551b22e5166
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:9
+          attempt: 1
+          claimToken: portable-c22e10d6c2affca6a24c3791e1f9e2c46bd70305cbc6ed722ed210b64e38623f
+          inputHash: 34a3df5b598a9e54ce9ea8474e57e328139cb33a67df650ccd9bb551b22e5166
+          outcomeId: 76f66b65-3b5c-4944-a178-41145ab48fba
+          output:
+            boundBranch: codex/preserve-build-completions-on-verify-repair
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c811413cf910f2318ec16b2515fa7ae4fec269e9811573287c598e1f03da2d76
+            outcomeId: 76f66b65-3b5c-4944-a178-41145ab48fba
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-6f3d20143d7a63669f96f9226d27721ac7170366011c859142f8f6c6883a290f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:11
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: bd5bab5b6c6ddce05ec0cc4ee457d5c23ba3d4b4bacfc057a8d8ae2d344d8fb0
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:11
+          attempt: 1
+          claimToken: portable-6f3d20143d7a63669f96f9226d27721ac7170366011c859142f8f6c6883a290f
+          inputHash: bd5bab5b6c6ddce05ec0cc4ee457d5c23ba3d4b4bacfc057a8d8ae2d344d8fb0
+          outcomeId: 4dfe2e57-9a63-42dd-92e2-82648f5f376a
+          output:
+            designEvidence:
+              contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+              ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+            plan: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+            planEvidence:
+              contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+              ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+            taskRevision: 532da6a81ca63a15fb60d33e2725af91757d6572b45546eec230e20f5c0549d7
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 659ab7696b3ce26635d6fb52a4bc4a744a6ebfe08c62a19f3aa732487b84a6a8
+            outcomeId: 4dfe2e57-9a63-42dd-92e2-82648f5f376a
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-preserve-verify-completions
+          token: portable-e2585798d7106652af7b972e529f917a427f235351d93989a9bcc06104e5a250
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:13
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 96ba7f7f7c982aa8ff5eeffdc46b7ea1b534c2b3afefb373d744e1d71d9e14d3
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:13
+          attempt: 1
+          claimToken: portable-e2585798d7106652af7b972e529f917a427f235351d93989a9bcc06104e5a250
+          inputHash: 96ba7f7f7c982aa8ff5eeffdc46b7ea1b534c2b3afefb373d744e1d71d9e14d3
+          outcomeId: d03300e2-dd0e-4e64-937b-ecf8aa9bb9c0
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8f1773578662c4d8053ea494a15303f64dd8727cdb2d22e166f6692c3a804fce
+            outcomeId: d03300e2-dd0e-4e64-937b-ecf8aa9bb9c0
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-984e38e6d4f7277173ffa239abf22042c58fa0c7dbe827dcb6c33cce708f4aa2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:14
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 34fd31e00359caed11a3875092ee17598ff9d3e5fc5402f62d2e44fa69aa0aae
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:14
+          attempt: 1
+          claimToken: portable-984e38e6d4f7277173ffa239abf22042c58fa0c7dbe827dcb6c33cce708f4aa2
+          inputHash: 34fd31e00359caed11a3875092ee17598ff9d3e5fc5402f62d2e44fa69aa0aae
+          outcomeId: 5b23809c-93ca-47a0-b0b7-01bcf719dfd2
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: f7c6107631100025b290bcd9b89179b71ce738e4503a8ebdf097d234bed1abe1
+            cwd: .
+            environment: f66dcb6bcb56474283a569ce1b396467650d8ec538920c7f223cee62b5ca071d
+            exitCode: 0
+            inputAfter: fe0963cc44ce7b82c3a29e612261e03457afe7e27dd7bcadfba0a9491958ae4b
+            inputBefore: fe0963cc44ce7b82c3a29e612261e03457afe7e27dd7bcadfba0a9491958ae4b
+            manifestHash: ab1036383ea9b7debfede3eb17b7b38b9a98efd23917c6047d76c90a1f876dfb
+            manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/cbc37846-8081-46aa-a35c-0ba94c68fa22.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/102110f0-45e9-4165-8f67-52ce1452f364.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: df223da5a0997cc423609ed35542f161c251aa4e98a9024b07bcac31e507d28b
+            outcomeId: 5b23809c-93ca-47a0-b0b7-01bcf719dfd2
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-86c5e9981551d59679b238e847d6cd5645f0f91c0c0473683452e6c74a929747
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:16
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: c291758b3e31bd9b66699cd13d6fb974c084221771f2c0dc5b2717f8aa5ea43e
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:16
+          attempt: 1
+          claimToken: portable-86c5e9981551d59679b238e847d6cd5645f0f91c0c0473683452e6c74a929747
+          inputHash: c291758b3e31bd9b66699cd13d6fb974c084221771f2c0dc5b2717f8aa5ea43e
+          outcomeId: a4f10436-7432-441a-9958-5b2e6d21686b
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fef39335f8b790a3dc190de43dce96d9ea48084b29bf2aed7525a79e8d2d344c
+            outcomeId: a4f10436-7432-441a-9958-5b2e6d21686b
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-dfa1b34035b0587838cf2f503c49614e295e879531444cb783129969a891f1cf
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:18
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: a4d3f219f4737b62bdf3ac995fc1a6858c65005752f4875f9d68ed7f0046db92
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:18
+          attempt: 1
+          claimToken: portable-dfa1b34035b0587838cf2f503c49614e295e879531444cb783129969a891f1cf
+          inputHash: a4d3f219f4737b62bdf3ac995fc1a6858c65005752f4875f9d68ed7f0046db92
+          outcomeId: 4e81cae7-b988-43eb-9b78-8d8b4acdfd4b
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 4774260ebb025b4b8777021930bfaa6c396726560f16917de5852386a282ab5c
+            cwd: .
+            deliveryInputs: {}
+            environment: 5120f4eb12a35ed5476bafbe77135f9d3b2c9f75c0102057f540b000faa1c413
+            exitCode: 1
+            inputAfter: 24a9fc0626377957dfdf4345a5ec87766173681959d540ffd038ee843995bba4
+            inputBefore: 24a9fc0626377957dfdf4345a5ec87766173681959d540ffd038ee843995bba4
+            manifestHash: eb7283b243b8976e9fd734dd49a5bf4d3c832432ef76cdde5b075ae31c2d7990
+            manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/e9053f26-fc52-4208-afcc-9fb1b9f908f3.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/f5389ac5-0200-461a-8048-2454ccccbba3.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: e2161dfab8bb00cfaec91b19170d743d5315d44c5842528126d9bb253a53ea0a
+            outcomeId: 4e81cae7-b988-43eb-9b78-8d8b4acdfd4b
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-04db6032600117567a9b3674548fc698a4f6f389ab622025ab72bd88558ce014
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:19
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 0cd7f2c0f6ad73dd5775774fd40731c43851684904191cb7fa4e0ff2968c1675
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:19
+          attempt: 1
+          claimToken: portable-04db6032600117567a9b3674548fc698a4f6f389ab622025ab72bd88558ce014
+          inputHash: 0cd7f2c0f6ad73dd5775774fd40731c43851684904191cb7fa4e0ff2968c1675
+          outcomeId: cf12c511-0b23-474c-9281-de4e14aa40e6
+          output:
+            designEvidence:
+              contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+              ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+            plan: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+            planEvidence:
+              contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+              ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+            taskRevision: 532da6a81ca63a15fb60d33e2725af91757d6572b45546eec230e20f5c0549d7
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ac39a86b7a43a3ef0f183aba636398ad10e36b84b363b9068f804133cf7e15a5
+            outcomeId: cf12c511-0b23-474c-9281-de4e14aa40e6
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-preserve-verify-completions
+          token: portable-fa88455caa75f768cb07121a660f628b939f5f1201619519ca606571178405b0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:21
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 0cd7f2c0f6ad73dd5775774fd40731c43851684904191cb7fa4e0ff2968c1675
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:21
+          attempt: 1
+          claimToken: portable-fa88455caa75f768cb07121a660f628b939f5f1201619519ca606571178405b0
+          inputHash: 0cd7f2c0f6ad73dd5775774fd40731c43851684904191cb7fa4e0ff2968c1675
+          outcomeId: 317f0d75-1593-4dbf-8ea2-26f1ed79bc3a
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d086a5b80fa420de8ace395feb2dfad2c0bd177f570a783740a7c9321da1255d
+            outcomeId: 317f0d75-1593-4dbf-8ea2-26f1ed79bc3a
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-f7da7dccff0d5eb9eb0a8496e7fa374d773c6ba5ea087b0d05d110b60cc7130c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:22
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 0cd7f2c0f6ad73dd5775774fd40731c43851684904191cb7fa4e0ff2968c1675
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:22
+          attempt: 1
+          claimToken: portable-f7da7dccff0d5eb9eb0a8496e7fa374d773c6ba5ea087b0d05d110b60cc7130c
+          inputHash: 0cd7f2c0f6ad73dd5775774fd40731c43851684904191cb7fa4e0ff2968c1675
+          outcomeId: 3686082b-b38a-4f44-85b3-83cec03833c0
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 97d93530181c0bb48638f4da496627d19b2993ccea336ca6b9304158e2ebcc6d
+            cwd: .
+            environment: f66dcb6bcb56474283a569ce1b396467650d8ec538920c7f223cee62b5ca071d
+            exitCode: 0
+            inputAfter: cc39359391c9be39b28b98393f75baf0fb16f3d4efd226551b276227a22d8dd1
+            inputBefore: cc39359391c9be39b28b98393f75baf0fb16f3d4efd226551b276227a22d8dd1
+            manifestHash: 5b54946f94066cb22e457701970d318e611dbb8c2ef7a5a946311b3ef4f63a5c
+            manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/b302bae0-a4da-4ffa-83d2-8914449bf70e.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fcc3494f-6cee-4fcd-97d5-8056be6dc1a7.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 4f8deeb10e4f57ebb78d1d2476cc06b626efb94dc41e9b1f6c845d6aafaf3ac5
+            outcomeId: 3686082b-b38a-4f44-85b3-83cec03833c0
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-b560630f1c83ad133e8cfd017ed991f8afca38e9ccbfafdc51712dbaeb3776b2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:24
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 4d6f9827552926983edd26bc046c56cd07f1e526c588acb1e42f25292cc74333
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:24
+          attempt: 1
+          claimToken: portable-b560630f1c83ad133e8cfd017ed991f8afca38e9ccbfafdc51712dbaeb3776b2
+          inputHash: 4d6f9827552926983edd26bc046c56cd07f1e526c588acb1e42f25292cc74333
+          outcomeId: 300173f6-ea78-4e0a-ab39-e28711c50508
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 77c22db227e72e02fa6453c6db644399cc6183369697d522e481b4410a418354
+            outcomeId: 300173f6-ea78-4e0a-ab39-e28711c50508
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-0ffd2d200473c2c68d0b3a7e06565da6c1ba0504844f044df73f3b58cb9f8f37
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:26
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 7cfaa8ee0d53303540d0b9b359caf28995025312866a560ac67f679eeb6c477a
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:26
+          attempt: 1
+          claimToken: portable-0ffd2d200473c2c68d0b3a7e06565da6c1ba0504844f044df73f3b58cb9f8f37
+          inputHash: 7cfaa8ee0d53303540d0b9b359caf28995025312866a560ac67f679eeb6c477a
+          outcomeId: 3f829be3-aecf-47fc-ad9f-2f41ad0196a6
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: f79ecea1b5f011e4f1a4cf88f95985ec763c0e5096188b3eee1e4518cf25f4c8
+            cwd: .
+            deliveryInputs: {}
+            environment: 5120f4eb12a35ed5476bafbe77135f9d3b2c9f75c0102057f540b000faa1c413
+            exitCode: 0
+            inputAfter: bbb5972aae98148c56ad5dea75d6bcf89b4e510075c763708b397fd96ae3c3b8
+            inputBefore: bbb5972aae98148c56ad5dea75d6bcf89b4e510075c763708b397fd96ae3c3b8
+            manifestHash: 5b54946f94066cb22e457701970d318e611dbb8c2ef7a5a946311b3ef4f63a5c
+            manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/145d5d57-f308-4caf-ad1d-b4f4de7876a8.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fc9e8240-3ad5-4bac-a391-8add22d34f16.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: eb8d57039230055a255034905b2f4b890e22abcb2fc08d3ee9c95a05a7a72fd1
+            outcomeId: 3f829be3-aecf-47fc-ad9f-2f41ad0196a6
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-39f31d3412502e1248427c617b6f8cc89b80c598ad2fa5252cc566c8398eddbc
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:28
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 7f8717ff5a5727e878def57330aae54b5fd97ae574528ef0492fedb06f08681e
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:28
+          attempt: 1
+          claimToken: portable-39f31d3412502e1248427c617b6f8cc89b80c598ad2fa5252cc566c8398eddbc
+          inputHash: 7f8717ff5a5727e878def57330aae54b5fd97ae574528ef0492fedb06f08681e
+          outcomeId: b1db657d-84fc-49ec-8672-91b554053fef
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 10 项任务已完成，独立审查无阻断；同一 Comet Run 的完整 Build/Verify Guard 通过（1172 tests
+              passed, 5 skipped，后续全部检查通过）。归档本 Change 并同步其 delta
+              specs，提交归档产物，push 当前
+              codex/preserve-build-completions-on-verify-repair 分支，向 origin/main
+              创建一个 PR；CI 通过后合入 main。保留原失败历史与真实五仓安装包验收记录；不发布 Release，不处理其他活动
+              Change。
+            targetBranch: codex/preserve-build-completions-on-verify-repair
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 4b1e0e8cad51d5ba39c5ceb7970ffce86c57aabc9d276423e0392480503d31b0
+            outcomeId: b1db657d-84fc-49ec-8672-91b554053fef
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-898b2bc9c23e127ca94db2e8a68b13ab526dd63194e88088a91507f64dbd03ce
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:30
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: aec885fb77e15d1893d8271f13f6f25356f48cb254559c06bcbee4e57ec6044d
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:30
+          attempt: 1
+          claimToken: portable-898b2bc9c23e127ca94db2e8a68b13ab526dd63194e88088a91507f64dbd03ce
+          inputHash: aec885fb77e15d1893d8271f13f6f25356f48cb254559c06bcbee4e57ec6044d
+          outcomeId: fe6a316b-cb99-490c-bea6-16ebcb617195
+          output:
+            baseCommit: f79faa3c31088e05d5b20173554bebeaa3ac8e38
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/preserve-build-completions-on-verify-repair
+            verifiedBranch: codex/preserve-build-completions-on-verify-repair
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c84f356535ada447f4c3c20b6479f48278fa2290ad38244bf7528bab95ae11bc
+            outcomeId: fe6a316b-cb99-490c-bea6-16ebcb617195
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-ce9200536c0e2f1b1da85de1efb63374894fd2f0ac789694cf2eba7c432c1e87
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preserve-build-completions-on-verify-repair:31
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 87cb3276a5a21d0565deb2dc9fc41931c56349fe0a2e6f1c7471ec56120bc9ff
+        outcome:
+          actionId: preserve-build-completions-on-verify-repair:31
+          artifacts:
+            - sha256: d8ab381a7b094456b32e757a917e7aa2025c8b9e9023e643332fc7072504064b
+              uri: openspec/changes/archive/2026-11-10-preserve-build-completions-on-verify-repair/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-ce9200536c0e2f1b1da85de1efb63374894fd2f0ac789694cf2eba7c432c1e87
+          inputHash: 87cb3276a5a21d0565deb2dc9fc41931c56349fe0a2e6f1c7471ec56120bc9ff
+          outcomeId: 276ef839-2a7a-4503-9701-d90fd0431ab6
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-10-preserve-build-completions-on-verify-repair
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 04808f3ec86e88a8b316e4830f55220e87d57eee456b78313af13ed430cba50a
+            outcomeId: 276ef839-2a7a-4503-9701-d90fd0431ab6
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: preserve-build-completions-on-verify-repair:32
+        input:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs: {}
+        inputHash: 9338d981f3c1fa568b41c775f1fd7dab736c154f87a4d815f64bc5076de5ca88
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: preserve-build-completions-on-verify-repair
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      preserve-build-completions-on-verify-repair:1:
+        results: {}
+        sequence: 1
+      preserve-build-completions-on-verify-repair:11:
+        results: {}
+        sequence: 11
+      preserve-build-completions-on-verify-repair:13:
+        results: {}
+        sequence: 13
+      preserve-build-completions-on-verify-repair:14:
+        results: {}
+        sequence: 14
+      preserve-build-completions-on-verify-repair:16:
+        results: {}
+        sequence: 16
+      preserve-build-completions-on-verify-repair:18:
+        results: {}
+        sequence: 18
+      preserve-build-completions-on-verify-repair:19:
+        results: {}
+        sequence: 19
+      preserve-build-completions-on-verify-repair:21:
+        results: {}
+        sequence: 21
+      preserve-build-completions-on-verify-repair:22:
+        results: {}
+        sequence: 22
+      preserve-build-completions-on-verify-repair:24:
+        results: {}
+        sequence: 24
+      preserve-build-completions-on-verify-repair:26:
+        results: {}
+        sequence: 26
+      preserve-build-completions-on-verify-repair:28:
+        results: {}
+        sequence: 28
+      preserve-build-completions-on-verify-repair:30:
+        results: {}
+        sequence: 30
+      preserve-build-completions-on-verify-repair:31:
+        results: {}
+        sequence: 31
+      preserve-build-completions-on-verify-repair:32:
+        results: {}
+        sequence: 32
+      preserve-build-completions-on-verify-repair:4:
+        results: {}
+        sequence: 4
+      preserve-build-completions-on-verify-repair:5:
+        results: {}
+        sequence: 5
+      preserve-build-completions-on-verify-repair:7:
+        results: {}
+        sequence: 7
+      preserve-build-completions-on-verify-repair:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: preserve-build-completions-on-verify-repair:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+              ref: openspec/changes/preserve-build-completions-on-verify-repair
+        proposalHash: c6b179b1fbfe9094d2008e17644a30cd8582bdf682550971eb2e0aba8748effe
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+          choice: approved
+          proposalHash: c6b179b1fbfe9094d2008e17644a30cd8582bdf682550971eb2e0aba8748effe
+      - id: preserve-build-completions-on-verify-repair:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+              handoffHash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+              proposal: 按已批准的十项任务实施选择性 Verify 返工：保留 Plan→Execute→Check→Verify。Runtime 从失败
+                Bundle 的 Acceptance Trace、当前 Plan 与依赖闭包计算影响范围，使用未受影响机器 Receipt
+                的真实输入/产物证明保留原 completion。相同内容 Plan 复用原身份，真实计划变化才新 revision；Task
+                已完成的修复仍使用普通 Execute。增加 Work 权威的内部 revise-implementation 分类，不改
+                continue-build 同 Work retry 语义，不新增阶段/Work kind。Build Protocol
+                使用单一 schema 3 保存修复依据，原 Package Completion 和 Host result
+                结构不改；不支持旧开发 checkpoint
+                迁移。未知范围或证明不可观察稳定阻断，全局影响有依据时允许全量重验。Plan/Execute/Check 的 CAS
+                接受前重验依赖，保证跨进程恢复不重放。沿既有 Trace/OTLP 记录真实原因和保留/失效数量。只读 builder
+                check 无重大未决问题；尚未实施或宣称新回归通过。不修改已批准 delta
+                specs，不引入第三方代码/依赖或新配置开关。本 Change 建议采用
+                autonomous、TDD、thorough，沿用已批准 worktree；执行配置仍等待用户明确选择。
+              requirementsEvidence:
+                contentHash: c891c2a9790fd8c19e7bc5585fccd510f45cc5f93c6716d42b1b808be261a053
+                ref: openspec/changes/preserve-build-completions-on-verify-repair
+              sourceEvidence:
+                contentHash: 3f1c7cca48ae9ebb5acb891168479a9145eda9eddace62815c8650749e2aad9f
+                ref: openspec/changes/preserve-build-completions-on-verify-repair
+        proposalHash: 3340098bd5b4726b603a959234b61362fc428ccccf3a95c3d550489e11827d31
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-3340098bd5b4726b603a959234b61362fc428ccccf3a95c3d550489e11827d31-approved
+          choice: approved
+          proposalHash: 3340098bd5b4726b603a959234b61362fc428ccccf3a95c3d550489e11827d31
+      - id: preserve-build-completions-on-verify-repair:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs:
+            full.build.configure:
+              boundBranch: codex/preserve-build-completions-on-verify-repair
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: b4013d058b89be2fbeca5c7ba44a01fd7c55130623ee4b797fd1d3568db85dc0
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 11983f85-9d90-4ba3-898c-5c3722f943ba
+          choice: approved
+          proposalHash: b4013d058b89be2fbeca5c7ba44a01fd7c55130623ee4b797fd1d3568db85dc0
+      - id: preserve-build-completions-on-verify-repair:29
+        stepId: full.archive.confirm
+        sequence: 29
+        status: resolved
+        proposal:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 10 项任务已完成，独立审查无阻断；同一 Comet Run 的完整 Build/Verify Guard 通过（1172 tests
+                passed, 5 skipped，后续全部检查通过）。归档本 Change 并同步其 delta
+                specs，提交归档产物，push 当前
+                codex/preserve-build-completions-on-verify-repair 分支，向
+                origin/main 创建一个 PR；CI 通过后合入 main。保留原失败历史与真实五仓安装包验收记录；不发布
+                Release，不处理其他活动 Change。
+              targetBranch: codex/preserve-build-completions-on-verify-repair
+        proposalHash: 17e559cf4991171507e5568637b53821cd67ed9820e930276f867c1c5a59db64
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-17e559cf4991171507e5568637b53821cd67ed9820e930276f867c1c5a59db64-pr
+          choice: pr
+          proposalHash: 17e559cf4991171507e5568637b53821cd67ed9820e930276f867c1c5a59db64
+    evidenceWaits:
+      - id: preserve-build-completions-on-verify-repair:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/preserve-build-completions-on-verify-repair
+          contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+          submissionId: 9692aeba-98d7-44d4-9515-93138deebb90
+      - id: preserve-build-completions-on-verify-repair:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+          contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+          submissionId: 80c162f0-8ab5-4b35-a1a1-d9ae3ffd9704
+      - id: preserve-build-completions-on-verify-repair:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+          contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+          submissionId: a2047867-df6c-46b8-97cc-3fdbd83d0996
+      - id: preserve-build-completions-on-verify-repair:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/102110f0-45e9-4165-8f67-52ce1452f364.log
+          contentHash: f7c6107631100025b290bcd9b89179b71ce738e4503a8ebdf097d234bed1abe1
+          submissionId: ee4aaf38-8616-4daa-bb21-e0082d9c397e
+      - id: preserve-build-completions-on-verify-repair:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+          contentHash: 7f1db11205f30cf1fc6cd03f78b34f1223e88582499096f0e52039c3061a0252
+          submissionId: 1d6a2f6d-e1ce-405d-83be-2e3cdaf8b630
+      - id: preserve-build-completions-on-verify-repair:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+          contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+          submissionId: 2f30f48b-9da8-4660-9265-48bee677e838
+      - id: preserve-build-completions-on-verify-repair:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fcc3494f-6cee-4fcd-97d5-8056be6dc1a7.log
+          contentHash: 97d93530181c0bb48638f4da496627d19b2993ccea336ca6b9304158e2ebcc6d
+          submissionId: fc41d680-3303-4594-99c9-56b5e3dc05b6
+      - id: preserve-build-completions-on-verify-repair:25
+        stepId: full.verify.report.evidence
+        sequence: 25
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+          contentHash: 4f18d70265bb44539c957d04d65891705f69566983626fe17c4af801cd8bcf02
+          submissionId: ffa9aa65-1ce6-4e9e-805b-b0a27197b91d
+      - id: preserve-build-completions-on-verify-repair:27
+        stepId: full.verify.check.evidence
+        sequence: 27
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fc9e8240-3ad5-4bac-a391-8add22d34f16.log
+          contentHash: f79ecea1b5f011e4f1a4cf88f95985ec763c0e5096188b3eee1e4518cf25f4c8
+          submissionId: 421de8df-8328-4bee-b927-60965652a566
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 50
+  sourceHash: 611b49b55bcfcc4c756015112cbd99c6fe2b15bea254d01fdd2d88c240f604fa
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+              ref: openspec/changes/preserve-build-completions-on-verify-repair
+      - contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+        ref: openspec/changes/preserve-build-completions-on-verify-repair
+      - contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+      - choice: approved
+        proposal:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+              handoffHash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+              proposal: 按已批准的十项任务实施选择性 Verify 返工：保留 Plan→Execute→Check→Verify。Runtime 从失败
+                Bundle 的 Acceptance Trace、当前 Plan 与依赖闭包计算影响范围，使用未受影响机器 Receipt
+                的真实输入/产物证明保留原 completion。相同内容 Plan 复用原身份，真实计划变化才新 revision；Task
+                已完成的修复仍使用普通 Execute。增加 Work 权威的内部 revise-implementation 分类，不改
+                continue-build 同 Work retry 语义，不新增阶段/Work kind。Build Protocol
+                使用单一 schema 3 保存修复依据，原 Package Completion 和 Host result
+                结构不改；不支持旧开发 checkpoint
+                迁移。未知范围或证明不可观察稳定阻断，全局影响有依据时允许全量重验。Plan/Execute/Check 的 CAS
+                接受前重验依赖，保证跨进程恢复不重放。沿既有 Trace/OTLP 记录真实原因和保留/失效数量。只读 builder
+                check 无重大未决问题；尚未实施或宣称新回归通过。不修改已批准 delta
+                specs，不引入第三方代码/依赖或新配置开关。本 Change 建议采用
+                autonomous、TDD、thorough，沿用已批准 worktree；执行配置仍等待用户明确选择。
+              requirementsEvidence:
+                contentHash: c891c2a9790fd8c19e7bc5585fccd510f45cc5f93c6716d42b1b808be261a053
+                ref: openspec/changes/preserve-build-completions-on-verify-repair
+              sourceEvidence:
+                contentHash: 3f1c7cca48ae9ebb5acb891168479a9145eda9eddace62815c8650749e2aad9f
+                ref: openspec/changes/preserve-build-completions-on-verify-repair
+      - handoffContext: openspec/changes/preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+        handoffHash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+        proposal: 按已批准的十项任务实施选择性 Verify 返工：保留 Plan→Execute→Check→Verify。Runtime 从失败
+          Bundle 的 Acceptance Trace、当前 Plan 与依赖闭包计算影响范围，使用未受影响机器 Receipt
+          的真实输入/产物证明保留原 completion。相同内容 Plan 复用原身份，真实计划变化才新 revision；Task
+          已完成的修复仍使用普通 Execute。增加 Work 权威的内部 revise-implementation 分类，不改
+          continue-build 同 Work retry 语义，不新增阶段/Work kind。Build Protocol 使用单一
+          schema 3 保存修复依据，原 Package Completion 和 Host result 结构不改；不支持旧开发
+          checkpoint 迁移。未知范围或证明不可观察稳定阻断，全局影响有依据时允许全量重验。Plan/Execute/Check 的 CAS
+          接受前重验依赖，保证跨进程恢复不重放。沿既有 Trace/OTLP 记录真实原因和保留/失效数量。只读 builder check
+          无重大未决问题；尚未实施或宣称新回归通过。不修改已批准 delta specs，不引入第三方代码/依赖或新配置开关。本 Change
+          建议采用 autonomous、TDD、thorough，沿用已批准 worktree；执行配置仍等待用户明确选择。
+        requirementsEvidence:
+          contentHash: c891c2a9790fd8c19e7bc5585fccd510f45cc5f93c6716d42b1b808be261a053
+          ref: openspec/changes/preserve-build-completions-on-verify-repair
+        sourceEvidence:
+          contentHash: 3f1c7cca48ae9ebb5acb891168479a9145eda9eddace62815c8650749e2aad9f
+          ref: openspec/changes/preserve-build-completions-on-verify-repair
+      - designDoc: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+      - contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+        ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+      - boundBranch: codex/preserve-build-completions-on-verify-repair
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs:
+            full.build.configure:
+              boundBranch: codex/preserve-build-completions-on-verify-repair
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+          ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+        plan: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+        planEvidence:
+          contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+          ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+        taskRevision: 532da6a81ca63a15fb60d33e2725af91757d6572b45546eec230e20f5c0549d7
+      - contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+        ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: f7c6107631100025b290bcd9b89179b71ce738e4503a8ebdf097d234bed1abe1
+        cwd: .
+        environment: f66dcb6bcb56474283a569ce1b396467650d8ec538920c7f223cee62b5ca071d
+        exitCode: 0
+        inputAfter: fe0963cc44ce7b82c3a29e612261e03457afe7e27dd7bcadfba0a9491958ae4b
+        inputBefore: fe0963cc44ce7b82c3a29e612261e03457afe7e27dd7bcadfba0a9491958ae4b
+        manifestHash: ab1036383ea9b7debfede3eb17b7b38b9a98efd23917c6047d76c90a1f876dfb
+        manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/cbc37846-8081-46aa-a35c-0ba94c68fa22.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/102110f0-45e9-4165-8f67-52ce1452f364.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: f7c6107631100025b290bcd9b89179b71ce738e4503a8ebdf097d234bed1abe1
+        ref: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/102110f0-45e9-4165-8f67-52ce1452f364.log
+      - contentHash: 7f1db11205f30cf1fc6cd03f78b34f1223e88582499096f0e52039c3061a0252
+        ref: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 4774260ebb025b4b8777021930bfaa6c396726560f16917de5852386a282ab5c
+        cwd: .
+        deliveryInputs: {}
+        environment: 5120f4eb12a35ed5476bafbe77135f9d3b2c9f75c0102057f540b000faa1c413
+        exitCode: 1
+        inputAfter: 24a9fc0626377957dfdf4345a5ec87766173681959d540ffd038ee843995bba4
+        inputBefore: 24a9fc0626377957dfdf4345a5ec87766173681959d540ffd038ee843995bba4
+        manifestHash: eb7283b243b8976e9fd734dd49a5bf4d3c832432ef76cdde5b075ae31c2d7990
+        manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/e9053f26-fc52-4208-afcc-9fb1b9f908f3.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/f5389ac5-0200-461a-8048-2454ccccbba3.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 97d93530181c0bb48638f4da496627d19b2993ccea336ca6b9304158e2ebcc6d
+        cwd: .
+        environment: f66dcb6bcb56474283a569ce1b396467650d8ec538920c7f223cee62b5ca071d
+        exitCode: 0
+        inputAfter: cc39359391c9be39b28b98393f75baf0fb16f3d4efd226551b276227a22d8dd1
+        inputBefore: cc39359391c9be39b28b98393f75baf0fb16f3d4efd226551b276227a22d8dd1
+        manifestHash: 5b54946f94066cb22e457701970d318e611dbb8c2ef7a5a946311b3ef4f63a5c
+        manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/b302bae0-a4da-4ffa-83d2-8914449bf70e.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fcc3494f-6cee-4fcd-97d5-8056be6dc1a7.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 97d93530181c0bb48638f4da496627d19b2993ccea336ca6b9304158e2ebcc6d
+        ref: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fcc3494f-6cee-4fcd-97d5-8056be6dc1a7.log
+      - contentHash: 4f18d70265bb44539c957d04d65891705f69566983626fe17c4af801cd8bcf02
+        ref: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: f79ecea1b5f011e4f1a4cf88f95985ec763c0e5096188b3eee1e4518cf25f4c8
+        cwd: .
+        deliveryInputs: {}
+        environment: 5120f4eb12a35ed5476bafbe77135f9d3b2c9f75c0102057f540b000faa1c413
+        exitCode: 0
+        inputAfter: bbb5972aae98148c56ad5dea75d6bcf89b4e510075c763708b397fd96ae3c3b8
+        inputBefore: bbb5972aae98148c56ad5dea75d6bcf89b4e510075c763708b397fd96ae3c3b8
+        manifestHash: 5b54946f94066cb22e457701970d318e611dbb8c2ef7a5a946311b3ef4f63a5c
+        manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/145d5d57-f308-4caf-ad1d-b4f4de7876a8.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fc9e8240-3ad5-4bac-a391-8add22d34f16.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: f79ecea1b5f011e4f1a4cf88f95985ec763c0e5096188b3eee1e4518cf25f4c8
+        ref: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fc9e8240-3ad5-4bac-a391-8add22d34f16.log
+      - choice: pr
+        proposal:
+          input:
+            change: preserve-build-completions-on-verify-repair
+            changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+            workspaceBaseline:
+              ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 10 项任务已完成，独立审查无阻断；同一 Comet Run 的完整 Build/Verify Guard 通过（1172 tests
+                passed, 5 skipped，后续全部检查通过）。归档本 Change 并同步其 delta
+                specs，提交归档产物，push 当前
+                codex/preserve-build-completions-on-verify-repair 分支，向
+                origin/main 创建一个 PR；CI 通过后合入 main。保留原失败历史与真实五仓安装包验收记录；不发布
+                Release，不处理其他活动 Change。
+              targetBranch: codex/preserve-build-completions-on-verify-repair
+      - prBaseBranch: main
+        remote: origin
+        summary: 10 项任务已完成，独立审查无阻断；同一 Comet Run 的完整 Build/Verify Guard 通过（1172 tests
+          passed, 5 skipped，后续全部检查通过）。归档本 Change 并同步其 delta specs，提交归档产物，push 当前
+          codex/preserve-build-completions-on-verify-repair 分支，向 origin/main
+          创建一个 PR；CI 通过后合入 main。保留原失败历史与真实五仓安装包验收记录；不发布 Release，不处理其他活动 Change。
+        targetBranch: codex/preserve-build-completions-on-verify-repair
+      - baseCommit: f79faa3c31088e05d5b20173554bebeaa3ac8e38
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/preserve-build-completions-on-verify-repair
+        verifiedBranch: codex/preserve-build-completions-on-verify-repair
+      - archiveDirectory: openspec/changes/archive/2026-11-10-preserve-build-completions-on-verify-repair
+      - sequence: 9
+        value:
+          boundBranch: codex/preserve-build-completions-on-verify-repair
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: preserve-build-completions-on-verify-repair
+              changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+              workspaceBaseline:
+                ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+            outputs:
+              full.build.configure:
+                boundBranch: codex/preserve-build-completions-on-verify-repair
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: preserve-build-completions-on-verify-repair
+              changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+              workspaceBaseline:
+                ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+                handoffHash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+                proposal: 按已批准的十项任务实施选择性 Verify 返工：保留 Plan→Execute→Check→Verify。Runtime 从失败
+                  Bundle 的 Acceptance Trace、当前 Plan 与依赖闭包计算影响范围，使用未受影响机器 Receipt
+                  的真实输入/产物证明保留原 completion。相同内容 Plan 复用原身份，真实计划变化才新
+                  revision；Task 已完成的修复仍使用普通 Execute。增加 Work 权威的内部
+                  revise-implementation 分类，不改 continue-build 同 Work retry
+                  语义，不新增阶段/Work kind。Build Protocol 使用单一 schema 3 保存修复依据，原
+                  Package Completion 和 Host result 结构不改；不支持旧开发 checkpoint
+                  迁移。未知范围或证明不可观察稳定阻断，全局影响有依据时允许全量重验。Plan/Execute/Check 的 CAS
+                  接受前重验依赖，保证跨进程恢复不重放。沿既有 Trace/OTLP 记录真实原因和保留/失效数量。只读 builder
+                  check 无重大未决问题；尚未实施或宣称新回归通过。不修改已批准 delta
+                  specs，不引入第三方代码/依赖或新配置开关。本 Change 建议采用
+                  autonomous、TDD、thorough，沿用已批准 worktree；执行配置仍等待用户明确选择。
+                requirementsEvidence:
+                  contentHash: c891c2a9790fd8c19e7bc5585fccd510f45cc5f93c6716d42b1b808be261a053
+                  ref: openspec/changes/preserve-build-completions-on-verify-repair
+                sourceEvidence:
+                  contentHash: 3f1c7cca48ae9ebb5acb891168479a9145eda9eddace62815c8650749e2aad9f
+                  ref: openspec/changes/preserve-build-completions-on-verify-repair
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+      - sequence: 8
+        value:
+          contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+          ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/preserve-build-completions-on-verify-repair/.comet/handoff/design-context.json
+          handoffHash: 1ca3ecf5f425531c74b45ca987fba63cbe62d562e7259cd9700b36fcea17dfda
+          proposal: 按已批准的十项任务实施选择性 Verify 返工：保留 Plan→Execute→Check→Verify。Runtime 从失败
+            Bundle 的 Acceptance Trace、当前 Plan 与依赖闭包计算影响范围，使用未受影响机器 Receipt
+            的真实输入/产物证明保留原 completion。相同内容 Plan 复用原身份，真实计划变化才新 revision；Task
+            已完成的修复仍使用普通 Execute。增加 Work 权威的内部 revise-implementation 分类，不改
+            continue-build 同 Work retry 语义，不新增阶段/Work kind。Build Protocol 使用单一
+            schema 3 保存修复依据，原 Package Completion 和 Host result 结构不改；不支持旧开发
+            checkpoint 迁移。未知范围或证明不可观察稳定阻断，全局影响有依据时允许全量重验。Plan/Execute/Check 的
+            CAS 接受前重验依赖，保证跨进程恢复不重放。沿既有 Trace/OTLP 记录真实原因和保留/失效数量。只读 builder
+            check 无重大未决问题；尚未实施或宣称新回归通过。不修改已批准 delta specs，不引入第三方代码/依赖或新配置开关。本
+            Change 建议采用 autonomous、TDD、thorough，沿用已批准 worktree；执行配置仍等待用户明确选择。
+          requirementsEvidence:
+            contentHash: c891c2a9790fd8c19e7bc5585fccd510f45cc5f93c6716d42b1b808be261a053
+            ref: openspec/changes/preserve-build-completions-on-verify-repair
+          sourceEvidence:
+            contentHash: 3f1c7cca48ae9ebb5acb891168479a9145eda9eddace62815c8650749e2aad9f
+            ref: openspec/changes/preserve-build-completions-on-verify-repair
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: preserve-build-completions-on-verify-repair
+              changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+              workspaceBaseline:
+                ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+                ref: openspec/changes/preserve-build-completions-on-verify-repair
+      - sequence: 2
+        value:
+          contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+          ref: openspec/changes/preserve-build-completions-on-verify-repair
+      - sequence: 4
+        value:
+          contentHash: 9c33dd3f9e3b582696afe5db10654bacf5ab9a3bf61fffc5a5169bf6d1a68a1e
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+            ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+          plan: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+          planEvidence:
+            contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+            ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+          taskRevision: 532da6a81ca63a15fb60d33e2725af91757d6572b45546eec230e20f5c0549d7
+      - sequence: 12
+        value:
+          contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+          ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: f7c6107631100025b290bcd9b89179b71ce738e4503a8ebdf097d234bed1abe1
+          cwd: .
+          environment: f66dcb6bcb56474283a569ce1b396467650d8ec538920c7f223cee62b5ca071d
+          exitCode: 0
+          inputAfter: fe0963cc44ce7b82c3a29e612261e03457afe7e27dd7bcadfba0a9491958ae4b
+          inputBefore: fe0963cc44ce7b82c3a29e612261e03457afe7e27dd7bcadfba0a9491958ae4b
+          manifestHash: ab1036383ea9b7debfede3eb17b7b38b9a98efd23917c6047d76c90a1f876dfb
+          manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/cbc37846-8081-46aa-a35c-0ba94c68fa22.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/102110f0-45e9-4165-8f67-52ce1452f364.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: f7c6107631100025b290bcd9b89179b71ce738e4503a8ebdf097d234bed1abe1
+          ref: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/102110f0-45e9-4165-8f67-52ce1452f364.log
+      - sequence: 17
+        value:
+          contentHash: 7f1db11205f30cf1fc6cd03f78b34f1223e88582499096f0e52039c3061a0252
+          ref: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 4774260ebb025b4b8777021930bfaa6c396726560f16917de5852386a282ab5c
+          cwd: .
+          deliveryInputs: {}
+          environment: 5120f4eb12a35ed5476bafbe77135f9d3b2c9f75c0102057f540b000faa1c413
+          exitCode: 1
+          inputAfter: 24a9fc0626377957dfdf4345a5ec87766173681959d540ffd038ee843995bba4
+          inputBefore: 24a9fc0626377957dfdf4345a5ec87766173681959d540ffd038ee843995bba4
+          manifestHash: eb7283b243b8976e9fd734dd49a5bf4d3c832432ef76cdde5b075ae31c2d7990
+          manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/e9053f26-fc52-4208-afcc-9fb1b9f908f3.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/f5389ac5-0200-461a-8048-2454ccccbba3.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: 6cc4c6af69a7790c72db8f3ea9cccf5e4b0a3f987915644c73e38009f02418d4
+            ref: openspec/changes/preserve-build-completions-on-verify-repair/design.md
+          plan: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+          planEvidence:
+            contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+            ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+          taskRevision: 532da6a81ca63a15fb60d33e2725af91757d6572b45546eec230e20f5c0549d7
+      - sequence: 20
+        value:
+          contentHash: f35a368e261c5add3b2c9f458069dbbb73790155a0f668d0625e4369e10917ce
+          ref: docs/superpowers/plans/2026-11-09-preserve-verify-completions.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 97d93530181c0bb48638f4da496627d19b2993ccea336ca6b9304158e2ebcc6d
+          cwd: .
+          environment: f66dcb6bcb56474283a569ce1b396467650d8ec538920c7f223cee62b5ca071d
+          exitCode: 0
+          inputAfter: cc39359391c9be39b28b98393f75baf0fb16f3d4efd226551b276227a22d8dd1
+          inputBefore: cc39359391c9be39b28b98393f75baf0fb16f3d4efd226551b276227a22d8dd1
+          manifestHash: 5b54946f94066cb22e457701970d318e611dbb8c2ef7a5a946311b3ef4f63a5c
+          manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/b302bae0-a4da-4ffa-83d2-8914449bf70e.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fcc3494f-6cee-4fcd-97d5-8056be6dc1a7.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 23
+        value:
+          contentHash: 97d93530181c0bb48638f4da496627d19b2993ccea336ca6b9304158e2ebcc6d
+          ref: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fcc3494f-6cee-4fcd-97d5-8056be6dc1a7.log
+      - sequence: 25
+        value:
+          contentHash: 4f18d70265bb44539c957d04d65891705f69566983626fe17c4af801cd8bcf02
+          ref: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+      - sequence: 24
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/preserve-build-completions-on-verify-repair.md
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: f79ecea1b5f011e4f1a4cf88f95985ec763c0e5096188b3eee1e4518cf25f4c8
+          cwd: .
+          deliveryInputs: {}
+          environment: 5120f4eb12a35ed5476bafbe77135f9d3b2c9f75c0102057f540b000faa1c413
+          exitCode: 0
+          inputAfter: bbb5972aae98148c56ad5dea75d6bcf89b4e510075c763708b397fd96ae3c3b8
+          inputBefore: bbb5972aae98148c56ad5dea75d6bcf89b4e510075c763708b397fd96ae3c3b8
+          manifestHash: 5b54946f94066cb22e457701970d318e611dbb8c2ef7a5a946311b3ef4f63a5c
+          manifestRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/145d5d57-f308-4caf-ad1d-b4f4de7876a8.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fc9e8240-3ad5-4bac-a391-8add22d34f16.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 27
+        value:
+          contentHash: f79ecea1b5f011e4f1a4cf88f95985ec763c0e5096188b3eee1e4518cf25f4c8
+          ref: .comet/runtime/classic-sdk-checks/33701ee184ab363da4e21271c51fb58ccc4759d86f5bc374a1f08ddcb38672f9/fc9e8240-3ad5-4bac-a391-8add22d34f16.log
+      - sequence: 29
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: preserve-build-completions-on-verify-repair
+              changeDir: openspec/changes/preserve-build-completions-on-verify-repair
+              workspaceBaseline:
+                ref: 1a89a8fe-dd08-4e6e-beea-88e2d34e0b99
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 10 项任务已完成，独立审查无阻断；同一 Comet Run 的完整 Build/Verify Guard 通过（1172 tests
+                  passed, 5 skipped，后续全部检查通过）。归档本 Change 并同步其 delta
+                  specs，提交归档产物，push 当前
+                  codex/preserve-build-completions-on-verify-repair 分支，向
+                  origin/main 创建一个 PR；CI 通过后合入 main。保留原失败历史与真实五仓安装包验收记录；不发布
+                  Release，不处理其他活动 Change。
+                targetBranch: codex/preserve-build-completions-on-verify-repair
+      - sequence: 28
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 10 项任务已完成，独立审查无阻断；同一 Comet Run 的完整 Build/Verify Guard 通过（1172 tests
+            passed, 5 skipped，后续全部检查通过）。归档本 Change 并同步其 delta specs，提交归档产物，push
+            当前 codex/preserve-build-completions-on-verify-repair 分支，向
+            origin/main 创建一个 PR；CI 通过后合入 main。保留原失败历史与真实五仓安装包验收记录；不发布
+            Release，不处理其他活动 Change。
+          targetBranch: codex/preserve-build-completions-on-verify-repair
+      - sequence: 30
+        value:
+          baseCommit: f79faa3c31088e05d5b20173554bebeaa3ac8e38
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/preserve-build-completions-on-verify-repair
+          verifiedBranch: codex/preserve-build-completions-on-verify-repair
+      - sequence: 31
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-10-preserve-build-completions-on-verify-repair
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.verify.report.evidence
+        value: 20
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 54
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 55
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 56
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 59
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 21
+        left: 58
+        right: 60
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 61
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 62
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 24
+        left: 64
+        right: 65
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 19
+        left: 66
+        right: 67
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 68
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 69
+        right: 62
+        height: 5
+      - key: full.archive.preflight
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: 71
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 72
+        right: 65
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 67
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 73
+        right: 74
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 75
+        right: 62
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 26
+        left: 77
+        right: 78
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 79
+        right: 65
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 80
+        right: 74
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 81
+        right: 62
+        height: 5
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 84
+        height: 2
+      - key: full.design.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 86
+        right: 87
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: 89
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 90
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 85
+        right: 91
+        height: 4
+      - key: full.build.plan
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 38
+        left: 93
+        right: 94
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 95
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 96
+        right: 91
+        height: 4
+      - key: full.build.execute
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 98
+        height: 2
+      - key: full.build.plan.evidence
+        value: 38
+        left: null
+        right: 94
+        height: 2
+      - key: full.build.plan
+        value: 37
+        left: 99
+        right: 100
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 101
+        right: 91
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 103
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 105
+        right: 98
+        height: 3
+      - key: full.build.plan
+        value: 37
+        left: 106
+        right: 100
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 91
+        height: 5
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 42
+        left: null
+        right: 110
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 111
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 112
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 113
+        height: 5
+      - key: full.verify.check
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 42
+        left: 115
+        right: 110
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 116
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 118
+        height: 5
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: 94
+        height: 2
+      - key: full.build.plan
+        value: 45
+        left: 106
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 121
+        right: 118
+        height: 5
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 105
+        right: 123
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 124
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 125
+        right: 118
+        height: 5
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: 127
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 128
+        right: 123
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 129
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 118
+        height: 5
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 115
+        right: 132
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 134
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 135
+        height: 5
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 138
+        right: 132
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 137
+        right: 139
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 140
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 141
+        height: 5
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 55
+        left: 143
+        right: 144
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 104
+        right: 123
+        height: 2
+      - key: full.build.check.evidence
+        value: 49
+        left: 145
+        right: 146
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 147
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 148
+        right: 141
+        height: 5
+      - key: full.archive.preflight
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: 150
+        height: 2
+      - key: full.archive.prepare
+        value: 55
+        left: 151
+        right: 144
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 146
+        right: 120
+        height: 3
+      - key: full.build.check.evidence
+        value: 49
+        left: 152
+        right: 153
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 154
+        right: 141
+        height: 5
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 57
+        left: 156
+        right: 157
+        height: 2
+      - key: full.archive.prepare
+        value: 55
+        left: 158
+        right: 144
+        height: 3
+      - key: full.build.check.evidence
+        value: 49
+        left: 159
+        right: 153
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 160
+        right: 141
+        height: 5
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 34
+        left: 162
+        right: 163
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: 165
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 162
+        right: 166
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 168
+        right: 169
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 170
+        right: 166
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: 172
+        right: 173
+        height: 2
+      - key: full.design.handoff
+        value: 32
+        left: 174
+        right: 169
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 175
+        right: 166
+        height: 4
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: 177
+        height: 2
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 180
+        right: 181
+        height: 2
+      - key: full.open
+        value: 33
+        left: 179
+        right: 182
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: 185
+        right: 186
+        height: 2
+      - key: full.design.confirm
+        value: 29
+        left: 184
+        right: 187
+        height: 3
+      - key: full.open
+        value: 33
+        left: 188
+        right: 182
+        height: 4
+      - key: full.archive.prepare
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 48
+        left: 190
+        right: 191
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: null
+        right: 194
+        height: 2
+      - key: full.build.execute
+        value: 47
+        left: 193
+        right: 195
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: 192
+        right: 196
+        height: 4
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 180
+        right: 198
+        height: 2
+      - key: full.verify.check.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 200
+        right: 201
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 199
+        right: 202
+        height: 3
+      - key: full.open
+        value: 33
+        left: 187
+        right: 203
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 197
+        right: 204
+        height: 5
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: 207
+        right: 208
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 211
+        height: 2
+      - key: full.open
+        value: 33
+        left: 209
+        right: 212
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 214
+        right: 215
+        height: 2
+      - key: full.design.document
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: 217
+        right: 218
+        height: 2
+      - key: full.design.confirm
+        value: 29
+        left: 216
+        right: 219
+        height: 3
+      - key: full.open
+        value: 33
+        left: 220
+        right: 212
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: 222
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 37
+        left: 224
+        right: 225
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 223
+        right: 226
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 212
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: 227
+        right: 228
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 230
+        right: 231
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 232
+        right: 226
+        height: 3
+      - key: full.verify.run
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: 234
+        height: 2
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 235
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 236
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 233
+        right: 237
+        height: 5
+      - key: full.build.plan
+        value: 45
+        left: 224
+        right: 225
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 232
+        right: 239
+        height: 3
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 241
+        height: 2
+      - key: full.verify.report.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 43
+        left: 243
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 44
+        left: 242
+        right: 244
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 245
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 240
+        right: 246
+        height: 5
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 248
+        right: 231
+        height: 2
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: 250
+        right: 251
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 249
+        right: 252
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: 253
+        right: 246
+        height: 5
+      - key: full.build.check.evidence
+        value: 49
+        left: 248
+        right: 231
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 255
+        right: 252
+        height: 3
+      - key: full.verify.run
+        value: 51
+        left: 243
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 44
+        left: 242
+        right: 257
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 258
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 256
+        right: 259
+        height: 5
+      - key: full.verify.report.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: 261
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 242
+        right: 262
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 263
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 256
+        right: 264
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 57
+      - 63
+      - 70
+      - 76
+      - 82
+      - 92
+      - 97
+      - 102
+      - 108
+      - 114
+      - 119
+      - 122
+      - 126
+      - 131
+      - 136
+      - 142
+      - 149
+      - 155
+      - 161
+      - 164
+      - 167
+      - 171
+      - 176
+      - 178
+      - 183
+      - 189
+      - 205
+      - 206
+      - 213
+      - 221
+      - 229
+      - 238
+      - 247
+      - 254
+      - 260
+      - 265
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:11
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:13
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:14
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:16
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:18
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:19
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:21
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:22
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:24
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:26
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:28
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:30
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:31
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:32
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:4
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:5
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:7
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - preserve-build-completions-on-verify-repair:9
+          - results
+        map: 34
+      - path:
+          - outputs
+        map: 30
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 35
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 36
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 37
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 38
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 39
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 40
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 41
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 42
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 43
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 44
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 45
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 46
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 47
+  storageHash: e362a029f5ca7c8c56a424474cbd46dd2fa21c6641da036bf0969ae79bf2487d
+check_epoch: 8

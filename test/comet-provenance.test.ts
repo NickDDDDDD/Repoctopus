@@ -20,6 +20,8 @@ const validManifest = {
       ['archive-publication-outcome', 'domains/comet-classic/classic-sdk-application.ts'],
       ['completed-run-boundary', 'domains/engine/runtime-service.ts'],
       ['archived-change-selection', 'domains/comet-classic/classic-current-change.ts'],
+      ['verify-repair-classification', 'domains/comet-native/native-sdk-verify-decision.ts'],
+      ['classic-verify-plan-continuation', 'domains/comet-classic/classic-application.ts'],
     ].map(([role, source]) => ({
       role,
       source,

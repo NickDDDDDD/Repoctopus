@@ -4,6 +4,7 @@ import type { SpecificationArtifactKind } from '../specification/types.js';
 import type { SpecificationTask } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { assertVerificationInput, type VerificationInput } from './verification-input.js';
+import { assertVerifyRepair, type VerifyRepair } from './verify-repair.js';
 import type { ArchiveDeliveryInput } from './archive-input.js';
 import type { PublicationReceipt } from '../delivery/publication-receipt.js';
 import { assertPublicationReceipt } from '../delivery/publication-receipt.js';
@@ -520,6 +521,7 @@ export type ChangeLifecycleObservation =
       kind: 'build-plan-accepted';
       plan: BuildPlan;
       workspaceCheckpoint: BuildWorkspaceCheckpoint;
+      retentionInvalidation?: BuildInvalidation;
     }
   | {
       kind: 'build-plan-retry-required';
@@ -554,6 +556,7 @@ export type ChangeLifecycleObservation =
   | {
       kind: 'build-package-completed';
       completion: PackageCompletionEvidence;
+      retentionInvalidation?: BuildInvalidation;
       workspaceCheckpoint: BuildWorkspaceCheckpoint;
       work: WorkDescriptor;
       tasks: readonly SpecificationTask[];
@@ -1462,6 +1465,9 @@ export function evolveChangeLifecycle(options: {
       kind: 'plan-accepted',
       plan: observation.plan,
       workspaceCheckpoint: observation.workspaceCheckpoint,
+      ...(observation.retentionInvalidation
+        ? { retentionInvalidation: observation.retentionInvalidation }
+        : {}),
     });
     return applyChangeLifecycleTransition({
       definition: options.definition,
@@ -1607,6 +1613,9 @@ export function evolveChangeLifecycle(options: {
     const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
       kind: 'package-completed',
       completion: observation.completion,
+      ...(observation.retentionInvalidation
+        ? { retentionInvalidation: observation.retentionInvalidation }
+        : {}),
       workspaceCheckpoint: observation.workspaceCheckpoint,
     });
     const expectedKind = buildProtocol.currentAction === 'check' ? 'build.check' : 'build.execute';
@@ -1752,6 +1761,9 @@ export function evolveChangeLifecycle(options: {
         currentWork: null,
         waitCondition: null,
         blocker: null,
+        ...(current.buildProtocol
+          ? { buildProtocol: { ...current.buildProtocol, verifyRepair: null } }
+          : {}),
       },
     });
   }
@@ -2259,6 +2271,7 @@ export interface LifecycleRecoveryMaterialization {
   evidenceIds: readonly string[];
   invalidation?: BuildInvalidation;
   verificationInput?: VerificationInput;
+  verifyRepair?: VerifyRepair;
 }
 
 function assertRecoveryDecisionCheckpoint(
@@ -2376,6 +2389,57 @@ function applyRevisePlanRecovery(input: {
   );
 }
 
+function applyReviseImplementationRecovery(input: {
+  definition: ChangeLifecycleDefinition;
+  current: ChangeLifecycleSnapshot;
+  decision: RecoveryDecision;
+  materialization: LifecycleRecoveryMaterialization;
+}): ChangeLifecycleReduction {
+  const { current, decision, materialization } = input;
+  const repair = materialization.verifyRepair;
+  assertVerifyRepair(repair);
+  if (
+    decision.authority !== 'work' ||
+    current.phase !== 'verify' ||
+    !current.verificationInput ||
+    !current.buildProtocol?.plan ||
+    !materialization.invalidation ||
+    repair.source.verificationInputDigest !== current.verificationInput.digest ||
+    repair.source.checkEpoch !== current.checkEpoch ||
+    repair.source.planDigest !== current.buildProtocol.plan.digest ||
+    repair.scope.invalidationDigest !== materialization.invalidation.digest ||
+    !materialization.evidenceIds.includes(repair.source.attemptId) ||
+    !materialization.evidenceIds.includes(repair.source.bundleId) ||
+    materialization.work.kind !== 'build.plan' ||
+    materialization.work.checkEpoch !== current.checkEpoch + 1
+  )
+    throw new Error('revise-implementation does not match the failed Verify checkpoint');
+  const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+    kind: 'revision-required',
+    invalidation: materialization.invalidation,
+    verifyRepair: repair,
+  });
+  return attachRecoveryDecision(
+    applyChangeLifecycleTransition({
+      definition: input.definition,
+      current,
+      transitionId: 'verify.failed',
+      next: {
+        currentWork: materialization.work,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol,
+        verificationInput: null,
+        verificationInvalidation: null,
+        archiveDeliveryInput: null,
+        specificationClosure: null,
+        publicationReceipt: null,
+      },
+    }),
+    decision,
+  );
+}
+
 function applyContinueBuildRecovery(input: {
   definition: ChangeLifecycleDefinition;
   current: ChangeLifecycleSnapshot;
@@ -2472,6 +2536,8 @@ export function applyLifecycleRecoveryDecision(input: {
   assertRecoveryDecisionCheckpoint(input.current, input.decision);
   if (input.decision.action === 'revise-design') return applyReviseDesignRecovery(input);
   if (input.decision.action === 'revise-plan') return applyRevisePlanRecovery(input);
+  if (input.decision.action === 'revise-implementation')
+    return applyReviseImplementationRecovery(input);
   if (input.decision.action === 'continue-build') return applyContinueBuildRecovery(input);
   if (input.decision.action === 'invalidate-evidence')
     return applyInvalidateEvidenceRecovery(input);

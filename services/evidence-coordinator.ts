@@ -3,10 +3,16 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
+import type { RunState } from '../domains/engine/types.js';
+import {
+  deriveVerifyRepairScope,
+  VerifyRepairUnavailableError,
+} from '../domains/change-lifecycle/verify-repair.js';
 
 import {
   createEvidenceFingerprint,
   type EvidenceFingerprint,
+  type RepositoryFingerprint,
 } from '../domains/evidence/fingerprint.js';
 import { projectEvidenceGate } from '../domains/evidence/gate.js';
 import { assertEvidenceNodeInputSnapshot } from '../domains/evidence/input-snapshot.js';
@@ -37,6 +43,7 @@ import {
   evidenceInputDigest,
   EvidenceInputDriftError,
 } from '../domains/evidence/input-snapshot.js';
+import { DEFAULT_EVIDENCE_INPUT_POLICY } from '../domains/evidence/input-policy.js';
 import {
   FileEvidenceRetention,
   type EvidenceCleanupResult,
@@ -296,16 +303,38 @@ export class EvidenceCoordinator extends Service {
     profileId: string,
     config: EffectiveProjectConfig,
     workflowRunId: string | null = null,
+    selected?: { nodeIds: readonly string[]; priorRepositories: readonly RepositoryFingerprint[] },
   ): Promise<EvidenceFingerprint> {
     const hasVisualAdapter = this.ctx.evidenceAdapters.has('visual') && !!config.local?.visual;
     const inputPolicy = this.ctx.repositoryInputPolicies.current();
+    const executionPlan = compileEvidenceProfile(config, profileId);
+    const gitRepositories = selected
+      ? new Set(
+          executionPlan.nodes
+            .filter((n) => selected.nodeIds.includes(n.id))
+            .flatMap((n) => {
+              const policy =
+                n.type === 'command'
+                  ? (n.inputs ?? DEFAULT_EVIDENCE_INPUT_POLICY)
+                  : DEFAULT_EVIDENCE_INPUT_POLICY;
+              return policy.git === 'all'
+                ? (policy.repositories?.map((r) => r.repository) ??
+                    config.repositories.map((r) => r.id))
+                : [];
+            }),
+        )
+      : null;
     const repositories = await Promise.all(
       config.repositories.map((repository) =>
-        collectRepositoryFingerprint({
-          repositoryId: repository.id,
-          root: repository.resolvedPath,
-          policy: inputPolicy,
-        }),
+        selected && !gitRepositories!.has(repository.id)
+          ? Promise.resolve(
+              selected.priorRepositories.find((r) => r.repositoryId === repository.id)!,
+            )
+          : collectRepositoryFingerprint({
+              repositoryId: repository.id,
+              root: repository.resolvedPath,
+              policy: inputPolicy,
+            }),
       ),
     );
     let projection;
@@ -356,11 +385,12 @@ export class EvidenceCoordinator extends Service {
       visual: hasVisualAdapter ? 'file-exchange-or-provided/v1' : 'unavailable/v1',
     };
     const nodeInputs = await observeEvidenceNodeInputs({
-      plan: compileEvidenceProfile(config, profileId),
+      plan: executionPlan,
       config,
       repositories,
       policy: inputPolicy,
       adapters,
+      ...(selected ? { nodeIds: selected.nodeIds } : {}),
       ...(projection ? { projection } : {}),
     });
     return createEvidenceFingerprint({
@@ -1030,6 +1060,142 @@ export class EvidenceCoordinator extends Service {
     if (bundle.acceptanceTrace?.verificationInputDigest !== verificationInputDigest)
       throw new Error('Archive Evidence Bundle does not match its frozen Verification Input');
     return this.assessInputs(bundle.attemptId, workflowRunId);
+  }
+
+  async verifyRepairFacts(state: RunState, attemptId: string) {
+    const lifecycle = state.changeLifecycle;
+    const verification = lifecycle?.verificationInput;
+    const protocol = lifecycle?.buildProtocol;
+    const status = await this.status(attemptId);
+    const owner = status.context.workflowBinding;
+    if (
+      !verification ||
+      !protocol?.plan ||
+      !status.bundle ||
+      lifecycle?.phase !== 'verify' ||
+      !owner ||
+      owner.workflowRunId !== state.runId ||
+      owner.workflowActionId !== lifecycle.currentWork?.workId ||
+      owner.checkEpoch !== lifecycle.checkEpoch ||
+      owner.workflowInputDigest !== verification.digest ||
+      status.bundle.compositionDigest !== state.composition.compositionDigest ||
+      status.bundle.attemptId !== attemptId ||
+      status.bundle.profileId !== verification.evidenceProfile.id
+    )
+      throw new VerifyRepairUnavailableError(
+        'failed evidence does not belong to the active Verify',
+      );
+    const receipts = await Promise.all(
+      status.bundle.receiptIds.map((id) => this.store.loadReceipt(id)),
+    );
+    const facts = deriveVerifyRepairScope({
+      bundle: status.bundle,
+      verification,
+      plan: protocol.plan,
+      completions: protocol.packageCompletions,
+      receipts,
+    });
+    const assessments = await this.assessSelectedReceiptInputs(
+      attemptId,
+      state.runId,
+      facts.retained.flatMap((r) => r.receiptIds),
+    );
+    const drifted = facts.retained.filter((r) =>
+      r.receiptIds.some((id) => assessments[id] === 'drift'),
+    );
+    return {
+      ...facts,
+      affectedPackageIds: [
+        ...new Set([...facts.affectedPackageIds, ...drifted.map((r) => r.packageId)]),
+      ],
+      retained: facts.retained.filter((r) => !drifted.includes(r)),
+      attemptId,
+      bundleId: status.bundle.bundleId,
+    };
+  }
+
+  /** Observe only selected nodes and their producer closure. A repair elsewhere may change the whole fingerprint. */
+  async assessSelectedReceiptInputs(
+    attemptId: string,
+    workflowRunId: string,
+    selectedIds: readonly string[],
+  ): Promise<Record<string, 'same' | 'drift'>> {
+    if (selectedIds.length === 0) return {};
+    const status = await this.status(attemptId);
+    if (!status.bundle || status.context.workflowBinding?.workflowRunId !== workflowRunId)
+      throw new VerifyRepairUnavailableError(
+        'receipt observation requires the owning Run and Bundle',
+      );
+    const config = await this.effectiveConfig(
+      status.context.profileId,
+      status.context.repositoryOverrides,
+    );
+    const receipts = await Promise.all(
+      status.bundle.receiptIds.map((id) => this.store.loadReceipt(id)),
+    );
+    const closure = new Set<string>();
+    const collect = (id: string) => {
+      if (closure.has(id)) return;
+      const receipt = receipts.find((r) => r.receiptId === id);
+      if (!receipt) throw new VerifyRepairUnavailableError('missing selected receipt dependency');
+      closure.add(id);
+      for (const predecessor of receipt.dependencies.dependsOnEvidenceIds) collect(predecessor);
+    };
+    for (const id of selectedIds) collect(id);
+    const current = await this.fingerprint(status.context.profileId, config, workflowRunId, {
+      nodeIds: receipts.filter((r) => closure.has(r.receiptId)).map((r) => r.nodeId),
+      priorRepositories: status.context.fingerprint.manifest.repositories,
+    });
+    const proofs = new FileEvidenceInputProofs(
+      config,
+      status.context.plan,
+      new FileArtifactStore(this.workspace),
+    );
+    const assessed: Record<string, 'same' | 'drift'> = {};
+    const visiting = new Set<string>();
+    const observe = async (id: string): Promise<'same' | 'drift'> => {
+      if (assessed[id]) return assessed[id];
+      if (visiting.has(id)) throw new VerifyRepairUnavailableError('cyclic receipt dependency');
+      visiting.add(id);
+      const receipt = receipts.find((r) => r.receiptId === id);
+      if (
+        !receipt ||
+        receipt.status !== 'passed' ||
+        receipt.trust !== 'verified' ||
+        !['fresh', 'reused'].includes(receipt.freshness)
+      )
+        throw new VerifyRepairUnavailableError('retained receipt is missing or untrusted');
+      const snapshot = current.manifest.nodeInputs.find((n) => n.nodeId === receipt.nodeId);
+      const original = status.context.fingerprint.manifest.nodeInputs.find(
+        (n) => n.nodeId === receipt.nodeId,
+      );
+      if (!snapshot || !original || !evidenceReceiptInputCurrent(receipt, original, receipts))
+        throw new VerifyRepairUnavailableError('invalid saved receipt dependency proof');
+      let drift = !!receipt.validUntil && Date.parse(receipt.validUntil) <= Date.now();
+      if (!evidenceReceiptInputCurrent(receipt, snapshot, receipts)) drift = true;
+      for (const dependencyId of receipt.dependencies.dependsOnEvidenceIds) {
+        if ((await observe(dependencyId)) !== 'same') drift = true;
+      }
+      if (!drift) {
+        try {
+          if (
+            snapshot.derivedFrom.length &&
+            JSON.stringify(
+              await proofs.captureDerived(snapshot, new Map(receipts.map((r) => [r.nodeId, r]))),
+            ) !== JSON.stringify(receipt.derivedInputs)
+          )
+            drift = true;
+          if (!(await proofs.outputsCurrent(snapshot, receipt))) drift = true;
+        } catch (error) {
+          if (error instanceof EvidenceInputDriftError) drift = true;
+          else throw error;
+        }
+      }
+      visiting.delete(id);
+      return (assessed[id] = drift ? 'drift' : 'same');
+    };
+    for (const id of selectedIds) await observe(id);
+    return assessed;
   }
 
   async flushTelemetry(attemptId: string): Promise<EvidenceTelemetryStatus> {

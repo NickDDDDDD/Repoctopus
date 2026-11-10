@@ -743,9 +743,10 @@ export class WorkflowRunCoordinator {
     runId: string,
     decision: RecoveryDecision,
     materialization: LifecycleRecoveryMaterialization,
+    options?: { reobserve(state: RunState): Promise<void> },
   ): Promise<RuntimeResult<RunStatusView>> {
     await this.recoverChangeLifecycleDefinition(runId);
-    await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+    await this.store.commitGuarded(runId, async ({ state, trajectory }) => {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
       if (
         ['build', 'verify', 'archive'].includes(state.changeLifecycle.phase) &&
@@ -761,6 +762,7 @@ export class WorkflowRunCoordinator {
             decision.decisionId,
       );
       if (replayed) return { value: undefined };
+      await options?.reobserve(state);
       const current: ChangeLifecycleSnapshot = {
         ...structuredClone(state.changeLifecycle),
         status: state.status,
@@ -797,6 +799,18 @@ export class WorkflowRunCoordinator {
           data: {
             observationKind: 'runtime-recovery-decision',
             recoveryDecision: structuredClone(decision),
+            ...(materialization.verifyRepair
+              ? {
+                  verifyRepair: {
+                    digest: materialization.verifyRepair.digest,
+                    affectedPackageCount:
+                      materialization.verifyRepair.scope.affectedPackageIds.length,
+                    retainedPackageCount: materialization.verifyRepair.retained.length,
+                    attemptId: materialization.verifyRepair.source.attemptId,
+                    bundleId: materialization.verifyRepair.source.bundleId,
+                  },
+                }
+              : {}),
             changeLifecycleTransition: reduced.fact,
             ...(retirement.fact ? { executionRetirement: structuredClone(retirement.fact) } : {}),
           },

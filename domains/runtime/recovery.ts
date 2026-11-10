@@ -8,6 +8,7 @@ export type RecoveryAuthority = 'planning' | 'plan' | 'work' | 'evidence';
 export type RecoveryAction =
   | 'revise-design'
   | 'revise-plan'
+  | 'revise-implementation'
   | 'continue-build'
   | 'invalidate-evidence'
   | 'retry-infrastructure'
@@ -15,7 +16,7 @@ export type RecoveryAction =
 
 type PlanningStatus = 'current' | 'drift';
 type PlanStatus = 'current' | 'drift';
-type WorkStatus = 'current' | 'retryable' | 'external-result-unknown';
+type WorkStatus = 'current' | 'retryable' | 'implementation-failed' | 'external-result-unknown';
 type EvidenceStatus = 'current' | 'drift' | 'unavailable';
 
 export interface RecoveryLayerObservation<Status extends string> {
@@ -73,6 +74,12 @@ const LAYER_FIELDS = new Set(['status', 'reasonCode', 'changedIdentities']);
 const IDENTITY_KINDS = new Set<string>(RUNTIME_IDENTITY_KINDS);
 
 const ACTION_CONTRACTS = {
+  'revise-implementation': {
+    authority: 'work',
+    reasons: new Set(['implementation-failed']),
+    identities: new Set<RuntimeIdentityKind>(['package-completion']),
+    requiresIdentity: true,
+  },
   'revise-design': {
     authority: 'planning',
     reasons: new Set([
@@ -151,7 +158,12 @@ const ACTION_CONTRACTS = {
 const STATUS_BY_AUTHORITY = {
   planning: new Set<PlanningStatus>(['current', 'drift']),
   plan: new Set<PlanStatus>(['current', 'drift']),
-  work: new Set<WorkStatus>(['current', 'retryable', 'external-result-unknown']),
+  work: new Set<WorkStatus>([
+    'current',
+    'retryable',
+    'implementation-failed',
+    'external-result-unknown',
+  ]),
   evidence: new Set<EvidenceStatus>(['current', 'drift', 'unavailable']),
 } as const;
 
@@ -165,6 +177,7 @@ function actionForStatus(authority: RecoveryAuthority, status: string): Recovery
   if (authority === 'planning' && status === 'drift') return 'revise-design';
   if (authority === 'plan' && status === 'drift') return 'revise-plan';
   if (authority === 'work' && status === 'retryable') return 'continue-build';
+  if (authority === 'work' && status === 'implementation-failed') return 'revise-implementation';
   if (authority === 'work' && status === 'external-result-unknown') {
     return 'reconcile-external';
   }
@@ -312,6 +325,9 @@ const inspectPlan: RecoveryInspector = (observation) => {
 };
 
 const inspectWork: RecoveryInspector = (observation) => {
+  if (observation.work.status === 'implementation-failed') {
+    return diff('work', 'revise-implementation', observation.work);
+  }
   if (observation.work.status === 'retryable') {
     return diff('work', 'continue-build', observation.work);
   }

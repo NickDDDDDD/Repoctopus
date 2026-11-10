@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "testedTarballSha256": "635980c0d5aeee8b60cf78d72da0b71d776c1b87a23dedfa0ffcd3c2c4baf295",
+  "currentTarballSha256": "ee16316f5ef4e2c587deddbcaadbcb0a505a0d4d116b4701159c334963909e63",
+  "changedPackagePaths": [
+    "dist/desktop/host.mjs",
+    "dist/desktop/main.js",
+    "dist/desktop/preload.cjs",
+    "dist/desktop/renderer/assets/index-BNZ8dKQ2.js",
+    "dist/desktop/renderer/assets/index-D1dxlSuE.css",
+    "dist/desktop/renderer/index.html",
+    "dist/desktop/resource-manifest.json",
+    "third_party/comet/adoption-report.md"
+  ],
+  "addedDesktopResources": [
+    "dist/desktop/host.mjs",
+    "dist/desktop/main.js",
+    "dist/desktop/preload.cjs",
+    "dist/desktop/renderer/assets/index-BNZ8dKQ2.js",
+    "dist/desktop/renderer/assets/index-D1dxlSuE.css",
+    "dist/desktop/renderer/index.html",
+    "dist/desktop/resource-manifest.json"
+  ],
+  "modifiedExistingPaths": ["third_party/comet/adoption-report.md"],
+  "runtimeAndSkillsIdentical": true,
+  "cliSha256": "9efe3e7390a83aa0c255ce6933783a0c1672f7e13e6f9b49469c217735337358",
+  "at": "2026-11-09T11:35:13.616Z"
+}

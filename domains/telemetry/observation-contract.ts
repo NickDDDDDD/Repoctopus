@@ -184,6 +184,18 @@ const OBSERVATION_ENUMS: Readonly<Record<string, readonly string[]>> = {
 };
 
 export const TELEMETRY_ATTRIBUTES = [
+  ...['affected_package_count', 'retained_package_count'].map((name) =>
+    attribute(
+      `repoctopus.recovery.${name}`,
+      'integer',
+      'runtime',
+      'low',
+      'public',
+      name === 'affected_package_count'
+        ? '本次实现修复实际影响的工作包数量'
+        : '本次实现修复保留原凭证的工作包数量',
+    ),
+  ),
   attribute(
     'repoctopus.observation.envelope',
     'string',

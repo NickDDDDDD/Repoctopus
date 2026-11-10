@@ -74,6 +74,7 @@ export async function observeEvidenceNodeInputs(input: {
   policy: CompiledRepositoryInputPolicy;
   projection?: SpecificationEvidenceProjection;
   adapters: Readonly<Record<string, string>>;
+  nodeIds?: readonly string[];
 }): Promise<EvidenceNodeInputSnapshot[]> {
   const claims = evidenceOutputClaims(input.plan);
   for (const claim of claims) {
@@ -93,6 +94,7 @@ export async function observeEvidenceNodeInputs(input: {
   const nodes: EvidenceNodeInputSnapshot[] = [];
   const nodeProgram = await programIdentity(process.execPath, process.cwd());
   for (const node of input.plan.nodes) {
+    if (input.nodeIds && !input.nodeIds.includes(node.id)) continue;
     const policy =
       node.type === 'command'
         ? (node.inputs ?? DEFAULT_EVIDENCE_INPUT_POLICY)

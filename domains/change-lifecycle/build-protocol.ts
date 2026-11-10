@@ -12,6 +12,7 @@ import {
   type EvidenceDependencyRecord,
 } from '../evidence/dependencies.js';
 import { isProtectedBranch, normalizeProtectedBranchPatterns } from '../delivery/branch-policy.js';
+import { assertVerifyRepair, type VerifyRepair } from './verify-repair.js';
 
 export type Digest = `sha256:${string}`;
 export type ExecutionIsolation = 'current' | 'branch' | 'worktree';
@@ -994,7 +995,7 @@ export function compareBuildPlanAuthorizationEnvelope(
 }
 
 export interface BuildProtocolState {
-  schemaVersion: 2;
+  schemaVersion: 3;
   runId: string;
   planningDigest: Digest;
   strategy: BuildStrategy;
@@ -1010,9 +1011,65 @@ export interface BuildProtocolState {
   packageCompletions: readonly PackageCompletionEvidence[];
   checkEvidence: BuildCheckEvidence | null;
   invalidations: readonly BuildInvalidation[];
+  verifyRepair: VerifyRepair | null;
   authorizationEnvelope: BuildPlanAuthorizationEnvelope | null;
   suspension: BuildProtocolSuspension | null;
   revision: number;
+}
+
+/** Revision is provenance, not a reason to change an otherwise identical Plan. */
+export function reuseEquivalentBuildPlan(
+  previous: BuildPlan | null,
+  candidate: BuildPlan,
+): BuildPlan {
+  if (!previous) return candidate;
+  const semantics = (plan: BuildPlan) =>
+    Object.fromEntries(
+      Object.entries(plan).filter(([key]) => !['revision', 'planId', 'digest'].includes(key)),
+    );
+  return canonicalJson(semantics(previous)) === canonicalJson(semantics(candidate))
+    ? previous
+    : candidate;
+}
+
+export function assertBuildProtocolState(value: unknown): asserts value is BuildProtocolState {
+  const state = value as BuildProtocolState | null;
+  if (!state || state.schemaVersion !== 3)
+    throw new Error(
+      'Unsupported Build Protocol schema; expected schema 3, no migration is supported',
+    );
+  if (
+    !Object.hasOwn(state, 'verifyRepair') ||
+    !Array.isArray(state.packageCompletions) ||
+    !Array.isArray(state.invalidations) ||
+    !Array.isArray(state.plans)
+  )
+    throw new Error('Invalid Build Protocol shape');
+  for (const completion of state.packageCompletions as readonly PackageCompletionEvidence[]) {
+    const workPackage = state.plans
+      .flatMap((p: BuildPlan) => p.packages)
+      .find((p) => p.packageId === completion.packageId && p.digest === completion.packageDigest);
+    if (!workPackage) throw new Error('Package completion does not bind an accepted contract');
+    assertPackageCompletionEvidence(completion, workPackage);
+  }
+  if (state.verifyRepair !== null) {
+    assertVerifyRepair(state.verifyRepair);
+    const repair = state.verifyRepair;
+    if (
+      !state.invalidations.some(
+        (i: BuildInvalidation) => i.digest === repair.scope.invalidationDigest,
+      ) ||
+      repair.retained.some(
+        (r) =>
+          !state.plans.some((p) =>
+            p.packages.some(
+              (pkg) => pkg.packageId === r.packageId && pkg.digest === r.packageDigest,
+            ),
+          ),
+      )
+    )
+      throw new Error('Verify repair does not bind accepted Build Protocol facts');
+  }
 }
 
 export interface BuildProtocolSuspension {
@@ -1030,6 +1087,7 @@ export type BuildProtocolObservation =
       kind: 'plan-accepted';
       plan: BuildPlan;
       workspaceCheckpoint: BuildWorkspaceCheckpoint;
+      retentionInvalidation?: BuildInvalidation;
     }
   | {
       kind: 'plan-evidence-accepted';
@@ -1041,9 +1099,14 @@ export type BuildProtocolObservation =
       kind: 'package-completed';
       completion: PackageCompletionEvidence;
       workspaceCheckpoint: BuildWorkspaceCheckpoint;
+      retentionInvalidation?: BuildInvalidation;
     }
   | { kind: 'check-accepted'; evidence: BuildCheckEvidence }
-  | { kind: 'revision-required'; invalidation: BuildInvalidation }
+  | {
+      kind: 'revision-required';
+      invalidation: BuildInvalidation;
+      verifyRepair?: VerifyRepair;
+    }
   | { kind: 'retry'; action: BuildActionKind };
 
 export function createBuildProtocolState(input: {
@@ -1053,7 +1116,7 @@ export function createBuildProtocolState(input: {
 }): BuildProtocolState {
   if (!SHA256.test(input.planningDigest)) throw new Error('Planning digest is invalid');
   return deepFreeze({
-    schemaVersion: 2,
+    schemaVersion: 3,
     runId: text(input.runId, 'Run identity'),
     planningDigest: input.planningDigest,
     strategy: input.strategy,
@@ -1069,6 +1132,7 @@ export function createBuildProtocolState(input: {
     packageCompletions: [],
     checkEvidence: null,
     invalidations: [],
+    verifyRepair: null,
     authorizationEnvelope: null,
     suspension: null,
     revision: 0,
@@ -1254,7 +1318,8 @@ export function advanceBuildProtocol(
       throw new Error('Plan does not bind the current Strategy and Execution Binding');
     }
     const expectedRevision = (state.plans.at(-1)?.revision ?? 0) + 1;
-    if (observation.plan.revision !== expectedRevision) {
+    const samePlan = state.plan?.digest === observation.plan.digest;
+    if (observation.plan.revision !== expectedRevision && !samePlan) {
       throw new Error('Build Plan revision is not monotonic');
     }
     if (
@@ -1263,22 +1328,27 @@ export function advanceBuildProtocol(
     ) {
       throw new Error('Build Plan does not bind the next workspace checkpoint');
     }
-    const packageCompletions = state.packageCompletions.filter((completion) =>
-      observation.plan.packages.some(
-        (workPackage) =>
-          workPackage.packageId === completion.packageId &&
-          workPackage.digest === completion.packageDigest,
-      ),
+    const packageCompletions = state.packageCompletions.filter(
+      (completion) =>
+        !observation.retentionInvalidation?.affectedPackageIds.includes(completion.packageId) &&
+        observation.plan.packages.some(
+          (workPackage) =>
+            workPackage.packageId === completion.packageId &&
+            workPackage.digest === completion.packageDigest,
+        ),
     );
     return deepFreeze({
       ...state,
       currentAction: 'plan-evidence',
       actionAttempt: 1,
-      plans: [...state.plans, observation.plan],
+      plans: samePlan ? state.plans : [...state.plans, observation.plan],
       plan: observation.plan,
       workspaceCheckpoint: observation.workspaceCheckpoint,
       planEvidence: null,
       packageCompletions,
+      invalidations: observation.retentionInvalidation
+        ? [...state.invalidations, observation.retentionInvalidation]
+        : state.invalidations,
       checkEvidence: null,
       revision: state.revision + 1,
     });
@@ -1373,7 +1443,16 @@ export function advanceBuildProtocol(
     ) {
       throw new Error('Package completion does not bind the next workspace checkpoint');
     }
-    const packageCompletions = [...state.packageCompletions, observation.completion];
+    const packageCompletions = [
+      ...state.packageCompletions.filter(
+        (c) => !observation.retentionInvalidation?.affectedPackageIds.includes(c.packageId),
+      ),
+      ...(!observation.retentionInvalidation?.affectedPackageIds.includes(
+        observation.completion.packageId,
+      )
+        ? [observation.completion]
+        : []),
+    ];
     const allCompleted = state.plan.packages.every((candidate) =>
       packageCompletions.some((completion) => completion.packageId === candidate.packageId),
     );
@@ -1383,6 +1462,9 @@ export function advanceBuildProtocol(
       actionAttempt: 1,
       packageCompletions,
       workspaceCheckpoint: observation.workspaceCheckpoint,
+      invalidations: observation.retentionInvalidation
+        ? [...state.invalidations, observation.retentionInvalidation]
+        : state.invalidations,
       revision: state.revision + 1,
     });
   }
@@ -1428,6 +1510,7 @@ export function advanceBuildProtocol(
       packageCompletions,
       checkEvidence: null,
       invalidations: [...state.invalidations, observation.invalidation],
+      verifyRepair: observation.verifyRepair ?? state.verifyRepair,
       revision: state.revision + 1,
     });
   }
@@ -1530,6 +1613,27 @@ export interface PackageCompletionEvidence {
   workspaceCheckpointDigest: Digest;
   implementationDigest: Digest;
   digest: Digest;
+}
+
+export function assertPackageCompletionEvidence(
+  value: PackageCompletionEvidence,
+  workPackage: WorkPackage,
+): void {
+  try {
+    const reconstructed = createPackageCompletionEvidence({
+      workPackage,
+      executionId: value.executionId,
+      acceptanceEvidenceIds: value.acceptanceEvidenceIds,
+      testEvidenceIds: value.testEvidenceIds,
+      tddMode: value.tddEvidence ? 'tdd' : 'direct',
+      tddEvidence: value.tddEvidence,
+      workspaceCheckpointDigest: value.workspaceCheckpointDigest,
+      implementationDigest: value.implementationDigest,
+    });
+    if (canonicalJson(reconstructed) !== canonicalJson(value)) throw new Error('identity mismatch');
+  } catch {
+    throw new Error('Invalid package completion shape, digest or identity');
+  }
 }
 
 export function createPackageCompletionEvidence(input: {

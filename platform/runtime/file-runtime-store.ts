@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import type { RunState } from '../../domains/engine/types.js';
 import { assertVerificationInput } from '../../domains/change-lifecycle/verification-input.js';
+import { assertBuildProtocolState } from '../../domains/change-lifecycle/build-protocol.js';
 import type { RunStoreInspection } from '../../domains/runtime/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import type {
@@ -148,6 +149,8 @@ export class FileRuntimeStore {
   async loadRun(runId: string): Promise<RunState> {
     await this.recover(runId);
     const state = await readJson<RunState>(this.paths(runId).run);
+    if (state.changeLifecycle?.buildProtocol)
+      assertBuildProtocolState(state.changeLifecycle.buildProtocol);
     if (state.changeLifecycle?.verificationInput)
       assertVerificationInput(state.changeLifecycle.verificationInput);
     return state;
@@ -213,6 +216,8 @@ export class FileRuntimeStore {
         if (state.changeLifecycle?.verificationInput) {
           assertVerificationInput(state.changeLifecycle.verificationInput);
         }
+        if (state.changeLifecycle?.buildProtocol)
+          assertBuildProtocolState(state.changeLifecycle.buildProtocol);
         const result = await operation({ state, workflow, trajectory });
         if (result.state && result.event) {
           await this.commitUnlocked(

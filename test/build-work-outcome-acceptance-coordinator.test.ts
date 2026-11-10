@@ -129,6 +129,37 @@ function harness(workKind: BuildWorkKind, validShape = true) {
 }
 
 describe('Build Work Outcome acceptance coordinator', () => {
+  it.each(['build.plan', 'build.execute', 'build.check'] as const)(
+    'rechecks %s external facts at the terminal dispatcher boundary',
+    async (kind) => {
+      const fixture = harness(kind);
+      let current = true;
+      fixture.acceptValidatedOutcome.mockImplementation(
+        async (input: { reobserve: () => Promise<void> }) => {
+          current = false;
+          await input.reobserve();
+          return { validation: 'accepted' };
+        },
+      );
+      const candidate = fixture.coordinator.inspect({
+        work: fixture.work,
+        execution: fixture.execution,
+      });
+      if (!candidate || candidate.kind !== 'candidate') throw Error('Expected candidate');
+      const result = await fixture.coordinator.accept({
+        runId: 'run-1',
+        candidate,
+        validatorId: fixture.work.validatorProfile.id,
+        validationBase: fixture.runState,
+        validationInput: { current: true },
+        reobserveValidationInput: () => Promise.resolve({ current }),
+        transition: { kind: 'test' },
+        assertTransitionFeasible: vi.fn(),
+      });
+      expect(result.kind).toBe('processing-error');
+      expect(fixture.rejectHostSubmission).toHaveBeenCalledOnce();
+    },
+  );
   it.each(Object.keys(candidates) as BuildWorkKind[])(
     'keeps %s shape rejection before terminal binding',
     async (workKind) => {

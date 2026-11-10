@@ -78,6 +78,18 @@
       "source": "domains/comet-classic/classic-current-change.ts",
       "sourceSha256": "ba91b1456208f31217ff4e5e63ede9db2159de32eabf0be8e77f9a092460b942",
       "adoption": "behavioral-reference"
+    },
+    {
+      "role": "verify-repair-classification",
+      "source": "domains/comet-native/native-sdk-verify-decision.ts",
+      "sourceSha256": "c3d76c3bc22eaf2006bbd205183e081d0883a375bf89c435eb55126c89f80740",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "classic-verify-plan-continuation",
+      "source": "domains/comet-classic/classic-application.ts",
+      "sourceSha256": "a18c7e96343f02d78148e0f681839a3d7f3f07d3f5cc8257a772cc6b8ae293d5",
+      "adoption": "behavioral-reference"
     }
   ],
   "files": [
@@ -204,7 +216,7 @@
       "source": "domains/comet-classic/classic-guard.ts",
       "sourceSha256": "9d34982be2edce5a1ceb067310b4e82610beb6a874cd1ddbfa0fb5898ac36108",
       "target": "domains/runtime/workflow-runs.ts",
-      "sha256": "63380e7ab2cffc41c6065828d541878b67b45fa65c8802cb994c6834a767d89c",
+      "sha256": "7a68351fb6a9b2893fd544a4f7ffc99bd8a78f979ac9c3a5d919451726774ec3",
       "adoption": "modified"
     },
     {

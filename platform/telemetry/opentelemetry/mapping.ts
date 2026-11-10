@@ -387,6 +387,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
       [
         'revise-design',
         'revise-plan',
+        'revise-implementation',
         'continue-build',
         'invalidate-evidence',
         'retry-infrastructure',
@@ -419,6 +420,13 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
     attributes['repoctopus.open.observation.stage'] = event.data.observationStage;
   }
   if (event.type === 'change.lifecycle.transitioned') {
+    const repair = event.data.verifyRepair as
+      | { affectedPackageCount?: unknown; retainedPackageCount?: unknown }
+      | undefined;
+    if (typeof repair?.affectedPackageCount === 'number')
+      attributes['repoctopus.recovery.affected_package_count'] = repair.affectedPackageCount;
+    if (typeof repair?.retainedPackageCount === 'number')
+      attributes['repoctopus.recovery.retained_package_count'] = repair.retainedPackageCount;
     Object.assign(attributes, workspaceIntentTraceAttributes(event));
     const observationKind = scalar(event.data.observationKind);
     if (observationKind !== undefined) {
@@ -685,6 +693,7 @@ export function workflowEventMetricAttributes(
       [
         'revise-design',
         'revise-plan',
+        'revise-implementation',
         'continue-build',
         'invalidate-evidence',
         'retry-infrastructure',
