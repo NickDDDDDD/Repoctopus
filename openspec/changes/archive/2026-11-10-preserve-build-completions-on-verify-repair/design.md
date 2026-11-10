@@ -2,6 +2,8 @@
 comet_change: preserve-build-completions-on-verify-repair
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-10-preserve-build-completions-on-verify-repair
+status: final
 ---
 
 # Design

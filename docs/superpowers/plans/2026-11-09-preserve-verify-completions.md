@@ -2,6 +2,7 @@
 change: preserve-build-completions-on-verify-repair
 design-doc: openspec/changes/preserve-build-completions-on-verify-repair/design.md
 base-ref: f47eabf081fa48fb27d020d53b2ccdcda2b2cab3
+archived-with: 2026-11-10-preserve-build-completions-on-verify-repair
 ---
 
 # Verify 局部实现修复实施计划
