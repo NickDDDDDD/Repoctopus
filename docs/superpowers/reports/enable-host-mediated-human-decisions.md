@@ -46,6 +46,10 @@ Repoctopus 新增 `run decision` 与 `run decide --response-file`；Open/Design 
 
 ## 正式阶段门禁与交付边界
 
+首轮正式 Verify 的真实结果为 1205 项通过、4 项失败、5 项跳过，耗时 1160 秒；检查前后输入相同，失败不是运行中改文件造成。原始日志为 `verify-attempt1.log`，对应 Guard JSON 单独保留。四项失败分别是旧 provenance 夹具缺少新增三项固定来源、组合代码身份 golden 未更新、审批历史的显式 `decision:null` 预期未同步，以及恢复夹具缺少必填 lifecycle identity。均只修正测试，未增加产品兼容分支；另补充保留真实历史决定及 provenance 的正例。
+
+独立审查要求将组合测试的“禁止集合整体匹配”改为逐项 `not.toContain`，避免漏检单独出现的第二审批服务。修正后四个相关套件 68 项通过，类型与 lint 检查通过。Comet 沿同一 Run 保留原批准、执行配置和 10 项完成事实，返回 Build Plan 进行正式重验；未重复审批。后续最终结论仍由新 Guard 收据证明，不能把首轮部分通过称为整轮通过。
+
 真实安装包的两次原生审批及冷恢复验收已经完成；模拟协议测试与真实用户交互证据分开记录。阶段门禁由同一 Comet Run 的实际 Guard 收据证明，本报告的任务级结果不替代完整 Build/Verify。
 
 正式检查入口保持 check policy 的精确 argv：`npm.cmd run build` 与 `npm.cmd run verify`，后者绑定 `VITEST_MAX_WORKERS=2`。只有实际验收及任务完成后才向同一 Comet Run 提交阶段收据。归档和 Git 交付需要核对该边界的明确授权；本报告不宣称归档、PR、CI、合入或发布已经完成，本 Change 不发布 Release。

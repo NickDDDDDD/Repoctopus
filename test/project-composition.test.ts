@@ -31,7 +31,9 @@ describe('project composition assembly', () => {
     );
     const ids = composition.entries.map((entry) => entry.id);
     expect(compositionIdentity(composition).compositionDigest).toBe(
-      'sha256:94ae82c6ce36b21d2007f3a47dd4acf49e8e4135697199efc4acb713b065a8f0',
+      // The existing owners now bind Host decision contracts/coordinator and
+      // the added fixed Comet references; no second decision service is added.
+      'sha256:a5b237937eb3b9da14989e3b7d213164ee3ea2239eacb7da068751e09a0cb664',
     );
     expect(ids).toEqual(
       expect.arrayContaining([
@@ -47,14 +49,15 @@ describe('project composition assembly', () => {
         'team-skill-composition',
       ]),
     );
-    expect(ids).not.toEqual(
-      expect.arrayContaining([
-        'http-host',
-        'platform-event-runner',
-        'runner-application',
-        'post-merge-coordinator',
-      ]),
-    );
+    for (const forbidden of [
+      'http-host',
+      'platform-event-runner',
+      'runner-application',
+      'post-merge-coordinator',
+      'lifecycle-human-decisions',
+    ]) {
+      expect(ids).not.toContain(forbidden);
+    }
     const desktopLauncher = composition.entries.find((entry) => entry.id === 'desktop-launcher');
     expect(desktopLauncher?.config).toEqual({
       productRoot: path.resolve(import.meta.dirname, '..'),

@@ -13,6 +13,9 @@ const validManifest = {
   files: [],
   references: [
     ...[
+      ['host-design-decision', 'domains/comet-classic/classic-sdk-design.ts'],
+      ['host-build-decision', 'domains/comet-classic/classic-sdk-build.ts'],
+      ['host-archive-decision', 'domains/comet-classic/classic-sdk-archive-decision.ts'],
       ['command-input-policy', 'domains/comet-classic/classic-check-policy.ts'],
       ['command-content-snapshot', 'domains/comet-classic/classic-check-snapshot.ts'],
       ['archive-evidence-preflight', 'domains/comet-classic/classic-sdk-archive-preflight.ts'],
