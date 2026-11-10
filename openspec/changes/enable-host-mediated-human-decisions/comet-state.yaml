@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: comet/enable-host-mediated-human-decisions
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+handoff_hash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 75cea69b08525eb23fc5a5938834218f3a8b397ca57a11d93dadb855328db39b
+  hash: f3fd3d826371c1212cbf89ddc078e43e0f12dd1c8545aba2a2b1643fb7304268
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -65,8 +65,8 @@ run_checkpoint:
       createdAt: 2026-11-10
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+      handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
       isolation: worktree
       language: zh-CN
       phase: design
@@ -80,8 +80,8 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 5
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
         claim:
@@ -181,6 +181,14 @@ run_checkpoint:
         stepId: full.open.revalidate
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-8088b2d9030c69b61e64f9166fbe1126169866bcc3a34a63683297acba94baef
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: enable-host-mediated-human-decisions:5
         input:
           input:
@@ -211,14 +219,44 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
         inputHash: 6407f7242da7a8bc357bec25355f26c6bf0d9484cac32fceb6a336ffd05e8568
+        outcome:
+          actionId: enable-host-mediated-human-decisions:5
+          attempt: 1
+          claimToken: portable-8088b2d9030c69b61e64f9166fbe1126169866bcc3a34a63683297acba94baef
+          inputHash: 6407f7242da7a8bc357bec25355f26c6bf0d9484cac32fceb6a336ffd05e8568
+          outcomeId: abef2584-e9da-4aff-87c9-d2366f954c8f
+          output:
+            handoffContext: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+            handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+            proposal: 沿已批准的两项 capability 与十项任务，采用固定 Comet 0.5.1 的 Host-mediated 决策方式。新增只读
+              run decision 和 run decide --response-file 显式回传；未指定文件保留原终端
+              TTY。视图提供冻结身份、允许选择、条件输入、响应模板和下一步 argv。Host 取得真实原生或对话答复，CLI
+              记录本机主体及分离的渠道/授权依据，不自称独立证明用户点击；Runtime 复用规划批准、Provider/isolation
+              校验和现有 guarded commit。覆盖 Open、Design、意图修订及 Build Plan 风险决定；保留
+              change/phase 级共享规划批准，查询/提交先证明指定 Run 的请求参与事实，不凭同名 change
+              冒领。原始接受事实和来源保存在既有规划记录或转换 Journal，不新增审批
+              Store、Runtime、SDK、守护进程、Dashboard 写入或 checkpoint
+              迁移；中断先核对原决定，重复提交不重复推进。真实 TDD
+              回归、独立安装包多仓测试及至少一次真实宿主原生问答闭环为验收；模拟不能替代真实 UI。独立 builder check
+              的唯一归属问题已澄清并复核无重要未决。无需 Spec Patch，尚未实施或宣称新测试通过。建议本次开发采用 autonomous
+              + TDD + thorough，沿用当前独立 worktree；正式设计及执行配置等待用户确认。
+            requirementsEvidence:
+              contentHash: 9d07b6aa36d981712731a2523cec84589f4b67fedc6689ccce6d438f9c6f611e
+              ref: openspec/changes/enable-host-mediated-human-decisions
+            sourceEvidence:
+              contentHash: 96d0830cefac41dcee428f70948ae58078f73dc22b8b6748a037e7b79c7a9f82
+              ref: openspec/changes/enable-host-mediated-human-decisions
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 26b3ba7d49c0fb9cd2669cd4d9e194d93420df4d1ce8fb439b52ad50325cb77d
+            outcomeId: abef2584-e9da-4aff-87c9-d2366f954c8f
         reconciliations: []
         ref: comet-design
         requiredCapabilities: []
         retry: manual
         runId: enable-host-mediated-human-decisions
-        status: pending
+        status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
@@ -320,6 +358,95 @@ run_checkpoint:
           id: classic-open-9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
           choice: approved
           proposalHash: 8e1278ceeca9db4199a662fd09d0dc9575afe35d97fa9505b6e1888f8b3be478
+      - id: enable-host-mediated-human-decisions:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+              handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+              proposal: 沿已批准的两项 capability 与十项任务，采用固定 Comet 0.5.1 的 Host-mediated 决策方式。新增只读
+                run decision 和 run decide --response-file 显式回传；未指定文件保留原终端
+                TTY。视图提供冻结身份、允许选择、条件输入、响应模板和下一步 argv。Host 取得真实原生或对话答复，CLI
+                记录本机主体及分离的渠道/授权依据，不自称独立证明用户点击；Runtime 复用规划批准、Provider/isolation
+                校验和现有 guarded commit。覆盖 Open、Design、意图修订及 Build Plan 风险决定；保留
+                change/phase 级共享规划批准，查询/提交先证明指定 Run 的请求参与事实，不凭同名 change
+                冒领。原始接受事实和来源保存在既有规划记录或转换 Journal，不新增审批
+                Store、Runtime、SDK、守护进程、Dashboard 写入或 checkpoint
+                迁移；中断先核对原决定，重复提交不重复推进。真实 TDD
+                回归、独立安装包多仓测试及至少一次真实宿主原生问答闭环为验收；模拟不能替代真实 UI。独立 builder check
+                的唯一归属问题已澄清并复核无重要未决。无需 Spec Patch，尚未实施或宣称新测试通过。建议本次开发采用
+                autonomous + TDD + thorough，沿用当前独立 worktree；正式设计及执行配置等待用户确认。
+              requirementsEvidence:
+                contentHash: 9d07b6aa36d981712731a2523cec84589f4b67fedc6689ccce6d438f9c6f611e
+                ref: openspec/changes/enable-host-mediated-human-decisions
+              sourceEvidence:
+                contentHash: 96d0830cefac41dcee428f70948ae58078f73dc22b8b6748a037e7b79c7a9f82
+                ref: openspec/changes/enable-host-mediated-human-decisions
+        proposalHash: 6184424cd927e589b46710a483f3048a98987e5619ef2d422361c7e7d09b4abf
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+              handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+              proposal: 沿已批准的两项 capability 与十项任务，采用固定 Comet 0.5.1 的 Host-mediated 决策方式。新增只读
+                run decision 和 run decide --response-file 显式回传；未指定文件保留原终端
+                TTY。视图提供冻结身份、允许选择、条件输入、响应模板和下一步 argv。Host 取得真实原生或对话答复，CLI
+                记录本机主体及分离的渠道/授权依据，不自称独立证明用户点击；Runtime 复用规划批准、Provider/isolation
+                校验和现有 guarded commit。覆盖 Open、Design、意图修订及 Build Plan 风险决定；保留
+                change/phase 级共享规划批准，查询/提交先证明指定 Run 的请求参与事实，不凭同名 change
+                冒领。原始接受事实和来源保存在既有规划记录或转换 Journal，不新增审批
+                Store、Runtime、SDK、守护进程、Dashboard 写入或 checkpoint
+                迁移；中断先核对原决定，重复提交不重复推进。真实 TDD
+                回归、独立安装包多仓测试及至少一次真实宿主原生问答闭环为验收；模拟不能替代真实 UI。独立 builder check
+                的唯一归属问题已澄清并复核无重要未决。无需 Spec Patch，尚未实施或宣称新测试通过。建议本次开发采用
+                autonomous + TDD + thorough，沿用当前独立 worktree；正式设计及执行配置等待用户确认。
+              requirementsEvidence:
+                contentHash: 9d07b6aa36d981712731a2523cec84589f4b67fedc6689ccce6d438f9c6f611e
+                ref: openspec/changes/enable-host-mediated-human-decisions
+              sourceEvidence:
+                contentHash: 96d0830cefac41dcee428f70948ae58078f73dc22b8b6748a037e7b79c7a9f82
+                ref: openspec/changes/enable-host-mediated-human-decisions
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: enable-host-mediated-human-decisions
+                  changeDir: openspec/changes/enable-host-mediated-human-decisions
+                  workspaceBaseline:
+                    ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+                    ref: openspec/changes/enable-host-mediated-human-decisions
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+              ref: openspec/changes/enable-host-mediated-human-decisions
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
     evidenceWaits:
       - id: enable-host-mediated-human-decisions:2
         stepId: full.open.evidence
@@ -338,6 +465,29 @@ run_checkpoint:
     ready: []
     joins: {}
     outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+          handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+          proposal: 沿已批准的两项 capability 与十项任务，采用固定 Comet 0.5.1 的 Host-mediated 决策方式。新增只读
+            run decision 和 run decide --response-file 显式回传；未指定文件保留原终端
+            TTY。视图提供冻结身份、允许选择、条件输入、响应模板和下一步 argv。Host 取得真实原生或对话答复，CLI
+            记录本机主体及分离的渠道/授权依据，不自称独立证明用户点击；Runtime 复用规划批准、Provider/isolation
+            校验和现有 guarded commit。覆盖 Open、Design、意图修订及 Build Plan 风险决定；保留
+            change/phase 级共享规划批准，查询/提交先证明指定 Run 的请求参与事实，不凭同名 change
+            冒领。原始接受事实和来源保存在既有规划记录或转换 Journal，不新增审批
+            Store、Runtime、SDK、守护进程、Dashboard 写入或 checkpoint
+            迁移；中断先核对原决定，重复提交不重复推进。真实 TDD 回归、独立安装包多仓测试及至少一次真实宿主原生问答闭环为验收；模拟不能替代真实
+            UI。独立 builder check 的唯一归属问题已澄清并复核无重要未决。无需 Spec
+            Patch，尚未实施或宣称新测试通过。建议本次开发采用 autonomous + TDD + thorough，沿用当前独立
+            worktree；正式设计及执行配置等待用户确认。
+          requirementsEvidence:
+            contentHash: 9d07b6aa36d981712731a2523cec84589f4b67fedc6689ccce6d438f9c6f611e
+            ref: openspec/changes/enable-host-mediated-human-decisions
+          sourceEvidence:
+            contentHash: 96d0830cefac41dcee428f70948ae58078f73dc22b8b6748a037e7b79c7a9f82
+            ref: openspec/changes/enable-host-mediated-human-decisions
       full.open:
         sequence: 1
         value:
@@ -369,6 +519,6 @@ run_checkpoint:
           contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
     children: []
     lineage: []
-  sourceRevision: 7
-  sourceHash: e0048a16df1a75d979491ffd4210f46bedd04900cd3aad66bf2350d0d3be7885
+  sourceRevision: 9
+  sourceHash: 7296a79eb1478e96e96e6f419c4af4e69deaefc84f9420d8dc260c54559af925
 check_epoch: 1
