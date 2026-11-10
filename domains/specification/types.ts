@@ -1,4 +1,6 @@
 import type { RuntimeIdentityBasis } from '../runtime/identity.js';
+import type { ExecutionIsolation } from '../change-lifecycle/build-protocol.js';
+import type { HumanDecisionInteraction } from '../change-lifecycle/human-decision.js';
 
 export const SPECIFICATION_API_VERSION = 'repoctopus.specification/v1alpha1' as const;
 
@@ -314,6 +316,9 @@ export interface SpecificationApprovalRecord {
   source: SpecificationApprovalActor['source'];
   decidedAt: string;
   comment?: string;
+  recordedViaRunId?: string;
+  isolation?: ExecutionIsolation;
+  interaction?: HumanDecisionInteraction;
 }
 
 export interface SpecificationApprovalDecisionHistoryEntry {
@@ -322,6 +327,7 @@ export interface SpecificationApprovalDecisionHistoryEntry {
   semanticDigest: `sha256:${string}`;
   status: 'superseded';
   supersededAt: string;
+  decision?: SpecificationApprovalRecord | null;
 }
 
 export type SpecificationApprovalStatus =

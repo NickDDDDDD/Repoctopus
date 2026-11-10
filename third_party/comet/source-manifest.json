@@ -8,6 +8,24 @@
   },
   "references": [
     {
+      "role": "host-design-decision",
+      "source": "domains/comet-classic/classic-sdk-design.ts",
+      "sourceSha256": "ab9039afbecf0a4f35f32ad471af1d1ff6d74f94c36e7a0eccd9160d7c88e838",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "host-build-decision",
+      "source": "domains/comet-classic/classic-sdk-build.ts",
+      "sourceSha256": "3081fcf3d6df1d353c71dcdefb61362f4e425abfa4b9cc6e4b09c62f6ddf8c40",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "host-archive-decision",
+      "source": "domains/comet-classic/classic-sdk-archive-decision.ts",
+      "sourceSha256": "2612fb2b0909723459dba14f5f7dd1458341f3ae2e29e4cbbc0d113eceebc61f",
+      "adoption": "behavioral-reference"
+    },
+    {
       "role": "revision-readiness",
       "source": "domains/comet-classic/classic-sdk-revision-readiness.ts",
       "sourceSha256": "27636b4eb8c2724f5b007fbc8e21471f4294aae6b15b3d2c1f5f667e449f97bd",

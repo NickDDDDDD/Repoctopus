@@ -1,4 +1,5 @@
 import type { Checkpoint, TrajectoryEvent } from '../trajectory/types.js';
+import { decisionCommands, HUMAN_DECISION_HOST_INSTRUCTIONS } from './human-decision.js';
 import type { WorkExecutionCheckpoint, WorkExecutionRecovery } from '../work-execution/types.js';
 import { workExecutionRetryPolicy } from '../work-execution/retry-policy.js';
 import type {
@@ -112,7 +113,13 @@ export function classifyWorkContinuation(
 
   if (input.runStatus === 'completed') return result('done', 'terminal');
   if (input.lifecycle.waitCondition?.kind === 'human-decision') {
-    return result('ask', 'human-decision');
+    return {
+      ...result('ask', 'human-decision'),
+      humanDecision: {
+        readArgv: decisionCommands(input.lifecycle.identity.runId).read,
+        hostInstructions: HUMAN_DECISION_HOST_INSTRUCTIONS,
+      },
+    };
   }
   if (input.execution && !executionMatches) {
     if (['invoking', 'submitted', 'unknown'].includes(input.execution.status)) {
@@ -214,6 +221,9 @@ export function projectCommittedContinuation(
     attempt: classified.attempt,
     checkEpoch: classified.checkEpoch,
     reason,
+    ...(continuation === 'ask' && classified.humanDecision
+      ? { humanDecision: classified.humanDecision }
+      : {}),
   });
 
   const selected = [...trajectory]

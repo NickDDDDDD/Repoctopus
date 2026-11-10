@@ -1,4 +1,6 @@
 import { Service, type Context } from '@deepseek-ai/cordis';
+import type { ExecutionIsolation } from '../domains/change-lifecycle/build-protocol.js';
+import type { HumanDecisionInteraction } from '../domains/change-lifecycle/human-decision.js';
 
 import {
   assertSpecificationApprovalState,
@@ -508,12 +510,48 @@ export class SpecificationPlanning extends Service {
     return { manifest, validation, current };
   }
 
+  /** Observe a pending proposal without creating a request or changing approval state. */
+  async assertCurrentProposal(
+    changeId: string,
+    approvalPhase: 'open' | 'design',
+    requestId: string,
+    proposalHash: string,
+    changeBranch?: ChangeBranchReference,
+  ): Promise<void> {
+    const { manifest, validation, current } = await this.collect({ changeId, approvalPhase });
+    if (
+      !current ||
+      current.decisionRequest.requestId !== requestId ||
+      current.decisionRequest.proposalHash !== proposalHash
+    )
+      throw new Error('Human Decision proposal is stale or unavailable');
+    if (!manifest.change.planningComplete || !validation.valid || !validation.strict)
+      throw new Error('Human Decision requires complete, strictly valid planning artifacts');
+    const snapshot = createPlanningSnapshot({
+      change: manifest.change,
+      validation,
+      schema: manifest.schema,
+      specificationRoot: manifest.specificationRoot,
+      changeBranch: changeBranch ?? current.snapshot.changeBranch,
+      planningManifest: manifest,
+      approvalPhase,
+      ...(current.snapshot.buildStrategyDigest
+        ? { buildStrategyDigest: current.snapshot.buildStrategyDigest }
+        : {}),
+    });
+    if (snapshot.digest !== current.snapshot.digest)
+      throw new Error('Human Decision planning or Provider identity drifted');
+  }
+
   async decide(input: {
     changeId: string;
     approvalPhase?: 'open' | 'design';
     response: SpecificationApprovalDecisionResponse;
     actor: SpecificationApprovalActor;
     now?: () => Date;
+    recordedViaRunId?: string;
+    isolation?: ExecutionIsolation;
+    interaction?: HumanDecisionInteraction;
   }): Promise<SpecificationApprovalState> {
     const current = await this.store.load(input.changeId, input.approvalPhase ?? 'design');
     if (!current) throw new Error(`Specification approval does not exist: ${input.changeId}`);
@@ -522,6 +560,9 @@ export class SpecificationPlanning extends Service {
       response: input.response,
       actor: input.actor,
       timestamp: (input.now ?? (() => new Date()))().toISOString(),
+      ...(input.recordedViaRunId ? { recordedViaRunId: input.recordedViaRunId } : {}),
+      ...(input.isolation ? { isolation: input.isolation } : {}),
+      ...(input.interaction ? { interaction: input.interaction } : {}),
     });
     try {
       await this.store.commit(next, current.stateVersion);

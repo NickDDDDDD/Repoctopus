@@ -463,6 +463,16 @@ describe('Execution Workspace binding', () => {
         value: { run: (_options: unknown, operation: () => Promise<unknown>) => operation() },
       },
       coordinator: { value: { acceptChangeObservation } },
+      loadChangePlanningBase: {
+        value: vi
+          .fn()
+          .mockResolvedValue({
+            workspaceRepositoryId: 'workspace',
+            workspaceRepositoryPath: workspaceCheckout,
+            remote: 'origin',
+            targetBranch: 'main',
+          }),
+      },
       ctx: {
         value: {
           runStore: {
@@ -481,13 +491,19 @@ describe('Execution Workspace binding', () => {
             loadProjectSnapshot: vi.fn().mockResolvedValue(project()),
           },
           executionWorkspace: { bind },
-          specificationPlanning: { decide: decideSpecification },
+          project: { changeBranch: vi.fn().mockResolvedValue({}) },
+          specificationPlanning: {
+            decide: decideSpecification,
+            assertCurrentProposal: vi.fn().mockResolvedValue(undefined),
+          },
         },
       },
     });
 
     await expect(
-      service.decideChange({
+      // This focused unit exercises the authority's isolation precondition; public
+      // Host/terminal coordination is covered by host-human-decision-cli.e2e.
+      service['applyChangeDecision']({
         runId: 'run-1',
         response: {
           apiVersion: 'repoctopus/v1alpha1',

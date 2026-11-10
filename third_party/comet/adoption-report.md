@@ -1,5 +1,11 @@
 # Comet 采用报告
 
+## Host 人工决定
+
+固定参考 Comet 0.5.1 同一提交的 `classic-sdk-design.ts`、`classic-sdk-build.ts` 和 `classic-sdk-archive-decision.ts`。来源 SHA-256 由固定 Git blob 计算，登记在 source-manifest.json。采用其 Host 收集真实答复、公开决定命令匹配当前 Wait/hash、分支与来源重验、Runtime 提交接受事实以及重复选择核对原结果的职责划分；不引入 Comet SDK 或复制新源码。
+
+Repoctopus 的适配使用现有 Cordis WorkflowRuns、共享 PlanningApprovalStore 与 Run guarded transition journal。公开响应文件如实记录本机 CLI 主体与独立的宿主交互来源，不能独立证明一次人类点击。规划批准可以共享；Run 参与关系、原始 isolation 与 Open/Design 请求仍须分别核对。Desktop 和 OTLP 只读展示，不成为批准入口或存储权威。
+
 ## 固定基线
 
 - 上游：`https://github.com/rpamis/comet.git`

@@ -169,6 +169,8 @@ Log 和 Span 可以携带这些高基数关联 ID。Metric 只使用工作流名
 
 ## 隐私边界
 
+Host 人工决定继续复用 `wait.started`、`wait.ended` 与已接受的 lifecycle transition，不增加独立审批遥测或写入入口。渠道、授权依据和答复引用摘要只保存在本地决定权威中；本次不新增 Metric label。问答正文、评论、主体名称和答复引用不进入 OTLP，具体回传与恢复结果用 [人工决定公共入口](human-decision.md#change-生命周期) 查询。
+
 OTel 属性只允许稳定 ID、Adapter、状态、可信等级、耗时，以及 Artifact 的类型、摘要、大小、MIME 和脱敏标记。以下内容不会进入属性：
 
 - 命令输出、服务日志与健康响应正文；

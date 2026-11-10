@@ -23,6 +23,10 @@ export interface WorkExecutionRecovery {
   attempt: number | null;
   checkEpoch: number | null;
   observationStage?: 'provider-validation' | 'planning-gate' | 'evidence-inputs';
+  humanDecision?: {
+    readArgv: readonly string[];
+    hostInstructions: readonly string[];
+  };
   reason:
     | 'terminal'
     | 'human-decision'

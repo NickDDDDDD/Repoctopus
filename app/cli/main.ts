@@ -53,6 +53,8 @@ import {
   reviewSpecificationApproval,
 } from './specification-approval-decision.js';
 import { changeProjection, renderChangeProjection } from './change-run-view.js';
+import { readLifecycleDecisionResponse } from './lifecycle-decision.js';
+import type { LifecycleHumanDecisionView } from '../../services/lifecycle-human-decisions.js';
 import type { ConsistencyReconciliationResult } from '../../services/consistency-reconciler.js';
 import {
   createBuildStrategy,
@@ -66,7 +68,7 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const COMMANDS = new Set([
   'project detect',
   'project prepare',
@@ -95,6 +97,7 @@ const COMMANDS = new Set([
   'run work-outcome',
   'run work-reconcile',
   'run decide',
+  'run decision',
   'run record',
   'run resume',
   'change reconcile',
@@ -148,6 +151,9 @@ const CLI_FLAGS = new Set([
   'consumed-layers',
   'host-capabilities',
   'result-file',
+  'response-file',
+  'request-id',
+  'proposal-hash',
   'findings-file',
   'candidate',
   'branch',
@@ -170,6 +176,8 @@ const REQUIRED_FLAGS = new Map<string, readonly string[]>([
   ['run status', ['run']],
   ['run next', ['run']],
   ['run verify', ['run']],
+  ['run decision', ['run']],
+  ['run decide', ['run']],
   ['run archive-prepare', ['run', 'intent']],
   ['run archive-publish', ['run']],
   ['delivery status', ['change']],
@@ -196,8 +204,8 @@ function nextActions(status: RunStatusView): string[] {
   if (lifecycle) {
     if (['completed', 'failed', 'migration_required'].includes(lifecycle.status)) return [];
     const work = lifecycle.currentWork?.kind;
-    if (lifecycle.phase === 'design' && lifecycle.status === 'waiting') {
-      return ['repoctopus run decide --run <run-id>'];
+    if (lifecycle.status === 'waiting' && lifecycle.waitCondition?.kind === 'human-decision') {
+      return [`repoctopus run decision --run ${status.state.runId} --json`];
     }
     if (work === 'evidence.verify') return ['repoctopus run verify --run <run-id>'];
     if (work === 'specification.close' || work === 'delivery.publish') {
@@ -1248,13 +1256,52 @@ async function runWorkReconcile(parsed: ParsedArguments): Promise<CliEnvelope<un
 }
 
 async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  if (parsed.flags.has('response-file')) {
+    const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+    const runId = stringFlag(parsed, 'run', { required: true })!;
+    const response = await readLifecycleDecisionResponse(
+      path.resolve(stringFlag(parsed, 'response-file', { required: true })!),
+    );
+    const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+    try {
+      const result = await app.context.commandRouter.execute('run.decision.submit', {
+        runId,
+        response,
+        actor: { actorId: userInfo().username, source: 'cli', authenticated: true },
+      });
+      return successEnvelope({
+        command: 'run decide',
+        runId,
+        result,
+        nextActions: [
+          `repoctopus run decision --run ${runId} --request-id ${response.requestId} --proposal-hash ${response.proposalHash} --json`,
+        ],
+      });
+    } finally {
+      await app.close();
+    }
+  }
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
-    throw new Error('Human approval requires an interactive terminal or a trusted IDE Adapter');
+    throw new Error(
+      'Human approval requires an interactive terminal; a Host with a real user reply can read run decision and submit run decide --response-file',
+    );
   }
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const runId = stringFlag(parsed, 'run', { required: true })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
+    const decisionView = await app.context.commandRouter.execute<
+      { runId: string },
+      LifecycleHumanDecisionView
+    >('run.decision', { runId });
+    if (decisionView.status === 'accepted' && !decisionView.requiresSubmission) {
+      return successEnvelope({
+        command: 'run decide',
+        runId,
+        result: decisionView,
+        nextActions: [`repoctopus run next --run ${runId}`],
+      });
+    }
     const status = await app.context.commandRouter.execute<{ runId: string }, RunStatusView>(
       'run.status',
       { runId },
@@ -1359,7 +1406,9 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
     });
     if (
       !approval ||
-      approval.status !== 'awaiting_approval' ||
+      !decisionView.requiresSubmission ||
+      (approval.status !== 'awaiting_approval' &&
+        !(lifecycle.phase === 'open' && decisionView.status === 'accepted')) ||
       approval.decisionRequest.requestId !== lifecycle.waitCondition.requestId ||
       approval.decisionRequest.proposalHash !== lifecycle.waitCondition.proposalDigest
     ) {
@@ -1397,6 +1446,25 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
       result,
       nextActions: [`repoctopus run next --run ${runId}`],
     });
+  } finally {
+    await app.close();
+  }
+}
+
+async function runDecision(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const requestId = stringFlag(parsed, 'request-id');
+  const proposalHash = stringFlag(parsed, 'proposal-hash');
+  if (Boolean(requestId) !== Boolean(proposalHash))
+    throw new Error('--request-id and --proposal-hash must be provided together');
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('run.decision', {
+      runId,
+      ...(requestId ? { requestId, proposalHash } : {}),
+    });
+    return successEnvelope({ command: 'run decision', runId, result });
   } finally {
     await app.close();
   }
@@ -1578,6 +1646,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run work-outcome') return runWorkOutcome(parsed);
   if (command === 'run work-reconcile') return runWorkReconcile(parsed);
   if (command === 'run decide') return runDecide(parsed);
+  if (command === 'run decision') return runDecision(parsed);
   if (command === 'run record') return runRecord(parsed);
   if (command === 'run resume') return runResume(parsed);
   if (command === 'change reconcile') return changeReconcile(parsed);

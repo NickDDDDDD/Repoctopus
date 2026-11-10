@@ -1,4 +1,5 @@
 import type { SkillUsageSnapshot } from '../skill/types.js';
+import type { LifecycleDecisionProvenance } from './human-decision.js';
 import type { EffectiveWorkSkillComposition } from '../skill/composition.js';
 import type { SpecificationArtifactKind } from '../specification/types.js';
 import type { SpecificationTask } from '../specification/types.js';
@@ -451,6 +452,7 @@ export type ChangeLifecycleObservation =
     }
   | {
       kind: 'open-workspace-intent-selected';
+      humanDecision?: LifecycleDecisionProvenance;
       intent: ExecutionWorkspaceIntent;
       requestId: string;
       proposalDigest: `sha256:${string}`;
@@ -506,6 +508,7 @@ export type ChangeLifecycleObservation =
     }
   | {
       kind: 'workspace-intent-revised';
+      humanDecision?: LifecycleDecisionProvenance;
       requestId: string;
       proposalDigest: `sha256:${string}`;
       actorId: string;
@@ -546,6 +549,7 @@ export type ChangeLifecycleObservation =
     }
   | {
       kind: 'build-plan-decision';
+      humanDecision?: LifecycleDecisionProvenance;
       decision: 'approve' | 'reject';
       requestId: string;
       proposalDigest: `sha256:${string}`;
