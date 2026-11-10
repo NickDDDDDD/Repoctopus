@@ -22,7 +22,7 @@
       **Requirements:** change-lifecycle#生命周期人工决定通过宿主交互闭环提交, specification-authority#规划批准的宿主回传绑定当前提案
 - [ ] 2.2 为错误 Run、requestId、proposalHash、旧阶段、非法选择和规划／Provider 漂移增加先红后绿回归，复用当前规划有效性及隔离校验。 <!-- comet-task:2b099ab6-895c-49ed-a88b-2bc003535bf5 -->
       **Blocked by:** 2.1
-      **Acceptance:** 每类非法响应都有可定位诊断，缺失或不兼容 isolation 在写入批准前被拒绝；当前请求及其他有效决定不受损，不产生部分批准。
+      **Acceptance:** 每类非法响应都有可定位诊断，缺失或不兼容 isolation 在写入批准前被拒绝；当前请求及其他有效决定不受损，不产生部分批准。合法参与 Run 保留同语义规划批准复用，无请求参与事实的 Run 不能凭同名 change 冒领批准。
       **Requirements:** change-lifecycle#宿主人工决定恢复保留原请求及已接受结果, specification-authority#规划批准的宿主回传绑定当前提案
 - [ ] 2.3 验证真实用户交互与普通 Work Outcome 的边界，核对来源和授权依据的记录、缺答复保持等待及终端回退；运行负例并完善信任边界说明。 <!-- comet-task:bb96f143-5cd5-4691-b286-b437f58ff22a -->
       **Blocked by:** 2.1
