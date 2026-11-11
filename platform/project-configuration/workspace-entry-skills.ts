@@ -1,4 +1,4 @@
-import { lstat, readFile, readdir, realpath, unlink } from 'node:fs/promises';
+import { lstat, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import {
@@ -9,7 +9,7 @@ import {
   type WorkspaceEntryHost,
   type WorkspaceEntrySkillPlan,
 } from '../../domains/project-configuration/entry-skills.js';
-import { atomicWriteText } from '../filesystem/atomic-write.js';
+import { atomicWriteText, prepareContainedFileCleanup } from '../filesystem/atomic-write.js';
 
 const productRoot = path.resolve(
   import.meta.dirname,
@@ -170,16 +170,17 @@ export async function prepareWorkspaceEntryWrites(
       return {
         plan,
         current,
-        directory,
-        leftovers: leftovers.filter(
-          (entry) => entry.isFile() && stagingName(stagingTag).test(entry.name),
+        cleanup: await Promise.all(
+          leftovers
+            .filter((entry) => entry.isFile() && stagingName(stagingTag).test(entry.name))
+            .map(({ name }) => prepareContainedFileCleanup(path.join(directory, name), workspace)),
         ),
       };
     }),
   );
   return {
     async install() {
-      for (const { plan, current, directory, leftovers } of writes) {
+      for (const { plan, current, cleanup } of writes) {
         if (current?.text !== desired) {
           await atomicWriteText(path.join(workspace, plan.path), desired, {
             containedRoot: workspace,
@@ -194,21 +195,7 @@ export async function prepareWorkspaceEntryWrites(
           });
           await afterWrite?.(plan.path);
         }
-        if (!leftovers.length) continue;
-        if (
-          (await observe(workspace, plan.path, stagingTag))?.text !== desired ||
-          path.relative(directory, await realpath(directory))
-        ) {
-          throw new Error(`Workspace entry changed while recovering staging files: ${plan.path}`);
-        }
-        for (const entry of leftovers) {
-          const file = path.join(directory, entry.name);
-          try {
-            if ((await lstat(file)).isFile()) await unlink(file);
-          } catch (error) {
-            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-          }
-        }
+        for (const remove of cleanup) await remove();
       }
     },
     async verify() {

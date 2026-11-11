@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
-import { access, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, stat, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { parse } from 'yaml';
@@ -150,6 +150,19 @@ describe('project configuration onboarding', () => {
     await expect(applyDecision(input)).rejects.toThrow(/no longer matches its snapshot/);
   });
 
+  it('refuses an entry path that resolves outside the approved Workspace', async () => {
+    const { workspace, input } = await guideDecisionFixture();
+    const outside = await temporaryDirectory('repoctopus-entry-outside-');
+    cleanup.push(outside);
+    await symlink(
+      outside,
+      path.join(workspace, '.agents'),
+      process.platform === 'win32' ? 'junction' : 'dir',
+    );
+    await expect(applyDecision(input)).rejects.toThrow(/regular contained path/u);
+    await expect(access(path.join(outside, 'skills'))).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
   it('resumes between host installations and leaves completed targets and business repositories alone', async () => {
     const { workspace, web, prepared, input } = await guideDecisionFixture();
     const codex = path.join(workspace, '.agents/skills/repoctopus/SKILL.md');
@@ -228,6 +241,29 @@ describe('project configuration onboarding', () => {
     await expect(access(path.join(workspace, '.agents'))).rejects.toMatchObject({ code: 'ENOENT' });
     expect(
       await readFile(path.join(workspace, '.opencode/skills/repoctopus/SKILL.md'), 'utf8'),
+    ).toContain('name: repoctopus');
+    const prior = await readFile(path.join(workspace, 'repoctopus.yaml'));
+    const upgrade = await detectProjectConfiguration({
+      workspace,
+      scanRoot: root,
+      specificationAuthority: registration,
+    });
+    expect(upgrade.draft.entrySkills?.map(({ status }) => status)).toEqual(['create', 'keep']);
+    const upgradeRequest = await prepareProjectConfigurationDecision({
+      workspace,
+      draftFile: upgrade.file,
+      completedCandidate: prepared.request.candidateConfig,
+    });
+    await applyDecision({
+      workspace,
+      decisionFile: upgradeRequest.file,
+      response: response(upgradeRequest.request),
+      actor: { actorId: 'user', source: 'cli', authenticated: true },
+      timestamp: '2026-01-01T00:00:00.000Z',
+    });
+    expect(await readFile(path.join(workspace, 'repoctopus.yaml'))).toEqual(prior);
+    expect(
+      await readFile(path.join(workspace, '.agents/skills/repoctopus/SKILL.md'), 'utf8'),
     ).toContain('name: repoctopus');
   });
 

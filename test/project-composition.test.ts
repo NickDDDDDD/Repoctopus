@@ -32,7 +32,7 @@ describe('project composition assembly', () => {
     const ids = composition.entries.map((entry) => entry.id);
     expect(compositionIdentity(composition).compositionDigest).toBe(
       // The existing owners bind Workspace onboarding and frozen Skill resource delivery.
-      'sha256:35c79793b7e1568a95f5880da4932b29e611d3ea04d454db817f19055cafd619',
+      'sha256:c1f6ae38f7e8c5c5c48ae4aeb7b17afc8ed13eb4815d4a56e80a046998b3f7a7',
     );
     expect(ids).toEqual(
       expect.arrayContaining([

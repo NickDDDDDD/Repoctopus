@@ -117,6 +117,7 @@ async function captureClosedTemporaryFile(
 async function prepareContainedDirectoryChain(
   root: string,
   directory: string,
+  create = true,
 ): Promise<DirectoryIdentity[]> {
   const lexicalRoot = path.resolve(root);
   const lexicalDirectory = path.resolve(directory);
@@ -130,10 +131,12 @@ async function prepareContainedDirectoryChain(
   for (const segment of segments) {
     await verifyDirectoryChain(chain);
     cursor = path.join(cursor, segment);
-    try {
-      await fs.mkdir(cursor);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+    if (create) {
+      try {
+        await fs.mkdir(cursor);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+      }
     }
     const identity = await captureDirectoryIdentity(cursor);
     if (!isInside(chain[0]!.realPath, identity.realPath)) {
@@ -247,6 +250,33 @@ async function atomicWrite(
     }
     throw error;
   }
+}
+
+export async function prepareContainedFileCleanup(
+  file: string,
+  containedRoot: string,
+): Promise<() => Promise<void>> {
+  const chain = await prepareContainedDirectoryChain(containedRoot, path.dirname(file), false);
+  const original = await fs.lstat(file).catch((error: unknown) => {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+    throw error;
+  });
+  if (original && !original.isFile())
+    throw new Error(`Cleanup target must be a regular file: ${file}`);
+  await verifyDirectoryChain(chain);
+  return async () => {
+    if (!original) return;
+    try {
+      const current = await fs.lstat(file);
+      if (!current.isFile() || !sameUnchangedFile(original, current)) {
+        throw new Error(`Cleanup target changed before removal: ${file}`);
+      }
+      await verifyDirectoryChain(chain);
+      await fs.unlink(file);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    }
+  };
 }
 
 export async function atomicWriteText(
