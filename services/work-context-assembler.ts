@@ -6,6 +6,8 @@ import {
   type ResolvedWorkContextSkill,
   type WorkExecutionContext,
 } from '../domains/change-lifecycle/work-context.js';
+import type { SkillUsageSnapshot } from '../domains/skill/types.js';
+import { sameSkillUsageSnapshot } from '../domains/skill/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import { captureWorkSkill } from '../platform/skill/snapshot.js';
 
@@ -38,6 +40,14 @@ export class WorkContextAssembler extends Service {
     this.workspaceRoot = config.workspaceRoot ?? process.cwd();
   }
 
+  async recoverSkillResources(expected: SkillUsageSnapshot) {
+    const skill = await this.resolveSkill(expected.name);
+    if (!sameSkillUsageSnapshot(expected, skill.snapshot)) {
+      throw new Error(`Bound Skill changed: ${expected.name}`);
+    }
+    return skill.resources ?? [];
+  }
+
   async assemble(input: {
     work: WorkDescriptor;
     changeId: string;
@@ -45,20 +55,6 @@ export class WorkContextAssembler extends Service {
     diagnostic?: boolean;
     signal?: AbortSignal;
   }): Promise<WorkExecutionContext> {
-    const resolve = async (name: string): Promise<ResolvedWorkContextSkill> => {
-      const definition = await this.ctx.skills.get(name, {
-        cwd: this.workspaceRoot,
-        ...(input.signal ? { signal: input.signal } : {}),
-      });
-      if (!definition || !isModelInvocable(definition)) {
-        throw new Error(`Work context executable Skill is unavailable: ${name}`);
-      }
-      return {
-        ...(await captureWorkSkill(definition)),
-        content: definition.content,
-        ...protocolMetadata(definition),
-      };
-    };
     const planningKinds = input.work.outputContract.artifactKinds.filter(
       (kind) => kind !== 'verification',
     );
@@ -76,14 +72,16 @@ export class WorkContextAssembler extends Service {
       work: input.work,
       runtimeContract: RUNTIME_CONTRACT,
       ...(input.work.actionSkill
-        ? { actionSkill: await resolve(input.work.actionSkill.name) }
+        ? { actionSkill: await this.resolveSkill(input.work.actionSkill.name, input.signal) }
         : {}),
       specificationArtifacts,
       specificationPhase: phaseContext,
       augmentationSkills: await Promise.all(
-        input.work.augmentationSkills.map((skill) => resolve(skill.name)),
+        input.work.augmentationSkills.map((skill) => this.resolveSkill(skill.name, input.signal)),
       ),
-      ...(input.diagnostic ? { diagnosticSkill: await resolve('diagnosing-bugs') } : {}),
+      ...(input.diagnostic
+        ? { diagnosticSkill: await this.resolveSkill('diagnosing-bugs', input.signal) }
+        : {}),
       changeInputs: input.changeInputs,
     });
     const resourceBytes = context.layers.reduce(
@@ -98,6 +96,24 @@ export class WorkContextAssembler extends Service {
     if (resourceBytes > 2 * 1024 * 1024)
       throw new Error('Work execution Skill resources exceed the packet limit');
     return context;
+  }
+
+  private async resolveSkill(
+    name: string,
+    signal?: AbortSignal,
+  ): Promise<ResolvedWorkContextSkill> {
+    const definition = await this.ctx.skills.get(name, {
+      cwd: this.workspaceRoot,
+      ...(signal ? { signal } : {}),
+    });
+    if (!definition || !isModelInvocable(definition)) {
+      throw new Error(`Work context executable Skill is unavailable: ${name}`);
+    }
+    return {
+      ...(await captureWorkSkill(definition)),
+      content: definition.content,
+      ...protocolMetadata(definition),
+    };
   }
 }
 

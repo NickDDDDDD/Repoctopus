@@ -12,6 +12,7 @@ import type {
 import {
   createWorkExecutionPacket,
   type WorkClaimResult,
+  type RecoveredSkillResources,
   type WorkExecutionPacket,
   type WorkOutcomeValidationRecord,
 } from '../domains/work-execution/types.js';
@@ -67,25 +68,38 @@ const EMPTY_RESOURCE_MANIFESTS = new Set(
   ['[]', 'null'].map((value) => `sha256:${createHash('sha256').update(value).digest('hex')}`),
 );
 
-function assertUnstartedPacketResources(packet: WorkExecutionPacket): void {
+async function recoverUnstartedPacketResources(
+  packet: WorkExecutionPacket,
+  recover: (
+    skill: NonNullable<WorkDescriptor['actionSkill']>,
+  ) => Promise<RecoveredSkillResources['resources']>,
+): Promise<RecoveredSkillResources[]> {
   const snapshots = [packet.work.actionSkill, ...packet.work.augmentationSkills].filter(
     (skill) => skill !== undefined,
   );
-  const layers = packet.context.layers.filter(
-    ({ kind }) => kind === 'action-skill' || kind === 'augmentation-skill',
-  );
-  for (const [index, layer] of layers.entries()) {
+  const resources: RecoveredSkillResources[] = [];
+  let skillIndex = 0;
+  for (const [layerIndex, layer] of packet.context.layers.entries()) {
+    if (layer.kind !== 'action-skill' && layer.kind !== 'augmentation-skill') continue;
+    const snapshot = snapshots[skillIndex++];
     if (layer.resources !== undefined) continue;
-    const snapshot = snapshots[index];
-    if (!snapshot || !EMPTY_RESOURCE_MANIFESTS.has(snapshot.resourceManifestDigest)) {
+    try {
+      if (!snapshot || snapshot.name !== layer.source || snapshot.contentDigest !== layer.digest) {
+        throw new Error('The original resource identity is unavailable');
+      }
+      if (EMPTY_RESOURCE_MANIFESTS.has(snapshot.resourceManifestDigest)) continue;
+      resources.push({ layerIndex, layerDigest: layer.digest, resources: await recover(snapshot) });
+    } catch (cause) {
       throw Object.assign(
         new Error(
-          `Current frozen Work has no verified resources for ${layer.source}; reconcile the original claim before starting a Host.`,
+          `Current frozen Work has no verified resources for ${layer.source}. Resume with the original Runtime and Skill versions to settle this claim.`,
+          { cause },
         ),
         { code: 'runtime.work-packet-resources-missing' },
       );
     }
   }
+  return resources;
 }
 
 function createChangeInputs(input: {
@@ -232,15 +246,18 @@ export class WorkDispatcher extends Service {
       existing.checkEpoch === work.checkEpoch
     ) {
       const resumed = await this.ctx.workExecutionAuthority.loadAuthoritativePacket(request.runId);
-      if (existing.status === 'claimed' || existing.status === 'context-delivered') {
-        assertUnstartedPacketResources(resumed.packet);
-      }
+      const recoveredSkillResources =
+        existing.status === 'claimed' || existing.status === 'context-delivered'
+          ? await recoverUnstartedPacketResources(resumed.packet, (snapshot) =>
+              this.ctx.workContextAssembler.recoverSkillResources(snapshot),
+            )
+          : [];
       if (existing.status === 'claimed') {
         await this.ctx.workExecutionAuthority.recordSkillFacts(resumed.packet, 'resolved');
         await this.ctx.workExecutionAuthority.markContextDelivered(resumed.packet);
         await this.ctx.workExecutionAuthority.recordSkillFacts(resumed.packet, 'delivered');
       }
-      return resumed;
+      return recoveredSkillResources.length ? { ...resumed, recoveredSkillResources } : resumed;
     }
     const executionContext = await this.ctx.workContextAssembler.assemble({
       work,

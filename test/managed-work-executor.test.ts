@@ -587,12 +587,31 @@ describe('Managed Work Executor Build contract', () => {
     },
   );
 
-  it.each(['claimed', 'context-delivered'] as const)(
-    'keeps a legacy %s packet from starting without its bound resources',
-    async (status) => {
+  it.each([
+    { status: 'claimed', recovered: true },
+    { status: 'context-delivered', recovered: true },
+    { status: 'claimed', recovered: false },
+    { status: 'context-delivered', recovered: false },
+  ] as const)(
+    'handles legacy $status resource recovery ($recovered)',
+    async ({ status, recovered }) => {
       const packet = structuredClone(frozenPacket('specification.plan'));
+      packet.context = {
+        ...packet.context,
+        layers: [
+          {
+            kind: 'action-skill',
+            priority: 2,
+            source: 'test',
+            content: 'Skill body',
+            digest: digest('1'),
+          },
+        ],
+      };
       packet.work = {
         ...packet.work,
+        workId: packet.claim.workId,
+        checkEpoch: packet.claim.checkEpoch,
         actionSkill: {
           schemaVersion: 1,
           name: 'test',
@@ -605,7 +624,18 @@ describe('Managed Work Executor Build contract', () => {
         capabilities: [],
       };
       const markContextDelivered = vi.fn();
-      const markHostStarted = vi.fn();
+      const markHostStarted = vi.fn().mockResolvedValue({ acquired: true });
+      const recoveredResources = [
+        {
+          path: 'reference.md',
+          digest: digest('5'),
+          encoding: 'utf8',
+          content: 'Original resource',
+        },
+      ];
+      const recoverSkillResources = recovered
+        ? vi.fn().mockResolvedValue(recoveredResources)
+        : vi.fn().mockRejectedValue(new Error('resource drift'));
       const runStore = {
         loadRun: vi.fn().mockResolvedValue({
           status: 'running',
@@ -627,7 +657,11 @@ describe('Managed Work Executor Build contract', () => {
       const dispatcher = Object.create(WorkDispatcher.prototype) as WorkDispatcher;
       Object.defineProperty(dispatcher, 'contributors', { value: new Map() });
       Object.defineProperty(dispatcher, 'ctx', {
-        value: { runStore, workExecutionAuthority: authority },
+        value: {
+          runStore,
+          workExecutionAuthority: authority,
+          workContextAssembler: { recoverSkillResources },
+        },
       });
       dispatcher.register({
         id: 'manual',
@@ -638,15 +672,28 @@ describe('Managed Work Executor Build contract', () => {
       Object.defineProperty(service, 'ctx', {
         value: { runStore, workDispatcher: dispatcher, workExecutionAuthority: authority },
       });
-      await expect(
-        service.claimExternal({
-          runId: 'run-1',
-          adapter: 'manual',
-          executor: { actorId: 'user', runnerId: 'runner', source: 'cli', authenticated: true },
-        }),
-      ).rejects.toMatchObject({ code: 'runtime.work-packet-resources-missing' });
-      expect(markContextDelivered).not.toHaveBeenCalled();
-      expect(markHostStarted).not.toHaveBeenCalled();
+      const result = service.claimExternal({
+        runId: 'run-1',
+        adapter: 'manual',
+        executor: { actorId: 'user', runnerId: 'runner', source: 'cli', authenticated: true },
+      });
+      if (recovered) {
+        await expect(result).resolves.toMatchObject({
+          executionAcquired: true,
+          packet,
+          recoveredSkillResources: [
+            { layerIndex: 0, layerDigest: digest('1'), resources: recoveredResources },
+          ],
+        });
+        expect(packet.context.layers[0]?.resources).toBeUndefined();
+        expect(markHostStarted).toHaveBeenCalledOnce();
+      } else {
+        await expect(result).rejects.toMatchObject({
+          code: 'runtime.work-packet-resources-missing',
+        });
+        expect(markContextDelivered).not.toHaveBeenCalled();
+        expect(markHostStarted).not.toHaveBeenCalled();
+      }
     },
   );
 
