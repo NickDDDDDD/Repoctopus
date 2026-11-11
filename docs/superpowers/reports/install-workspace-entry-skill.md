@@ -10,6 +10,10 @@ Build Configure 接受后，单独 CLI 进程恢复同一 Run，用相同的 Run
 
 OpenCode 1.19.5 的真实原生 `skill` 工具从仅含 `.opencode` 入口的项目返回完整已安装正文。用本地确定性模型驱动该工具调用。最终提交的 CLI 包重新验收了接入审批、宿主加载和缺输入时的行为。Codex 在缺少 Change ID、目标分支和 Run ID 时要求补充，未建立 Run。
 
+## 规格与实现核对
+
+OpenSpec 严格校验通过，8 项任务已完成。接入规格由 `project detect/prepare/review` 和 `workspace-entry-skills.ts` 实现，审批摘要绑定相对目标、候选内容与写入前态。宿主入口和装填规格由已安装的入口 Skill、公共 Run CLI、`WorkDispatcher` 与 `WorkContextAssembler` 实现。四类 OpenSpec 产物和 Runtime 的既有审批、执行包及 Outcome 权威贯穿两条路径。独立审查核对了两个 delta spec 中的接入、冲突、启动、冷恢复和停止场景。
+
 ## 失败回归和恢复
 
 - 初次入口回归在旧实现上因缺少接入计划而失败。初次公开 Design claim 回归因缺少 `DESIGN-IT-TWICE.md` 资源而失败。实现后两项转绿。
