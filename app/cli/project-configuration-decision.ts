@@ -13,8 +13,12 @@ export async function reviewProjectConfigurationDecision(options: {
 }): Promise<{ decision: ProjectConfigurationDecision; comment?: string }> {
   const terminal = createInterface({ input: options.input, output: options.output });
   try {
+    const entrySkills = (options.request.entrySkills ?? []).map(
+      ({ host, path, status, diagnostic }) =>
+        `  ${host}: ${status} ${path}${diagnostic ? ` — ${diagnostic}` : ''}`,
+    );
     options.output.write(
-      `\nProject configuration approval\nDraft: ${options.request.draftId}\nSnapshot: ${options.request.snapshotDigest}\nCandidate: ${options.request.candidateConfigDigest}\nUnresolved findings: ${options.request.unresolved.length}\nReconcile changed: ${options.request.reconcile?.changed ?? false}\nWorkspace guides: ${WORKSPACE_GUIDE_FILES.join(', ')}\nOnly Repoctopus managed blocks are installed or updated; team content is preserved.\n\n1) Approve\n2) Request changes\n3) Reject\n`,
+      `\nProject configuration approval\nDraft: ${options.request.draftId}\nSnapshot: ${options.request.snapshotDigest}\nCandidate: ${options.request.candidateConfigDigest}\nUnresolved findings: ${options.request.unresolved.length}\nReconcile changed: ${options.request.reconcile?.changed ?? false}\nWorkspace guides: ${WORKSPACE_GUIDE_FILES.join(', ')}\nOnly Repoctopus managed blocks are installed or updated; team content is preserved.\nWorkspace entry Skills:\n${entrySkills.join('\n') || '  (none)'}\n\n1) Approve\n2) Request changes\n3) Reject\n`,
     );
     const answer = (await terminal.question('Decision [1-3]: ')).trim();
     const decision: ProjectConfigurationDecision =

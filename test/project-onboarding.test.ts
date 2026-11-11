@@ -102,6 +102,7 @@ async function guideDecisionFixture() {
   });
   return {
     workspace,
+    web,
     prepared,
     input: {
       workspace,
@@ -114,6 +115,112 @@ async function guideDecisionFixture() {
 }
 
 describe('project configuration onboarding', () => {
+  it('previews the managed Workspace entry and installs it only on approval', async () => {
+    const { workspace, prepared, input } = await guideDecisionFixture();
+    const entry = path.join(workspace, '.agents/skills/repoctopus/SKILL.md');
+    expect(prepared.request).toMatchObject({
+      entrySkills: [
+        { host: 'codex', path: '.agents/skills/repoctopus/SKILL.md', status: 'create' },
+        { host: 'opencode', path: '.opencode/skills/repoctopus/SKILL.md', status: 'create' },
+      ],
+    });
+    await expect(access(entry)).rejects.toMatchObject({ code: 'ENOENT' });
+    await expect(applyDecision(input)).resolves.toMatchObject({ status: 'confirmed' });
+    expect(await readFile(entry, 'utf8')).toContain('name: repoctopus');
+  });
+
+  it('keeps an unmanaged or edited entry and binds the approved paths to the snapshot', async () => {
+    const { workspace, input } = await guideDecisionFixture();
+    const entry = path.join(workspace, '.agents/skills/repoctopus/SKILL.md');
+    await mkdir(path.dirname(entry), { recursive: true });
+    const original = '# Team-owned skill\n';
+    await writeFile(entry, original);
+    await expect(applyDecision(input)).rejects.toThrow(/unmanaged or locally modified/);
+    expect(await readFile(entry, 'utf8')).toBe(original);
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+
+    const decision = JSON.parse(await readFile(input.decisionFile, 'utf8')) as {
+      request: { entrySkills: [{ path: string }] };
+    };
+    decision.request.entrySkills[0].path = 'README.md';
+    await writeFile(input.decisionFile, JSON.stringify(decision));
+    await expect(applyDecision(input)).rejects.toThrow(/no longer matches its snapshot/);
+  });
+
+  it('resumes between host installations and leaves completed targets and business repositories alone', async () => {
+    const { workspace, web, prepared, input } = await guideDecisionFixture();
+    const codex = path.join(workspace, '.agents/skills/repoctopus/SKILL.md');
+    const opencode = path.join(workspace, '.opencode/skills/repoctopus/SKILL.md');
+    await expect(
+      applyDecision({
+        ...input,
+        hooks: {
+          afterEntryWrite: () => {
+            throw new Error('entry installation interrupted');
+          },
+        },
+      }),
+    ).rejects.toThrow('entry installation interrupted');
+    const firstWrite = await stat(codex);
+    await expect(access(opencode)).rejects.toMatchObject({ code: 'ENOENT' });
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    const resumed = await applyDecision(input);
+    expect(resumed.status).toBe('confirmed');
+    expect(await readFile(opencode, 'utf8')).toBe(await readFile(codex, 'utf8'));
+    expect((await stat(codex)).mtimeMs).toBe(firstWrite.mtimeMs);
+    await expect(access(path.join(web, '.agents'))).rejects.toMatchObject({ code: 'ENOENT' });
+    await expect(access(path.join(web, '.opencode'))).rejects.toMatchObject({ code: 'ENOENT' });
+
+    const localEdit = '# Keep this change to the installed entry';
+    await writeFile(codex, localEdit);
+    await expect(applyDecision(input)).resolves.toEqual(resumed);
+    expect(await readFile(codex, 'utf8')).toBe(localEdit);
+    const detected = await detectProjectConfiguration({
+      workspace,
+      scanRoot: path.dirname(workspace),
+      specificationAuthority: registration,
+    });
+    expect(detected.draft.entrySkills?.map(({ status }) => status)).toEqual(['conflict', 'keep']);
+    expect(prepared.request.entrySkills).toHaveLength(2);
+  });
+
+  it('installs only the chosen host in a single-repository Workspace', async () => {
+    const root = await temporaryDirectory('repoctopus-single-entry-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    await writeFile(
+      path.join(workspace, 'package.json'),
+      JSON.stringify({ scripts: { build: 'node --version' } }),
+    );
+    const detected = await detectProjectConfiguration({
+      workspace,
+      scanRoot: root,
+      entryHosts: ['opencode'],
+      specificationAuthority: registration,
+    });
+    expect(detected.draft.entrySkills?.map(({ host }) => host)).toEqual(['opencode']);
+    const prepared = await prepareProjectConfigurationDecision({
+      workspace,
+      draftFile: detected.file,
+      completedCandidate: detected.draft.candidateConfig!,
+    });
+    await applyDecision({
+      workspace,
+      decisionFile: prepared.file,
+      response: response(prepared.request),
+      actor: { actorId: 'user', source: 'cli', authenticated: true },
+      timestamp: '2026-01-01T00:00:00.000Z',
+    });
+    await expect(access(path.join(workspace, '.agents'))).rejects.toMatchObject({ code: 'ENOENT' });
+    expect(
+      await readFile(path.join(workspace, '.opencode/skills/repoctopus/SKILL.md'), 'utf8'),
+    ).toContain('name: repoctopus');
+  });
+
   it.each(['reject', 'request_changes'] as const)(
     'does not install guides before approval or after %s',
     async (decision) => {

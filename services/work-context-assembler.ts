@@ -7,7 +7,7 @@ import {
   type WorkExecutionContext,
 } from '../domains/change-lifecycle/work-context.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
-import { snapshotSkillDefinition } from '../platform/skill/snapshot.js';
+import { captureWorkSkill } from '../platform/skill/snapshot.js';
 
 const RUNTIME_CONTRACT = `Repoctopus Runtime owns lifecycle state, claims, capabilities, write scopes, output contracts and validation. Follow the fixed Work binding. Do not create another specification, tracker, task authority or lifecycle transition. Report an Outcome; only Runtime validators and Evidence may advance the Change.`;
 
@@ -54,7 +54,7 @@ export class WorkContextAssembler extends Service {
         throw new Error(`Work context executable Skill is unavailable: ${name}`);
       }
       return {
-        snapshot: await snapshotSkillDefinition(definition),
+        ...(await captureWorkSkill(definition)),
         content: definition.content,
         ...protocolMetadata(definition),
       };
@@ -72,7 +72,7 @@ export class WorkContextAssembler extends Service {
       if (!artifact) throw new Error(`Work context is missing OpenSpec ${kind} instructions`);
       return artifact;
     });
-    return assembleWorkExecutionContext({
+    const context = assembleWorkExecutionContext({
       work: input.work,
       runtimeContract: RUNTIME_CONTRACT,
       ...(input.work.actionSkill
@@ -86,6 +86,18 @@ export class WorkContextAssembler extends Service {
       ...(input.diagnostic ? { diagnosticSkill: await resolve('diagnosing-bugs') } : {}),
       changeInputs: input.changeInputs,
     });
+    const resourceBytes = context.layers.reduce(
+      (total, layer) =>
+        total +
+        (layer.resources ?? []).reduce(
+          (size, resource) => size + Buffer.byteLength(resource.content, resource.encoding),
+          0,
+        ),
+      0,
+    );
+    if (resourceBytes > 2 * 1024 * 1024)
+      throw new Error('Work execution Skill resources exceed the packet limit');
+    return context;
   }
 }
 

@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { hashProjectConfig, parseSharedProjectConfig } from './config.js';
+import type { WorkspaceEntrySkillPlan } from './entry-skills.js';
 import type {
   DetectionUnresolvedItem,
   ProjectConfigReconcileDiff,
@@ -26,6 +27,7 @@ export interface ProjectConfigurationDecisionRequest {
   reconcile: ProjectConfigReconcileDiff | null;
   unresolved: DetectionUnresolvedItem[];
   storeBinding: OpenSpecStoreBindingProposal | null;
+  entrySkills?: WorkspaceEntrySkillPlan[];
   options: ProjectConfigurationDecision[];
 }
 
@@ -64,6 +66,7 @@ function projectConfigurationSnapshotDigest(input: {
   reconcile: ProjectConfigReconcileDiff | null;
   unresolved: DetectionUnresolvedItem[];
   storeBinding: OpenSpecStoreBindingProposal | null;
+  entrySkills?: WorkspaceEntrySkillPlan[];
 }): string {
   return `sha256:${createHash('sha256').update(canonicalJson(input)).digest('hex')}`;
 }
@@ -125,6 +128,7 @@ export function createProjectConfigurationDecision(input: {
     reconcile,
     unresolved: input.draft.unresolved,
     storeBinding: input.draft.storeBinding,
+    ...(input.draft.entrySkills ? { entrySkills: input.draft.entrySkills } : {}),
   });
   return {
     apiVersion: 'repoctopus/v1alpha1',
@@ -139,6 +143,7 @@ export function createProjectConfigurationDecision(input: {
     reconcile,
     unresolved: input.draft.unresolved,
     storeBinding: structuredClone(input.draft.storeBinding),
+    ...(input.draft.entrySkills ? { entrySkills: structuredClone(input.draft.entrySkills) } : {}),
     options: ['approve', 'request_changes', 'reject'],
   };
 }
@@ -160,6 +165,7 @@ export function recordProjectConfigurationDecision(input: {
     reconcile: input.request.reconcile,
     unresolved: input.request.unresolved,
     storeBinding: input.request.storeBinding,
+    ...(input.request.entrySkills ? { entrySkills: input.request.entrySkills } : {}),
   });
   if (
     candidateConfigDigest !== input.request.candidateConfigDigest ||

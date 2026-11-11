@@ -25,6 +25,7 @@ export interface DetectProjectConfigurationInput {
   scanRoot: string;
   storeId?: string;
   skippedPointerRepositoryIds?: readonly string[];
+  entryHosts?: readonly string[];
 }
 
 export class ProjectOnboarding extends Service {

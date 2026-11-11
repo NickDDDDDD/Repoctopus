@@ -2,6 +2,12 @@
 
 Repoctopus 使用 DSH Skill Registry 解析 Skill，并通过 Cordis Provider 接入具体 Skill 来源。工作流只依赖唯一的 `ctx.skills` Service；团队生命周期组合另由共享配置显式声明，并在创建 Run 时冻结，不能由个人目录或调用参数改变。
 
+## 在宿主中调用 Repoctopus
+
+Workspace 接入获批后，会安装 `repoctopus` 入口 Skill。默认预览 Codex 的 `.agents/skills/repoctopus/` 和 OpenCode 的 `.opencode/skills/repoctopus/`，也可在 `project detect` 加 `--entry-hosts codex` 或 `--entry-hosts opencode`。接入审批展示将安装的路径；已接入项目可重新探测、准备和批准以补齐入口。把生成的入口随 Workspace 一起提交，团队成员打开该 Workspace 的新会话即可使用。
+
+在 Codex 的 Skill 选择中调用 `repoctopus`，或在 OpenCode 请求 Agent 使用 `repoctopus` Skill。启动时提供 Change ID 和目标分支，续跑时提供 Run ID。Runtime 为每个 Action 返回当前执行包，Host 领取执行权后读取正文和匹配的资源。人工批准和恢复仍沿同一 Run 处理。
+
 ## 查看有效 Skill
 
 在项目 workspace 中运行：
@@ -71,7 +77,7 @@ lifecycle:
 
 Execution mode 是 Repoctopus action input，不是另一个 Skill。`subagent-driven-development` 要求 Host 具有 `subagent.dispatch.attested`，并为当前 package 返回结构化 delegation receipts；`autonomous` 禁止未声明的子调用。两种模式使用相同的 Runtime、Validator 和 Verify 边界，不依赖 Superpowers。
 
-Runtime 在 change 开始时冻结并绑定有效组合身份，但只把当前 Work 的层装入上下文。固定顺序为 Runtime contract → action Skill → Provider protocol → 内置 augmentation / replacement → team guidance → Method Profile → change inputs。Host 必须明确回报当前 packet 中真正读取的 Skill layer digest；Runtime 拒绝缺失、未知或旧层，只据此记录 `skill.consumed`。`consumed` 是有界回执，不证明 Agent 遵循了方法内容。
+Runtime 在 change 开始时冻结并绑定有效组合身份，但只把当前 Work 的层装入上下文。资源随对应 Skill 层交付，在领取提交前完成校验并冻结。固定顺序为 Runtime contract → action Skill → Provider protocol → 内置 augmentation / replacement → team guidance → Method Profile → change inputs。Host 必须明确回报当前 packet 中真正读取的 Skill layer digest；Runtime 拒绝缺失、未知或旧层，只据此记录 `skill.consumed`。`consumed` 是有界回执，不证明 Agent 遵循了方法内容。
 
 内置 Method Profile Registry 以 `id + version + digest` 固定已审核规则；每条规则同时绑定上游 source digest、适用 phase、官方 artifact kind，以及 `context`、`deterministic-validator`、`review-rubric` 或 `human-decision` enforcement。上下文装配只输出这些 Repoctopus-owned 规则，不读取或注入原始 `to-spec`/`to-tickets` 正文。即使项目或用户目录定义同名 Skill，lifecycle definition validation 也会在 Work 创建前拒绝它。
 

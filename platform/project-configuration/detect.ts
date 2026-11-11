@@ -23,6 +23,7 @@ import {
   type OpenSpecStoreRegistrationPort,
 } from '../specification/openspec-store-registration.js';
 import { loadProjectConfig } from './file-config.js';
+import { planWorkspaceEntrySkills } from './workspace-entry-skills.js';
 
 const MAX_DETECTION_FILE_BYTES = 1024 * 1024;
 
@@ -438,6 +439,7 @@ export async function detectProjectConfiguration(input: {
   scanRoot: string;
   storeId?: string;
   skippedPointerRepositoryIds?: readonly string[];
+  entryHosts?: readonly string[];
   now?: () => Date;
   specificationAuthority?: OpenSpecStoreRegistrationPort;
 }): Promise<{ draft: ProjectDetectionDraft; file: string }> {
@@ -555,7 +557,9 @@ export async function detectProjectConfiguration(input: {
         repositories: repositories.map((repository) => structuredClone(repository.openSpec)),
       }
     : null;
+  const entrySkills = await planWorkspaceEntrySkills(workspace, input.entryHosts);
   const content = {
+    entrySkills,
     repositories,
     unresolved,
     candidateConfig,
