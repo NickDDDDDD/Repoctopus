@@ -2,6 +2,8 @@
 comet_change: enable-host-mediated-human-decisions
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-11-enable-host-mediated-human-decisions
+status: final
 ---
 
 # Design

@@ -2,6 +2,7 @@
 change: enable-host-mediated-human-decisions
 design-doc: openspec/changes/enable-host-mediated-human-decisions/design.md
 base-ref: 0b513d0da01c863767bf85b7feeb8bd9a2a411f5
+archived-with: 2026-11-11-enable-host-mediated-human-decisions
 ---
 
 # 宿主人工决定实施计划
