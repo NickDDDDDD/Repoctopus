@@ -6,6 +6,7 @@ import { Context } from '@deepseek-ai/cordis';
 import SkillRegistry from '@deepseek-ai/dsh-skill';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { markWorkspaceEntrySkill } from '../domains/project-configuration/entry-skills.js';
 import skillCatalogContributor from '../plugins/command/skill-catalog-contributor.js';
 import { FileSkillProvider } from '../plugins/skill/file-skill-provider.js';
 import filesystemSkillProvider from '../plugins/skill/filesystem-skill-provider.js';
@@ -99,6 +100,31 @@ describe('Repoctopus Skill providers', () => {
     >('skill.get', { cwd: workspaceRoot, audience: 'user', name: 'tdd' });
     expect(result.skill.provider).toBe('project-user-files');
     expect(result.skill.content).toBe('Project-specific TDD.');
+    await context.fiber.dispose();
+  });
+
+  it('keeps a flat Skill out of sibling resources and reserves the owned Workspace entry for Hosts', async () => {
+    const { context, workspaceRoot } = await fixture();
+    const directory = path.join(workspaceRoot, '.agents', 'skills');
+    const entry = path.join(directory, 'repoctopus');
+    await mkdir(entry, { recursive: true });
+    await writeFile(
+      path.join(directory, 'flat.md'),
+      '---\nname: flat\ndescription: Flat Skill\n---\n\nFlat body.\n',
+    );
+    await writeFile(
+      path.join(directory, 'sibling.md'),
+      '---\nname: sibling\ndescription: Sibling Skill\n---\n\nSibling body.\n',
+    );
+    await writeFile(
+      path.join(entry, 'SKILL.md'),
+      markWorkspaceEntrySkill(
+        '---\nname: repoctopus\ndescription: Workspace entry\n---\n\nWorkspace entry body.\n',
+      ),
+    );
+    const flat = await context.skills.get('flat', { cwd: workspaceRoot });
+    expect(flat?.resourceBase).toBeUndefined();
+    expect(await context.skills.get('repoctopus', { cwd: workspaceRoot })).toBeUndefined();
     await context.fiber.dispose();
   });
 

@@ -13,6 +13,7 @@ export interface AtomicWriteOptions {
   afterTemporaryClose?: () => void | Promise<void>;
   beforeCommit?: () => void | Promise<void>;
   exclusive?: boolean;
+  temporaryTag?: string;
 }
 
 interface DirectoryIdentity {
@@ -169,7 +170,12 @@ async function atomicWrite(
     ? await prepareContainedDirectoryChain(options.containedRoot, directory)
     : null;
   if (!directoryChain) await fs.mkdir(directory, { recursive: true });
-  const temporary = path.join(directory, `.${path.basename(file)}.${randomUUID()}.tmp`);
+  const tag = options.temporaryTag;
+  if (tag !== undefined && !/^[a-f0-9]{24}$/u.test(tag))
+    throw new Error('Invalid atomic write temporary tag');
+  const nonce = randomUUID();
+  const temporaryId = tag ? `${tag}.${nonce.replaceAll('-', '').slice(0, 12)}` : nonce;
+  const temporary = path.join(directory, `.${path.basename(file)}.${temporaryId}.tmp`);
   let handle: Awaited<ReturnType<typeof fs.open>> | undefined;
   let temporaryIdentity: Stats | undefined;
   let writtenIdentity: Stats | undefined;

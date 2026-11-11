@@ -1,3 +1,4 @@
+import { realpathSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 
@@ -17,7 +18,7 @@ function apply(context: Context, config: Config): void {
       name: 'project-user-files',
       roots: [
         {
-          path: path.join(config.workspaceRoot, '.agents', 'skills'),
+          path: path.join(realpathSync(config.workspaceRoot), '.agents', 'skills'),
           source: 'project-agents',
           rank: 100,
         },

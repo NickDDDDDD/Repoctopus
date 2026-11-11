@@ -1,8 +1,10 @@
-import { createHash } from 'node:crypto';
-import { lstat, readFile, readdir } from 'node:fs/promises';
+import { lstat, readFile, readdir, realpath, unlink } from 'node:fs/promises';
 import path from 'node:path';
 
 import {
+  isOwnedWorkspaceEntrySkill,
+  markWorkspaceEntrySkill,
+  workspaceEntryDigest as digest,
   WORKSPACE_ENTRY_HOSTS,
   type WorkspaceEntryHost,
   type WorkspaceEntrySkillPlan,
@@ -14,11 +16,6 @@ const productRoot = path.resolve(
   ...(path.basename(import.meta.dirname) === 'dist' ? ['..'] : ['..', '..']),
 );
 const asset = path.join(productRoot, 'skills', 'entry', 'repoctopus', 'SKILL.md');
-const marker = /\n<!-- repoctopus-entry:v1 SKILL\.md ([a-f0-9]{64}) -->\n$/u;
-
-function digest(text: string): string {
-  return createHash('sha256').update(text).digest('hex');
-}
 
 function target(host: WorkspaceEntryHost): string {
   return `${host === 'codex' ? '.agents' : '.opencode'}/skills/repoctopus/SKILL.md`;
@@ -26,15 +23,19 @@ function target(host: WorkspaceEntryHost): string {
 
 async function desiredEntry(): Promise<string> {
   const body = (await readFile(asset, 'utf8')).replaceAll('\r\n', '\n').trimEnd() + '\n';
-  return `${body}\n<!-- repoctopus-entry:v1 SKILL.md ${digest(body)} -->\n`;
+  return markWorkspaceEntrySkill(body);
 }
 
 class EntryConflict extends Error {}
 
+function stagingName(tag: string): RegExp {
+  return new RegExp(`^\\.SKILL\\.md\\.${tag}\\.[a-f0-9]{12}\\.tmp$`, 'u');
+}
+
 async function observe(
   workspace: string,
   file: string,
-  writing = false,
+  stagingTag?: string,
 ): Promise<{ text: string; identity: string } | null> {
   const targetFile = path.join(workspace, file);
   let cursor = workspace;
@@ -46,11 +47,12 @@ async function observe(
         throw new EntryConflict(`Workspace entry needs a regular contained path: ${file}`);
       }
       if (cursor === path.dirname(targetFile)) {
-        const files = await readdir(cursor);
+        const files = await readdir(cursor, { withFileTypes: true });
+        const staging = stagingTag && stagingName(stagingTag);
         if (
           files.some(
-            (name) =>
-              name !== 'SKILL.md' && !(writing && /^\.SKILL\.md\.[a-f0-9-]{36}\.tmp$/u.test(name)),
+            (file) =>
+              file.name !== 'SKILL.md' && !(file.isFile() && staging && staging.test(file.name)),
           )
         ) {
           throw new EntryConflict(`Workspace entry directory contains unmanaged files: ${file}`);
@@ -77,8 +79,7 @@ async function observe(
     } catch {
       throw new EntryConflict(`Workspace entry is not valid UTF-8: ${file}`);
     }
-    const owned = marker.exec(text);
-    if (!owned || digest(text.slice(0, owned.index)) !== owned[1]) {
+    if (!isOwnedWorkspaceEntrySkill(text)) {
       throw new EntryConflict(
         `Workspace entry is unmanaged or locally modified: ${file}. Move it aside before preparing a new request.`,
       );
@@ -134,8 +135,10 @@ export async function prepareWorkspaceEntryWrites(
   workspace: string,
   plans: readonly WorkspaceEntrySkillPlan[],
   resuming: boolean,
+  requestId: string,
   afterWrite?: (file: string) => Promise<void> | void,
 ): Promise<{ install(): Promise<void>; verify(): Promise<void> }> {
+  const stagingTag = digest(requestId).slice(0, 24);
   const desired = plans.length ? await desiredEntry() : '';
   const contentDigest = digest(desired);
   const writes = await Promise.all(
@@ -149,7 +152,7 @@ export async function prepareWorkspaceEntryWrites(
       }
       if (plan.status === 'conflict')
         throw new Error(plan.diagnostic ?? `Workspace entry conflict: ${plan.path}`);
-      const current = await observe(workspace, plan.path);
+      const current = await observe(workspace, plan.path, resuming ? stagingTag : undefined);
       const currentDigest = current ? digest(current.text) : null;
       if (
         currentDigest !== plan.beforeDigest &&
@@ -157,29 +160,60 @@ export async function prepareWorkspaceEntryWrites(
       ) {
         throw new Error(`Workspace entry changed since approval was prepared: ${plan.path}`);
       }
-      return { plan, current };
+      const directory = path.dirname(path.join(workspace, plan.path));
+      const leftovers = resuming
+        ? await readdir(directory, { withFileTypes: true }).catch((error: unknown) => {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+            throw error;
+          })
+        : [];
+      return {
+        plan,
+        current,
+        directory,
+        leftovers: leftovers.filter(
+          (entry) => entry.isFile() && stagingName(stagingTag).test(entry.name),
+        ),
+      };
     }),
   );
   return {
     async install() {
-      for (const { plan, current } of writes) {
-        if (current?.text === desired) continue;
-        await atomicWriteText(path.join(workspace, plan.path), desired, {
-          containedRoot: workspace,
-          exclusive: current === null,
-          beforeCommit: async () => {
-            const latest = await observe(workspace, plan.path, true);
-            if (latest?.text !== current?.text || latest?.identity !== current?.identity) {
-              throw new Error(`Workspace entry changed before write: ${plan.path}`);
-            }
-          },
-        });
-        await afterWrite?.(plan.path);
+      for (const { plan, current, directory, leftovers } of writes) {
+        if (current?.text !== desired) {
+          await atomicWriteText(path.join(workspace, plan.path), desired, {
+            containedRoot: workspace,
+            exclusive: current === null,
+            temporaryTag: stagingTag,
+            beforeCommit: async () => {
+              const latest = await observe(workspace, plan.path, stagingTag);
+              if (latest?.text !== current?.text || latest?.identity !== current?.identity) {
+                throw new Error(`Workspace entry changed before write: ${plan.path}`);
+              }
+            },
+          });
+          await afterWrite?.(plan.path);
+        }
+        if (!leftovers.length) continue;
+        if (
+          (await observe(workspace, plan.path, stagingTag))?.text !== desired ||
+          path.relative(directory, await realpath(directory))
+        ) {
+          throw new Error(`Workspace entry changed while recovering staging files: ${plan.path}`);
+        }
+        for (const entry of leftovers) {
+          const file = path.join(directory, entry.name);
+          try {
+            if ((await lstat(file)).isFile()) await unlink(file);
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+          }
+        }
       }
     },
     async verify() {
       for (const { plan } of writes) {
-        if ((await observe(workspace, plan.path))?.text !== desired) {
+        if ((await observe(workspace, plan.path, stagingTag))?.text !== desired) {
           throw new Error(`Workspace entry was not materialized: ${plan.path}`);
         }
       }

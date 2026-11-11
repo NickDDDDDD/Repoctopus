@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { lstat, open, readFile, readdir, realpath } from 'node:fs/promises';
+import { lstat, readFile, readdir, realpath } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
@@ -7,6 +7,7 @@ import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
 import type { WorkSkillResource } from '../../domains/change-lifecycle/work-context.js';
 import type { SkillUsageSnapshot } from '../../domains/skill/types.js';
 import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
+import { readFileRaceSafe } from '../filesystem/race-safe-read.js';
 
 function sha256(value: string | Uint8Array): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(value).digest('hex')}`;
@@ -25,49 +26,28 @@ async function collectResource(
   relative: string,
   collector: ResourceCollector,
 ): Promise<Buffer> {
-  const before = await lstat(file);
-  if (!before.isFile() || before.isSymbolicLink()) {
-    throw new Error(`Unsafe Work Skill resource: ${relative}`);
+  if (collector.files.length >= MAX_SKILL_RESOURCE_FILES) {
+    throw new Error(`Work Skill resource count exceeded: ${relative}`);
   }
-  if (
-    collector.files.length >= MAX_SKILL_RESOURCE_FILES ||
-    before.size > collector.remainingBytes
-  ) {
-    throw new Error(`Work Skill resource limit exceeded: ${relative}`);
-  }
-  const handle = await open(file, 'r');
-  const identity = (stat: typeof before) =>
-    [stat.dev, stat.ino, stat.birthtimeMs, stat.ctimeMs, stat.mtimeMs, stat.size].join(':');
-  try {
-    if (identity(await handle.stat()) !== identity(before)) {
-      throw new Error(`Work Skill resource changed while opening: ${relative}`);
-    }
-    const buffer = Buffer.alloc(before.size);
-    let offset = 0;
-    while (offset < buffer.length) {
-      const { bytesRead } = await handle.read(buffer, offset, buffer.length - offset, offset);
-      if (!bytesRead) throw new Error(`Work Skill resource changed while reading: ${relative}`);
-      offset += bytesRead;
-    }
-    if (
-      identity(await lstat(file)) !== identity(before) ||
-      identity(await handle.stat()) !== identity(before)
-    ) {
-      throw new Error(`Work Skill resource changed while reading: ${relative}`);
-    }
-    collector.remainingBytes -= buffer.length;
-    const decoded = buffer.toString('utf8');
-    const utf8 = Buffer.from(decoded, 'utf8').equals(buffer);
-    collector.files.push({
-      path: relative,
-      digest: sha256(buffer),
-      encoding: utf8 ? 'utf8' : 'base64',
-      content: utf8 ? decoded : buffer.toString('base64'),
-    });
-    return buffer;
-  } finally {
-    await handle.close();
-  }
+  const { bytes } = await readFileRaceSafe(file, Math.max(1, collector.remainingBytes), {
+    bigint: true,
+    label: `Work Skill resource ${relative}`,
+    verify: (_stage, { realPath }) => {
+      if (path.relative(file, realPath)) throw new Error(`Unsafe Work Skill resource: ${relative}`);
+    },
+  });
+  collector.remainingBytes -= bytes.length;
+  if (collector.remainingBytes < 0)
+    throw new Error(`Work Skill resource byte limit exceeded: ${relative}`);
+  const decoded = bytes.toString('utf8');
+  const utf8 = Buffer.from(decoded, 'utf8').equals(bytes);
+  collector.files.push({
+    path: relative,
+    digest: sha256(bytes),
+    encoding: utf8 ? 'utf8' : 'base64',
+    content: utf8 ? decoded : bytes.toString('base64'),
+  });
+  return bytes;
 }
 
 async function directoryManifest(

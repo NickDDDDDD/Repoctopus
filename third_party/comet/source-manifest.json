@@ -206,7 +206,7 @@
       "source": "domains/comet-native/native-atomic-file.ts",
       "sourceSha256": "02f199a0587566d78dd0fd5801716d03c666f4b1c6cd2e466f66272a7a237388",
       "target": "platform/filesystem/atomic-write.ts",
-      "sha256": "88bb919d2d1eb8579a04c9eebbf9aaba919ee4a5c96fc638ad852d503d99390f",
+      "sha256": "08e3e9c7c420d0f83d37cf464a243c6b1de9e8907971e073c3b74495f021516a",
       "adoption": "modified"
     },
     {

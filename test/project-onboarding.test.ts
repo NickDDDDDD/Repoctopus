@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { access, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -164,6 +165,15 @@ describe('project configuration onboarding', () => {
       }),
     ).rejects.toThrow('entry installation interrupted');
     const firstWrite = await stat(codex);
+    const stageTag = createHash('sha256')
+      .update(prepared.request.requestId)
+      .digest('hex')
+      .slice(0, 24);
+    await mkdir(path.dirname(opencode), { recursive: true });
+    await writeFile(
+      path.join(path.dirname(opencode), `.SKILL.md.${stageTag}.0123456789ab.tmp`),
+      'partial staging bytes',
+    );
     await expect(access(opencode)).rejects.toMatchObject({ code: 'ENOENT' });
     await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
       code: 'ENOENT',

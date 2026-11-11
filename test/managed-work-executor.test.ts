@@ -587,6 +587,69 @@ describe('Managed Work Executor Build contract', () => {
     },
   );
 
+  it.each(['claimed', 'context-delivered'] as const)(
+    'keeps a legacy %s packet from starting without its bound resources',
+    async (status) => {
+      const packet = structuredClone(frozenPacket('specification.plan'));
+      packet.work = {
+        ...packet.work,
+        actionSkill: {
+          schemaVersion: 1,
+          name: 'test',
+          provider: 'test',
+          invocation: { modelInvocable: true, userInvocable: true },
+          contentDigest: digest('1'),
+          resourceManifestDigest: digest('2'),
+        },
+        augmentationSkills: [],
+        capabilities: [],
+      };
+      const markContextDelivered = vi.fn();
+      const markHostStarted = vi.fn();
+      const runStore = {
+        loadRun: vi.fn().mockResolvedValue({
+          status: 'running',
+          changeLifecycle: { phase: 'design', currentWork: packet.work },
+          workExecution: {
+            workId: packet.work.workId,
+            attempt: 1,
+            checkEpoch: packet.work.checkEpoch,
+            status,
+          },
+        }),
+      };
+      const authority = {
+        loadAuthoritativePacket: vi.fn().mockResolvedValue({ packet, intent: {} }),
+        markContextDelivered,
+        markHostStarted,
+        recordSkillFacts: vi.fn(),
+      };
+      const dispatcher = Object.create(WorkDispatcher.prototype) as WorkDispatcher;
+      Object.defineProperty(dispatcher, 'contributors', { value: new Map() });
+      Object.defineProperty(dispatcher, 'ctx', {
+        value: { runStore, workExecutionAuthority: authority },
+      });
+      dispatcher.register({
+        id: 'manual',
+        identity: { id: 'manual', kind: 'work' } as never,
+        requiredCapabilities: [],
+      });
+      const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+      Object.defineProperty(service, 'ctx', {
+        value: { runStore, workDispatcher: dispatcher, workExecutionAuthority: authority },
+      });
+      await expect(
+        service.claimExternal({
+          runId: 'run-1',
+          adapter: 'manual',
+          executor: { actorId: 'user', runnerId: 'runner', source: 'cli', authenticated: true },
+        }),
+      ).rejects.toMatchObject({ code: 'runtime.work-packet-resources-missing' });
+      expect(markContextDelivered).not.toHaveBeenCalled();
+      expect(markHostStarted).not.toHaveBeenCalled();
+    },
+  );
+
   it('rejects an under-capable external Runner before persisting the Work claim', async () => {
     const claim = vi
       .fn()

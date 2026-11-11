@@ -518,6 +518,7 @@ export async function applyProjectConfigurationDecision(
     workspace,
     state.request.entrySkills ?? [],
     state.status === 'applying',
+    state.request.requestId,
     (file) => input.hooks?.afterEntryWrite?.(file),
   );
   await atomicWriteJson(

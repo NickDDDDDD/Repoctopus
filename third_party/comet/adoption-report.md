@@ -33,7 +33,7 @@ Repoctopus 的适配使用现有 Cordis WorkflowRuns、共享 PlanningApprovalSt
 | 文件对象身份   | `platform/fs/file-identity.ts`                                        | `platform/filesystem/file-identity.ts`       | 原样采用跨平台 dev/ino/birthtime 降级比较                                                                  |
 | 竞态安全读取   | `platform/fs/race-safe-read.ts`                                       | `platform/filesystem/race-safe-read.ts`      | 原样采用描述符读取、路径身份复核和有界读取/流式哈希                                                        |
 | 短暂失败重试   | `platform/fs/transient-retry.ts`                                      | `platform/filesystem/transient-retry.ts`     | 采用 Windows 文件占用短退避，按 Repoctopus Lint 约束做无行为改动                                           |
-| 原子文件写入   | `domains/comet-native/native-atomic-file.ts`                          | `platform/filesystem/atomic-write.ts`        | 去除 Native 命名，保留父目录身份、临时文件身份、目录同步和 exclusive publish                               |
+| 原子文件写入   | `domains/comet-native/native-atomic-file.ts`                          | `platform/filesystem/atomic-write.ts`        | 去除 Native 命名，保留父目录身份、临时文件身份、目录同步和 exclusive publish；Workspace 入口安装用请求专属临时名称识别中断留下的文件                               |
 | 资源 Lease     | `domains/comet-native/native-lock.ts`                                 | `platform/runtime/resource-lease.ts`         | 保留 Repoctopus resource key；采用 race-safe owner、文件身份和 rename 前后所有权核对                       |
 | 仓库输入 Fence | `domains/comet-native/native-snapshot.ts`                             | `platform/git/evidence-fingerprint.ts`       | 抽取选择前后 Fence、两次内容复核和竞态安全哈希；在上层组合多仓、配置和 Adapter 指纹                        |
 

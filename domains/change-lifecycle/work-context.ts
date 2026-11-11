@@ -86,7 +86,7 @@ function layer(
     source,
     content,
     digest: sha256(content),
-    ...(resources?.length ? { resources } : {}),
+    ...(resources ? { resources } : {}),
     ...(skill
       ? {
           skillRole: skill.role,

@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
 
@@ -12,6 +12,7 @@ import type {
 import {
   createWorkExecutionPacket,
   type WorkClaimResult,
+  type WorkExecutionPacket,
   type WorkOutcomeValidationRecord,
 } from '../domains/work-execution/types.js';
 import type {
@@ -60,6 +61,31 @@ export function missingHostCapabilities(
     hostCapabilities.map((capability) => capability.trim()).filter(Boolean),
   );
   return work.capabilities.filter((capability) => !available.has(capability));
+}
+
+const EMPTY_RESOURCE_MANIFESTS = new Set(
+  ['[]', 'null'].map((value) => `sha256:${createHash('sha256').update(value).digest('hex')}`),
+);
+
+function assertUnstartedPacketResources(packet: WorkExecutionPacket): void {
+  const snapshots = [packet.work.actionSkill, ...packet.work.augmentationSkills].filter(
+    (skill) => skill !== undefined,
+  );
+  const layers = packet.context.layers.filter(
+    ({ kind }) => kind === 'action-skill' || kind === 'augmentation-skill',
+  );
+  for (const [index, layer] of layers.entries()) {
+    if (layer.resources !== undefined) continue;
+    const snapshot = snapshots[index];
+    if (!snapshot || !EMPTY_RESOURCE_MANIFESTS.has(snapshot.resourceManifestDigest)) {
+      throw Object.assign(
+        new Error(
+          `Current frozen Work has no verified resources for ${layer.source}; reconcile the original claim before starting a Host.`,
+        ),
+        { code: 'runtime.work-packet-resources-missing' },
+      );
+    }
+  }
 }
 
 function createChangeInputs(input: {
@@ -206,6 +232,9 @@ export class WorkDispatcher extends Service {
       existing.checkEpoch === work.checkEpoch
     ) {
       const resumed = await this.ctx.workExecutionAuthority.loadAuthoritativePacket(request.runId);
+      if (existing.status === 'claimed' || existing.status === 'context-delivered') {
+        assertUnstartedPacketResources(resumed.packet);
+      }
       if (existing.status === 'claimed') {
         await this.ctx.workExecutionAuthority.recordSkillFacts(resumed.packet, 'resolved');
         await this.ctx.workExecutionAuthority.markContextDelivered(resumed.packet);

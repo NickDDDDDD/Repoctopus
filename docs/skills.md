@@ -83,6 +83,8 @@ Runtime 在 change 开始时冻结并绑定有效组合身份，但只把当前 
 
 ## 提供项目 Skill
 
+平铺的 `<name>.md` 只提供正文。需要随当前 Action 交付相对资源时，将正文放在 `<name>/SKILL.md`，资源放在同一 Skill 目录内。
+
 在项目中创建 `.agents/skills/tdd/SKILL.md`：
 
 ```markdown
