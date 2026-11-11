@@ -5,6 +5,7 @@ import {
   assembleWorkExecutionContext,
   type ResolvedWorkContextSkill,
   type WorkExecutionContext,
+  type WorkSkillResource,
 } from '../domains/change-lifecycle/work-context.js';
 import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 import { sameSkillUsageSnapshot } from '../domains/skill/types.js';
@@ -28,6 +29,19 @@ function protocolMetadata(definition: SkillDefinition): {
       ? record.artifactKinds.filter((kind): kind is string => typeof kind === 'string')
       : [],
   };
+}
+
+export function assertWorkSkillResourceBudget(
+  layers: readonly { resources?: readonly WorkSkillResource[] }[],
+): void {
+  let bytes = 0;
+  for (const layer of layers) {
+    for (const resource of layer.resources ?? []) {
+      bytes += Buffer.byteLength(resource.content, resource.encoding);
+      if (bytes > 2 * 1024 * 1024)
+        throw new Error('Work execution Skill resources exceed the packet limit');
+    }
+  }
 }
 
 export class WorkContextAssembler extends Service {
@@ -84,17 +98,7 @@ export class WorkContextAssembler extends Service {
         : {}),
       changeInputs: input.changeInputs,
     });
-    const resourceBytes = context.layers.reduce(
-      (total, layer) =>
-        total +
-        (layer.resources ?? []).reduce(
-          (size, resource) => size + Buffer.byteLength(resource.content, resource.encoding),
-          0,
-        ),
-      0,
-    );
-    if (resourceBytes > 2 * 1024 * 1024)
-      throw new Error('Work execution Skill resources exceed the packet limit');
+    assertWorkSkillResourceBudget(context.layers);
     return context;
   }
 

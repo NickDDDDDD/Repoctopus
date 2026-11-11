@@ -25,6 +25,8 @@ import {
   type LifecycleContributorIdentity,
 } from '../domains/change-lifecycle/contributors.js';
 
+import { assertWorkSkillResourceBudget } from './work-context-assembler.js';
+
 export interface WorkContributor {
   id: string;
   identity: LifecycleContributorIdentity & { kind: 'work' };
@@ -99,6 +101,7 @@ async function recoverUnstartedPacketResources(
       );
     }
   }
+  assertWorkSkillResourceBudget([...packet.context.layers, ...resources]);
   return resources;
 }
 
