@@ -24,4 +24,6 @@ OpenSpec 严格校验通过，8 项任务已完成。接入规格由 `project de
 
 首轮正式 Verify 通过 1222 项测试，跳过 4 项，失败 1 项。唯一失败为组合兼容测试仍固定旧前驱摘要。测试现核对当前已实测的三个精确前驱，Runtime 代码和安装包无改动。
 
+第二轮 Verify 的测试矩阵通过 1223 项并跳过 4 项。构建产物、名称、架构、来源、Dashboard 和 19 项 OpenSpec 严格检查均通过。包验收门禁要求完整包的当前内容身份，已将从固定提交独立构建并安装的包身份登记在 [安装包报告](../../../verification/install-workspace-entry-skill/verification-report.md)。
+
 [验收回执](../../../verification/install-workspace-entry-skill/acceptance-receipt.json) 绑定包、Run 和执行身份。正式检查由 Comet Guard 保存实际命令与结果。
