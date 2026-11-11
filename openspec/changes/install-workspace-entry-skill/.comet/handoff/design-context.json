@@ -1,0 +1,17 @@
+{
+  "change": "install-workspace-entry-skill",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe",
+  "files": [
+    { "path": "openspec/changes/install-workspace-entry-skill/proposal.md", "sha256": "33eab64cb1399ba085529d2f6ae4a0295eb1f3cdfe930caa5d45565d2de3fbb1" },
+    { "path": "openspec/changes/install-workspace-entry-skill/design.md", "sha256": "d8a544bc88d51c2a9f9e86d0dde8f7e24c771ed64672cd9a711c419397376fea" },
+    { "path": "openspec/changes/install-workspace-entry-skill/tasks.md", "sha256": "ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a" },
+    { "path": "openspec/changes/install-workspace-entry-skill/.openspec.yaml", "sha256": "b8f20def63a86ae4075c5499ff9ed413265d8704692a8493712424dc3f28d8e3" },
+    { "path": "openspec/changes/install-workspace-entry-skill/specs/project-configuration/spec.md", "sha256": "5a14506dda1abb358a1604c89620c4ff4aa8467ab2d2ba368077cab281b4f885" },
+    { "path": "openspec/changes/install-workspace-entry-skill/specs/skill-integration/spec.md", "sha256": "9b98cbf3d240ab20baffb8e0f28730c08cbb6e050607bf079ca8b55eb0fd6e4a" }
+  ]
+}
