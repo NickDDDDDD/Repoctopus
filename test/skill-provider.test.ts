@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -7,6 +7,7 @@ import SkillRegistry from '@deepseek-ai/dsh-skill';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { markWorkspaceEntrySkill } from '../domains/project-configuration/entry-skills.js';
+import { captureWorkSkill } from '../platform/skill/snapshot.js';
 import skillCatalogContributor from '../plugins/command/skill-catalog-contributor.js';
 import { FileSkillProvider } from '../plugins/skill/file-skill-provider.js';
 import filesystemSkillProvider from '../plugins/skill/filesystem-skill-provider.js';
@@ -126,6 +127,33 @@ describe('Repoctopus Skill providers', () => {
     expect(flat?.resourceBase).toBeUndefined();
     expect(await context.skills.get('repoctopus', { cwd: workspaceRoot })).toBeUndefined();
     await context.fiber.dispose();
+  });
+
+  it('refuses to capture resources reached through a link inside a Skill', async () => {
+    const { context, workspaceRoot } = await fixture();
+    const root = path.join(workspaceRoot, '.agents', 'skills', 'linked-reference');
+    const external = await mkdtemp(path.join(tmpdir(), 'repoctopus-external-skill-resource-'));
+    temporaryRoots.push(external);
+    await mkdir(root, { recursive: true });
+    await writeFile(
+      path.join(root, 'SKILL.md'),
+      '---\nname: linked-reference\ndescription: Linked reference\n---\n\nReference body.\n',
+    );
+    await writeFile(path.join(external, 'reference.md'), 'Outside resource');
+    await symlink(
+      external,
+      path.join(root, 'refs'),
+      process.platform === 'win32' ? 'junction' : 'dir',
+    );
+    try {
+      const definition = await context.skills.get('linked-reference', { cwd: workspaceRoot });
+      expect(definition).toBeDefined();
+      await expect(captureWorkSkill(definition!)).rejects.toThrow(
+        'Unsafe Work Skill resource: refs',
+      );
+    } finally {
+      await context.fiber.dispose();
+    }
   });
 
   it('projects the same resolved catalog for Codex and OpenCode and refuses local edits', async () => {

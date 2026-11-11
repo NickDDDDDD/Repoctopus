@@ -233,7 +233,24 @@ describe('Work execution context', () => {
 
   it('adds only the fixed diagnosing-bugs method for a Build retry', () => {
     const descriptor = work('build.execute');
-    const context = assemble(descriptor, { diagnosticSkill: skill('diagnosing-bugs') });
+    const retryResource = {
+      path: 'scripts/template.sh',
+      digest: digest('first'),
+      encoding: 'utf8' as const,
+      content: 'first',
+    };
+    const context = assemble(descriptor, {
+      diagnosticSkill: skill('diagnosing-bugs', { resources: [retryResource] }),
+    });
+    const changed = assemble(descriptor, {
+      diagnosticSkill: skill('diagnosing-bugs', {
+        resources: [{ ...retryResource, digest: digest('second'), content: 'second' }],
+      }),
+    });
+    expect(context.layers.find(({ source }) => source === 'diagnosing-bugs')?.resources).toEqual([
+      retryResource,
+    ]);
+    expect(changed.digest).not.toBe(context.digest);
     expect(
       context.layers
         .filter((entry) => entry.kind === 'augmentation-skill')
