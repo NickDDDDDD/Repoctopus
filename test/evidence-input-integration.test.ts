@@ -47,7 +47,7 @@ async function boot(workspace: string) {
   await context.plugin(EvidenceCoordinator, { workspaceRoot: workspace });
   return context.evidenceCoordinator;
 }
-async function fixture() {
+async function fixture({ includeIndependent = true } = {}) {
   const root = await temporaryDirectory('evidence-input-dag-');
   cleanup.push(root);
   const workspace = await createGitRepository(root, 'workspace');
@@ -99,7 +99,7 @@ if(id==='c'&&!fs.readFileSync('dist/value.txt','utf8'))throw Error('missing deri
         id: 'verify',
         nodes: [
           command('a', ['a.txt', 'runner.mjs'], ['dist/**']),
-          command('b', ['b.txt', 'runner.mjs']),
+          ...(includeIndependent ? [command('b', ['b.txt', 'runner.mjs'])] : []),
           command('c', ['dist/**', 'runner.mjs'], [], ['a']),
         ],
       },
@@ -384,7 +384,7 @@ it.skipIf(process.platform === 'win32')(
 );
 
 it('keeps a producer unknown when interrupted before its manifest is committed', async () => {
-  const { workspace, counts } = await fixture();
+  const { workspace, counts } = await fixture({ includeIndependent: false });
   const artifacts = new FileArtifactStore(workspace);
   const put = artifacts.put.bind(artifacts);
   const fault = vi
@@ -398,10 +398,12 @@ it('keeps a producer unknown when interrupted before its manifest is committed',
     'before manifest commit',
   );
   fault.mockRestore();
-  const before = await counts();
   const resumed = await (await boot(workspace)).resume('before-manifest');
   expect(resumed.bundle?.outcome).toBe('incomplete');
-  expect(await counts()).toEqual(before);
+  expect(resumed.bundle?.checks.find((check) => check.nodeId === 'a')).toMatchObject({
+    status: 'incomplete',
+  });
+  expect(await counts()).toEqual(['a']);
 }, 60_000);
 
 it('rejects changed Bundle freshness under its original identity before cache selection', async () => {
@@ -420,7 +422,7 @@ it('rejects changed Bundle freshness under its original identity before cache se
 }, 60_000);
 
 it('recovers a committed producer completion without executing it again after interruption', async () => {
-  const { workspace, counts } = await fixture();
+  const { workspace, counts } = await fixture({ includeIndependent: false });
   const journal = new FileEvidenceJournal(workspace);
   const complete = journal.recordCompletion.bind(journal);
   const fault = vi
@@ -439,6 +441,5 @@ it('recovers a committed producer completion without executing it again after in
     status: 'passed',
   });
   expect(resumed.bundle?.outcome).toBe('incomplete');
-  expect((await counts()).filter((id) => id === 'a')).toHaveLength(1);
-  expect((await counts()).sort()).toEqual(['a', 'b']);
+  expect(await counts()).toEqual(['a']);
 }, 60_000);
