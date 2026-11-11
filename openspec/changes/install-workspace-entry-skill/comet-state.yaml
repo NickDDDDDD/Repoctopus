@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: c4983cdc-3507-430f-9424-c88c0160cef0
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 87dcd9631a801b9d551a3d24de9a6a36e49035c7
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-11
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/install-workspace-entry-skill
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: cfdca01a2bdad3fe5befe5eb0bcb00fe1386ecf8b5c96bf99802ab11b11a6ac6
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: install-workspace-entry-skill
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: e133d2df0668a0710efed3c4ec75e0ff57b6bb70b83a7fd528bb1413a5e4a05b
+    input:
+      change: install-workspace-entry-skill
+      changeDir: openspec/changes/install-workspace-entry-skill
+      workspaceBaseline:
+        ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 87dcd9631a801b9d551a3d24de9a6a36e49035c7
+      boundBranch: comet/install-workspace-entry-skill
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-11
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: install-workspace-entry-skill:1
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 1618c555f7262941958604f02a0b4e696d2a5ca7d72bd7c01f3589178fdd9004
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      install-workspace-entry-skill:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 46273eea9bc8c942ada9c70feed6b0d016343a0425e42844bf56442880a40a53
