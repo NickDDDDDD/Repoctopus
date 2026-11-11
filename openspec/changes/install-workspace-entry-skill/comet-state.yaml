@@ -2,7 +2,7 @@
 change_id: c4983cdc-3507-430f-9424-c88c0160cef0
 workflow: full
 language: zh-CN
-phase: verify
+phase: build
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -15,9 +15,9 @@ auto_transition: true
 base_ref: 87dcd9631a801b9d551a3d24de9a6a36e49035c7
 design_doc: openspec/changes/install-workspace-entry-skill/design.md
 plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-verify_result: pending
-verify_failures: 0
-verification_report: null
+verify_result: fail
+verify_failures: 1
+verification_report: docs/superpowers/reports/install-workspace-entry-skill.md
 branch_status: pending
 created_at: 2026-11-11
 verified_at: null
@@ -30,8 +30,8 @@ handoff_hash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: 4529b89c52aea162636b02e5f68d739d241896d73d316a00053286e16126d0ef
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 1b8f6c33a8f9b937ff0b5e15f210fe58c8c604a6d7556b3d540b9fdb159d6ad4
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 3
+      checkEpoch: 4
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,19 +69,19 @@ run_checkpoint:
       handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
       isolation: worktree
       language: zh-CN
-      phase: verify
+      phase: build
       plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
       reviewMode: thorough
       subagentDispatch: null
       tddMode: tdd
-      verificationReport: null
+      verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
       verifiedAt: null
-      verifyFailures: 0
+      verifyFailures: 1
       verifyMode: null
-      verifyResult: pending
+      verifyResult: fail
       workflow: full
     status: running
-    sequence: 16
+    sequence: 19
     actions:
       - attempt: 1
         claim:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/install-workspace-entry-skill
             workspaceBaseline:
               ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-            full.open.evidence:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
+          outputs: {}
         inputHash: e430632037fda4fc106d598e1d9afba463b7b73d36273578f141746f7d537e2e
         outcome:
           actionId: install-workspace-entry-skill:4
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/install-workspace-entry-skill
             workspaceBaseline:
               ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-            full.open.evidence:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-            full.open.revalidate:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+          outputs: {}
         inputHash: 632005cd23fa65a6f6b4930edc8fe5fce838f6daf3c172df8315cf34c8a96fed
         outcome:
           actionId: install-workspace-entry-skill:5
@@ -270,69 +230,7 @@ run_checkpoint:
             changeDir: openspec/changes/install-workspace-entry-skill
             workspaceBaseline:
               ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-            full.design.handoff:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-            full.open.evidence:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-            full.open.revalidate:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+          outputs: {}
         inputHash: 9e2c631a84455109c7ca079eb02f4ec1eb14817926e7408b0b6722ca2cabacf0
         outcome:
           actionId: install-workspace-entry-skill:7
@@ -371,74 +269,7 @@ run_checkpoint:
             changeDir: openspec/changes/install-workspace-entry-skill
             workspaceBaseline:
               ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-            full.design.document:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-            full.design.evidence:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-            full.open.evidence:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-            full.open.revalidate:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+          outputs: {}
         inputHash: 03bdd95648cfa44b3cbbbf74ba768d8795f2cef2e6f2e359d381af3359cb6707
         outcome:
           actionId: install-workspace-entry-skill:9
@@ -483,99 +314,7 @@ run_checkpoint:
             changeDir: openspec/changes/install-workspace-entry-skill
             workspaceBaseline:
               ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-          outputs:
-            full.build.configure:
-              boundBranch: comet/install-workspace-entry-skill
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/install-workspace-entry-skill
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-            full.design.document:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-            full.design.evidence:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-            full.open.evidence:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-            full.open.revalidate:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+          outputs: {}
         inputHash: 13b420f78967f6c50f214ba9b0194a534d91eb70768b63a2550088b09c5399c3
         outcome:
           actionId: install-workspace-entry-skill:11
@@ -622,111 +361,7 @@ run_checkpoint:
             changeDir: openspec/changes/install-workspace-entry-skill
             workspaceBaseline:
               ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-          outputs:
-            full.build.configure:
-              boundBranch: comet/install-workspace-entry-skill
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/install-workspace-entry-skill
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-                ref: openspec/changes/install-workspace-entry-skill/design.md
-              plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              planEvidence:
-                contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-                ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
-            full.build.plan.evidence:
-              contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-              ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-            full.design.document:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-            full.design.evidence:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-            full.open.evidence:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-            full.open.revalidate:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+          outputs: {}
         inputHash: 866c77eccc35e39a27e2a7d2d12826c4ebdd973c4bfd2cacfcd8ab61d995eff4
         outcome:
           actionId: install-workspace-entry-skill:13
@@ -765,113 +400,7 @@ run_checkpoint:
             changeDir: openspec/changes/install-workspace-entry-skill
             workspaceBaseline:
               ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-          outputs:
-            full.build.configure:
-              boundBranch: comet/install-workspace-entry-skill
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/install-workspace-entry-skill
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.execute:
-              event: build-complete
-            full.build.plan:
-              designEvidence:
-                contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-                ref: openspec/changes/install-workspace-entry-skill/design.md
-              plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              planEvidence:
-                contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-                ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
-            full.build.plan.evidence:
-              contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-              ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-            full.design.document:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-            full.design.evidence:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-            full.open.evidence:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-            full.open.revalidate:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+          outputs: {}
         inputHash: 059c2c3977a53457bf6841099abb3ed5ce053880c33a3b1b779e2e5e31f26a45
         outcome:
           actionId: install-workspace-entry-skill:14
@@ -914,6 +443,14 @@ run_checkpoint:
         stepId: full.build.check
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-38cc890c0d60249992b6a591f0b5d9071ccc28a81b9356e783b1f8b69a561b89
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: install-workspace-entry-skill:16
         input:
           input:
@@ -921,918 +458,142 @@ run_checkpoint:
             changeDir: openspec/changes/install-workspace-entry-skill
             workspaceBaseline:
               ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-          outputs:
-            full.build.check:
-              argv:
-                - npm.cmd
-                - run
-                - build
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
-              cwd: .
-              environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
-              exitCode: 0
-              inputAfter: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
-              inputBefore: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
-              manifestHash: fd0212a359a0bd34e5db05f9d1dd026d682353de7df3bf6880048d06ea7ef681
-              manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b1b7bdbe-9b7b-432a-952c-0ff16c1d16ef.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
-              reusable: false
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 2700000
-            full.build.check.evidence:
-              contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
-              ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
-            full.build.configure:
-              boundBranch: comet/install-workspace-entry-skill
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/install-workspace-entry-skill
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.execute:
-              event: build-complete
-            full.build.plan:
-              designEvidence:
-                contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-                ref: openspec/changes/install-workspace-entry-skill/design.md
-              plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              planEvidence:
-                contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-                ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
-            full.build.plan.evidence:
-              contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-              ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-            full.design.document:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-            full.design.evidence:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-            full.open.evidence:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-            full.open.revalidate:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+          outputs: {}
         inputHash: 180e85aed4eed3bc61761e5e3e3d263dfdc03aa7cc6245d7df62fef8232b22e6
+        outcome:
+          actionId: install-workspace-entry-skill:16
+          attempt: 1
+          claimToken: portable-38cc890c0d60249992b6a591f0b5d9071ccc28a81b9356e783b1f8b69a561b89
+          inputHash: 180e85aed4eed3bc61761e5e3e3d263dfdc03aa7cc6245d7df62fef8232b22e6
+          outcomeId: f0b37852-e315-4b7c-80ec-55405470c41d
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 50bcd1c36cc9cec6ea33d3f5f22a78deea36354c5df7cd52f7f77363332c2f78
+            outcomeId: f0b37852-e315-4b7c-80ec-55405470c41d
         reconciliations: []
         ref: comet-verify
         requiredCapabilities: []
         retry: manual
         runId: install-workspace-entry-skill
-        status: pending
+        status: succeeded
         stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-39ac8f338873dcb228147490eadef04f4fdc4fd66fef86fd9ddde8e383fe49d8
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:18
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 2f397dc67b1ecf48eb7d2cac187ad68cccf1fd7bbd88217049a8693a279bdb7a
+        outcome:
+          actionId: install-workspace-entry-skill:18
+          attempt: 1
+          claimToken: portable-39ac8f338873dcb228147490eadef04f4fdc4fd66fef86fd9ddde8e383fe49d8
+          inputHash: 2f397dc67b1ecf48eb7d2cac187ad68cccf1fd7bbd88217049a8693a279bdb7a
+          outcomeId: 13e0552f-52b8-4c22-b9dc-fc8bf7636be9
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: a92c8177a6a241cc2e67825a1c7704ce53da9414021959ef03533e1e922cc55f
+            cwd: .
+            deliveryInputs: {}
+            environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+            exitCode: 1
+            inputAfter: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+            inputBefore: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+            manifestHash: 3fd2431653af94ef58ef7240ce295f248abd92adc2eb5ced97c919649ced9167
+            manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/ecdc2a68-5524-4292-8a67-cdf1f4f89a25.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/c5690dfe-c24e-46fb-aaf9-9d34362fecdb.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: ebd8d570d864ee4c677ce99595509feb45e303724fd23df911996752ef90c29b
+            outcomeId: 13e0552f-52b8-4c22-b9dc-fc8bf7636be9
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        id: install-workspace-entry-skill:19
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 6739ac038c183beced932b9247d9c0b9a4bab4098e1fa87c240a2bdab429ca5a
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: pending
+        stepId: full.build.plan
         type: invoke_skill
     actionContexts:
       install-workspace-entry-skill:1:
         results: {}
         sequence: 1
       install-workspace-entry-skill:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/install-workspace-entry-skill
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/install-workspace-entry-skill
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        results: {}
         sequence: 11
       install-workspace-entry-skill:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/install-workspace-entry-skill
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/install-workspace-entry-skill
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-                ref: openspec/changes/install-workspace-entry-skill/design.md
-              plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              planEvidence:
-                contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-                ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-              ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        results: {}
         sequence: 13
       install-workspace-entry-skill:14:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/install-workspace-entry-skill
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/install-workspace-entry-skill
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-                ref: openspec/changes/install-workspace-entry-skill/design.md
-              plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              planEvidence:
-                contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-                ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-              ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        results: {}
         sequence: 14
       install-workspace-entry-skill:16:
-        results:
-          full.build.check:
-            sequence: 14
-            value:
-              argv:
-                - npm.cmd
-                - run
-                - build
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
-              cwd: .
-              environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
-              exitCode: 0
-              inputAfter: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
-              inputBefore: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
-              manifestHash: fd0212a359a0bd34e5db05f9d1dd026d682353de7df3bf6880048d06ea7ef681
-              manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b1b7bdbe-9b7b-432a-952c-0ff16c1d16ef.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
-              reusable: false
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 2700000
-          full.build.check.evidence:
-            sequence: 15
-            value:
-              contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
-              ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/install-workspace-entry-skill
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/install-workspace-entry-skill
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-                ref: openspec/changes/install-workspace-entry-skill/design.md
-              plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              planEvidence:
-                contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-                ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-              ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        results: {}
         sequence: 16
+      install-workspace-entry-skill:18:
+        results: {}
+        sequence: 18
+      install-workspace-entry-skill:19:
+        results: {}
+        sequence: 19
       install-workspace-entry-skill:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
+        results: {}
         sequence: 4
       install-workspace-entry-skill:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        results: {}
         sequence: 5
       install-workspace-entry-skill:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        results: {}
         sequence: 7
       install-workspace-entry-skill:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        results: {}
         sequence: 9
     waits:
       - id: install-workspace-entry-skill:3
@@ -1855,16 +616,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
+        results: {}
         decision:
           id: classic-open-cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
           choice: approved
@@ -1900,54 +652,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        results: {}
         decision:
           id: classic-design-80be353fc4a2309350850c6e6ff898d3f12ec13d58c6372e3ec5f23b7bf97806-approved
           choice: approved
@@ -1975,100 +680,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/install-workspace-entry-skill
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        results: {}
         decision:
           id: 281504bb-ed31-4a40-b56a-c563137edbb3
           choice: approved
@@ -2079,11 +691,7 @@ run_checkpoint:
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/install-workspace-entry-skill
           contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
@@ -2093,85 +701,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        results: {}
         receipt:
           ref: openspec/changes/install-workspace-entry-skill/design.md
           contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
@@ -2181,130 +711,7 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/install-workspace-entry-skill
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/install-workspace-entry-skill
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-                ref: openspec/changes/install-workspace-entry-skill/design.md
-              plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              planEvidence:
-                contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-                ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                design.md 的失败路径检验。无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                ref: openspec/changes/install-workspace-entry-skill
-              sourceEvidence:
-                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                ref: openspec/changes/install-workspace-entry-skill
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        results: {}
         receipt:
           ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
           contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
@@ -2314,118 +721,57 @@ run_checkpoint:
         sequence: 15
         kind: classic-build-check
         status: resolved
-        results:
-          full.build.check:
-            sequence: 14
-            value:
-              argv:
-                - npm.cmd
-                - run
-                - build
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
-              cwd: .
-              environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
-              exitCode: 0
-              inputAfter: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
-              inputBefore: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
-              manifestHash: fd0212a359a0bd34e5db05f9d1dd026d682353de7df3bf6880048d06ea7ef681
-              manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b1b7bdbe-9b7b-432a-952c-0ff16c1d16ef.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
-              reusable: false
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 2700000
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/install-workspace-entry-skill
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/install-workspace-entry-skill
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-                ref: openspec/changes/install-workspace-entry-skill/design.md
-              plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              planEvidence:
-                contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-                ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-              taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-              ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
-                    handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
-                    proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
-                      目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
-                      start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
-                      的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
-                      组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
-                      后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
-                      design.md 的失败路径检验。无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
-                      ref: openspec/changes/install-workspace-entry-skill
-                    sourceEvidence:
-                      contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
-                      ref: openspec/changes/install-workspace-entry-skill
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-              ref: openspec/changes/install-workspace-entry-skill/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
+          contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
+          submissionId: 63455b25-8cb6-47d5-a7f1-c502e61f2193
+      - id: install-workspace-entry-skill:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/install-workspace-entry-skill.md
+          contentHash: 760ee68bc8dac77a2238de52f1f9f1bb692314898c8c78395aaa980589a2f6d7
+          submissionId: f43dd919-1eba-4eb1-a93b-222095572add
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 29
+  sourceHash: f942e9bebe66204bdbf340212ac1c106a966624a8c08087a28ea5cea0968b696
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+              ref: openspec/changes/install-workspace-entry-skill
+      - contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        ref: openspec/changes/install-workspace-entry-skill
+      - contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+      - choice: approved
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
               handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
               proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
@@ -2441,72 +787,106 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
                 ref: openspec/changes/install-workspace-entry-skill
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: install-workspace-entry-skill
-                  changeDir: openspec/changes/install-workspace-entry-skill
-                  workspaceBaseline:
-                    ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-                    ref: openspec/changes/install-workspace-entry-skill
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-              ref: openspec/changes/install-workspace-entry-skill
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-        receipt:
-          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
-          contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
-          submissionId: 63455b25-8cb6-47d5-a7f1-c502e61f2193
-    ready: []
-    joins: {}
-    outputs:
-      full.build.check:
-        sequence: 14
-        value:
-          argv:
-            - npm.cmd
-            - run
-            - build
-          changedDuringExecution: []
-          checkEpoch: 2
-          contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
-          cwd: .
-          environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
-          exitCode: 0
-          inputAfter: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
-          inputBefore: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
-          manifestHash: fd0212a359a0bd34e5db05f9d1dd026d682353de7df3bf6880048d06ea7ef681
-          manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b1b7bdbe-9b7b-432a-952c-0ff16c1d16ef.manifest
-          receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
-          reusable: false
-          reused: false
-          scope: build
-          tier: full
-          timeoutMs: 2700000
-      full.build.check.evidence:
-        sequence: 15
-        value:
-          contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
-          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
-      full.build.configure:
-        sequence: 9
+      - handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
+        handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
+        proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
+          目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开 start/resume/next
+          处理同一 Run，仅取得当前执行权后装填 claim 的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner
+          标识跨进程保持。现有阶段、人工决策、Skill 组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build
+          Configure
+          后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
+          design.md 的失败路径检验。无 Spec Patch。
+        requirementsEvidence:
+          contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
+          ref: openspec/changes/install-workspace-entry-skill
+        sourceEvidence:
+          contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
+          ref: openspec/changes/install-workspace-entry-skill
+      - designDoc: openspec/changes/install-workspace-entry-skill/design.md
+      - contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+        ref: openspec/changes/install-workspace-entry-skill/design.md
+      - boundBranch: comet/install-workspace-entry-skill
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.build.configure:
+              boundBranch: comet/install-workspace-entry-skill
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+          ref: openspec/changes/install-workspace-entry-skill/design.md
+        plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+        planEvidence:
+          contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+          ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+        taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
+      - contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+        ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
+        cwd: .
+        environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
+        exitCode: 0
+        inputAfter: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
+        inputBefore: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
+        manifestHash: fd0212a359a0bd34e5db05f9d1dd026d682353de7df3bf6880048d06ea7ef681
+        manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b1b7bdbe-9b7b-432a-952c-0ff16c1d16ef.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
+        ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
+      - contentHash: 760ee68bc8dac77a2238de52f1f9f1bb692314898c8c78395aaa980589a2f6d7
+        ref: docs/superpowers/reports/install-workspace-entry-skill.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: a92c8177a6a241cc2e67825a1c7704ce53da9414021959ef03533e1e922cc55f
+        cwd: .
+        deliveryInputs: {}
+        environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+        exitCode: 1
+        inputAfter: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+        inputBefore: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+        manifestHash: 3fd2431653af94ef58ef7240ce295f248abd92adc2eb5ced97c919649ced9167
+        manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/ecdc2a68-5524-4292-8a67-cdf1f4f89a25.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/c5690dfe-c24e-46fb-aaf9-9d34362fecdb.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - sequence: 9
         value:
           boundBranch: comet/install-workspace-entry-skill
           buildMode: autonomous
@@ -2515,8 +895,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -2534,28 +913,7 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.execute:
-        sequence: 13
-        value:
-          event: build-complete
-      full.build.plan:
-        sequence: 11
-        value:
-          designEvidence:
-            contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
-            ref: openspec/changes/install-workspace-entry-skill/design.md
-          plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-          planEvidence:
-            contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-            ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-          taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
-      full.build.plan.evidence:
-        sequence: 12
-        value:
-          contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
-          ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
-      full.design.confirm:
-        sequence: 6
+      - sequence: 6
         value:
           choice: approved
           proposal:
@@ -2581,17 +939,14 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
                   ref: openspec/changes/install-workspace-entry-skill
-      full.design.document:
-        sequence: 7
+      - sequence: 7
         value:
           designDoc: openspec/changes/install-workspace-entry-skill/design.md
-      full.design.evidence:
-        sequence: 8
+      - sequence: 8
         value:
           contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
           ref: openspec/changes/install-workspace-entry-skill/design.md
-      full.design.handoff:
-        sequence: 5
+      - sequence: 5
         value:
           handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
           handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
@@ -2608,12 +963,10 @@ run_checkpoint:
           sourceEvidence:
             contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
             ref: openspec/changes/install-workspace-entry-skill
-      full.open:
-        sequence: 1
+      - sequence: 1
         value:
           event: open-complete
-      full.open.confirm:
-        sequence: 3
+      - sequence: 3
         value:
           choice: approved
           proposal:
@@ -2628,17 +981,1017 @@ run_checkpoint:
               full.open.evidence:
                 contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
                 ref: openspec/changes/install-workspace-entry-skill
-      full.open.evidence:
-        sequence: 2
+      - sequence: 2
         value:
           contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
           ref: openspec/changes/install-workspace-entry-skill
-      full.open.revalidate:
-        sequence: 4
+      - sequence: 4
         value:
           contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
-    children: []
-    lineage: []
-  sourceRevision: 24
-  sourceHash: 930f0c6c9e24130c32782ec07cdcb8e8d78289f3b7b46b84e74cd5bbd5fc9be6
-check_epoch: 3
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+            ref: openspec/changes/install-workspace-entry-skill/design.md
+          plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+          planEvidence:
+            contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+            ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+          taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
+      - sequence: 12
+        value:
+          contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+          ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
+          cwd: .
+          environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
+          exitCode: 0
+          inputAfter: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
+          inputBefore: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
+          manifestHash: fd0212a359a0bd34e5db05f9d1dd026d682353de7df3bf6880048d06ea7ef681
+          manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b1b7bdbe-9b7b-432a-952c-0ff16c1d16ef.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
+      - sequence: 17
+        value:
+          contentHash: 760ee68bc8dac77a2238de52f1f9f1bb692314898c8c78395aaa980589a2f6d7
+          ref: docs/superpowers/reports/install-workspace-entry-skill.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: a92c8177a6a241cc2e67825a1c7704ce53da9414021959ef03533e1e922cc55f
+          cwd: .
+          deliveryInputs: {}
+          environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+          exitCode: 1
+          inputAfter: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+          inputBefore: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+          manifestHash: 3fd2431653af94ef58ef7240ce295f248abd92adc2eb5ced97c919649ced9167
+          manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/ecdc2a68-5524-4292-8a67-cdf1f4f89a25.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/c5690dfe-c24e-46fb-aaf9-9d34362fecdb.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 49
+        right: 50
+        height: 2
+      - key: full.design.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: 52
+        right: 53
+        height: 2
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: 55
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: 54
+        right: 56
+        height: 3
+      - key: full.design.document
+        value: 21
+        left: 51
+        right: 57
+        height: 4
+      - key: full.build.plan
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 29
+        left: 59
+        right: 60
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 49
+        right: 61
+        height: 3
+      - key: full.design.document
+        value: 21
+        left: 62
+        right: 57
+        height: 4
+      - key: full.build.execute
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 49
+        right: 64
+        height: 2
+      - key: full.build.plan.evidence
+        value: 29
+        left: null
+        right: 60
+        height: 2
+      - key: full.build.plan
+        value: 28
+        left: 65
+        right: 66
+        height: 3
+      - key: full.design.document
+        value: 21
+        left: 67
+        right: 57
+        height: 4
+      - key: full.build.check
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 32
+        left: 69
+        right: 70
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 71
+        right: 64
+        height: 3
+      - key: full.build.plan
+        value: 28
+        left: 72
+        right: 66
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 73
+        right: 57
+        height: 5
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 33
+        left: null
+        right: 76
+        height: 2
+      - key: full.open.revalidate
+        value: 27
+        left: 75
+        right: 77
+        height: 3
+      - key: full.open.confirm
+        value: 25
+        left: 54
+        right: 78
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 73
+        right: 79
+        height: 5
+      - key: full.verify.check
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 33
+        left: 81
+        right: 76
+        height: 2
+      - key: full.open.revalidate
+        value: 27
+        left: 75
+        right: 82
+        height: 3
+      - key: full.open.confirm
+        value: 25
+        left: 54
+        right: 83
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 73
+        right: 84
+        height: 5
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 25
+        left: 86
+        right: 87
+        height: 2
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: 89
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: 86
+        right: 90
+        height: 3
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: 92
+        right: 93
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: 94
+        right: 90
+        height: 3
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 21
+        left: 96
+        right: 97
+        height: 2
+      - key: full.design.handoff
+        value: 23
+        left: 98
+        right: 93
+        height: 3
+      - key: full.open.confirm
+        value: 25
+        left: 99
+        right: 90
+        height: 4
+      - key: full.open.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 24
+        left: null
+        right: 101
+        height: 2
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: 104
+        right: 105
+        height: 2
+      - key: full.open
+        value: 24
+        left: 103
+        right: 106
+        height: 3
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 22
+        left: 109
+        right: 110
+        height: 2
+      - key: full.design.confirm
+        value: 20
+        left: 108
+        right: 111
+        height: 3
+      - key: full.open
+        value: 24
+        left: 112
+        right: 106
+        height: 4
+      - key: full.open
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 21
+        left: 115
+        right: 116
+        height: 2
+      - key: full.open.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: 118
+        right: 119
+        height: 2
+      - key: full.open
+        value: 24
+        left: 117
+        right: 120
+        height: 3
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 122
+        right: 123
+        height: 2
+      - key: full.design.document
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 22
+        left: 125
+        right: 126
+        height: 2
+      - key: full.design.confirm
+        value: 20
+        left: 124
+        right: 127
+        height: 3
+      - key: full.open
+        value: 24
+        left: 128
+        right: 120
+        height: 4
+      - key: full.build.check
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 18
+        left: 130
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 28
+        left: 132
+        right: 133
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 131
+        right: 134
+        height: 3
+      - key: full.open
+        value: 24
+        left: 127
+        right: 120
+        height: 3
+      - key: full.design.confirm
+        value: 20
+        left: 135
+        right: 136
+        height: 4
+      - key: full.build.check
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 32
+        left: 138
+        right: 139
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 140
+        right: 134
+        height: 3
+      - key: full.verify.run
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: 142
+        height: 2
+      - key: full.open.evidence
+        value: 26
+        left: 118
+        right: 143
+        height: 3
+      - key: full.open
+        value: 24
+        left: 127
+        right: 144
+        height: 4
+      - key: full.design.confirm
+        value: 20
+        left: 141
+        right: 145
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 58
+      - 63
+      - 68
+      - 74
+      - 80
+      - 85
+      - 88
+      - 91
+      - 95
+      - 100
+      - 102
+      - 107
+      - 113
+      - 114
+      - 121
+      - 129
+      - 137
+      - 146
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:11
+          - results
+        map: 11
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:13
+          - results
+        map: 12
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:14
+          - results
+        map: 13
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:16
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:18
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:19
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:4
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:5
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:7
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:9
+          - results
+        map: 20
+      - path:
+          - outputs
+        map: 16
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 21
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 22
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 23
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 24
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 25
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 26
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 27
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 28
+  storageHash: a47e16c56514d7f89a2e0f9c41754888f616e61917c17d246e399e8450b3d32c
+check_epoch: 4

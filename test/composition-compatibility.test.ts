@@ -138,11 +138,27 @@ describe('composition compatibility', () => {
     const catalog = await createRepoctopusBuiltinCatalog(path.resolve(import.meta.dirname, '..'));
     const expected = new Map([
       [
+        'action-manual',
+        {
+          codeDigest: 'sha256:8aa93effa7136d6ec4666e92ac196968750abaef7a14b2d5dbbcc064452486f8',
+          descriptorDigest:
+            'sha256:60335fd0b157c0c563527cd8f18db0ae48fdede38628edf9bb4c50894857fba2',
+        },
+      ],
+      [
+        'action-work-contributors',
+        {
+          codeDigest: 'sha256:eec329322b704c0332fac463f13e1e2904343f70a0b7f097cb5ca3614e8337d2',
+          descriptorDigest:
+            'sha256:7f96982ec70e6583f934bd964965510fd41547162a15414f71879a204a814873',
+        },
+      ],
+      [
         'workflow-runs',
         {
-          codeDigest: 'sha256:0054b1fd3c9cbbc1b9ccd82ce396a0d230fe4120ca1ca799fa61231a6cdf531a',
+          codeDigest: 'sha256:464e17cc7d576d04b79aceae82bf06519cf8159f65539fa6bb9df2e39c7065a5',
           descriptorDigest:
-            'sha256:2e4683748cf8450219c8cab108164b39ab54561c94d90981d26ad2b315dad0dc',
+            'sha256:d91cb2e612695650c225c9096b746b788ad9afe1a9078ce6750678826290c8f5',
         },
       ],
       [

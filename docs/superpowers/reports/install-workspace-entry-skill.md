@@ -22,4 +22,6 @@ OpenSpec 严格校验通过，8 项任务已完成。接入规格由 `project de
 - 用 `87dcd963` 实际创建并持久化未启动的旧 Open claim。新版通过精确前驱继续，保留同一 intent 和 packet digest，核验并补交 `agents/openai.yaml`，接受 Outcome 后进入原 Run 的 Open 决定。旧版平铺 Skill 若冻结了共享目录摘要，需要在原 Runtime 与原目录状态结算待处理工作。
 - 独立分段审查和最终集成审查核对了恢复、路径、资源与兼容性。审查发现已修复，最终无阻断。
 
+首轮正式 Verify 通过 1222 项测试，跳过 4 项，失败 1 项。唯一失败为组合兼容测试仍固定旧前驱摘要。测试现核对当前已实测的三个精确前驱，Runtime 代码和安装包无改动。
+
 [验收回执](../../../verification/install-workspace-entry-skill/acceptance-receipt.json) 绑定包、Run 和执行身份。正式检查由 Comet Guard 保存实际命令与结果。
