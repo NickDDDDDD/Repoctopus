@@ -277,7 +277,6 @@ const definitions: readonly BuiltinDefinition[] = [
       'platform/project-configuration/workspace-guides.ts',
       'platform/project-configuration/workspace-entry-skills.ts',
       'domains/project-configuration/entry-skills.ts',
-      'skills/entry/repoctopus/SKILL.md',
       'domains/project-configuration/workspace-guides.ts',
     ],
   },
@@ -376,6 +375,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: mattSkillProvider,
     sourceFiles: [
+      'domains/project-configuration/entry-skills.ts',
       'plugins/skill/file-skill-provider.ts',
       'plugins/skill/matt-skill-provider.ts',
       'third_party/matt-skills/method-adoptions.json',
@@ -417,6 +417,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: lifecycleSkillProvider,
     sourceFiles: [
+      'domains/project-configuration/entry-skills.ts',
       'plugins/skill/file-skill-provider.ts',
       'plugins/skill/lifecycle-skill-provider.ts',
       'skills/lifecycle/repoctopus-open-change/SKILL.md',
@@ -444,6 +445,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: filesystemSkillProvider,
     sourceFiles: [
+      'domains/project-configuration/entry-skills.ts',
       'plugins/skill/file-skill-provider.ts',
       'plugins/skill/filesystem-skill-provider.ts',
     ],
@@ -463,6 +465,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: consistencyMethodProvider,
     sourceFiles: [
+      'domains/project-configuration/entry-skills.ts',
       'plugins/skill/file-skill-provider.ts',
       'plugins/skill/consistency-method-provider.ts',
       'third_party/matt-skills/method-adoptions.json',
@@ -829,6 +832,7 @@ const definitions: readonly BuiltinDefinition[] = [
     sourceFiles: [
       'domains/change-lifecycle/method-profile.ts',
       'domains/change-lifecycle/work-context.ts',
+      'platform/filesystem/race-safe-read.ts',
       'platform/skill/snapshot.ts',
       'services/work-context-assembler.ts',
     ],
