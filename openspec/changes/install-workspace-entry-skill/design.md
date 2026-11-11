@@ -1,3 +1,9 @@
+---
+comet_change: install-workspace-entry-skill
+role: technical-design
+canonical_spec: openspec
+---
+
 # Workspace 入口与受管 Action 装填设计
 
 ## Context
