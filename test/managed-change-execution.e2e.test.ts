@@ -17,6 +17,7 @@ import type { SpecificationApprovalState } from '../domains/specification/types.
 import { createWorkExecutionSubmission } from '../domains/work-execution/submission.js';
 import type { WorkExecutionResult } from '../domains/work-execution/types.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
+import type { LifecycleHumanDecisionView } from '../services/lifecycle-human-decisions.js';
 import type {
   ExecuteArchiveDeliveryResult,
   VerifyChangeRunResult,
@@ -1655,9 +1656,9 @@ describe('managed Change execution production composition', () => {
             throw new Error('missing high-risk Build Plan decision');
           }
           await restartApplication();
-          afterPlan = await application.context.commandRouter.execute<
+          const decided = await application.context.commandRouter.execute<
             Parameters<typeof application.context.workflowRuns.decideChange>[0],
-            RunStatusView
+            LifecycleHumanDecisionView
           >('run.change.decide', {
             runId,
             response: {
@@ -1669,6 +1670,8 @@ describe('managed Change execution production composition', () => {
             },
             actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
           });
+          expect(decided).toMatchObject({ status: 'accepted', decisionKind: 'build-plan-risk' });
+          afterPlan = await status();
         } else {
           afterPlan = afterPlanValidation.value;
           await restartApplication();
@@ -2445,10 +2448,9 @@ describe('managed Change execution production composition', () => {
       }
     },
     // This matrix includes three cold CLI restores after Verify plus real Git
-    // and isolated Archive validation. A traced Windows single-case run takes
-    // 368s with every assertion passing; leave room for shared-host I/O load.
-    // Other suites and the existing non-Windows budget remain unchanged.
-    process.platform === 'win32' ? 600_000 : 360_000,
+    // and isolated Archive validation. A traced Windows case took 368s and
+    // the single-repository case exceeded 360s on Linux CI.
+    600_000,
   );
 
   it('recovers one persisted Run from current to worktree across process restarts', async () => {

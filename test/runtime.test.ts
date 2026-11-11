@@ -25,6 +25,7 @@ import {
 import type { EvidenceGatePort, TelemetryBatch, TelemetryPort } from '../domains/runtime/types.js';
 import { createWorkflowPackage } from '../domains/workflow-contract/package.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
+import { LifecycleHumanDecisions } from '../services/lifecycle-human-decisions.js';
 import {
   compositionFixture,
   projectFixture,
@@ -565,6 +566,132 @@ describe('Repoctopus runtime', () => {
 
     await runtime.acceptChangeObservation(runId, observation);
     expect(await store.loadTrajectory(runId)).toHaveLength(trajectory.length);
+
+    // A crash after the decision journal is durable must recover the original
+    // accepted choice, not create another Design Work or increment checkEpoch.
+    const designWork = createLifecyclePhaseWork({
+      runId,
+      checkEpoch: 6,
+      changeId: 'revise-intent',
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'specification.plan',
+      actionSkill: { ...configureWork.actionSkill!, name: 'repoctopus-design-change' },
+      augmentationSkills: [
+        {
+          schemaVersion: 1,
+          name: 'codebase-design',
+          provider: 'matt-builtins',
+          invocation: { modelInvocable: true, userInvocable: true },
+          contentDigest: `sha256:${'d'.repeat(64)}`,
+          resourceManifestDigest: `sha256:${'e'.repeat(64)}`,
+        },
+      ],
+      compositionDigest: compositionFixture().compositionDigest,
+      projectSnapshotDigest: projectFixture({ projectId: 'team' }).digest,
+      projectConfigDigest: `sha256:${'4'.repeat(64)}`,
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace'],
+    });
+    const crashingStore = new FileRuntimeStore(workspace, {
+      afterJournalWritten: () => {
+        throw new Error('decision response interrupted');
+      },
+    });
+    const crashingRuntime = new WorkflowRunCoordinator(
+      crashingStore,
+      { async export() {} },
+      compositionFixture(),
+    );
+    await expect(
+      crashingRuntime.acceptChangeObservation(runId, {
+        kind: 'workspace-intent-revised',
+        requestId: observation.requestId,
+        proposalDigest: observation.proposalDigest,
+        actorId: 'operator',
+        intent: createExecutionWorkspaceIntent({
+          workspaceId: 'team',
+          changeId: 'revise-intent',
+          isolation: 'branch',
+        }),
+        work: designWork,
+        humanDecision: {
+          decision: 'approve',
+          actorId: 'operator',
+          source: 'cli',
+          isolation: 'branch',
+          interaction: {
+            channel: 'native',
+            authorization: 'user-response',
+            referenceDigest: `sha256:${'a'.repeat(64)}`,
+          },
+        },
+      }),
+    ).rejects.toThrow(/interrupted/);
+    const recoveredStore = new FileRuntimeStore(workspace);
+    const decisions = new LifecycleHumanDecisions({
+      store: recoveredStore,
+      planning: {
+        status: () => {
+          throw new Error('Not a planning decision');
+        },
+        assertCurrentProposal: () => {
+          throw new Error('Not a planning decision');
+        },
+      },
+      apply: () => {
+        throw new Error('Must not replay accepted transition');
+      },
+    });
+    const response = {
+      apiVersion: 'repoctopus/v1alpha1',
+      kind: 'LifecycleHumanDecisionResponse',
+      runId,
+      phase: 'open',
+      decisionKind: 'workspace-intent-revision',
+      requestId: observation.requestId,
+      proposalHash: observation.proposalDigest,
+      decision: 'approve',
+      isolation: 'branch',
+      interaction: {
+        channel: 'native',
+        authorization: 'user-response',
+        reference: 'real-test-user-reply',
+      },
+    };
+    expect(
+      (
+        await decisions.read({
+          runId,
+          requestId: observation.requestId,
+          proposalHash: observation.proposalDigest,
+        })
+      ).status,
+    ).toBe('accepted');
+    const recoveredState = await recoveredStore.loadRun(runId);
+    expect(recoveredState.changeLifecycle).toMatchObject({
+      phase: 'design',
+      checkEpoch: 6,
+      currentWork: { workId: designWork.workId },
+    });
+    const recoveredEvents = await recoveredStore.loadTrajectory(runId);
+    expect(
+      (
+        await decisions.submit({
+          runId,
+          response,
+          actor: { actorId: 'operator', source: 'cli', authenticated: true },
+        })
+      ).status,
+    ).toBe('accepted');
+    expect(await recoveredStore.loadRun(runId)).toEqual(recoveredState);
+    expect(await recoveredStore.loadTrajectory(runId)).toHaveLength(recoveredEvents.length);
+    await expect(
+      decisions.submit({
+        runId,
+        response: { ...response, isolation: 'worktree' },
+        actor: { actorId: 'operator', source: 'cli', authenticated: true },
+      }),
+    ).rejects.toThrow(/conflicts/);
   });
 
   it('retires Configure execution when an accepted Binding installs Plan Work', async () => {

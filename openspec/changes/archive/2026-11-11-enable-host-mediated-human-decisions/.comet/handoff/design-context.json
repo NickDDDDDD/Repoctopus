@@ -1,0 +1,17 @@
+{
+  "change": "enable-host-mediated-human-decisions",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8",
+  "files": [
+    { "path": "openspec/changes/enable-host-mediated-human-decisions/proposal.md", "sha256": "11e3656764d3d2d121000a0aac2008c900ee456eef9fc620657b7b9b735ea03a" },
+    { "path": "openspec/changes/enable-host-mediated-human-decisions/design.md", "sha256": "f8f5cc190127d8eec8337badb22f94059282bed49b565e70edfcd808fc1df93c" },
+    { "path": "openspec/changes/enable-host-mediated-human-decisions/tasks.md", "sha256": "6d3384f88693140ee55f9a4ad84400181e0c27bd1163cb8f67d06684003c2eb1" },
+    { "path": "openspec/changes/enable-host-mediated-human-decisions/.openspec.yaml", "sha256": "519b5d2f2c95a5824a38a573c58ef1067b39bf77f183f2c01b55804de4c18bde" },
+    { "path": "openspec/changes/enable-host-mediated-human-decisions/specs/change-lifecycle/spec.md", "sha256": "39386db762e4e6d9c5c3a5627307fe284bb07a2859fddfa16cbe3f8d27a7f51f" },
+    { "path": "openspec/changes/enable-host-mediated-human-decisions/specs/specification-authority/spec.md", "sha256": "4e8247cad77d5a7512f0f2f0c009690d87e7ab2df68461ddfab9b7f22032aaea" }
+  ]
+}

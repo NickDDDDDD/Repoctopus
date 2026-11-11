@@ -9,6 +9,12 @@ import {
 } from '../domains/change-lifecycle/build-protocol.js';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
+import {
+  LifecycleHumanDecisions,
+  type ReadLifecycleDecisionInput,
+  type LifecycleHumanDecisionView,
+} from './lifecycle-human-decisions.js';
+import type { HumanDecisionInteraction } from '../domains/change-lifecycle/human-decision.js';
 import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
 
 import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/engine/types.js';
@@ -207,6 +213,7 @@ export interface DecideChangeRunInput {
   response: SpecificationApprovalDecisionResponse;
   actor: SpecificationApprovalActor;
   isolation?: ExecutionIsolation;
+  interaction?: HumanDecisionInteraction;
 }
 
 export interface VerifyChangeRunInput {
@@ -302,6 +309,7 @@ export class WorkflowRuns extends Service {
   private readonly workspaceRoot: string;
   private readonly projectInput: WorkspaceSnapshotInput | undefined;
   private readonly archiveLeases: FileResourceLeaseManager;
+  private readonly humanDecisions: LifecycleHumanDecisions;
 
   constructor(
     context: Context,
@@ -333,6 +341,11 @@ export class WorkflowRuns extends Service {
       context.get('evidenceCoordinator'),
       contributorSnapshot,
     );
+    this.humanDecisions = new LifecycleHumanDecisions({
+      store: context.runStore,
+      planning: context.specificationPlanning,
+      apply: (input) => this.applyChangeDecision(input),
+    });
   }
 
   start(
@@ -676,7 +689,34 @@ export class WorkflowRuns extends Service {
     return status.changeLifecycle;
   }
 
+  readHumanDecision(
+    input: ReadLifecycleDecisionInput,
+    signal?: AbortSignal,
+  ): Promise<LifecycleHumanDecisionView> {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.humanDecisions.read(input),
+    );
+  }
+
+  submitHumanDecision(
+    input: { runId: string; response: unknown; actor: SpecificationApprovalActor },
+    signal?: AbortSignal,
+  ): Promise<LifecycleHumanDecisionView> {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.humanDecisions.submit(input),
+    );
+  }
+
   decideChange(
+    input: DecideChangeRunInput,
+    signal?: AbortSignal,
+  ): Promise<LifecycleHumanDecisionView> {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.humanDecisions.submitExisting(input),
+    );
+  }
+
+  private applyChangeDecision(
     input: DecideChangeRunInput,
     signal?: AbortSignal,
   ): Promise<SpecificationApprovalState | RunStatusView> {
@@ -755,6 +795,13 @@ export class WorkflowRuns extends Service {
         }
         const decided = await this.coordinator.acceptChangeObservation(input.runId, {
           kind: 'workspace-intent-revised',
+          humanDecision: {
+            decision: input.response.decision,
+            actorId: input.actor.actorId,
+            source: input.actor.source,
+            isolation: input.isolation,
+            ...(input.interaction ? { interaction: input.interaction } : {}),
+          },
           requestId: input.response.requestId,
           proposalDigest: input.response.proposalHash,
           actorId: input.actor.actorId,
@@ -893,6 +940,12 @@ export class WorkflowRuns extends Service {
         const waitId = lifecycle.waitCondition.waitId;
         const decided = await this.coordinator.acceptChangeObservation(input.runId, {
           kind: 'build-plan-decision',
+          humanDecision: {
+            decision: input.response.decision,
+            actorId: input.actor.actorId,
+            source: input.actor.source,
+            ...(input.interaction ? { interaction: input.interaction } : {}),
+          },
           decision: approved ? 'approve' : 'reject',
           requestId: input.response.requestId,
           proposalDigest: input.response.proposalHash,
@@ -924,6 +977,20 @@ export class WorkflowRuns extends Service {
       ) {
         throw new Error('Human Decision does not match the current Change Run proposal');
       }
+      const planningBase = await this.loadChangePlanningBase(state, lifecycle, lifecycle.phase);
+      const decisionBranch = await this.ctx.project.changeBranch({
+        repositoryId: planningBase.workspaceRepositoryId,
+        repositoryPath: planningBase.workspaceRepositoryPath,
+        remote: planningBase.remote,
+        targetBranch: planningBase.targetBranch,
+      });
+      await this.ctx.specificationPlanning.assertCurrentProposal(
+        lifecycle.identity.changeId,
+        lifecycle.phase,
+        input.response.requestId,
+        input.response.proposalHash,
+        decisionBranch,
+      );
       if (lifecycle.phase === 'open' && input.response.decision === 'approve') {
         if (!input.isolation) {
           throw new Error('Open approval requires current, branch, or worktree isolation');
@@ -937,18 +1004,37 @@ export class WorkflowRuns extends Service {
         await this.bindExecutionWorkspaceIntent(state, intent, projectSnapshot);
         await this.coordinator.acceptChangeObservation(input.runId, {
           kind: 'open-workspace-intent-selected',
+          humanDecision: {
+            decision: input.response.decision,
+            actorId: input.actor.actorId,
+            source: input.actor.source,
+            isolation: input.isolation,
+            ...(input.interaction ? { interaction: input.interaction } : {}),
+          },
           intent,
           requestId: input.response.requestId,
           proposalDigest: input.response.proposalHash,
           actorId: input.actor.actorId,
         });
       }
-      const decided = await this.ctx.specificationPlanning.decide({
-        changeId: lifecycle.identity.changeId,
-        approvalPhase: lifecycle.phase,
-        response: input.response,
-        actor: input.actor,
-      });
+      const existing = await this.ctx.specificationPlanning.status(
+        lifecycle.identity.changeId,
+        lifecycle.phase,
+      );
+      const decided =
+        existing?.decision?.requestId === input.response.requestId &&
+        existing.decision.proposalHash === input.response.proposalHash &&
+        existing.decision.decision === input.response.decision
+          ? existing
+          : await this.ctx.specificationPlanning.decide({
+              changeId: lifecycle.identity.changeId,
+              approvalPhase: lifecycle.phase,
+              response: input.response,
+              actor: input.actor,
+              recordedViaRunId: input.runId,
+              ...(input.isolation ? { isolation: input.isolation } : {}),
+              ...(input.interaction ? { interaction: input.interaction } : {}),
+            });
       if (decided.decision?.proposalHash !== lifecycle.waitCondition.proposalDigest) {
         throw new Error('Recorded Human Decision does not match the current Change Run proposal');
       }
@@ -2553,7 +2639,8 @@ export class WorkflowRuns extends Service {
       reason: assessment.reason,
       evidenceIds: assessment.evidenceDigests,
       inputDigest,
-      ...(assessment.status === 'waiting' && assessment.approval
+      ...((assessment.status === 'waiting' || assessment.status === 'approved') &&
+      assessment.approval
         ? {
             requestId: assessment.approval.decisionRequest.requestId,
             proposalDigest: assessment.approval.decisionRequest.proposalHash,
@@ -4985,7 +5072,8 @@ export class WorkflowRuns extends Service {
             reason: assessment.reason,
             evidenceIds: assessment.evidenceDigests,
             inputDigest,
-            ...(assessment.status === 'waiting' && assessment.approval
+            ...((assessment.status === 'waiting' || assessment.status === 'approved') &&
+            assessment.approval
               ? {
                   requestId: assessment.approval.decisionRequest.requestId,
                   proposalDigest: assessment.approval.decisionRequest.proposalHash,

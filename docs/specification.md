@@ -52,7 +52,7 @@ node bin/repoctopus.js spec approval review --workspace . --change <change-id>
 node bin/repoctopus.js run decide --workspace . --run <run-id>
 ```
 
-Open 先创建或修复完整四件套，严格校验后在 `open/waiting` 形成第一次请求；批准才进入 Design。Design 在同一四件套上深化工程决策和任务，再严格校验并在 `design/waiting` 形成第二次独立请求；批准才进入 Build。两次都用 `run decide` 提交 `approve`、`revise` 或 `reject`，并按 phase 分库存储，不能互相冒充。该命令必须运行在可信交互终端，IDE 则提交同一版本化响应；非交互 Agent、Git 作者和 MR 状态都不能代替用户决定。
+Open 先创建或修复完整四件套，严格校验后在 `open/waiting` 形成第一次请求；批准才进入 Design。Design 在同一四件套上深化工程决策和任务，再严格校验并在 `design/waiting` 形成第二次独立请求；批准才进入 Build。两次都用 `run decide` 提交 `approve`、`revise` 或 `reject`，并按 phase 分库存储，不能互相冒充。Host 先用 `run decision --run <run-id> --json` 读取材料，通过原生提问或对话取得真实决定，再用 `run decide --response-file` 回传；没有真实用户交互上下文时使用上述终端模式。完整合同及信任边界见 [人工决定](human-decision.md)。Git 作者和 MR 状态不能代替用户决定。
 
 请求中的 `proposalHash` 是用户实际审核内容的稳定身份，覆盖 change、Specification Root、Provider/schema、规划语义摘要、能力集合和目标分支。响应必须同时匹配当前 Run 的 `requestId` 与 `proposalHash`；批准记录还生成绑定主体、决定和时间的 `approvalHash`。旧请求、跨 Run 响应或任一受保护事实被篡改时都必须拒绝，不能靠重新包装响应沿用批准。
 

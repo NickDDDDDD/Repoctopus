@@ -1,0 +1,3414 @@
+# comet-execution: managed-run
+change_id: 9362a890-7c22-49b1-aee9-387d1ff4feac
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 0b513d0da01c863767bf85b7feeb8bd9a2a411f5
+design_doc: openspec/changes/archive/2026-11-11-enable-host-mediated-human-decisions/design.md
+plan: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+branch_status: pending
+created_at: 2026-11-10
+verified_at: 2026-11-10
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/enable-host-mediated-human-decisions
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-11-enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+handoff_hash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: fe9aecfa4b678452910e6f17dfb2fa29e8567da7ddb4684e37aa72c7131d110a
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: enable-host-mediated-human-decisions
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: e1f2a0b54eb4d372b45be85801ff86b4313adb15b1865b93b2564004af6e1693
+    input:
+      change: enable-host-mediated-human-decisions
+      changeDir: openspec/changes/enable-host-mediated-human-decisions
+      workspaceBaseline:
+        ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 0b513d0da01c863767bf85b7feeb8bd9a2a411f5
+      boundBranch: comet/enable-host-mediated-human-decisions
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 8
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-10
+      designDoc: openspec/changes/archive/2026-11-11-enable-host-mediated-human-decisions/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-11-enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+      handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+      verifiedAt: 2026-11-10
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 32
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-91080bb72fda0c0589fa72131bf1687e343ef663f38ffa41c16166d300ffcede
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:1
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 8182c09046e2b8a7bddae632f24556121a953f6bf5aad114418d0dd8dc9746c9
+        outcome:
+          actionId: enable-host-mediated-human-decisions:1
+          attempt: 1
+          claimToken: portable-91080bb72fda0c0589fa72131bf1687e343ef663f38ffa41c16166d300ffcede
+          inputHash: 8182c09046e2b8a7bddae632f24556121a953f6bf5aad114418d0dd8dc9746c9
+          outcomeId: 32a71653-db0f-48aa-920d-43247f5cc7e8
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5aa1bc10e908002c5c02b86eea2fcfce84fa28bde81b8ead59d483c2a820eab6
+            outcomeId: 32a71653-db0f-48aa-920d-43247f5cc7e8
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-c56c0b7c02851702936ae94847f2f7611049cc49c714fd1d0bf6241d6f8c2ab3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:4
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 3b77ba82b35c8b22bed521eb310c0a5107afd2d5af45d26eb8a285d69abaa0df
+        outcome:
+          actionId: enable-host-mediated-human-decisions:4
+          attempt: 1
+          claimToken: portable-c56c0b7c02851702936ae94847f2f7611049cc49c714fd1d0bf6241d6f8c2ab3
+          inputHash: 3b77ba82b35c8b22bed521eb310c0a5107afd2d5af45d26eb8a285d69abaa0df
+          outcomeId: enable-host-mediated-human-decisions:4:1:executor-result
+          output:
+            contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b1b167a5853ce6c9933648e94ee252d1bc7977a5fbb5eb43eece14f4894ce0d1
+            outcomeId: enable-host-mediated-human-decisions:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-8088b2d9030c69b61e64f9166fbe1126169866bcc3a34a63683297acba94baef
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:5
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 6407f7242da7a8bc357bec25355f26c6bf0d9484cac32fceb6a336ffd05e8568
+        outcome:
+          actionId: enable-host-mediated-human-decisions:5
+          attempt: 1
+          claimToken: portable-8088b2d9030c69b61e64f9166fbe1126169866bcc3a34a63683297acba94baef
+          inputHash: 6407f7242da7a8bc357bec25355f26c6bf0d9484cac32fceb6a336ffd05e8568
+          outcomeId: abef2584-e9da-4aff-87c9-d2366f954c8f
+          output:
+            handoffContext: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+            handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+            proposal: 沿已批准的两项 capability 与十项任务，采用固定 Comet 0.5.1 的 Host-mediated 决策方式。新增只读
+              run decision 和 run decide --response-file 显式回传；未指定文件保留原终端
+              TTY。视图提供冻结身份、允许选择、条件输入、响应模板和下一步 argv。Host 取得真实原生或对话答复，CLI
+              记录本机主体及分离的渠道/授权依据，不自称独立证明用户点击；Runtime 复用规划批准、Provider/isolation
+              校验和现有 guarded commit。覆盖 Open、Design、意图修订及 Build Plan 风险决定；保留
+              change/phase 级共享规划批准，查询/提交先证明指定 Run 的请求参与事实，不凭同名 change
+              冒领。原始接受事实和来源保存在既有规划记录或转换 Journal，不新增审批
+              Store、Runtime、SDK、守护进程、Dashboard 写入或 checkpoint
+              迁移；中断先核对原决定，重复提交不重复推进。真实 TDD
+              回归、独立安装包多仓测试及至少一次真实宿主原生问答闭环为验收；模拟不能替代真实 UI。独立 builder check
+              的唯一归属问题已澄清并复核无重要未决。无需 Spec Patch，尚未实施或宣称新测试通过。建议本次开发采用 autonomous
+              + TDD + thorough，沿用当前独立 worktree；正式设计及执行配置等待用户确认。
+            requirementsEvidence:
+              contentHash: 9d07b6aa36d981712731a2523cec84589f4b67fedc6689ccce6d438f9c6f611e
+              ref: openspec/changes/enable-host-mediated-human-decisions
+            sourceEvidence:
+              contentHash: 96d0830cefac41dcee428f70948ae58078f73dc22b8b6748a037e7b79c7a9f82
+              ref: openspec/changes/enable-host-mediated-human-decisions
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 26b3ba7d49c0fb9cd2669cd4d9e194d93420df4d1ce8fb439b52ad50325cb77d
+            outcomeId: abef2584-e9da-4aff-87c9-d2366f954c8f
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-6f7abf5b0c358447ad9aeedf6236b952112ff6ac750840f5699c3ca7dca190ca
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:7
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 360bfa90866f5a92305655663011aa0abbf09da6cc8e054570eccf1e86ab9692
+        outcome:
+          actionId: enable-host-mediated-human-decisions:7
+          attempt: 1
+          claimToken: portable-6f7abf5b0c358447ad9aeedf6236b952112ff6ac750840f5699c3ca7dca190ca
+          inputHash: 360bfa90866f5a92305655663011aa0abbf09da6cc8e054570eccf1e86ab9692
+          outcomeId: 50c2f986-4fe8-4c50-873a-a697d9fdfa84
+          output:
+            designDoc: openspec/changes/enable-host-mediated-human-decisions/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a687b4268842432e19243c2ea2d71eab3c9bcf72579bcf1e34de3f95650b0c57
+            outcomeId: 50c2f986-4fe8-4c50-873a-a697d9fdfa84
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-4780ac871a594c06af214a488e99e63e812e9bd63020eb7029ac541638288a86
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:9
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 20139de0a8160c0dfcc476be12199a492e6c289815738efd59b2725a4695d868
+        outcome:
+          actionId: enable-host-mediated-human-decisions:9
+          attempt: 1
+          claimToken: portable-4780ac871a594c06af214a488e99e63e812e9bd63020eb7029ac541638288a86
+          inputHash: 20139de0a8160c0dfcc476be12199a492e6c289815738efd59b2725a4695d868
+          outcomeId: 94d808ce-d2f2-4c20-ba78-acd52044d3a7
+          output:
+            boundBranch: comet/enable-host-mediated-human-decisions
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ba4af62329176fd0012ab3d0655d1656357f7354b5039cf7e1ac93b1d26574ef
+            outcomeId: 94d808ce-d2f2-4c20-ba78-acd52044d3a7
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-29fcd7bda7e6ee9064f9815f2ce49dda1c227a5f8926d20dd64996ce34e1b108
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:11
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: d0805d5543ebb7120cc905c1ee4ebfcdbf142a1c2cb83de166ee8ca2be2220cb
+        outcome:
+          actionId: enable-host-mediated-human-decisions:11
+          attempt: 1
+          claimToken: portable-29fcd7bda7e6ee9064f9815f2ce49dda1c227a5f8926d20dd64996ce34e1b108
+          inputHash: d0805d5543ebb7120cc905c1ee4ebfcdbf142a1c2cb83de166ee8ca2be2220cb
+          outcomeId: 6ffae123-4629-430a-a152-b8dca8ca9527
+          output:
+            designEvidence:
+              contentHash: f8f5cc190127d8eec8337badb22f94059282bed49b565e70edfcd808fc1df93c
+              ref: openspec/changes/enable-host-mediated-human-decisions/design.md
+            plan: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+            planEvidence:
+              contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+              ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+            taskRevision: 6d3384f88693140ee55f9a4ad84400181e0c27bd1163cb8f67d06684003c2eb1
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e24b9662fd74657db1dea27668edc5bc2e1c5b2bbe4475acf160c45e3a68f4ab
+            outcomeId: 6ffae123-4629-430a-a152-b8dca8ca9527
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-host-mediated-human-decisions
+          token: portable-b8a162887ecaaebf797138ef6b551db1c62ddd9a6d68ae4834a6c18d80dafc6b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:13
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 441c776b8cc807cf5e0e7d407419fe12e8770fc4bba10a276f2a0ebe72d8413e
+        outcome:
+          actionId: enable-host-mediated-human-decisions:13
+          attempt: 1
+          claimToken: portable-b8a162887ecaaebf797138ef6b551db1c62ddd9a6d68ae4834a6c18d80dafc6b
+          inputHash: 441c776b8cc807cf5e0e7d407419fe12e8770fc4bba10a276f2a0ebe72d8413e
+          outcomeId: ec11310a-5bc2-4f96-9afe-ac713a366e73
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2dc812da3e561c62a21939d3092122f98437711bf0ac25883e6c5b965927c92c
+            outcomeId: ec11310a-5bc2-4f96-9afe-ac713a366e73
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-ca2e923e7c8147c01fed700a03373ba9634fbd902f80abac0966bcc904edaa7e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:14
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 4a6215f56b7cd638fb3ed9bd99df6301a7c05bdffd8ebe887edb88095e96fb31
+        outcome:
+          actionId: enable-host-mediated-human-decisions:14
+          attempt: 1
+          claimToken: portable-ca2e923e7c8147c01fed700a03373ba9634fbd902f80abac0966bcc904edaa7e
+          inputHash: 4a6215f56b7cd638fb3ed9bd99df6301a7c05bdffd8ebe887edb88095e96fb31
+          outcomeId: 2daebceb-8298-40bc-9021-d5aaa8e92618
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 89b10d6ddb8b509bcdc6973c6cd5a5cfde97ba5a5372720eaf5bb84641dc82a4
+            cwd: .
+            environment: 4fd269b3147c9fc506852725f4d848e45efedc06671c75f3171caacb26df452e
+            exitCode: 0
+            inputAfter: 57a15f754d902abf1077ad51ed61256246cc73d26a3ecd2eeb7446d0b864c3fd
+            inputBefore: 57a15f754d902abf1077ad51ed61256246cc73d26a3ecd2eeb7446d0b864c3fd
+            manifestHash: 201471355cec17e9465122db13eca2ac9bc87c4bd419a3e07527657a12944a77
+            manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/d9cc4549-410b-49eb-b1da-2b3931a957d0.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/dab4f770-b31b-4976-81d2-a81d7f854019.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 756787e2969691ad87f6d5b86e641af221a30944b9c3289981e9ecb4b20a3df6
+            outcomeId: 2daebceb-8298-40bc-9021-d5aaa8e92618
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-9a811f0ebe1608574621203cd57dfb2c00bdf4eb763914e1b75ff4f2fec55208
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:16
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 46e58a058688a89ae6ad011ba4c71bf1bc84dc489a7b04b10f7d5ce68732ec4c
+        outcome:
+          actionId: enable-host-mediated-human-decisions:16
+          attempt: 1
+          claimToken: portable-9a811f0ebe1608574621203cd57dfb2c00bdf4eb763914e1b75ff4f2fec55208
+          inputHash: 46e58a058688a89ae6ad011ba4c71bf1bc84dc489a7b04b10f7d5ce68732ec4c
+          outcomeId: 68f0a65b-dca8-4452-b3c6-fd9d9dbbb947
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 25c46652b81f7dddf5be1797737cbc12e08d9ec3aefdb2de8aab83366480fe92
+            outcomeId: 68f0a65b-dca8-4452-b3c6-fd9d9dbbb947
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-32fd1ee9f2a6af6099d6e9e2f2e501c34eafdfc46fd2c93c0d65b4440fa75b30
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:18
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 2ac56ad73f0fc04da4b1a662c79824c2979be5684de1da8bad69bed8a0931dbc
+        outcome:
+          actionId: enable-host-mediated-human-decisions:18
+          attempt: 1
+          claimToken: portable-32fd1ee9f2a6af6099d6e9e2f2e501c34eafdfc46fd2c93c0d65b4440fa75b30
+          inputHash: 2ac56ad73f0fc04da4b1a662c79824c2979be5684de1da8bad69bed8a0931dbc
+          outcomeId: 0427e927-edaa-4d33-ad43-eb57ce5044c2
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 728b350b1ed886df8a913c7f9d3aa24f670c624efe8977970b88e289740e898b
+            cwd: .
+            deliveryInputs: {}
+            environment: e9b239b4b19ebb92325bf02b2d55e4813aca8a1edd38e0cb33788bd46dbe05cd
+            exitCode: 1
+            inputAfter: f3776341db0c611b45296bc4fb0f1a40263ddd44adcab939fa4f07fc25087eac
+            inputBefore: f3776341db0c611b45296bc4fb0f1a40263ddd44adcab939fa4f07fc25087eac
+            manifestHash: 5c77e213b41545e6c28d884732e6b7577eebaef0883fdedadcc0147451196cbf
+            manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/2ea46d27-b8d7-44fe-a483-04496cab9507.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/cf1305c9-e525-4249-a728-62cbcf557318.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: a810903feac010c85e39ebae8933e0b106bff0daaeb1e8cf1c8f7184efccebda
+            outcomeId: 0427e927-edaa-4d33-ad43-eb57ce5044c2
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c8b1fa84e13f8f71577ad5fcab46a2b54cc8d3b7dd996d3897d01cac22e39eee
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:19
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 6ac884325cd80a5124ac99e7dc1b1225fd5427aaf6ba127e0bbdd6a73079ffc5
+        outcome:
+          actionId: enable-host-mediated-human-decisions:19
+          attempt: 1
+          claimToken: portable-c8b1fa84e13f8f71577ad5fcab46a2b54cc8d3b7dd996d3897d01cac22e39eee
+          inputHash: 6ac884325cd80a5124ac99e7dc1b1225fd5427aaf6ba127e0bbdd6a73079ffc5
+          outcomeId: 9402d329-b618-4779-b6b0-4999e2f9b6ed
+          output:
+            designEvidence:
+              contentHash: f8f5cc190127d8eec8337badb22f94059282bed49b565e70edfcd808fc1df93c
+              ref: openspec/changes/enable-host-mediated-human-decisions/design.md
+            plan: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+            planEvidence:
+              contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+              ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+            taskRevision: 6d3384f88693140ee55f9a4ad84400181e0c27bd1163cb8f67d06684003c2eb1
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ff3c93a0facbfdcffab19ddef198fe03d2121a90d735e96b54c7fe6d62915ede
+            outcomeId: 9402d329-b618-4779-b6b0-4999e2f9b6ed
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-host-mediated-human-decisions
+          token: portable-aa74b6677754bdde062d2b4d1221da7645f24d74d783cfc2d75ef45feec5a039
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:21
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 6ac884325cd80a5124ac99e7dc1b1225fd5427aaf6ba127e0bbdd6a73079ffc5
+        outcome:
+          actionId: enable-host-mediated-human-decisions:21
+          attempt: 1
+          claimToken: portable-aa74b6677754bdde062d2b4d1221da7645f24d74d783cfc2d75ef45feec5a039
+          inputHash: 6ac884325cd80a5124ac99e7dc1b1225fd5427aaf6ba127e0bbdd6a73079ffc5
+          outcomeId: b5259dd6-cde0-4d9e-8475-018b0c9c2c37
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0d87187900452f007272bd0ccc7d042390f713de84a93503cf51379cbb7576bd
+            outcomeId: b5259dd6-cde0-4d9e-8475-018b0c9c2c37
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-920399bc676a269ca5a22080119670af0ac231edcfe6d9ae46e1ce1a6e1429d8
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:22
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 6ac884325cd80a5124ac99e7dc1b1225fd5427aaf6ba127e0bbdd6a73079ffc5
+        outcome:
+          actionId: enable-host-mediated-human-decisions:22
+          attempt: 1
+          claimToken: portable-920399bc676a269ca5a22080119670af0ac231edcfe6d9ae46e1ce1a6e1429d8
+          inputHash: 6ac884325cd80a5124ac99e7dc1b1225fd5427aaf6ba127e0bbdd6a73079ffc5
+          outcomeId: cf28c9e4-ef30-431b-ba9f-adb83125fe27
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 9fd276c3f066c02bbdef05dcdbb37a33a0ddf931175b93e0074e5586219964ad
+            cwd: .
+            environment: 4fd269b3147c9fc506852725f4d848e45efedc06671c75f3171caacb26df452e
+            exitCode: 0
+            inputAfter: 94eda3a68e7ecfe53df9fa4c6e450cb90acaea25a17dc59c1215f6f42969803d
+            inputBefore: 94eda3a68e7ecfe53df9fa4c6e450cb90acaea25a17dc59c1215f6f42969803d
+            manifestHash: 8b3bd5aa0b1a2df3a829d2b45693d0e4ec39fc3d4062d9bf2fe713fd77859025
+            manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/eab5d4a8-5e46-43a3-b3fd-5813e8fb0877.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/779dbf78-d54f-45be-843d-4ed4d00ba64e.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9e9b3d4aa1e7f808e7b821a029df792670861ed327194c4a8d0e31cb4f0394e7
+            outcomeId: cf28c9e4-ef30-431b-ba9f-adb83125fe27
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-682fd0380380a4f1bb10db62637b261102462cbf3d4c64465958fe321c413c58
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:24
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: e14cceed5aa9c9b8c60b52f8e7dfd699c5f558461b93949b6cceadbec76cd85a
+        outcome:
+          actionId: enable-host-mediated-human-decisions:24
+          attempt: 1
+          claimToken: portable-682fd0380380a4f1bb10db62637b261102462cbf3d4c64465958fe321c413c58
+          inputHash: e14cceed5aa9c9b8c60b52f8e7dfd699c5f558461b93949b6cceadbec76cd85a
+          outcomeId: 1946a561-c303-452b-a5c2-9a3298789d32
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 084b5cce6af302a0de0dfb3569342c0f15a7c2f0da073d9fe5381e953a6a66c8
+            outcomeId: 1946a561-c303-452b-a5c2-9a3298789d32
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-54c759cf95ef7f6a8abcf7de51444bcac78f5a886db64f7a3ce5b041134ed768
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:26
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 19978c4593e02e072caa50f3a50caddbcdfa3913a465bceee10257ba89e23db2
+        outcome:
+          actionId: enable-host-mediated-human-decisions:26
+          attempt: 1
+          claimToken: portable-54c759cf95ef7f6a8abcf7de51444bcac78f5a886db64f7a3ce5b041134ed768
+          inputHash: 19978c4593e02e072caa50f3a50caddbcdfa3913a465bceee10257ba89e23db2
+          outcomeId: 35cb90e4-1b36-4b1a-8b9b-3171c1a8f16a
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: f0d4d72725b7435a1f3938bb688bab44cff3024d2c5dbac162ea31e373cc0742
+            cwd: .
+            deliveryInputs: {}
+            environment: e9b239b4b19ebb92325bf02b2d55e4813aca8a1edd38e0cb33788bd46dbe05cd
+            exitCode: 0
+            inputAfter: c1f4419509c7f773ce1cfaf32f09233cb4f49e5fb19a96ddb1cd69a762b22010
+            inputBefore: c1f4419509c7f773ce1cfaf32f09233cb4f49e5fb19a96ddb1cd69a762b22010
+            manifestHash: 8b3bd5aa0b1a2df3a829d2b45693d0e4ec39fc3d4062d9bf2fe713fd77859025
+            manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/189036cb-806c-4345-9852-f4aec27d5629.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/c90aab67-fccd-4afa-91eb-32dae4d644ed.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2659ef6925b2f4aa731ec3c189bc21682b715afafdbe0ed8cbc71af887843dfe
+            outcomeId: 35cb90e4-1b36-4b1a-8b9b-3171c1a8f16a
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-48f1908b12d925b736781cfc8adb8bf12a4c0c7969dce3f24a9998560fedd2a8
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:28
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: c231ee7cae5e753409ca8837adafda3fdcd4869cd1f5c12ba24ca11e46ba3de0
+        outcome:
+          actionId: enable-host-mediated-human-decisions:28
+          attempt: 1
+          claimToken: portable-48f1908b12d925b736781cfc8adb8bf12a4c0c7969dce3f24a9998560fedd2a8
+          inputHash: c231ee7cae5e753409ca8837adafda3fdcd4869cd1f5c12ba24ca11e46ba3de0
+          outcomeId: 7edd9ba2-24ec-49c7-9ef8-ffa720861e5b
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: Host 人工审批交互修复：10 项任务完成，两次真实原生审批和独立安装包三仓冷恢复验收通过，Comet 完整 Build/Verify
+              通过（1210 项测试通过、5 项跳过，全部后续校验通过）。提议归档本 Change、推送 origin 当前修复分支、创建指向
+              main 的 PR，CI 通过后合入 main；本次不发布 Release，不推进已停在 Build 的实验 Run。
+            targetBranch: comet/enable-host-mediated-human-decisions
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ec768998e64e2ab9290fd2eaee05926567b10be1f0d22d4e888b7cebe287f8f1
+            outcomeId: 7edd9ba2-24ec-49c7-9ef8-ffa720861e5b
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-97d857b34f44f71e6cdcb15c6be6c927bd9f1dc664d3510b423af380fa35d3e9
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:30
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 0b0e38ce28ec90e3f02c2b4ca0a5aee0aa05009ad4080287c51cf14832404771
+        outcome:
+          actionId: enable-host-mediated-human-decisions:30
+          attempt: 1
+          claimToken: portable-97d857b34f44f71e6cdcb15c6be6c927bd9f1dc664d3510b423af380fa35d3e9
+          inputHash: 0b0e38ce28ec90e3f02c2b4ca0a5aee0aa05009ad4080287c51cf14832404771
+          outcomeId: 47a8b967-21c4-459f-a885-83eaf5574329
+          output:
+            baseCommit: b2df76ca9dcda558adf321601f30575b27c32cdd
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/enable-host-mediated-human-decisions
+            verifiedBranch: comet/enable-host-mediated-human-decisions
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 88deaeb759caaa20a838123859a461202d7d7bee06d7f5bd741a2e23684986a8
+            outcomeId: 47a8b967-21c4-459f-a885-83eaf5574329
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-dd33f40811fd043e5e16080cf43550c27d1d8ba28b4199e71c6d603eca9f290a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: enable-host-mediated-human-decisions:31
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 764c1bbc52fafa3bea9db404aa573fdac02fff1c84dcfa2b37bfc9f988fcb6f2
+        outcome:
+          actionId: enable-host-mediated-human-decisions:31
+          artifacts:
+            - sha256: 5ab818572a2b61b8c6ee08ffef9288951b91771b8b38e289e4b5b4ec7fc875a2
+              uri: openspec/changes/archive/2026-11-11-enable-host-mediated-human-decisions/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-dd33f40811fd043e5e16080cf43550c27d1d8ba28b4199e71c6d603eca9f290a
+          inputHash: 764c1bbc52fafa3bea9db404aa573fdac02fff1c84dcfa2b37bfc9f988fcb6f2
+          outcomeId: f018ac73-13e0-4941-af22-8ddf8ebcd4b7
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-11-enable-host-mediated-human-decisions
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e9776a0dae0719e6c00105fcd77fe24b2a0c6e31d5f215e6df7e93a39ad53c59
+            outcomeId: f018ac73-13e0-4941-af22-8ddf8ebcd4b7
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: enable-host-mediated-human-decisions:32
+        input:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs: {}
+        inputHash: 6c2de484ddde657e269d9a1bf30fcd76b744a4829a31f360dc4cc93c24f3d5bd
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: enable-host-mediated-human-decisions
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      enable-host-mediated-human-decisions:1:
+        results: {}
+        sequence: 1
+      enable-host-mediated-human-decisions:11:
+        results: {}
+        sequence: 11
+      enable-host-mediated-human-decisions:13:
+        results: {}
+        sequence: 13
+      enable-host-mediated-human-decisions:14:
+        results: {}
+        sequence: 14
+      enable-host-mediated-human-decisions:16:
+        results: {}
+        sequence: 16
+      enable-host-mediated-human-decisions:18:
+        results: {}
+        sequence: 18
+      enable-host-mediated-human-decisions:19:
+        results: {}
+        sequence: 19
+      enable-host-mediated-human-decisions:21:
+        results: {}
+        sequence: 21
+      enable-host-mediated-human-decisions:22:
+        results: {}
+        sequence: 22
+      enable-host-mediated-human-decisions:24:
+        results: {}
+        sequence: 24
+      enable-host-mediated-human-decisions:26:
+        results: {}
+        sequence: 26
+      enable-host-mediated-human-decisions:28:
+        results: {}
+        sequence: 28
+      enable-host-mediated-human-decisions:30:
+        results: {}
+        sequence: 30
+      enable-host-mediated-human-decisions:31:
+        results: {}
+        sequence: 31
+      enable-host-mediated-human-decisions:32:
+        results: {}
+        sequence: 32
+      enable-host-mediated-human-decisions:4:
+        results: {}
+        sequence: 4
+      enable-host-mediated-human-decisions:5:
+        results: {}
+        sequence: 5
+      enable-host-mediated-human-decisions:7:
+        results: {}
+        sequence: 7
+      enable-host-mediated-human-decisions:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: enable-host-mediated-human-decisions:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+              ref: openspec/changes/enable-host-mediated-human-decisions
+        proposalHash: 8e1278ceeca9db4199a662fd09d0dc9575afe35d97fa9505b6e1888f8b3be478
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+          choice: approved
+          proposalHash: 8e1278ceeca9db4199a662fd09d0dc9575afe35d97fa9505b6e1888f8b3be478
+      - id: enable-host-mediated-human-decisions:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+              handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+              proposal: 沿已批准的两项 capability 与十项任务，采用固定 Comet 0.5.1 的 Host-mediated 决策方式。新增只读
+                run decision 和 run decide --response-file 显式回传；未指定文件保留原终端
+                TTY。视图提供冻结身份、允许选择、条件输入、响应模板和下一步 argv。Host 取得真实原生或对话答复，CLI
+                记录本机主体及分离的渠道/授权依据，不自称独立证明用户点击；Runtime 复用规划批准、Provider/isolation
+                校验和现有 guarded commit。覆盖 Open、Design、意图修订及 Build Plan 风险决定；保留
+                change/phase 级共享规划批准，查询/提交先证明指定 Run 的请求参与事实，不凭同名 change
+                冒领。原始接受事实和来源保存在既有规划记录或转换 Journal，不新增审批
+                Store、Runtime、SDK、守护进程、Dashboard 写入或 checkpoint
+                迁移；中断先核对原决定，重复提交不重复推进。真实 TDD
+                回归、独立安装包多仓测试及至少一次真实宿主原生问答闭环为验收；模拟不能替代真实 UI。独立 builder check
+                的唯一归属问题已澄清并复核无重要未决。无需 Spec Patch，尚未实施或宣称新测试通过。建议本次开发采用
+                autonomous + TDD + thorough，沿用当前独立 worktree；正式设计及执行配置等待用户确认。
+              requirementsEvidence:
+                contentHash: 9d07b6aa36d981712731a2523cec84589f4b67fedc6689ccce6d438f9c6f611e
+                ref: openspec/changes/enable-host-mediated-human-decisions
+              sourceEvidence:
+                contentHash: 96d0830cefac41dcee428f70948ae58078f73dc22b8b6748a037e7b79c7a9f82
+                ref: openspec/changes/enable-host-mediated-human-decisions
+        proposalHash: 6184424cd927e589b46710a483f3048a98987e5619ef2d422361c7e7d09b4abf
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-6184424cd927e589b46710a483f3048a98987e5619ef2d422361c7e7d09b4abf-approved
+          choice: approved
+          proposalHash: 6184424cd927e589b46710a483f3048a98987e5619ef2d422361c7e7d09b4abf
+      - id: enable-host-mediated-human-decisions:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs:
+            full.build.configure:
+              boundBranch: comet/enable-host-mediated-human-decisions
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: b1dd8343c39e628e710b9e7850f75de1ecac6bd743d018b1a570fe4059047ec9
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 0d23f93d-f891-4a21-a32d-2586ae990d88
+          choice: approved
+          proposalHash: b1dd8343c39e628e710b9e7850f75de1ecac6bd743d018b1a570fe4059047ec9
+      - id: enable-host-mediated-human-decisions:29
+        stepId: full.archive.confirm
+        sequence: 29
+        status: resolved
+        proposal:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: Host 人工审批交互修复：10 项任务完成，两次真实原生审批和独立安装包三仓冷恢复验收通过，Comet 完整 Build/Verify
+                通过（1210 项测试通过、5 项跳过，全部后续校验通过）。提议归档本 Change、推送 origin 当前修复分支、创建指向
+                main 的 PR，CI 通过后合入 main；本次不发布 Release，不推进已停在 Build 的实验 Run。
+              targetBranch: comet/enable-host-mediated-human-decisions
+        proposalHash: 4884e18a735d7e2502305316001311ea7344f9edc25b34e0868e801b5a0fe9cf
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-4884e18a735d7e2502305316001311ea7344f9edc25b34e0868e801b5a0fe9cf-pr
+          choice: pr
+          proposalHash: 4884e18a735d7e2502305316001311ea7344f9edc25b34e0868e801b5a0fe9cf
+    evidenceWaits:
+      - id: enable-host-mediated-human-decisions:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/enable-host-mediated-human-decisions
+          contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+          submissionId: 1f63a6ec-9bb1-40bf-8a43-d5db7045c98a
+      - id: enable-host-mediated-human-decisions:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/enable-host-mediated-human-decisions/design.md
+          contentHash: f8f5cc190127d8eec8337badb22f94059282bed49b565e70edfcd808fc1df93c
+          submissionId: f386de9a-cf1f-4219-b806-740dff529cdc
+      - id: enable-host-mediated-human-decisions:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+          contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+          submissionId: 760e272c-023e-45cc-ac88-bd18f22e68ff
+      - id: enable-host-mediated-human-decisions:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/dab4f770-b31b-4976-81d2-a81d7f854019.log
+          contentHash: 89b10d6ddb8b509bcdc6973c6cd5a5cfde97ba5a5372720eaf5bb84641dc82a4
+          submissionId: 30258bb8-de1d-4a7b-bf37-9c268979d0c6
+      - id: enable-host-mediated-human-decisions:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+          contentHash: fa4981529212572371d8292f4caeb59dac23da5c08e332006028ad2cdb74da0b
+          submissionId: 5053db9d-005d-4bb6-88e2-93df523f5751
+      - id: enable-host-mediated-human-decisions:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+          contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+          submissionId: b2984d40-1f7a-4122-b94f-8d168dcd0ed5
+      - id: enable-host-mediated-human-decisions:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/779dbf78-d54f-45be-843d-4ed4d00ba64e.log
+          contentHash: 9fd276c3f066c02bbdef05dcdbb37a33a0ddf931175b93e0074e5586219964ad
+          submissionId: 40b60fa4-20f8-4116-bf49-5a8a39606da9
+      - id: enable-host-mediated-human-decisions:25
+        stepId: full.verify.report.evidence
+        sequence: 25
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+          contentHash: 0787060a9d7a8de3c1f6c47d97fba670ee662f1e8c2336fa45cb4c2df62f36b6
+          submissionId: 5815cd4b-cedd-435b-b1e1-47d3e966468c
+      - id: enable-host-mediated-human-decisions:27
+        stepId: full.verify.check.evidence
+        sequence: 27
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/c90aab67-fccd-4afa-91eb-32dae4d644ed.log
+          contentHash: f0d4d72725b7435a1f3938bb688bab44cff3024d2c5dbac162ea31e373cc0742
+          submissionId: 89dc4f05-be32-41ab-ab5a-d1c784b09041
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 50
+  sourceHash: 5e5a76c229b336cfbb70de707294d161a9c94b48f16686154974559f2d148813
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+              ref: openspec/changes/enable-host-mediated-human-decisions
+      - contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+        ref: openspec/changes/enable-host-mediated-human-decisions
+      - contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+      - choice: approved
+        proposal:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+              handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+              proposal: 沿已批准的两项 capability 与十项任务，采用固定 Comet 0.5.1 的 Host-mediated 决策方式。新增只读
+                run decision 和 run decide --response-file 显式回传；未指定文件保留原终端
+                TTY。视图提供冻结身份、允许选择、条件输入、响应模板和下一步 argv。Host 取得真实原生或对话答复，CLI
+                记录本机主体及分离的渠道/授权依据，不自称独立证明用户点击；Runtime 复用规划批准、Provider/isolation
+                校验和现有 guarded commit。覆盖 Open、Design、意图修订及 Build Plan 风险决定；保留
+                change/phase 级共享规划批准，查询/提交先证明指定 Run 的请求参与事实，不凭同名 change
+                冒领。原始接受事实和来源保存在既有规划记录或转换 Journal，不新增审批
+                Store、Runtime、SDK、守护进程、Dashboard 写入或 checkpoint
+                迁移；中断先核对原决定，重复提交不重复推进。真实 TDD
+                回归、独立安装包多仓测试及至少一次真实宿主原生问答闭环为验收；模拟不能替代真实 UI。独立 builder check
+                的唯一归属问题已澄清并复核无重要未决。无需 Spec Patch，尚未实施或宣称新测试通过。建议本次开发采用
+                autonomous + TDD + thorough，沿用当前独立 worktree；正式设计及执行配置等待用户确认。
+              requirementsEvidence:
+                contentHash: 9d07b6aa36d981712731a2523cec84589f4b67fedc6689ccce6d438f9c6f611e
+                ref: openspec/changes/enable-host-mediated-human-decisions
+              sourceEvidence:
+                contentHash: 96d0830cefac41dcee428f70948ae58078f73dc22b8b6748a037e7b79c7a9f82
+                ref: openspec/changes/enable-host-mediated-human-decisions
+      - handoffContext: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+        handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+        proposal: 沿已批准的两项 capability 与十项任务，采用固定 Comet 0.5.1 的 Host-mediated 决策方式。新增只读
+          run decision 和 run decide --response-file 显式回传；未指定文件保留原终端
+          TTY。视图提供冻结身份、允许选择、条件输入、响应模板和下一步 argv。Host 取得真实原生或对话答复，CLI
+          记录本机主体及分离的渠道/授权依据，不自称独立证明用户点击；Runtime 复用规划批准、Provider/isolation 校验和现有
+          guarded commit。覆盖 Open、Design、意图修订及 Build Plan 风险决定；保留 change/phase
+          级共享规划批准，查询/提交先证明指定 Run 的请求参与事实，不凭同名 change 冒领。原始接受事实和来源保存在既有规划记录或转换
+          Journal，不新增审批 Store、Runtime、SDK、守护进程、Dashboard 写入或 checkpoint
+          迁移；中断先核对原决定，重复提交不重复推进。真实 TDD 回归、独立安装包多仓测试及至少一次真实宿主原生问答闭环为验收；模拟不能替代真实
+          UI。独立 builder check 的唯一归属问题已澄清并复核无重要未决。无需 Spec
+          Patch，尚未实施或宣称新测试通过。建议本次开发采用 autonomous + TDD + thorough，沿用当前独立
+          worktree；正式设计及执行配置等待用户确认。
+        requirementsEvidence:
+          contentHash: 9d07b6aa36d981712731a2523cec84589f4b67fedc6689ccce6d438f9c6f611e
+          ref: openspec/changes/enable-host-mediated-human-decisions
+        sourceEvidence:
+          contentHash: 96d0830cefac41dcee428f70948ae58078f73dc22b8b6748a037e7b79c7a9f82
+          ref: openspec/changes/enable-host-mediated-human-decisions
+      - designDoc: openspec/changes/enable-host-mediated-human-decisions/design.md
+      - contentHash: f8f5cc190127d8eec8337badb22f94059282bed49b565e70edfcd808fc1df93c
+        ref: openspec/changes/enable-host-mediated-human-decisions/design.md
+      - boundBranch: comet/enable-host-mediated-human-decisions
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs:
+            full.build.configure:
+              boundBranch: comet/enable-host-mediated-human-decisions
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: f8f5cc190127d8eec8337badb22f94059282bed49b565e70edfcd808fc1df93c
+          ref: openspec/changes/enable-host-mediated-human-decisions/design.md
+        plan: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+        planEvidence:
+          contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+          ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+        taskRevision: 6d3384f88693140ee55f9a4ad84400181e0c27bd1163cb8f67d06684003c2eb1
+      - contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+        ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 89b10d6ddb8b509bcdc6973c6cd5a5cfde97ba5a5372720eaf5bb84641dc82a4
+        cwd: .
+        environment: 4fd269b3147c9fc506852725f4d848e45efedc06671c75f3171caacb26df452e
+        exitCode: 0
+        inputAfter: 57a15f754d902abf1077ad51ed61256246cc73d26a3ecd2eeb7446d0b864c3fd
+        inputBefore: 57a15f754d902abf1077ad51ed61256246cc73d26a3ecd2eeb7446d0b864c3fd
+        manifestHash: 201471355cec17e9465122db13eca2ac9bc87c4bd419a3e07527657a12944a77
+        manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/d9cc4549-410b-49eb-b1da-2b3931a957d0.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/dab4f770-b31b-4976-81d2-a81d7f854019.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 89b10d6ddb8b509bcdc6973c6cd5a5cfde97ba5a5372720eaf5bb84641dc82a4
+        ref: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/dab4f770-b31b-4976-81d2-a81d7f854019.log
+      - contentHash: fa4981529212572371d8292f4caeb59dac23da5c08e332006028ad2cdb74da0b
+        ref: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 728b350b1ed886df8a913c7f9d3aa24f670c624efe8977970b88e289740e898b
+        cwd: .
+        deliveryInputs: {}
+        environment: e9b239b4b19ebb92325bf02b2d55e4813aca8a1edd38e0cb33788bd46dbe05cd
+        exitCode: 1
+        inputAfter: f3776341db0c611b45296bc4fb0f1a40263ddd44adcab939fa4f07fc25087eac
+        inputBefore: f3776341db0c611b45296bc4fb0f1a40263ddd44adcab939fa4f07fc25087eac
+        manifestHash: 5c77e213b41545e6c28d884732e6b7577eebaef0883fdedadcc0147451196cbf
+        manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/2ea46d27-b8d7-44fe-a483-04496cab9507.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/cf1305c9-e525-4249-a728-62cbcf557318.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 9fd276c3f066c02bbdef05dcdbb37a33a0ddf931175b93e0074e5586219964ad
+        cwd: .
+        environment: 4fd269b3147c9fc506852725f4d848e45efedc06671c75f3171caacb26df452e
+        exitCode: 0
+        inputAfter: 94eda3a68e7ecfe53df9fa4c6e450cb90acaea25a17dc59c1215f6f42969803d
+        inputBefore: 94eda3a68e7ecfe53df9fa4c6e450cb90acaea25a17dc59c1215f6f42969803d
+        manifestHash: 8b3bd5aa0b1a2df3a829d2b45693d0e4ec39fc3d4062d9bf2fe713fd77859025
+        manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/eab5d4a8-5e46-43a3-b3fd-5813e8fb0877.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/779dbf78-d54f-45be-843d-4ed4d00ba64e.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 9fd276c3f066c02bbdef05dcdbb37a33a0ddf931175b93e0074e5586219964ad
+        ref: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/779dbf78-d54f-45be-843d-4ed4d00ba64e.log
+      - contentHash: 0787060a9d7a8de3c1f6c47d97fba670ee662f1e8c2336fa45cb4c2df62f36b6
+        ref: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: f0d4d72725b7435a1f3938bb688bab44cff3024d2c5dbac162ea31e373cc0742
+        cwd: .
+        deliveryInputs: {}
+        environment: e9b239b4b19ebb92325bf02b2d55e4813aca8a1edd38e0cb33788bd46dbe05cd
+        exitCode: 0
+        inputAfter: c1f4419509c7f773ce1cfaf32f09233cb4f49e5fb19a96ddb1cd69a762b22010
+        inputBefore: c1f4419509c7f773ce1cfaf32f09233cb4f49e5fb19a96ddb1cd69a762b22010
+        manifestHash: 8b3bd5aa0b1a2df3a829d2b45693d0e4ec39fc3d4062d9bf2fe713fd77859025
+        manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/189036cb-806c-4345-9852-f4aec27d5629.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/c90aab67-fccd-4afa-91eb-32dae4d644ed.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: f0d4d72725b7435a1f3938bb688bab44cff3024d2c5dbac162ea31e373cc0742
+        ref: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/c90aab67-fccd-4afa-91eb-32dae4d644ed.log
+      - choice: pr
+        proposal:
+          input:
+            change: enable-host-mediated-human-decisions
+            changeDir: openspec/changes/enable-host-mediated-human-decisions
+            workspaceBaseline:
+              ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: Host 人工审批交互修复：10 项任务完成，两次真实原生审批和独立安装包三仓冷恢复验收通过，Comet 完整 Build/Verify
+                通过（1210 项测试通过、5 项跳过，全部后续校验通过）。提议归档本 Change、推送 origin 当前修复分支、创建指向
+                main 的 PR，CI 通过后合入 main；本次不发布 Release，不推进已停在 Build 的实验 Run。
+              targetBranch: comet/enable-host-mediated-human-decisions
+      - prBaseBranch: main
+        remote: origin
+        summary: Host 人工审批交互修复：10 项任务完成，两次真实原生审批和独立安装包三仓冷恢复验收通过，Comet 完整 Build/Verify
+          通过（1210 项测试通过、5 项跳过，全部后续校验通过）。提议归档本 Change、推送 origin 当前修复分支、创建指向 main
+          的 PR，CI 通过后合入 main；本次不发布 Release，不推进已停在 Build 的实验 Run。
+        targetBranch: comet/enable-host-mediated-human-decisions
+      - baseCommit: b2df76ca9dcda558adf321601f30575b27c32cdd
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: comet/enable-host-mediated-human-decisions
+        verifiedBranch: comet/enable-host-mediated-human-decisions
+      - archiveDirectory: openspec/changes/archive/2026-11-11-enable-host-mediated-human-decisions
+      - sequence: 9
+        value:
+          boundBranch: comet/enable-host-mediated-human-decisions
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: enable-host-mediated-human-decisions
+              changeDir: openspec/changes/enable-host-mediated-human-decisions
+              workspaceBaseline:
+                ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+            outputs:
+              full.build.configure:
+                boundBranch: comet/enable-host-mediated-human-decisions
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: enable-host-mediated-human-decisions
+              changeDir: openspec/changes/enable-host-mediated-human-decisions
+              workspaceBaseline:
+                ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+                handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+                proposal: 沿已批准的两项 capability 与十项任务，采用固定 Comet 0.5.1 的 Host-mediated 决策方式。新增只读
+                  run decision 和 run decide --response-file 显式回传；未指定文件保留原终端
+                  TTY。视图提供冻结身份、允许选择、条件输入、响应模板和下一步 argv。Host 取得真实原生或对话答复，CLI
+                  记录本机主体及分离的渠道/授权依据，不自称独立证明用户点击；Runtime
+                  复用规划批准、Provider/isolation 校验和现有 guarded commit。覆盖
+                  Open、Design、意图修订及 Build Plan 风险决定；保留 change/phase
+                  级共享规划批准，查询/提交先证明指定 Run 的请求参与事实，不凭同名 change
+                  冒领。原始接受事实和来源保存在既有规划记录或转换 Journal，不新增审批
+                  Store、Runtime、SDK、守护进程、Dashboard 写入或 checkpoint
+                  迁移；中断先核对原决定，重复提交不重复推进。真实 TDD
+                  回归、独立安装包多仓测试及至少一次真实宿主原生问答闭环为验收；模拟不能替代真实 UI。独立 builder check
+                  的唯一归属问题已澄清并复核无重要未决。无需 Spec Patch，尚未实施或宣称新测试通过。建议本次开发采用
+                  autonomous + TDD + thorough，沿用当前独立 worktree；正式设计及执行配置等待用户确认。
+                requirementsEvidence:
+                  contentHash: 9d07b6aa36d981712731a2523cec84589f4b67fedc6689ccce6d438f9c6f611e
+                  ref: openspec/changes/enable-host-mediated-human-decisions
+                sourceEvidence:
+                  contentHash: 96d0830cefac41dcee428f70948ae58078f73dc22b8b6748a037e7b79c7a9f82
+                  ref: openspec/changes/enable-host-mediated-human-decisions
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/enable-host-mediated-human-decisions/design.md
+      - sequence: 8
+        value:
+          contentHash: f8f5cc190127d8eec8337badb22f94059282bed49b565e70edfcd808fc1df93c
+          ref: openspec/changes/enable-host-mediated-human-decisions/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/enable-host-mediated-human-decisions/.comet/handoff/design-context.json
+          handoffHash: 41650df1a92d7fa6988bb978e4c7deec51aaab0232f3c51e39af30f4c73c4af8
+          proposal: 沿已批准的两项 capability 与十项任务，采用固定 Comet 0.5.1 的 Host-mediated 决策方式。新增只读
+            run decision 和 run decide --response-file 显式回传；未指定文件保留原终端
+            TTY。视图提供冻结身份、允许选择、条件输入、响应模板和下一步 argv。Host 取得真实原生或对话答复，CLI
+            记录本机主体及分离的渠道/授权依据，不自称独立证明用户点击；Runtime 复用规划批准、Provider/isolation
+            校验和现有 guarded commit。覆盖 Open、Design、意图修订及 Build Plan 风险决定；保留
+            change/phase 级共享规划批准，查询/提交先证明指定 Run 的请求参与事实，不凭同名 change
+            冒领。原始接受事实和来源保存在既有规划记录或转换 Journal，不新增审批
+            Store、Runtime、SDK、守护进程、Dashboard 写入或 checkpoint
+            迁移；中断先核对原决定，重复提交不重复推进。真实 TDD 回归、独立安装包多仓测试及至少一次真实宿主原生问答闭环为验收；模拟不能替代真实
+            UI。独立 builder check 的唯一归属问题已澄清并复核无重要未决。无需 Spec
+            Patch，尚未实施或宣称新测试通过。建议本次开发采用 autonomous + TDD + thorough，沿用当前独立
+            worktree；正式设计及执行配置等待用户确认。
+          requirementsEvidence:
+            contentHash: 9d07b6aa36d981712731a2523cec84589f4b67fedc6689ccce6d438f9c6f611e
+            ref: openspec/changes/enable-host-mediated-human-decisions
+          sourceEvidence:
+            contentHash: 96d0830cefac41dcee428f70948ae58078f73dc22b8b6748a037e7b79c7a9f82
+            ref: openspec/changes/enable-host-mediated-human-decisions
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: enable-host-mediated-human-decisions
+              changeDir: openspec/changes/enable-host-mediated-human-decisions
+              workspaceBaseline:
+                ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+                ref: openspec/changes/enable-host-mediated-human-decisions
+      - sequence: 2
+        value:
+          contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+          ref: openspec/changes/enable-host-mediated-human-decisions
+      - sequence: 4
+        value:
+          contentHash: 9e519b48fbe1e386eee164b5ae576fafa47b6ecc498b5f1d841e7b72a6185e6d
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: f8f5cc190127d8eec8337badb22f94059282bed49b565e70edfcd808fc1df93c
+            ref: openspec/changes/enable-host-mediated-human-decisions/design.md
+          plan: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+          planEvidence:
+            contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+            ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+          taskRevision: 6d3384f88693140ee55f9a4ad84400181e0c27bd1163cb8f67d06684003c2eb1
+      - sequence: 12
+        value:
+          contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+          ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 89b10d6ddb8b509bcdc6973c6cd5a5cfde97ba5a5372720eaf5bb84641dc82a4
+          cwd: .
+          environment: 4fd269b3147c9fc506852725f4d848e45efedc06671c75f3171caacb26df452e
+          exitCode: 0
+          inputAfter: 57a15f754d902abf1077ad51ed61256246cc73d26a3ecd2eeb7446d0b864c3fd
+          inputBefore: 57a15f754d902abf1077ad51ed61256246cc73d26a3ecd2eeb7446d0b864c3fd
+          manifestHash: 201471355cec17e9465122db13eca2ac9bc87c4bd419a3e07527657a12944a77
+          manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/d9cc4549-410b-49eb-b1da-2b3931a957d0.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/dab4f770-b31b-4976-81d2-a81d7f854019.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 89b10d6ddb8b509bcdc6973c6cd5a5cfde97ba5a5372720eaf5bb84641dc82a4
+          ref: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/dab4f770-b31b-4976-81d2-a81d7f854019.log
+      - sequence: 17
+        value:
+          contentHash: fa4981529212572371d8292f4caeb59dac23da5c08e332006028ad2cdb74da0b
+          ref: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 728b350b1ed886df8a913c7f9d3aa24f670c624efe8977970b88e289740e898b
+          cwd: .
+          deliveryInputs: {}
+          environment: e9b239b4b19ebb92325bf02b2d55e4813aca8a1edd38e0cb33788bd46dbe05cd
+          exitCode: 1
+          inputAfter: f3776341db0c611b45296bc4fb0f1a40263ddd44adcab939fa4f07fc25087eac
+          inputBefore: f3776341db0c611b45296bc4fb0f1a40263ddd44adcab939fa4f07fc25087eac
+          manifestHash: 5c77e213b41545e6c28d884732e6b7577eebaef0883fdedadcc0147451196cbf
+          manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/2ea46d27-b8d7-44fe-a483-04496cab9507.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/cf1305c9-e525-4249-a728-62cbcf557318.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: f8f5cc190127d8eec8337badb22f94059282bed49b565e70edfcd808fc1df93c
+            ref: openspec/changes/enable-host-mediated-human-decisions/design.md
+          plan: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+          planEvidence:
+            contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+            ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+          taskRevision: 6d3384f88693140ee55f9a4ad84400181e0c27bd1163cb8f67d06684003c2eb1
+      - sequence: 20
+        value:
+          contentHash: 531d85c1b942340b2f2cd0ef40b9a1a87fd3f22e218e076c8fe0d324ecd2473f
+          ref: docs/superpowers/plans/2026-11-11-host-mediated-human-decisions.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 9fd276c3f066c02bbdef05dcdbb37a33a0ddf931175b93e0074e5586219964ad
+          cwd: .
+          environment: 4fd269b3147c9fc506852725f4d848e45efedc06671c75f3171caacb26df452e
+          exitCode: 0
+          inputAfter: 94eda3a68e7ecfe53df9fa4c6e450cb90acaea25a17dc59c1215f6f42969803d
+          inputBefore: 94eda3a68e7ecfe53df9fa4c6e450cb90acaea25a17dc59c1215f6f42969803d
+          manifestHash: 8b3bd5aa0b1a2df3a829d2b45693d0e4ec39fc3d4062d9bf2fe713fd77859025
+          manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/eab5d4a8-5e46-43a3-b3fd-5813e8fb0877.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/779dbf78-d54f-45be-843d-4ed4d00ba64e.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 23
+        value:
+          contentHash: 9fd276c3f066c02bbdef05dcdbb37a33a0ddf931175b93e0074e5586219964ad
+          ref: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/779dbf78-d54f-45be-843d-4ed4d00ba64e.log
+      - sequence: 25
+        value:
+          contentHash: 0787060a9d7a8de3c1f6c47d97fba670ee662f1e8c2336fa45cb4c2df62f36b6
+          ref: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+      - sequence: 24
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/enable-host-mediated-human-decisions.md
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: f0d4d72725b7435a1f3938bb688bab44cff3024d2c5dbac162ea31e373cc0742
+          cwd: .
+          deliveryInputs: {}
+          environment: e9b239b4b19ebb92325bf02b2d55e4813aca8a1edd38e0cb33788bd46dbe05cd
+          exitCode: 0
+          inputAfter: c1f4419509c7f773ce1cfaf32f09233cb4f49e5fb19a96ddb1cd69a762b22010
+          inputBefore: c1f4419509c7f773ce1cfaf32f09233cb4f49e5fb19a96ddb1cd69a762b22010
+          manifestHash: 8b3bd5aa0b1a2df3a829d2b45693d0e4ec39fc3d4062d9bf2fe713fd77859025
+          manifestRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/189036cb-806c-4345-9852-f4aec27d5629.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/c90aab67-fccd-4afa-91eb-32dae4d644ed.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 27
+        value:
+          contentHash: f0d4d72725b7435a1f3938bb688bab44cff3024d2c5dbac162ea31e373cc0742
+          ref: .comet/runtime/classic-sdk-checks/eba628d5b83bdd8616fa7b48f6c9410b71af96c4987f679cbf1aa7550c89f036/c90aab67-fccd-4afa-91eb-32dae4d644ed.log
+      - sequence: 29
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: enable-host-mediated-human-decisions
+              changeDir: openspec/changes/enable-host-mediated-human-decisions
+              workspaceBaseline:
+                ref: c91be411-6e29-4b61-8c20-6a9e501bc3fb
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: Host 人工审批交互修复：10 项任务完成，两次真实原生审批和独立安装包三仓冷恢复验收通过，Comet 完整 Build/Verify
+                  通过（1210 项测试通过、5 项跳过，全部后续校验通过）。提议归档本 Change、推送 origin
+                  当前修复分支、创建指向 main 的 PR，CI 通过后合入 main；本次不发布 Release，不推进已停在 Build
+                  的实验 Run。
+                targetBranch: comet/enable-host-mediated-human-decisions
+      - sequence: 28
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: Host 人工审批交互修复：10 项任务完成，两次真实原生审批和独立安装包三仓冷恢复验收通过，Comet 完整 Build/Verify
+            通过（1210 项测试通过、5 项跳过，全部后续校验通过）。提议归档本 Change、推送 origin 当前修复分支、创建指向
+            main 的 PR，CI 通过后合入 main；本次不发布 Release，不推进已停在 Build 的实验 Run。
+          targetBranch: comet/enable-host-mediated-human-decisions
+      - sequence: 30
+        value:
+          baseCommit: b2df76ca9dcda558adf321601f30575b27c32cdd
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/enable-host-mediated-human-decisions
+          verifiedBranch: comet/enable-host-mediated-human-decisions
+      - sequence: 31
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-11-enable-host-mediated-human-decisions
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.verify.report.evidence
+        value: 20
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 54
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 55
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 56
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 59
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 21
+        left: 58
+        right: 60
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 61
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 62
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 24
+        left: 64
+        right: 65
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 19
+        left: 66
+        right: 67
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 68
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 69
+        right: 62
+        height: 5
+      - key: full.archive.preflight
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: 71
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 72
+        right: 65
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 67
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 73
+        right: 74
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 75
+        right: 62
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 26
+        left: 77
+        right: 78
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 79
+        right: 65
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 80
+        right: 74
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 81
+        right: 62
+        height: 5
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 84
+        height: 2
+      - key: full.design.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 86
+        right: 87
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: 89
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 90
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 85
+        right: 91
+        height: 4
+      - key: full.build.plan
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 38
+        left: 93
+        right: 94
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 95
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 96
+        right: 91
+        height: 4
+      - key: full.build.execute
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 98
+        height: 2
+      - key: full.build.plan.evidence
+        value: 38
+        left: null
+        right: 94
+        height: 2
+      - key: full.build.plan
+        value: 37
+        left: 99
+        right: 100
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 101
+        right: 91
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 103
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 105
+        right: 98
+        height: 3
+      - key: full.build.plan
+        value: 37
+        left: 106
+        right: 100
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 91
+        height: 5
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 42
+        left: null
+        right: 110
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 111
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 112
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 113
+        height: 5
+      - key: full.verify.check
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 42
+        left: 115
+        right: 110
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 116
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 118
+        height: 5
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: 94
+        height: 2
+      - key: full.build.plan
+        value: 45
+        left: 106
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 121
+        right: 118
+        height: 5
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 105
+        right: 123
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 124
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 125
+        right: 118
+        height: 5
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: 127
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 128
+        right: 123
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 129
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 118
+        height: 5
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 115
+        right: 132
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 134
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 135
+        height: 5
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 138
+        right: 132
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 137
+        right: 139
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 140
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 141
+        height: 5
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 55
+        left: 143
+        right: 144
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 104
+        right: 123
+        height: 2
+      - key: full.build.check.evidence
+        value: 49
+        left: 145
+        right: 146
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 147
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 148
+        right: 141
+        height: 5
+      - key: full.archive.preflight
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: 150
+        height: 2
+      - key: full.archive.prepare
+        value: 55
+        left: 151
+        right: 144
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 146
+        right: 120
+        height: 3
+      - key: full.build.check.evidence
+        value: 49
+        left: 152
+        right: 153
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 154
+        right: 141
+        height: 5
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 57
+        left: 156
+        right: 157
+        height: 2
+      - key: full.archive.prepare
+        value: 55
+        left: 158
+        right: 144
+        height: 3
+      - key: full.build.check.evidence
+        value: 49
+        left: 159
+        right: 153
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 160
+        right: 141
+        height: 5
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 34
+        left: 162
+        right: 163
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: 165
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 162
+        right: 166
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 168
+        right: 169
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 170
+        right: 166
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: 172
+        right: 173
+        height: 2
+      - key: full.design.handoff
+        value: 32
+        left: 174
+        right: 169
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 175
+        right: 166
+        height: 4
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: 177
+        height: 2
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 180
+        right: 181
+        height: 2
+      - key: full.open
+        value: 33
+        left: 179
+        right: 182
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: 185
+        right: 186
+        height: 2
+      - key: full.design.confirm
+        value: 29
+        left: 184
+        right: 187
+        height: 3
+      - key: full.open
+        value: 33
+        left: 188
+        right: 182
+        height: 4
+      - key: full.archive.prepare
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 48
+        left: 190
+        right: 191
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: null
+        right: 194
+        height: 2
+      - key: full.build.execute
+        value: 47
+        left: 193
+        right: 195
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: 192
+        right: 196
+        height: 4
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 180
+        right: 198
+        height: 2
+      - key: full.verify.check.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 200
+        right: 201
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 199
+        right: 202
+        height: 3
+      - key: full.open
+        value: 33
+        left: 187
+        right: 203
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 197
+        right: 204
+        height: 5
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: 207
+        right: 208
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 211
+        height: 2
+      - key: full.open
+        value: 33
+        left: 209
+        right: 212
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 214
+        right: 215
+        height: 2
+      - key: full.design.document
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: 217
+        right: 218
+        height: 2
+      - key: full.design.confirm
+        value: 29
+        left: 216
+        right: 219
+        height: 3
+      - key: full.open
+        value: 33
+        left: 220
+        right: 212
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: 222
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 37
+        left: 224
+        right: 225
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 223
+        right: 226
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 212
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: 227
+        right: 228
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 230
+        right: 231
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 232
+        right: 226
+        height: 3
+      - key: full.verify.run
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: 234
+        height: 2
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 235
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 236
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 233
+        right: 237
+        height: 5
+      - key: full.build.plan
+        value: 45
+        left: 224
+        right: 225
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 232
+        right: 239
+        height: 3
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 241
+        height: 2
+      - key: full.verify.report.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 43
+        left: 243
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 44
+        left: 242
+        right: 244
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 245
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 240
+        right: 246
+        height: 5
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 248
+        right: 231
+        height: 2
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: 250
+        right: 251
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 249
+        right: 252
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: 253
+        right: 246
+        height: 5
+      - key: full.build.check.evidence
+        value: 49
+        left: 248
+        right: 231
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 255
+        right: 252
+        height: 3
+      - key: full.verify.run
+        value: 51
+        left: 243
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 44
+        left: 242
+        right: 257
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 258
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 256
+        right: 259
+        height: 5
+      - key: full.verify.report.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: 261
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 242
+        right: 262
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 263
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 256
+        right: 264
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 57
+      - 63
+      - 70
+      - 76
+      - 82
+      - 92
+      - 97
+      - 102
+      - 108
+      - 114
+      - 119
+      - 122
+      - 126
+      - 131
+      - 136
+      - 142
+      - 149
+      - 155
+      - 161
+      - 164
+      - 167
+      - 171
+      - 176
+      - 178
+      - 183
+      - 189
+      - 205
+      - 206
+      - 213
+      - 221
+      - 229
+      - 238
+      - 247
+      - 254
+      - 260
+      - 265
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:11
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:13
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:14
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:16
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:18
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:19
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:21
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:22
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:24
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:26
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:28
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:30
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:31
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:32
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:4
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:5
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:7
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - enable-host-mediated-human-decisions:9
+          - results
+        map: 34
+      - path:
+          - outputs
+        map: 30
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 35
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 36
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 37
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 38
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 39
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 40
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 41
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 42
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 43
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 44
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 45
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 46
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 47
+  storageHash: 27c71499c2a16b9eb7f5fa5e06d5297cf880d538855d11c9604f7465a0f30fc8
+check_epoch: 8

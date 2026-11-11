@@ -18,6 +18,59 @@ import {
 import { compositionFixture, projectFixture, workflowFixture } from './helpers/fixtures.js';
 
 describe('telemetry mapping', () => {
+  it('keeps Host decision bodies and private provenance out of OTLP attributes and metric labels', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-human-decision',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-11-11T00:00:00.000Z',
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 2,
+      eventId: 'human-decision-accepted',
+      timestamp: '2026-11-11T00:00:01.000Z',
+      type: 'change.lifecycle.transitioned',
+      runId: run.runId,
+      stateVersion: 1,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        observationKind: 'build-plan-decision',
+        observation: {
+          kind: 'build-plan-decision',
+          requestId: 'private-request',
+          actorId: 'private-operator',
+          comment: 'private-user-text',
+          humanDecision: {
+            decision: 'approve',
+            actorId: 'private-operator',
+            source: 'cli',
+            interaction: {
+              channel: 'native',
+              authorization: 'user-response',
+              reference: 'private-answer-reference',
+              referenceDigest: `sha256:${'a'.repeat(64)}`,
+            },
+          },
+        },
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+    const attributes = JSON.stringify(safeEventAttributes(batch, event));
+    expect(attributes).not.toMatch(/private-|referenceDigest|user-text/);
+    expect(JSON.stringify(workflowEventMetricAttributes(batch, event))).not.toMatch(
+      /private-|sha256:|humanDecision|authorization|reference/,
+    );
+  });
   it('projects bounded recovery dimensions without leaking decision identity into metrics', () => {
     const workflow = workflowFixture();
     const project = projectFixture();

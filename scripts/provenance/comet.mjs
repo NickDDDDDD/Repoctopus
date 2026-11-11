@@ -1,4 +1,7 @@
 const REQUIRED_REFERENCES = new Map([
+  ['host-design-decision', 'domains/comet-classic/classic-sdk-design.ts'],
+  ['host-build-decision', 'domains/comet-classic/classic-sdk-build.ts'],
+  ['host-archive-decision', 'domains/comet-classic/classic-sdk-archive-decision.ts'],
   ['revision-readiness', 'domains/comet-classic/classic-sdk-revision-readiness.ts'],
   ['revision-command', 'domains/comet-classic/classic-sdk-revision.ts'],
   ['revision-application', 'domains/comet-classic/classic-sdk-revision-application.ts'],

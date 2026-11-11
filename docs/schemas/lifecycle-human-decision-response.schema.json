@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repoctopus.dev/schemas/lifecycle-human-decision-response.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "runId",
+    "phase",
+    "decisionKind",
+    "requestId",
+    "proposalHash",
+    "decision",
+    "interaction"
+  ],
+  "properties": {
+    "apiVersion": { "const": "repoctopus/v1alpha1" },
+    "kind": { "const": "LifecycleHumanDecisionResponse" },
+    "runId": { "type": "string", "minLength": 1, "maxLength": 512, "pattern": "\\S" },
+    "phase": { "enum": ["open", "design", "build"] },
+    "decisionKind": {
+      "enum": [
+        "specification-open",
+        "specification-design",
+        "workspace-intent-revision",
+        "build-plan-risk"
+      ]
+    },
+    "requestId": { "type": "string", "minLength": 1, "maxLength": 512, "pattern": "\\S" },
+    "proposalHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "decision": { "enum": ["approve", "revise", "reject"] },
+    "isolation": { "enum": ["current", "branch", "worktree"] },
+    "comment": { "type": "string", "maxLength": 4096 },
+    "interaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["channel", "authorization", "reference"],
+      "properties": {
+        "channel": { "enum": ["native", "conversation"] },
+        "authorization": { "enum": ["user-response", "delegated"] },
+        "reference": { "type": "string", "minLength": 1, "maxLength": 512, "pattern": "\\S" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decisionKind": { "enum": ["specification-open", "workspace-intent-revision"] }
+        }
+      },
+      "then": { "properties": { "phase": { "const": "open" } } }
+    },
+    {
+      "if": { "properties": { "decisionKind": { "const": "specification-design" } } },
+      "then": { "properties": { "phase": { "const": "design" } } }
+    },
+    {
+      "if": { "properties": { "decisionKind": { "const": "build-plan-risk" } } },
+      "then": { "properties": { "phase": { "const": "build" } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": { "const": "approve" },
+          "decisionKind": { "enum": ["specification-open", "workspace-intent-revision"] }
+        }
+      },
+      "then": { "required": ["isolation"] },
+      "else": { "not": { "required": ["isolation"] } }
+    }
+  ]
+}

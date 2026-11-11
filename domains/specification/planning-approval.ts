@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import type { HumanDecisionInteraction } from '../change-lifecycle/human-decision.js';
+import type { ExecutionIsolation } from '../change-lifecycle/build-protocol.js';
 
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { createRuntimeIdentity } from '../runtime/identity.js';
@@ -527,6 +529,7 @@ export function requestSpecificationApproval(input: {
               semanticDigest: current.snapshot.digest,
               status: 'superseded' as const,
               supersededAt: input.timestamp,
+              decision: structuredClone(current.decision),
             },
           ]
         : []),
@@ -540,6 +543,9 @@ export function recordSpecificationApprovalDecision(input: {
   response: SpecificationApprovalDecisionResponse;
   actor: SpecificationApprovalActor;
   timestamp: string;
+  recordedViaRunId?: string;
+  isolation?: ExecutionIsolation;
+  interaction?: HumanDecisionInteraction;
 }): SpecificationApprovalState {
   if (!input.actor.authenticated || !input.actor.actorId.trim()) {
     throw new Error('Specification approval decision is not trusted');
@@ -582,6 +588,9 @@ export function recordSpecificationApprovalDecision(input: {
     actorId: input.actor.actorId,
     source: input.actor.source,
     decidedAt: input.timestamp,
+    ...(input.recordedViaRunId ? { recordedViaRunId: input.recordedViaRunId } : {}),
+    ...(input.isolation ? { isolation: input.isolation } : {}),
+    ...(input.interaction ? { interaction: structuredClone(input.interaction) } : {}),
     ...(response.comment ? { comment: response.comment } : {}),
   };
   const decision: SpecificationApprovalRecord = {

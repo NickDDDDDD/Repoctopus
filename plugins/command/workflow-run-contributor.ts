@@ -1,4 +1,5 @@
 import type { Context, Plugin } from '@deepseek-ai/cordis';
+import type { ReadLifecycleDecisionInput } from '../../services/lifecycle-human-decisions.js';
 
 import type { ActionOutcome } from '../../domains/engine/types.js';
 import type { WorkClaimRequest } from '../../domains/action/types.js';
@@ -70,6 +71,19 @@ const plugin = ((context: Context) => {
         name: 'run.change.start',
         execute: ({ input, signal }) =>
           context.workflowRuns.startChange(input as StartChangeRunInput, signal),
+      }),
+      context.commandRouter.register({
+        name: 'run.decision',
+        execute: ({ input, signal }) =>
+          context.workflowRuns.readHumanDecision(input as ReadLifecycleDecisionInput, signal),
+      }),
+      context.commandRouter.register({
+        name: 'run.decision.submit',
+        execute: ({ input, signal }) =>
+          context.workflowRuns.submitHumanDecision(
+            input as Parameters<typeof context.workflowRuns.submitHumanDecision>[0],
+            signal,
+          ),
       }),
       context.commandRouter.register({
         name: 'run.change.decide',

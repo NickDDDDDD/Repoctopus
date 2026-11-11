@@ -66,9 +66,23 @@ function state(input: {
     runId: 'run-recovery',
     status: input.runStatus ?? 'running',
     changeLifecycle: {
+      ...createChangeLifecycleSnapshot({
+        identity: { runId: 'run-recovery', workspaceId: 'team', changeId: 'recovery' },
+      }),
+      phase: 'build',
       currentWork: input.currentWork === false ? null : { workId: 'build:1.1' },
       checkEpoch: 4,
-      waitCondition: input.humanDecision ? { kind: 'human-decision' } : null,
+      waitCondition: input.humanDecision
+        ? {
+            schemaVersion: 1,
+            kind: 'human-decision',
+            waitId: 'build-plan:recovery-request',
+            requestId: 'recovery-request',
+            proposalDigest: digest('a'),
+            inputDigest: digest('a'),
+            reason: 'Review Build Plan',
+          }
+        : null,
     },
     ...(input.execution ? { workExecution: input.execution } : {}),
   } as unknown as RunState;
@@ -715,7 +729,13 @@ describe('Work execution recovery classification', () => {
     ).resolves.toMatchObject({ continuation: 'execute', reason: 'validator-pending' });
     await expect(
       recoveryAuthority(state({ humanDecision: true })).recovery('run-recovery'),
-    ).resolves.toMatchObject({ continuation: 'ask', reason: 'human-decision' });
+    ).resolves.toMatchObject({
+      continuation: 'ask',
+      reason: 'human-decision',
+      humanDecision: {
+        readArgv: ['repoctopus', 'run', 'decision', '--run', 'run-recovery', '--json'],
+      },
+    });
     await expect(
       recoveryAuthority(state({ execution: checkpoint('claimed') }), { corrupt: true }).recovery(
         'run-recovery',

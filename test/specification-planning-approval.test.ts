@@ -495,9 +495,53 @@ describe('specification planning approval', () => {
         semanticDigest: first.snapshot.digest,
         status: 'superseded',
         supersededAt: '2026-10-24T00:02:00.000Z',
+        decision: null,
       },
     ]);
     expect(() => assertSpecificationApprovalState(next)).not.toThrow();
+  });
+
+  it('retains the original accepted decision and Host provenance when planning is superseded', () => {
+    const waiting = requestSpecificationApproval({
+      current: null,
+      snapshot: createPlanningSnapshot(planningInput()),
+      decisionRunId: 'run-original',
+      timestamp: '2026-10-24T00:00:00.000Z',
+    });
+    const approved = recordSpecificationApprovalDecision({
+      state: waiting,
+      response: {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: waiting.decisionRequest.requestId,
+        proposalHash: waiting.decisionRequest.proposalHash,
+        decision: 'approve',
+      },
+      actor: { actorId: 'trusted-user', source: 'cli', authenticated: true },
+      recordedViaRunId: 'run-original',
+      interaction: {
+        channel: 'native',
+        authorization: 'user-response',
+        referenceDigest: digest('f'),
+      },
+      timestamp: '2026-10-24T00:01:00.000Z',
+    });
+    const changed = planningInput();
+    changed.change.artifacts.find((artifact) => artifact.kind === 'design')!.digest = digest('e');
+    const superseded = requestSpecificationApproval({
+      current: approved,
+      snapshot: createPlanningSnapshot(changed),
+      decisionRunId: 'run-new',
+      timestamp: '2026-10-24T00:02:00.000Z',
+    });
+    expect(superseded.decision).toBeNull();
+    expect(superseded.decisionHistory?.[0]?.decision).toEqual(approved.decision);
+    expect(superseded.decisionHistory?.[0]?.decision).toMatchObject({
+      recordedViaRunId: 'run-original',
+      decision: 'approve',
+      interaction: { channel: 'native', referenceDigest: digest('f') },
+    });
+    expect(() => assertSpecificationApprovalState(superseded)).not.toThrow();
   });
 
   it.each([

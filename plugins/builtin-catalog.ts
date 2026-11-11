@@ -1248,6 +1248,7 @@ const definitions: readonly BuiltinDefinition[] = [
     plugin: WorkflowRuns,
     sourceFiles: [
       'services/build-work-outcome-acceptance.ts',
+      'services/lifecycle-human-decisions.ts',
       'services/workflow-runs.ts',
       'domains/work-execution/acceptance.ts',
       'services/operation-ownership.ts',
@@ -1256,6 +1257,7 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/runtime/evidence-guard.ts',
       'domains/change-lifecycle/definition.ts',
       'domains/change-lifecycle/host-workflow.ts',
+      'domains/change-lifecycle/human-decision.ts',
       'domains/change-lifecycle/transition.ts',
       'domains/change-lifecycle/build-protocol.ts',
       'domains/change-lifecycle/archive-input.ts',
