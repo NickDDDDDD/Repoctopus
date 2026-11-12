@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { bootProjectComposition } from '../app/boot/bootstrap.js';
 import { compositionIdentity } from '../app/boot/composition.js';
+import { parseSharedProjectConfig } from '../domains/project-configuration/config.js';
 import { createProjectSnapshot, reconcileProjectSnapshots } from '../domains/project/snapshot.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
@@ -291,7 +292,9 @@ describe('managed Change execution production composition', () => {
         }),
       );
       const configFile = path.join(workspace, 'repoctopus.yaml');
-      const configuredProject = JSON.parse(await readFile(configFile, 'utf8'));
+      const configuredProject = parseSharedProjectConfig(
+        JSON.parse(await readFile(configFile, 'utf8')),
+      );
       const deferredProfile = configuredProject.profiles[0];
       if (deferredVerify) {
         await writeFile(configFile, JSON.stringify({ ...configuredProject, profiles: [] }));

@@ -12,6 +12,7 @@ import path from 'node:path';
 import { parse } from 'yaml';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { parseSharedProjectConfig } from '../../domains/project-configuration/config.js';
 import type { ProjectDetectionDraft } from '../../domains/project-configuration/detection.js';
 import type { ProjectConfigurationDecisionRequest } from '../../domains/project-configuration/onboarding.js';
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
@@ -118,7 +119,7 @@ describe('documented project onboarding flow', () => {
       profileFile,
     );
     const configFile = path.join(workspace, 'repoctopus.yaml');
-    const before = parse(await readFile(configFile, 'utf8'));
+    const before = parseSharedProjectConfig(parse(await readFile(configFile, 'utf8')));
     expect(before.profiles).toEqual([]);
     expect(configured.result?.request.candidateConfig).toEqual({
       ...before,
@@ -143,7 +144,10 @@ describe('documented project onboarding flow', () => {
       '--response-file',
       responseFile,
     );
-    expect(parse(await readFile(configFile, 'utf8'))).toEqual({ ...before, profiles: [candidate] });
+    expect(parseSharedProjectConfig(parse(await readFile(configFile, 'utf8')))).toEqual({
+      ...before,
+      profiles: [candidate],
+    });
   });
   it('prepares and rejects the same minimal Init request through the public Host CLI', async () => {
     const root = await temporaryDirectory('repoctopus init host ');
