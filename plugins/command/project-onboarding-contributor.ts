@@ -13,10 +13,22 @@ const plugin = ((context: Context) => {
           context.projectOnboarding.detect(input as DetectProjectConfigurationInput),
       }),
       context.commandRouter.register({
+        name: 'project.init',
+        execute: ({ input }) =>
+          context.projectOnboarding.init(input as DetectProjectConfigurationInput),
+      }),
+      context.commandRouter.register({
         name: 'project.prepare',
         execute: ({ input }) =>
           context.projectOnboarding.prepare(
             input as { workspace: string; draftFile: string; completedCandidate: unknown },
+          ),
+      }),
+      context.commandRouter.register({
+        name: 'project.configure-verify',
+        execute: ({ input }) =>
+          context.projectOnboarding.configureVerify(
+            input as { workspace: string; profile: unknown; runId?: string },
           ),
       }),
       context.commandRouter.register({

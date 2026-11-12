@@ -22,6 +22,11 @@ export function classifyBuildWorkspaceRecovery(input: {
   observed: ExecutionWorkspaceBinding | null;
   observationError?: string;
   planningPublication?: { repositoryId: string; snapshotDigest: string };
+  verificationConfigPublication?: {
+    repositoryId: string;
+    observedHead: string;
+    decisionDigest: string;
+  };
 }): BuildWorkspaceRecovery {
   const lifecycle = input.state.changeLifecycle!;
   const protocol = lifecycle.buildProtocol!;
@@ -90,6 +95,11 @@ export function classifyBuildWorkspaceRecovery(input: {
           work?.kind === 'build.plan' &&
           input.planningPublication?.repositoryId === repository.repositoryId
         ) &&
+        !(
+          protocol.status === 'ready-for-verify' &&
+          input.verificationConfigPublication?.repositoryId === repository.repositoryId &&
+          input.verificationConfigPublication.observedHead === repository.head
+        ) &&
         !activePackage?.writeScopes.some((scope) => scope.repositoryId === repository.repositoryId)
       ) {
         conflicts.push(`unaccepted-head:${repository.repositoryId}`);
@@ -110,6 +120,7 @@ export function classifyBuildWorkspaceRecovery(input: {
           snapshotDigest: input.current.digest,
           observedDigest: observed?.stateDigest ?? null,
           planningPublication: input.planningPublication ?? null,
+          verificationConfigPublication: input.verificationConfigPublication ?? null,
           conflicts,
         }),
       )

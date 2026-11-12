@@ -3,7 +3,7 @@ export interface ParsedArguments {
   flags: Map<string, string | true>;
 }
 
-const BOOLEAN_FLAGS = new Set(['help', 'json', 'version']);
+const BOOLEAN_FLAGS = new Set(['help', 'json', 'version', 'preview']);
 
 export function parseArguments(argv: readonly string[]): ParsedArguments {
   const command: string[] = [];

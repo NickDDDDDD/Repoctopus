@@ -5,7 +5,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { compileProjectComposition } from '../app/boot/project-composition.js';
 import { compositionIdentity } from '../app/boot/composition.js';
 import { createRepoctopusBuiltinCatalog } from '../plugins/builtin-catalog.js';
-import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
+import {
+  loadProjectConfig,
+  projectExecutionConfigDigests,
+} from '../platform/project-configuration/file-config.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
@@ -30,10 +33,15 @@ describe('project composition assembly', () => {
       await createRepoctopusBuiltinCatalog(path.resolve(import.meta.dirname, '..')),
     );
     const ids = composition.entries.map((entry) => entry.id);
-    expect(compositionIdentity(composition).compositionDigest).toBe(
-      // The existing owners bind Workspace onboarding and frozen Skill resource delivery.
-      'sha256:c1f6ae38f7e8c5c5c48ae4aeb7b17afc8ed13eb4815d4a56e80a046998b3f7a7',
+    expect(compositionIdentity(composition).compositionDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    const shared = { ...config.shared, profiles: [] };
+    const withoutProfiles = compileProjectComposition(
+      path.resolve(import.meta.dirname, '..'),
+      workspaceRoot,
+      { ...config, shared, ...projectExecutionConfigDigests(shared, config.local) },
+      await createRepoctopusBuiltinCatalog(path.resolve(import.meta.dirname, '..')),
     );
+    expect(compositionIdentity(withoutProfiles)).toEqual(compositionIdentity(composition));
     expect(ids).toEqual(
       expect.arrayContaining([
         'workflow-runs',

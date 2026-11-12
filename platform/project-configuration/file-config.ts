@@ -25,6 +25,21 @@ async function optionalYaml(file: string): Promise<unknown> {
   }
 }
 
+export function projectExecutionConfigDigests(
+  shared: EffectiveProjectConfig['shared'],
+  local: LocalProjectConfig | null,
+) {
+  // Collector routing is a deployment setting and does not change Run or Evidence inputs.
+  const executionConfig = { ...shared };
+  delete executionConfig.telemetry;
+  const sharedDigest = hashProjectConfig(executionConfig);
+  const localDigest = local ? hashProjectConfig(local) : null;
+  const effectiveDigest = createHash('sha256')
+    .update(canonicalJson({ sharedDigest, localDigest }))
+    .digest('hex');
+  return { sharedDigest, localDigest, effectiveDigest };
+}
+
 export async function loadProjectConfig(workspace: string): Promise<EffectiveProjectConfig> {
   const sharedFile = path.join(workspace, 'repoctopus.yaml');
   const localFile = path.join(workspace, '.repoctopus', 'local.yaml');
@@ -45,14 +60,6 @@ export async function loadProjectConfig(workspace: string): Promise<EffectivePro
       throw new Error('Local config cannot override the Workspace Repository path');
     }
   }
-  // Collector routing is a deployment setting and does not change Run or Evidence inputs.
-  const executionConfig = { ...shared };
-  delete executionConfig.telemetry;
-  const sharedDigest = hashProjectConfig(executionConfig);
-  const localDigest = local ? hashProjectConfig(local) : null;
-  const effectiveDigest = createHash('sha256')
-    .update(canonicalJson({ sharedDigest, localDigest }))
-    .digest('hex');
   return {
     shared,
     local,
@@ -64,8 +71,6 @@ export async function loadProjectConfig(workspace: string): Promise<EffectivePro
         local?.repositoryPaths?.[repository.id],
       ),
     })),
-    sharedDigest,
-    localDigest,
-    effectiveDigest,
+    ...projectExecutionConfigDigests(shared, local),
   };
 }

@@ -10,7 +10,10 @@ import type {
   OpenSpecStoreBindingProposal,
 } from './detection.js';
 import { reconcileProjectConfig } from './reconcile.js';
-import type { SharedProjectConfig } from './types.js';
+import type { EffectiveProjectConfig, SharedProjectConfig } from './types.js';
+import { compileEvidenceProfile } from '../feedback/profile.js';
+import { resolveAcceptanceCoverage } from '../change-lifecycle/acceptance-coverage.js';
+import type { SpecificationTask } from '../specification/types.js';
 
 export type ProjectConfigurationDecision = 'approve' | 'request_changes' | 'reject';
 
@@ -28,6 +31,7 @@ export interface ProjectConfigurationDecisionRequest {
   unresolved: DetectionUnresolvedItem[];
   storeBinding: OpenSpecStoreBindingProposal | null;
   entrySkills?: WorkspaceEntrySkillPlan[];
+  profileUpdate?: { workspaceRoot: string; profileId: string };
   options: ProjectConfigurationDecision[];
 }
 
@@ -67,16 +71,18 @@ function projectConfigurationSnapshotDigest(input: {
   unresolved: DetectionUnresolvedItem[];
   storeBinding: OpenSpecStoreBindingProposal | null;
   entrySkills?: WorkspaceEntrySkillPlan[];
+  profileUpdate?: { workspaceRoot: string; profileId: string };
 }): string {
   return `sha256:${createHash('sha256').update(canonicalJson(input)).digest('hex')}`;
 }
 
-function assertDefaultVerifyProfileReady(candidate: SharedProjectConfig): void {
-  const profile = candidate.profiles.find((item) => item.id === 'verify');
+function assertVerifyProfileReady(candidate: SharedProjectConfig, profileId: string): void {
+  const profile = candidate.profiles.find((item) => item.id === profileId);
+  if (!profile) return;
   const hasRequiredCoverage = profile?.nodes.some(
     (node) => node.required && (node.covers?.length ?? 0) > 0,
   );
-  if (!profile || !hasRequiredCoverage) {
+  if (!hasRequiredCoverage) {
     throw new Error(
       'Default verify Profile requires at least one required coverage selector before approval',
     );
@@ -89,26 +95,35 @@ export function createProjectConfigurationDecision(input: {
   currentConfig: SharedProjectConfig | null;
   requestId?: string;
 }): ProjectConfigurationDecisionRequest {
+  if ((input.completedCandidate as { kind?: unknown } | null)?.kind === 'ProjectDetectionDraft') {
+    throw new Error(
+      'Candidate must be a RepoctopusWorkspace configuration. Use candidateConfig from the detection draft, or use project init.',
+    );
+  }
   const candidateConfig = parseSharedProjectConfig(input.completedCandidate);
-  assertDefaultVerifyProfileReady(candidateConfig);
-  if (input.draft.storeBinding) {
-    if (
-      !['registered-exact', 'healthy-unregistered', 'missing-root'].includes(
-        input.draft.storeBinding.root.disposition,
-      )
-    ) {
-      throw new Error(
-        `OpenSpec Root blocks project configuration approval: ${input.draft.storeBinding.root.diagnosticCode ?? input.draft.storeBinding.root.disposition}`,
-      );
-    }
-    const configured = candidateConfig.specificationProvider?.store;
-    if (
-      !configured ||
-      configured.id !== input.draft.storeBinding.storeId ||
-      configured.repositoryId !== input.draft.storeBinding.workspaceRepositoryId
-    ) {
-      throw new Error('Candidate Specification Store does not match the detected binding proposal');
-    }
+  assertVerifyProfileReady(candidateConfig, 'verify');
+  const storeBinding = input.draft.storeBinding;
+  if (!storeBinding) {
+    throw new Error(
+      'Project detection draft is missing its Workspace Store binding. Run project init from the Workspace Git root.',
+    );
+  }
+  if (
+    !['registered-exact', 'healthy-unregistered', 'missing-root'].includes(
+      storeBinding.root.disposition,
+    )
+  ) {
+    throw new Error(
+      `OpenSpec Root blocks project configuration approval: ${storeBinding.root.diagnosticCode ?? storeBinding.root.disposition}`,
+    );
+  }
+  const configured = candidateConfig.specificationProvider?.store;
+  if (
+    !configured ||
+    configured.id !== storeBinding.storeId ||
+    configured.repositoryId !== storeBinding.workspaceRepositoryId
+  ) {
+    throw new Error('Candidate Specification Store does not match the detected binding proposal');
   }
   const currentDigest = input.currentConfig ? hashProjectConfig(input.currentConfig) : null;
   if (currentDigest !== input.draft.baseConfigDigest) {
@@ -120,23 +135,8 @@ export function createProjectConfigurationDecision(input: {
   const reconcile = input.currentConfig
     ? reconcileProjectConfig(input.currentConfig, candidateConfig)
     : null;
-  const snapshotDigest = projectConfigurationSnapshotDigest({
+  return configurationRequest(input.requestId ?? randomUUID(), {
     draftId: input.draft.draftId,
-    baseConfigDigest: input.draft.baseConfigDigest,
-    candidateConfigDigest,
-    candidateConfig,
-    reconcile,
-    unresolved: input.draft.unresolved,
-    storeBinding: input.draft.storeBinding,
-    ...(input.draft.entrySkills ? { entrySkills: input.draft.entrySkills } : {}),
-  });
-  return {
-    apiVersion: 'repoctopus/v1alpha1',
-    kind: 'HumanDecisionRequest',
-    requestId: input.requestId ?? randomUUID(),
-    decisionType: 'project-configuration',
-    draftId: input.draft.draftId,
-    snapshotDigest,
     baseConfigDigest: input.draft.baseConfigDigest,
     candidateConfigDigest,
     candidateConfig,
@@ -144,8 +144,56 @@ export function createProjectConfigurationDecision(input: {
     unresolved: input.draft.unresolved,
     storeBinding: structuredClone(input.draft.storeBinding),
     ...(input.draft.entrySkills ? { entrySkills: structuredClone(input.draft.entrySkills) } : {}),
+  });
+}
+
+function configurationRequest(
+  requestId: string,
+  candidate: Parameters<typeof projectConfigurationSnapshotDigest>[0],
+): ProjectConfigurationDecisionRequest {
+  return {
+    apiVersion: 'repoctopus/v1alpha1',
+    kind: 'HumanDecisionRequest',
+    requestId,
+    decisionType: 'project-configuration',
+    ...candidate,
+    snapshotDigest: projectConfigurationSnapshotDigest(candidate),
     options: ['approve', 'request_changes', 'reject'],
   };
+}
+
+export function createVerifyProfileDecision(input: {
+  workspaceRoot: string;
+  current: EffectiveProjectConfig;
+  profile: unknown;
+  run?: { profileId: string; tasks: readonly SpecificationTask[] };
+}): ProjectConfigurationDecisionRequest {
+  const profileId = (input.profile as { id?: unknown } | null)?.id;
+  if (typeof profileId !== 'string' || !profileId.trim()) {
+    throw new Error('Expected a single Verify Profile with an id and nodes');
+  }
+  if (input.run && input.run.profileId !== profileId) {
+    throw new Error(`This Run requires Verify Profile '${input.run.profileId}'`);
+  }
+  const base = input.current.shared;
+  const candidateConfig = parseSharedProjectConfig({
+    ...base,
+    profiles: [...base.profiles.filter(({ id }) => id !== profileId), input.profile],
+  });
+  assertVerifyProfileReady(candidateConfig, profileId);
+  const plan = compileEvidenceProfile({ ...input.current, shared: candidateConfig }, profileId);
+  if (input.run) resolveAcceptanceCoverage(input.run.tasks, plan);
+  const requestId = randomUUID();
+  return configurationRequest(requestId, {
+    draftId: requestId,
+    baseConfigDigest: hashProjectConfig(base),
+    candidateConfigDigest: hashProjectConfig(candidateConfig),
+    candidateConfig,
+    reconcile: reconcileProjectConfig(base, candidateConfig),
+    unresolved: [],
+    storeBinding: null,
+    profileUpdate: { workspaceRoot: input.workspaceRoot, profileId },
+  });
 }
 
 export function recordProjectConfigurationDecision(input: {
@@ -166,6 +214,7 @@ export function recordProjectConfigurationDecision(input: {
     unresolved: input.request.unresolved,
     storeBinding: input.request.storeBinding,
     ...(input.request.entrySkills ? { entrySkills: input.request.entrySkills } : {}),
+    ...(input.request.profileUpdate ? { profileUpdate: input.request.profileUpdate } : {}),
   });
   if (
     candidateConfigDigest !== input.request.candidateConfigDigest ||

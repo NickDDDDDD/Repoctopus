@@ -1,4 +1,5 @@
-import { lstat, readFile, readdir } from 'node:fs/promises';
+import { lstat, readFile, readdir, realpath } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import path from 'node:path';
 
 import {
@@ -15,13 +16,32 @@ const productRoot = path.resolve(
   import.meta.dirname,
   ...(path.basename(import.meta.dirname) === 'dist' ? ['..'] : ['..', '..']),
 );
-const asset = path.join(productRoot, 'skills', 'entry', 'repoctopus', 'SKILL.md');
+type EntrySkill = 'repoctopus' | 'repoctopus-init' | 'repoctopus-configure-verify';
+type EntryTarget = { host: WorkspaceEntryHost; path: string; skill: EntrySkill };
 
-function target(host: WorkspaceEntryHost): string {
-  return `${host === 'codex' ? '.agents' : '.opencode'}/skills/repoctopus/SKILL.md`;
+function workspaceTargets(): EntryTarget[] {
+  return WORKSPACE_ENTRY_HOSTS.flatMap((host) => {
+    const directory = host === 'codex' ? '.agents' : '.opencode';
+    return (['repoctopus', 'repoctopus-configure-verify'] as const).map((skill) => ({
+      host,
+      skill,
+      path: `${directory}/skills/${skill}/SKILL.md`,
+    }));
+  });
 }
 
-async function desiredEntry(): Promise<string> {
+function selectedHosts(hosts: readonly string[]): readonly WorkspaceEntryHost[] {
+  if (
+    !hosts.length ||
+    hosts.some((host) => !WORKSPACE_ENTRY_HOSTS.some((known) => known === host))
+  ) {
+    throw new Error('Entry hosts must be codex or opencode');
+  }
+  return WORKSPACE_ENTRY_HOSTS.filter((host) => hosts.includes(host));
+}
+
+async function desiredEntry(skill: EntrySkill): Promise<string> {
+  const asset = path.join(productRoot, 'skills', 'entry', skill, 'SKILL.md');
   const body = (await readFile(asset, 'utf8')).replaceAll('\r\n', '\n').trimEnd() + '\n';
   return markWorkspaceEntrySkill(body);
 }
@@ -95,18 +115,22 @@ export async function planWorkspaceEntrySkills(
   workspace: string,
   hosts: readonly string[] = WORKSPACE_ENTRY_HOSTS,
 ): Promise<WorkspaceEntrySkillPlan[]> {
-  if (
-    hosts.length === 0 ||
-    hosts.some((host) => !WORKSPACE_ENTRY_HOSTS.some((item) => item === host))
-  ) {
-    throw new Error('Workspace entry hosts must be codex or opencode');
-  }
-  const contentDigest = digest(await desiredEntry());
+  const chosen = selectedHosts(hosts);
+  return planEntryTargets(
+    workspace,
+    workspaceTargets().filter(({ host }) => chosen.includes(host)),
+  );
+}
+
+async function planEntryTargets(
+  root: string,
+  targets: readonly EntryTarget[],
+): Promise<WorkspaceEntrySkillPlan[]> {
   return Promise.all(
-    WORKSPACE_ENTRY_HOSTS.filter((host) => hosts.includes(host)).map(async (host) => {
-      const file = target(host);
+    targets.map(async ({ host, path: file, skill }) => {
+      const contentDigest = digest(await desiredEntry(skill));
       try {
-        const observed = await observe(workspace, file);
+        const observed = await observe(root, file);
         const beforeDigest = observed ? digest(observed.text) : null;
         return {
           host,
@@ -138,16 +162,25 @@ export async function prepareWorkspaceEntryWrites(
   requestId: string,
   afterWrite?: (file: string) => Promise<void> | void,
 ): Promise<{ install(): Promise<void>; verify(): Promise<void> }> {
+  return prepareEntryWrites(workspace, workspaceTargets(), plans, resuming, requestId, afterWrite);
+}
+
+async function prepareEntryWrites(
+  workspace: string,
+  targets: readonly EntryTarget[],
+  plans: readonly WorkspaceEntrySkillPlan[],
+  resuming: boolean,
+  requestId: string,
+  afterWrite?: (file: string) => Promise<void> | void,
+) {
   const stagingTag = digest(requestId).slice(0, 24);
-  const desired = plans.length ? await desiredEntry() : '';
-  const contentDigest = digest(desired);
   const writes = await Promise.all(
     plans.map(async (plan) => {
-      if (
-        !WORKSPACE_ENTRY_HOSTS.includes(plan.host) ||
-        target(plan.host) !== plan.path ||
-        plan.contentDigest !== contentDigest
-      ) {
+      const target = targets.find(
+        ({ host, path: file }) => host === plan.host && file === plan.path,
+      );
+      const desired = target ? await desiredEntry(target.skill) : null;
+      if (desired === null || plan.contentDigest !== digest(desired)) {
         throw new Error('Workspace entry plan changed. Prepare a new approval request.');
       }
       if (plan.status === 'conflict')
@@ -170,6 +203,7 @@ export async function prepareWorkspaceEntryWrites(
       return {
         plan,
         current,
+        desired,
         cleanup: await Promise.all(
           leftovers
             .filter((entry) => entry.isFile() && stagingName(stagingTag).test(entry.name))
@@ -180,7 +214,7 @@ export async function prepareWorkspaceEntryWrites(
   );
   return {
     async install() {
-      for (const { plan, current, cleanup } of writes) {
+      for (const { plan, current, desired, cleanup } of writes) {
         if (current?.text !== desired) {
           await atomicWriteText(path.join(workspace, plan.path), desired, {
             containedRoot: workspace,
@@ -199,11 +233,45 @@ export async function prepareWorkspaceEntryWrites(
       }
     },
     async verify() {
-      for (const { plan } of writes) {
+      for (const { plan, desired } of writes) {
         if ((await observe(workspace, plan.path, stagingTag))?.text !== desired) {
           throw new Error(`Workspace entry was not materialized: ${plan.path}`);
         }
       }
     },
   };
+}
+
+export async function installPersonalInitSkills(hosts: readonly string[], preview: boolean) {
+  const root = await realpath(homedir());
+  const targets = selectedHosts(hosts).map((host): EntryTarget => {
+    const directory =
+      host === 'codex'
+        ? process.env.CODEX_HOME || path.join(root, '.codex')
+        : path.join(process.env.XDG_CONFIG_HOME || path.join(root, '.config'), 'opencode');
+    const relative = path.relative(root, path.resolve(directory));
+    if (
+      !relative ||
+      relative === '..' ||
+      relative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relative)
+    ) {
+      throw new Error(
+        `Personal ${host} Skill directory must be inside the user's home: ${directory}`,
+      );
+    }
+    const skill = 'repoctopus-init';
+    return {
+      host,
+      skill,
+      path: path.join(relative, 'skills', skill, 'SKILL.md').replaceAll('\\', '/'),
+    };
+  });
+  const plans = await planEntryTargets(root, targets);
+  if (!preview) {
+    const writes = await prepareEntryWrites(root, targets, plans, false, 'personal-init');
+    await writes.install();
+    await writes.verify();
+  }
+  return { preview, targets: plans.map((plan) => ({ ...plan, path: path.join(root, plan.path) })) };
 }

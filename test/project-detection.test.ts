@@ -26,6 +26,79 @@ async function expectMissing(file: string): Promise<void> {
 }
 
 describe('project configuration detection', () => {
+  it('keeps the configured Workspace identity and existing repository IDs when Init adds host entries', async () => {
+    const root = await temporaryDirectory('repoctopus-existing-init-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    await createGitRepository(root, 'backend');
+    await createGitRepository(root, 'unrelated');
+    const config = {
+      apiVersion: 'repoctopus/v1alpha1',
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'team-platform', repositoryId: 'team' },
+      repositories: [
+        { id: 'team', path: '.' },
+        { id: 'backend-api', path: '../backend' },
+      ],
+      profiles: [],
+      specificationProvider: {
+        id: 'specification-openspec',
+        store: { id: 'team-platform', repositoryId: 'team' },
+      },
+    };
+    await writeFile(path.join(workspace, 'repoctopus.yaml'), JSON.stringify(config));
+    const detected = await detectProjectConfiguration({
+      workspace,
+      scanRoot: root,
+      mode: 'minimal',
+      layout: 'multi',
+    });
+    expect(detected.draft.candidateConfig?.workspace).toEqual(config.workspace);
+    expect(detected.draft.candidateConfig?.repositories).toEqual(
+      expect.arrayContaining(config.repositories),
+    );
+    expect(detected.draft.candidateConfig?.repositories).toHaveLength(2);
+  });
+  it('prepares a single-repository candidate without inspecting neighboring repositories or build files', async () => {
+    const root = await temporaryDirectory('repoctopus-minimal-single-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'single');
+    await createGitRepository(root, 'unrelated');
+    await writeFile(path.join(workspace, 'package.json'), '{');
+
+    const { draft } = await detectProjectConfiguration({
+      workspace,
+      scanRoot: root,
+      mode: 'minimal',
+      layout: 'single',
+    });
+
+    expect(draft.candidateConfig).toMatchObject({
+      workspace: { repositoryId: 'single' },
+      repositories: [{ id: 'single', path: '.' }],
+      profiles: [],
+    });
+    expect(draft.storeBinding?.workspaceRepositoryId).toBe('single');
+    expect(draft.repositories[0]?.commands).toEqual([]);
+  });
+
+  it('rejects a directory inside another Git checkout before producing an onboarding draft', async () => {
+    const root = await temporaryDirectory('repoctopus-minimal-invalid-');
+    cleanup.push(root);
+    const business = await createGitRepository(root, 'business');
+    const workspace = path.join(business, 'workspace');
+    await mkdir(workspace);
+
+    await expect(
+      detectProjectConfiguration({
+        workspace,
+        scanRoot: business,
+        mode: 'minimal',
+        layout: 'multi',
+      }),
+    ).rejects.toThrow(/Workspace must be a Git repository root/u);
+    await expectMissing(path.join(workspace, '.repoctopus'));
+  });
   it('classifies OpenSpec Store pointer candidates without writing business repositories', async () => {
     const root = await temporaryDirectory('repoctopus-store-detect-');
     cleanup.push(root);
