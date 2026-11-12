@@ -472,12 +472,21 @@ export async function detectProjectConfiguration(input: {
     workspace,
   });
   const skipped = new Set(input.skippedPointerRepositoryIds ?? []);
-  const ids = new Map<string, number>();
+  const existingIds = new Map(
+    current?.repositories.map((repository) => [
+      path.resolve(workspace, repository.path),
+      repository.id,
+    ]),
+  );
+  const usedIds = new Set(existingIds.values());
   const identified = snapshot.repositories.map((repository) => {
+    const existing = existingIds.get(repository.path);
+    if (existing) return { repository, id: existing };
     const base = slug(repository.name);
-    const count = (ids.get(base) ?? 0) + 1;
-    ids.set(base, count);
-    return { repository, id: count === 1 ? base : `${base}-${count}` };
+    let id = base;
+    for (let suffix = 2; usedIds.has(id); suffix += 1) id = `${base}-${suffix}`;
+    usedIds.add(id);
+    return { repository, id };
   });
   const workspaceRepositoryId = identified.find(
     ({ repository }) => repository.path === workspace,
@@ -487,13 +496,16 @@ export async function detectProjectConfiguration(input: {
       `Workspace Git root ${workspace} was not uniquely discovered in ${snapshot.root}. Choose a scan root containing the Workspace and its sibling repositories.`,
     );
   }
-  const selectedIds = new Set(input.selectedRepositoryIds);
+  const scopedIds =
+    input.selectedRepositoryIds ??
+    (input.mode === 'minimal' ? current?.repositories.map(({ id }) => id) : undefined);
+  const selectedIds = new Set(scopedIds);
   for (const id of selectedIds) {
     if (!identified.some((item) => item.id === id)) {
       throw new Error(`Selected repository is not in the current scan: ${id}`);
     }
   }
-  const selected = input.selectedRepositoryIds
+  const selected = scopedIds
     ? identified.filter(({ id }) => id === workspaceRepositoryId || selectedIds.has(id))
     : identified;
   const inspected = await Promise.all(
@@ -565,7 +577,7 @@ export async function detectProjectConfiguration(input: {
           apiVersion: 'repoctopus/v1alpha1',
           kind: 'RepoctopusWorkspace',
           workspace: {
-            id: slug(path.basename(workspace)),
+            id: current?.workspace.id ?? slug(path.basename(workspace)),
             repositoryId: workspaceRepository.id,
           },
           repositories: repositories.map((repository) => ({

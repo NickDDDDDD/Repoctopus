@@ -227,6 +227,11 @@ function nextActions(status: RunStatusView): string[] {
     if (lifecycle.status === 'waiting' && lifecycle.waitCondition?.kind === 'human-decision') {
       return [`repoctopus run decision --run ${status.state.runId} --json`];
     }
+    if (lifecycle.blocker?.code === 'verification-input-pending') {
+      return [
+        'Use the repoctopus-configure-verify Skill to configure the Verify Profile, then resume this Run.',
+      ];
+    }
     if (work === 'evidence.verify') return ['repoctopus run verify --run <run-id>'];
     if (work === 'specification.close' || work === 'delivery.publish') {
       return ['repoctopus run archive-publish --run <run-id> --work-attempt <integer>'];
@@ -752,7 +757,9 @@ async function projectInit(parsed: ParsedArguments): Promise<CliEnvelope<unknown
   const scanRoot = path.resolve(
     stringFlag(parsed, 'scan-root', { fallback: path.dirname(workspace) })!,
   );
-  const selectedRepositoryIds = stringFlag(parsed, 'repositories')
+  const selectedRepositoryIds = stringFlag(parsed, 'repositories', {
+    required: parsed.flags.has('repositories'),
+  })
     ?.split(',')
     .map((id) => id.trim());
   const entryHosts = stringFlag(parsed, 'entry-hosts')
@@ -843,11 +850,13 @@ async function projectConfigureVerify(parsed: ParsedArguments): Promise<CliEnvel
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const file = path.resolve(stringFlag(parsed, 'candidate', { required: true })!);
   const profile = parse(await readFile(file, 'utf8')) as unknown;
+  const runId = stringFlag(parsed, 'run', { required: parsed.flags.has('run') });
   const app = await bootBootstrapComposition(PRODUCT_ROOT);
   try {
     const result = await app.context.commandRouter.execute('project.configure-verify', {
       workspace,
       profile,
+      ...(runId ? { runId } : {}),
     });
     return successEnvelope({
       command: 'project configure-verify',
@@ -1044,6 +1053,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           projectSnapshot: ProjectSnapshot;
           projectConfigDigest: `sha256:${string}`;
           verificationProfileId: string;
+          verificationProfileExplicit?: boolean;
           executionCheckouts: Array<{ repositoryId: string; checkoutPath: string }>;
           executionMode?: 'autonomous' | 'subagent-driven-development';
           tddMode?: 'tdd' | 'direct';
@@ -1059,7 +1069,12 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
         remote: stringFlag(parsed, 'remote', { fallback: 'origin' })!,
         projectSnapshot,
         projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
-        verificationProfileId: stringFlag(parsed, 'profile', { fallback: 'verify' })!,
+        verificationProfileId: stringFlag(
+          parsed,
+          'profile',
+          parsed.flags.has('profile') ? { required: true } : { fallback: 'verify' },
+        )!,
+        ...(parsed.flags.has('profile') ? { verificationProfileExplicit: true } : {}),
         executionCheckouts: projectSnapshot.repositories.map((repository) => ({
           repositoryId: repository.id,
           checkoutPath: repository.path,

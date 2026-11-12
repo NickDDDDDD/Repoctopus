@@ -37,62 +37,40 @@ repoctopus.cmd --help
 repoctopus.cmd --version
 ```
 
-确认帮助输出为 `Usage: repoctopus ...`、版本输出为 `0.1.1` 后，继续下方的多仓或单仓接入。接入命令在 Workspace 根目录执行。全局安装后可以在其他终端直接使用 `repoctopus.cmd`。需要临时运行、安装到独立用户目录，或终端找不到命令时，见[安装指南](docs/install.md)。
+确认帮助和版本输出符合已安装版本。接入命令在 Workspace 根目录执行。全局安装后可以在其他终端直接使用 `repoctopus.cmd`。需要临时运行、安装到独立用户目录，或终端找不到命令时，见[安装指南](docs/install.md)。
+
+### 安装宿主入口
+
+包含轻量接入功能的 CLI 可为当前用户安装 Init Skill。以下用 Codex 举例。使用 OpenCode 时，将 `codex` 换为 `opencode`。
+
+```powershell
+repoctopus.cmd skill install-init --entry-hosts codex
+```
+
+在宿主中打开下面对应的 Git 根目录，然后在新会话调用 `repoctopus-init`。使用 v0.1.1 时，按[该版本的快速开始](https://github.com/NickDDDDDD/Repoctopus/blob/v0.1.1/README.md#快速开始)接入。
 
 ### 接入多仓项目
 
-**Workspace** 是团队使用 Repoctopus 的入口，保存共享配置和 OpenSpec 规格。多仓项目使用一个独立的 Git 仓库作为 Workspace，可以复用已有仓库或新建一个。把 Workspace 和参与项目的业务仓检出到同一个父目录，每个仓至少要有一个 Git 提交。
+把独立 Workspace Git 仓和参与项目的业务仓检出到同一个父目录。各仓至少有一个提交。
 
 ```text
 team-platform/
-├── workspace/  # Workspace，保存 repoctopus.yaml 和 openspec/
-├── web/        # 前端业务仓
-└── backend/    # 后端业务仓
+├── workspace/
+├── web/
+└── backend/
 ```
 
-这个例子使用 Workspace 内的 OpenSpec 规格树，Store ID 为 `team-platform`，由团队自定。在 Workspace 根目录执行以下命令。CLI 扫描父目录的直接子 Git 仓库，父目录应只放参与本次接入的仓库。
-
-```powershell
-$detected = repoctopus.cmd project detect --workspace . --scan-root .. --store team-platform --json | ConvertFrom-Json
-$draft = $detected.result.file
-$draft
-```
-
-草稿应识别 `workspace`、`web` 和 `backend`。发现无关仓库时，把要接入的仓库放到专用父目录，再从 Workspace 重新探测。然后继续[审核并提交配置](#审核并提交配置)。[多仓布局与 Store 说明](docs/project-onboarding.md#选择-workspace)
+在宿主打开 `workspace/`，说「用 Repoctopus Init 接入多仓项目，选 web 和 backend」。核对 Agent 展示的仓库、OpenSpec Store 和安装目标后批准。Workspace 保存共享配置和 OpenSpec 规格，业务实现留在各业务仓。
 
 ### 接入单仓项目
 
-以现有业务仓根目录作为 Workspace，例如 `settings-app/`。规格、团队配置与业务代码同仓存放。把业务仓放在只包含该仓的父目录下，然后进入业务仓根目录运行。
+在宿主打开业务仓 Git 根目录，说「用 Repoctopus Init 接入当前单仓」。核对接入计划后批准。该仓同时作为 Workspace，保存代码、共享配置和规格。
 
-```powershell
-$detected = repoctopus.cmd project detect --workspace . --scan-root .. --json | ConvertFrom-Json
-$draft = $detected.result.file
-$draft
-```
+### 提交接入结果
 
-草稿应只识别这个业务仓。继续[审核并提交配置](#审核并提交配置)。
+把生成的共享配置、规格和受管入口按团队 Git 流程提交。多仓接入如获批生成业务仓的 `openspec/config.yaml`，把文件提交到它所属的仓。
 
-### 审核并提交配置
-
-把草稿路径交给 Agent。可以直接发下面这段话。
-
-> 帮我首次接入 Repoctopus。读取我给你的探测草稿，核对要接入的仓库、未决项以及各仓实际可运行的构建和测试命令。补全 `verify` Profile，说明每条必需检查能验证什么，把候选写到 `.repoctopus/drafts/project-candidate.yaml`，再交给我审核。
-
-候选保存后，在同一个 Workspace 根目录准备审批。最后一条命令在交互终端中执行。
-
-```powershell
-$prepared = repoctopus.cmd project prepare --workspace . --draft $draft --candidate .repoctopus/drafts/project-candidate.yaml --json | ConvertFrom-Json
-repoctopus.cmd project review --workspace . --request $prepared.result.file
-```
-
-批准后，Repoctopus 准备或复用 Workspace 的 `openspec/`，登记本机的 OpenSpec Store，并写入团队共享的 `repoctopus.yaml`。把生成的共享文件按团队 Git 流程合入远端目标分支。
-
-`v0.1.1` 会生成 `README.md` 使用入口、`AGENTS.md` Agent 入口及 `docs/repoctopus/workspace-guide.md` 本地教程，只维护 Repoctopus 标记区块，保留已有团队内容。之后可以直接在团队仓阅读基本教程。旧 `v0.1.0` 没有自动生成这些引导；升级后按[补齐本地引导](docs/project-onboarding.md#补齐或更新-workspace-引导)操作。
-
-- **Workspace** 提交 `repoctopus.yaml`、`openspec/`、`.openspec-store/`、变更后的 `.gitignore`，以及生成的 README、AGENTS 和本地教程。草稿和本机配置保存在被忽略的 `.repoctopus/` 中。
-- **多仓中的业务仓** 如果批准了 Store 指向配置，将生成的 `openspec/config.yaml` 提交到它所属的业务仓。
-
-[配置示例与审核细节](docs/project-onboarding.md)
+初始化完成后即可开发。到需要正式验证时，在 Workspace 调用 `repoctopus-configure-verify`，按项目实际命令配置 Verify，再恢复原 Run。团队已经配置好 Profile 时可直接执行 Verify。 [接入和配置详情](docs/project-onboarding.md)
 
 ### 启动第一个 Change
 

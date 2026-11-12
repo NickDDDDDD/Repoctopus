@@ -50,7 +50,6 @@ import {
 
 export interface FileDeliveryConfig {
   workspaceRoot: string;
-  projectConfigDigest: `sha256:${string}`;
   environment?: NodeJS.ProcessEnv;
   githubTokenVariable?: string;
 }

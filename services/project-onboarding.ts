@@ -56,7 +56,7 @@ export class ProjectOnboarding extends Service {
     return prepareProjectConfigurationDecision(input);
   }
 
-  configureVerify(input: { workspace: string; profile: unknown }) {
+  configureVerify(input: { workspace: string; profile: unknown; runId?: string }) {
     return prepareVerifyProfileDecision(input);
   }
 

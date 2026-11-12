@@ -568,6 +568,10 @@ export type ChangeLifecycleObservation =
   | {
       kind: 'build-check-accepted';
       evidence: BuildCheckEvidence;
+    }
+  | {
+      kind: 'build-verification-ready';
+      buildCheckEvidenceId: string;
       verificationInput: VerificationInput;
       work: WorkDescriptor;
     }
@@ -1660,9 +1664,7 @@ export function evolveChangeLifecycle(options: {
       current.status !== 'running' ||
       current.currentWork?.kind !== 'build.check' ||
       !current.buildProtocol ||
-      current.buildProtocol.currentAction !== 'check' ||
-      observation.work.kind !== 'evidence.verify' ||
-      observation.work.inputDigest !== observation.verificationInput.digest
+      current.buildProtocol.currentAction !== 'check'
     ) {
       throw new Error('Build Check acceptance does not match the active Check Action');
     }
@@ -1673,14 +1675,44 @@ export function evolveChangeLifecycle(options: {
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
+      transitionId: 'build.verification-blocked',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: {
+          code: 'verification-input-pending',
+          message: 'Build Check passed. Prepare the current Verify Profile to continue.',
+          evidenceIds: [observation.evidence.evidenceId],
+          sinceRevision: current.revision + 1,
+        },
+        buildProtocol,
+        verificationInput: null,
+        verificationInvalidation: null,
+      },
+    });
+  }
+  if (observation.kind === 'build-verification-ready') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'blocked' ||
+      current.currentWork !== null ||
+      current.blocker?.code !== 'verification-input-pending' ||
+      current.buildProtocol?.status !== 'ready-for-verify' ||
+      current.buildProtocol.checkEvidence?.evidenceId !== observation.buildCheckEvidenceId ||
+      observation.work.kind !== 'evidence.verify' ||
+      observation.work.inputDigest !== observation.verificationInput.digest
+    ) {
+      throw new Error('Verification input does not match the accepted Build Check');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
       transitionId: 'build.validated',
       next: {
         currentWork: observation.work,
         waitCondition: null,
         blocker: null,
-        buildProtocol,
         verificationInput: observation.verificationInput,
-        verificationInvalidation: null,
       },
     });
   }

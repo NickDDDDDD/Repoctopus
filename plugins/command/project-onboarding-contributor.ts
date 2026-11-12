@@ -28,7 +28,7 @@ const plugin = ((context: Context) => {
         name: 'project.configure-verify',
         execute: ({ input }) =>
           context.projectOnboarding.configureVerify(
-            input as { workspace: string; profile: unknown },
+            input as { workspace: string; profile: unknown; runId?: string },
           ),
       }),
       context.commandRouter.register({

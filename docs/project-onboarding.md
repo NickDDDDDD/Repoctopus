@@ -1,6 +1,6 @@
 # 项目接入
 
-首次接入时，先获取 CLI，再选定一个 Git 仓库作为 Workspace。CLI 探测仓库，Agent 核对并补全候选，维护者审核后，Repoctopus 才写入团队共享配置。此页给出各步骤的细节。可以先按 README 跑通最短路径。[快速开始](../README.md#快速开始) · [CLI 安装](install.md) · [新成员接入](#新成员接入)
+首次接入从安装 CLI、选定 Workspace Git 根和调用 Init Skill 开始。Repoctopus 预览接入范围，在用户批准后写入团队共享配置。 [快速开始](../README.md#快速开始) · [CLI 安装](install.md) · [新成员接入](#新成员接入)
 
 ## 选择 Workspace
 
@@ -35,7 +35,36 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份。团队共用同一个
 
 字段形状见[共享配置 Schema](schemas/project-config.schema.json)和[本机覆盖 Schema](schemas/local-project-config.schema.json)。
 
-## 1. 生成探测草稿
+## 使用宿主一次完成接入
+
+在已安装 CLI 的终端，为自己使用的宿主安装入口。选定 Codex 或 OpenCode，新会话会发现对应的个人级 `repoctopus-init`。
+
+```powershell
+repoctopus.cmd skill install-init --entry-hosts codex
+```
+
+从 Workspace Git 根调用 Init Skill，并告诉 Agent 是单仓还是多仓。预览列出工作区、所选仓、Store、业务仓 pointer 和入口路径。批准后，Runtime 初始化或复用 OpenSpec Store，写入最小配置与 Workspace 入口。单仓布局只处理当前仓。多仓布局可选择扫描目录内的部分仓库。
+
+终端可完成同一流程。以下是同级多仓示例，在 Workspace 根执行。单仓使用 `--layout single` 并省略 `--scan-root`。
+
+```powershell
+$prepared = repoctopus.cmd project init --layout multi --scan-root .. --entry-hosts codex --json | ConvertFrom-Json
+repoctopus.cmd project review --request "$($prepared.result.file)"
+```
+
+检查目录时运行 `git rev-parse --show-toplevel`。如果显示父级业务仓，当前目录是普通子目录。单仓从业务仓根接入，多仓使用独立 Workspace Git 根。重跑 Init 会为新的配置或选仓形成当前请求。
+
+## 按需配置 Verify
+
+在已接入的 Workspace 中调用 `repoctopus-configure-verify`。Agent 读取选定仓实际构建和测试命令，并为 required 节点声明适用的 Acceptance coverage。只在批准后把 Profile 更新写入 `repoctopus.yaml`。
+
+无 Profile 的新 Workspace 可完成 Open、Design 和 Build。Build Check 通过后，Runtime 会提示配置 Verify。把获批变更按团队流程提交后，用原 Run ID 恢复。有效 Verify Evidence 是归档前置条件。
+
+## 终端排查与底层命令
+
+下面的 `detect`、`prepare`、`review` 命令适用于排查和需要查看中间产物的终端操作。v0.1.1 用户可查阅[对应版本说明](https://github.com/NickDDDDDD/Repoctopus/blob/v0.1.1/docs/project-onboarding.md)。
+
+### 1. 生成探测草稿
 
 在选定的 Workspace Git 仓库根目录运行。CLI 只扫描 `--scan-root` 的直接子 Git 仓库，所以单仓和同级多仓布局都用 `--scan-root ..`。Workspace 必须位于扫描目录下一级。使用只包含本项目仓库的父目录。若扫描结果包含无关仓库，把要接入的仓库放到专用父目录，再从 Workspace 重新探测。
 
@@ -53,7 +82,7 @@ $draft
 
 Store ID 是团队配置，registration 是每机状态：新成员、CI 节点和另一台开发机 clone Workspace 后都必须各自登记相同 ID 到各自的绝对路径。pointer 可选且可按仓跳过，它不负责登记，也不改变 Workspace 的 Specification 权威。
 
-## 2. 由 Agent 补全候选
+### 2. 由 Agent 补全候选
 
 让 Agent 读取 `$draft`，核对各仓 README、构建文件和团队约定，将完整候选写到本机文件，例如 `.repoctopus/drafts/project-candidate.yaml`。Agent 应处理全部 `unresolved`，并保留探测无法重建的人工字段，例如 Evidence 保留规则与 `delivery` 策略。
 
@@ -75,7 +104,7 @@ Profile 必须至少有一个声明 coverage 的 required 节点；optional 节�
 
 `.repoctopus/local.yaml` 不能新增插件、替换 Provider 或扩大权限。团队不直接维护 `cordis.yml`，也不在配置中表达 Loader 或 Fiber；App Boot 只把已经准入的领域插件翻译为 Loader Entry。
 
-## 3. 准备人工决定
+### 3. 准备人工决定
 
 ```powershell
 $prepared = repoctopus project prepare `
@@ -88,7 +117,7 @@ $request = $prepared.result.file
 
 Repoctopus 会再次解析完整候选，计算候选摘要，并把当前正式配置摘要、reconcile diff 和未决项绑定到 `HumanDecisionRequest`。等待期间若 `repoctopus.yaml` 改变，原请求失效。
 
-## 4. 由用户确认
+### 4. 由用户确认
 
 ```powershell
 repoctopus project review --workspace . --request $request

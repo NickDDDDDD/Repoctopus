@@ -1,3 +1,4 @@
+import { projectExecutionConfigDigests } from '../../platform/project-configuration/file-config.js';
 import type {
   EffectiveProjectConfig,
   TeamPluginConfig,
@@ -215,14 +216,12 @@ function projectSelections(
       'delivery-file',
       {
         workspaceRoot,
-        projectConfigDigest: `sha256:${config.effectiveDigest}`,
         ...(config.shared.delivery?.publication.apiCredential
           ? { githubTokenVariable: config.shared.delivery.publication.apiCredential.variable }
           : {}),
       },
       {
         workspaceRoot: WORKSPACE_ROOT_IDENTITY,
-        projectConfigDigest: `sha256:${config.effectiveDigest}`,
         ...(config.shared.delivery?.publication.apiCredential
           ? { githubTokenVariable: config.shared.delivery.publication.apiCredential.variable }
           : {}),
@@ -313,11 +312,11 @@ function compile(
     {
       id,
       kind: 'project',
-      configuration: {
-        sharedDigest: config.sharedDigest,
-        localDigest: config.localDigest,
-        effectiveDigest: config.effectiveDigest,
-      },
+      // Profile contents are Evidence input, outside the composition that executes a Run.
+      configuration: projectExecutionConfigDigests(
+        { ...config.shared, profiles: [] },
+        config.local,
+      ),
       plugins: selections,
       requiredServices,
     },

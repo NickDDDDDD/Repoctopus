@@ -12,6 +12,8 @@ import type {
 import { reconcileProjectConfig } from './reconcile.js';
 import type { EffectiveProjectConfig, SharedProjectConfig } from './types.js';
 import { compileEvidenceProfile } from '../feedback/profile.js';
+import { resolveAcceptanceCoverage } from '../change-lifecycle/acceptance-coverage.js';
+import type { SpecificationTask } from '../specification/types.js';
 
 export type ProjectConfigurationDecision = 'approve' | 'request_changes' | 'reject';
 
@@ -164,10 +166,14 @@ export function createVerifyProfileDecision(input: {
   workspaceRoot: string;
   current: EffectiveProjectConfig;
   profile: unknown;
+  run?: { profileId: string; tasks: readonly SpecificationTask[] };
 }): ProjectConfigurationDecisionRequest {
   const profileId = (input.profile as { id?: unknown } | null)?.id;
   if (typeof profileId !== 'string' || !profileId.trim()) {
     throw new Error('Expected a single Verify Profile with an id and nodes');
+  }
+  if (input.run && input.run.profileId !== profileId) {
+    throw new Error(`This Run requires Verify Profile '${input.run.profileId}'`);
   }
   const base = input.current.shared;
   const candidateConfig = parseSharedProjectConfig({
@@ -175,7 +181,8 @@ export function createVerifyProfileDecision(input: {
     profiles: [...base.profiles.filter(({ id }) => id !== profileId), input.profile],
   });
   assertVerifyProfileReady(candidateConfig, profileId);
-  compileEvidenceProfile({ ...input.current, shared: candidateConfig }, profileId);
+  const plan = compileEvidenceProfile({ ...input.current, shared: candidateConfig }, profileId);
+  if (input.run) resolveAcceptanceCoverage(input.run.tasks, plan);
   const requestId = randomUUID();
   return configurationRequest(requestId, {
     draftId: requestId,

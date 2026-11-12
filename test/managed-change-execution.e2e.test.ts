@@ -72,6 +72,12 @@ describe('managed Change execution production composition', () => {
       multiRepository: true,
     },
     {
+      label: 'deferred Verify configuration with two business repositories',
+      executionMode: 'autonomous' as const,
+      multiRepository: true,
+      deferredVerify: true,
+    },
+    {
       label: 'derived output drift blocks direct Archive Close',
       executionMode: 'autonomous' as const,
       multiRepository: true,
@@ -98,6 +104,7 @@ describe('managed Change execution production composition', () => {
       protectedWriteRepositories = false,
       prepoisonedProtectedRecovery = false,
       derivedCloseDrift = false,
+      deferredVerify = false,
     }) => {
       const root = await temporaryDirectory('repoctopus-managed-change-');
       cleanup.push(root);
@@ -283,6 +290,12 @@ describe('managed Change execution production composition', () => {
           },
         }),
       );
+      const configFile = path.join(workspace, 'repoctopus.yaml');
+      const configuredProject = JSON.parse(await readFile(configFile, 'utf8'));
+      const deferredProfile = configuredProject.profiles[0];
+      if (deferredVerify) {
+        await writeFile(configFile, JSON.stringify({ ...configuredProject, profiles: [] }));
+      }
       await execFileAsync('git', ['add', '.'], { cwd: workspace });
       await execFileAsync('git', ['commit', '-m', 'chore: configure managed execution'], {
         cwd: workspace,
@@ -2002,6 +2015,74 @@ describe('managed Change execution production composition', () => {
           afterCheck = await next();
           const accepted = await status();
           expect(accepted.state.workExecution).toBeUndefined();
+        }
+        if (deferredVerify) {
+          expect(afterCheck.value.changeLifecycle).toMatchObject({
+            phase: 'build',
+            status: 'blocked',
+            currentWork: null,
+          });
+          const build = afterCheck.value.state.changeLifecycle!.buildProtocol!;
+          expect(build.checkEvidence?.accepted).toBe(true);
+          const cold = () =>
+            runCli<ResumeView>({
+              packageRoot: productRoot,
+              cwd: workspace,
+              environment,
+              args: ['run', 'resume', '--run', runId],
+            });
+          expect((await cold()).result?.state.reconciliationRequired).toBe(false);
+          const configCandidate = path.join(root, 'verify-profile.json');
+          await writeFile(configCandidate, JSON.stringify(deferredProfile));
+          const configured = await runCli<{
+            file: string;
+            request: { requestId: string; snapshotDigest: string };
+          }>({
+            packageRoot: productRoot,
+            cwd: workspace,
+            environment,
+            args: ['project', 'configure-verify', '--candidate', configCandidate, '--run', runId],
+          });
+          const responseFile = path.join(root, 'verify-approval.json');
+          await writeFile(
+            responseFile,
+            JSON.stringify({
+              apiVersion: 'repoctopus/v1alpha1',
+              kind: 'HumanDecisionResponse',
+              requestId: configured.result!.request.requestId,
+              snapshotDigest: configured.result!.request.snapshotDigest,
+              decision: 'approve',
+            }),
+          );
+          await runCli({
+            packageRoot: productRoot,
+            cwd: workspace,
+            environment,
+            args: [
+              'project',
+              'review',
+              '--request',
+              configured.result!.file,
+              '--response-file',
+              responseFile,
+            ],
+          });
+          await execFileAsync('git', ['add', 'repoctopus.yaml'], { cwd: workspace });
+          await execFileAsync('git', ['commit', '-m', 'chore: configure Verify'], {
+            cwd: workspace,
+          });
+          await execFileAsync('git', ['push'], { cwd: workspace });
+          const resumed = await cold();
+          expect(resumed.result?.state.reconciliationRequired).toBe(false);
+          expect(resumed.result?.state.runId).toBe(runId);
+          await restartApplication();
+          afterCheck = await next();
+          expect(afterCheck.value.state.changeLifecycle?.buildProtocol?.packageCompletions).toEqual(
+            build.packageCompletions,
+          );
+          expect(afterCheck.value.state.changeLifecycle?.buildProtocol?.checkEvidence).toEqual(
+            build.checkEvidence,
+          );
         }
         expect(afterCheck.value.changeLifecycle).toMatchObject({
           phase: 'verify',

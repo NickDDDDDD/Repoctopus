@@ -1,10 +1,13 @@
 import { createHash } from 'node:crypto';
-import { lstat, readFile, realpath } from 'node:fs/promises';
+import { lstat, readFile, readdir, realpath } from 'node:fs/promises';
 import path from 'node:path';
 
-import { stringify } from 'yaml';
+import { parse, stringify } from 'yaml';
 
-import { hashProjectConfig } from '../../domains/project-configuration/config.js';
+import {
+  hashProjectConfig,
+  parseSharedProjectConfig,
+} from '../../domains/project-configuration/config.js';
 import type { ProjectDetectionDraft } from '../../domains/project-configuration/detection.js';
 import {
   createProjectConfigurationDecision,
@@ -17,9 +20,13 @@ import {
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
 import type { OpenSpecStoreBindingProposal } from '../../domains/project-configuration/detection.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
+import { isExecutionRevisionAncestor } from '../git/execution-workspace.js';
+import { execute } from '../process/execute.js';
+import { inspectRepository } from '../git/probe.js';
+import { FileRuntimeStore } from '../runtime/file-runtime-store.js';
 import { withRecoverableFileLock } from '../runtime/recoverable-file-lock.js';
 import { planWorkspaceEntrySkills, prepareWorkspaceEntryWrites } from './workspace-entry-skills.js';
-import { loadProjectConfig } from './file-config.js';
+import { loadProjectConfig, projectExecutionConfigDigests } from './file-config.js';
 import { ensureRepoctopusGitignore } from './gitignore.js';
 import {
   installWorkspaceGuides,
@@ -355,7 +362,15 @@ async function applyStoreBinding(input: {
       if (current !== binding.pointerDiff.before) {
         throw new Error(`Store pointer input drifted: ${binding.repositoryId}`);
       }
-      await atomicWriteText(pointer, binding.pointerDiff.after, { containedRoot: repositoryRoot });
+      await atomicWriteText(pointer, binding.pointerDiff.after, {
+        containedRoot: repositoryRoot,
+        exclusive: current === null,
+        beforeCommit: async () => {
+          if ((await optionalRegularText(pointer)) !== current) {
+            throw new Error(`Store pointer input drifted: ${binding.repositoryId}`);
+          }
+        },
+      });
       await input.hooks?.afterPointerWrite?.(intent);
       result = 'written';
     }
@@ -376,6 +391,37 @@ async function applyStoreBinding(input: {
     );
   }
   return receiptFiles;
+}
+
+async function assertDetectedRepositoryScope(
+  workspace: string,
+  draft: ProjectDetectionDraft,
+  candidate: SharedProjectConfig,
+) {
+  if (candidate.repositories.length !== draft.repositories.length) {
+    throw new Error(
+      'Candidate repositories differ from the detection scope. Select repositories with project init.',
+    );
+  }
+  await Promise.all(
+    candidate.repositories.map(async (repo) => {
+      const detected = draft.repositories.find(({ id }) => id === repo.id);
+      const checkoutPath = path.resolve(workspace, repo.path);
+      if (!detected || checkoutPath !== path.resolve(workspace, detected.path)) {
+        throw new Error(`Candidate repository path differs from its detection: ${repo.id}`);
+      }
+      const observed = await inspectRepository(checkoutPath);
+      if (
+        !observed ||
+        observed.path !== checkoutPath ||
+        observed.remoteIdentity !== detected.remoteIdentity
+      ) {
+        throw new Error(
+          `Detected repository checkout changed: ${repo.id}. Run project init again.`,
+        );
+      }
+    }),
+  );
 }
 
 export async function prepareProjectConfigurationDecision(input: {
@@ -406,6 +452,7 @@ export async function prepareProjectConfigurationDecision(input: {
     currentConfig,
     ...(input.requestId ? { requestId: input.requestId } : {}),
   });
+  await assertDetectedRepositoryScope(workspace, draft, request.candidateConfig);
   const state: StoredProjectConfigurationDecision = {
     schemaVersion: 1,
     kind: 'ProjectConfigurationDecisionState',
@@ -427,13 +474,24 @@ export async function prepareProjectConfigurationDecision(input: {
   return { request, file };
 }
 
-export async function prepareVerifyProfileDecision(input: { workspace: string; profile: unknown }) {
+export async function prepareVerifyProfileDecision(input: {
+  workspace: string;
+  profile: unknown;
+  runId?: string;
+}) {
   const workspace = await realpath(input.workspace);
   const current = await loadProjectConfig(workspace);
+  const state = input.runId ? await new FileRuntimeStore(workspace).loadRun(input.runId) : null;
+  const profileId = state?.trigger?.facts.verificationProfileId;
+  const tasks = state?.changeLifecycle?.tasks;
+  if (state && (typeof profileId !== 'string' || !tasks?.length)) {
+    throw new Error('Verify Profile setup requires the Run to have approved Acceptance criteria');
+  }
   const request = createVerifyProfileDecision({
     workspaceRoot: workspace,
     current,
     profile: input.profile,
+    ...(typeof profileId === 'string' && tasks ? { run: { profileId, tasks } } : {}),
   });
   const file = decisionFile(workspace, request.requestId);
   await atomicWriteJson(
@@ -517,6 +575,12 @@ export async function applyProjectConfigurationDecision(
         }
         return structuredClone(state.result);
       }
+      if (
+        state.record &&
+        (state.record.actorId !== record.actorId || state.record.decision !== record.decision)
+      ) {
+        throw new Error('Project configuration replay does not match the trusted decision');
+      }
       if (record.decision !== 'approve') {
         await atomicWriteJson(
           stateFile,
@@ -533,13 +597,6 @@ export async function applyProjectConfigurationDecision(
           configDigest: null,
           bindingReceiptFiles: [],
         };
-      }
-
-      if (
-        state.record &&
-        (state.record.actorId !== record.actorId || state.record.decision !== 'approve')
-      ) {
-        throw new Error('Project configuration apply actor does not match the trusted decision');
       }
 
       const current = await optionalCurrentConfig(workspace);
@@ -618,6 +675,7 @@ export async function applyProjectConfigurationDecision(
         'drafts',
       );
       const draft = asDraft(JSON.parse(await readFile(draftFile, 'utf8')) as unknown);
+      await assertDetectedRepositoryScope(workspace, draft, state.request.candidateConfig);
       if (
         state.request.storeBinding?.repositories.some((binding) => binding.selection === 'blocked')
       ) {
@@ -660,6 +718,10 @@ export async function applyProjectConfigurationDecision(
           {
             containedRoot: workspace,
             beforeCommit: async () => {
+              const latest = await optionalCurrentConfig(workspace);
+              if ((latest ? hashProjectConfig(latest) : null) !== currentDigest) {
+                throw new Error('Shared project configuration changed during onboarding');
+              }
               await verifyWorkspaceGuides(workspace, guides);
               await entries.verify();
             },
@@ -692,4 +754,112 @@ export async function applyProjectConfigurationDecision(
       return result;
     },
   );
+}
+
+// A Git OID is publication provenance. The receipt and the exact config-only history
+// authorize observing a newer OID without rewriting the accepted Build Check.
+export async function observeVerifyProfilePublication(input: {
+  workspace: string;
+  profileId: string;
+  checkpointHead: string;
+  head: string;
+  baselineExecutionDigest: string;
+  requireConfigOnlyHistory: boolean;
+}): Promise<{ observedHead: string; decisionDigest: string } | null> {
+  const { workspace, profileId, checkpointHead, head } = input;
+  if (
+    checkpointHead === head ||
+    !(await isExecutionRevisionAncestor(workspace, checkpointHead, head))
+  )
+    return null;
+  const git = (args: string[]) =>
+    execute('git', args, { cwd: workspace }).then(({ stdout }) => stdout);
+  const [changed, merges, status] = await Promise.all([
+    git(['log', '--format=', '--name-only', '--no-renames', `${checkpointHead}..${head}`, '--']),
+    git(['rev-list', '--count', '--merges', `${checkpointHead}..${head}`]),
+    git(['status', '--porcelain=v1', '--', 'repoctopus.yaml']),
+  ]);
+  const paths = [...new Set(changed.split(/\r?\n/u).filter(Boolean))];
+  if (
+    status.trim() ||
+    (input.requireConfigOnlyHistory &&
+      (paths.length !== 1 || paths[0] !== 'repoctopus.yaml' || merges.trim() !== '0'))
+  )
+    return null;
+  const [beforeText, afterText, current] = await Promise.all([
+    git(['show', `${checkpointHead}:repoctopus.yaml`]),
+    git(['show', `${head}:repoctopus.yaml`]),
+    loadProjectConfig(workspace),
+  ]);
+  const before = parseSharedProjectConfig(parse(beforeText));
+  const after = parseSharedProjectConfig(parse(afterText));
+  const beforeDigest = hashProjectConfig(before);
+  const afterDigest = hashProjectConfig(after);
+  if (
+    afterDigest !== hashProjectConfig(current.shared) ||
+    beforeDigest === afterDigest ||
+    `sha256:${projectExecutionConfigDigests(before, current.local).effectiveDigest}` !==
+      input.baselineExecutionDigest
+  )
+    return null;
+  const withoutProfile = (config: SharedProjectConfig) => ({
+    ...config,
+    profiles: config.profiles.filter(({ id }) => id !== profileId),
+  });
+  if (hashProjectConfig(withoutProfile(before)) !== hashProjectConfig(withoutProfile(after)))
+    return null;
+
+  const directory = path.join(workspace, '.repoctopus', 'decisions');
+  const entries = await readdir(directory, { withFileTypes: true }).catch(
+    (error: NodeJS.ErrnoException) => {
+      if (error.code === 'ENOENT') return [];
+      throw error;
+    },
+  );
+  for (const entry of entries) {
+    if (!entry.isFile() || !/^project-configuration-[a-f0-9-]{36}\.json$/u.test(entry.name))
+      continue;
+    let state: StoredProjectConfigurationDecision;
+    try {
+      const candidate = await safeInputFile(
+        workspace,
+        workspace,
+        path.join(directory, entry.name),
+        'decisions',
+      );
+      state = asStoredDecision(JSON.parse(await readFile(candidate, 'utf8')) as unknown);
+    } catch {
+      continue;
+    }
+    const request = state.request;
+    const record = state.record;
+    if (
+      state.status !== 'confirmed' ||
+      state.result?.configDigest !== afterDigest ||
+      !record ||
+      record.decision !== 'approve' ||
+      record.requestId !== request.requestId ||
+      record.candidateConfigDigest !== afterDigest ||
+      record.snapshotDigest !== request.snapshotDigest ||
+      request.profileUpdate?.workspaceRoot !== workspace ||
+      request.profileUpdate.profileId !== profileId ||
+      request.baseConfigDigest === null ||
+      request.candidateConfigDigest !== afterDigest
+    )
+      continue;
+    const verified = recordProjectConfigurationDecision({
+      request,
+      response: {
+        apiVersion: request.apiVersion,
+        kind: 'HumanDecisionResponse',
+        requestId: record.requestId,
+        snapshotDigest: record.snapshotDigest,
+        decision: record.decision,
+      },
+      actor: { actorId: record.actorId, authenticated: true, source: record.source },
+      timestamp: record.decidedAt,
+    });
+    return { observedHead: head, decisionDigest: verified.snapshotDigest };
+  }
+  return null;
 }

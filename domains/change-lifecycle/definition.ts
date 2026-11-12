@@ -534,7 +534,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running', 'blocked'] },
       to: { phase: 'build', status: 'blocked' },
       trigger: 'verification-input-incomplete',
-      requiredValidatorProfile: 'build.plan-evidence-valid',
+      requiredValidatorProfile: 'build.check-valid',
     },
     {
       id: 'build.validated',

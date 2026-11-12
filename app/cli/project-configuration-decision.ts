@@ -38,6 +38,20 @@ export async function reviewProjectConfigurationDecision(options: {
 }): Promise<{ decision: ProjectConfigurationDecision; comment?: string }> {
   const terminal = createInterface({ input: options.input, output: options.output });
   try {
+    const plan = options.request.profileUpdate
+      ? {
+          profile: options.request.candidateConfig.profiles.find(
+            ({ id }) => id === options.request.profileUpdate?.profileId,
+          ),
+          workspace: options.request.profileUpdate.workspaceRoot,
+        }
+      : {
+          workspace: options.request.storeBinding?.workspaceRoot,
+          repositories: options.request.candidateConfig.repositories,
+          store: options.request.storeBinding,
+          reconcile: options.request.reconcile,
+        };
+    options.output.write(`${JSON.stringify(plan, null, 2)}\n`);
     const entrySkills = (options.request.entrySkills ?? []).map(
       ({ host, path, status, diagnostic }) =>
         `  ${host}: ${status} ${path}${diagnostic ? ` — ${diagnostic}` : ''}`,

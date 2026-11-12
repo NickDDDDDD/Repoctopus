@@ -26,6 +26,39 @@ async function expectMissing(file: string): Promise<void> {
 }
 
 describe('project configuration detection', () => {
+  it('keeps the configured Workspace identity and existing repository IDs when Init adds host entries', async () => {
+    const root = await temporaryDirectory('repoctopus-existing-init-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    await createGitRepository(root, 'backend');
+    await createGitRepository(root, 'unrelated');
+    const config = {
+      apiVersion: 'repoctopus/v1alpha1',
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'team-platform', repositoryId: 'team' },
+      repositories: [
+        { id: 'team', path: '.' },
+        { id: 'backend-api', path: '../backend' },
+      ],
+      profiles: [],
+      specificationProvider: {
+        id: 'specification-openspec',
+        store: { id: 'team-platform', repositoryId: 'team' },
+      },
+    };
+    await writeFile(path.join(workspace, 'repoctopus.yaml'), JSON.stringify(config));
+    const detected = await detectProjectConfiguration({
+      workspace,
+      scanRoot: root,
+      mode: 'minimal',
+      layout: 'multi',
+    });
+    expect(detected.draft.candidateConfig?.workspace).toEqual(config.workspace);
+    expect(detected.draft.candidateConfig?.repositories).toEqual(
+      expect.arrayContaining(config.repositories),
+    );
+    expect(detected.draft.candidateConfig?.repositories).toHaveLength(2);
+  });
   it('prepares a single-repository candidate without inspecting neighboring repositories or build files', async () => {
     const root = await temporaryDirectory('repoctopus-minimal-single-');
     cleanup.push(root);

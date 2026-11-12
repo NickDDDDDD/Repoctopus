@@ -1,3 +1,4 @@
+import type { EvidenceCoordinator } from './evidence-coordinator.js';
 import { createHash, randomUUID } from 'node:crypto';
 import {
   createVerifyRepair,
@@ -120,7 +121,12 @@ import {
   createVerificationInput,
   rebaseVerificationInput,
 } from '../domains/change-lifecycle/verification-input.js';
-import { resolveAcceptanceCoverage } from '../domains/change-lifecycle/acceptance-coverage.js';
+import {
+  approvedAcceptanceSet,
+  resolveAcceptanceCoverage,
+} from '../domains/change-lifecycle/acceptance-coverage.js';
+import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
+import { observeVerifyProfilePublication } from '../platform/project-configuration/onboarding.js';
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import { acceptVerifyGate, rejectVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
 import type { SpecificationTask } from '../domains/specification/types.js';
@@ -184,6 +190,7 @@ export interface StartChangeRunInput {
   projectSnapshot: ProjectSnapshot;
   projectConfigDigest: `sha256:${string}`;
   verificationProfileId: string;
+  verificationProfileExplicit?: boolean;
   executionCheckouts: readonly ExecutionCheckoutRequest[];
   executionMode?: BuildExecutionMode;
   tddMode?: BuildTddMode;
@@ -497,6 +504,7 @@ export class WorkflowRuns extends Service {
         repositoryIds,
         projectConfigDigest: input.projectConfigDigest,
         verificationProfileId: input.verificationProfileId,
+        ...(input.verificationProfileExplicit ? { verificationProfileExplicit: true } : {}),
         buildStrategyPreference: {
           schemaVersion: 1,
           executionMode,
@@ -1113,11 +1121,20 @@ export class WorkflowRuns extends Service {
                 if (typeof profileId !== 'string' || !profileId.trim()) {
                   throw new Error('Design preflight requires a verification profile');
                 }
-                const [taskSet, plan] = await Promise.all([
+                const [taskSet, config] = await Promise.all([
                   this.ctx.specification.tasks(lifecycle.identity.changeId, signal),
-                  this.ctx.evidenceCoordinator.compile(profileId),
+                  loadProjectConfig(this.workspaceRoot),
                 ]);
-                const coverage = resolveAcceptanceCoverage(taskSet.tasks, plan);
+                const canDefer =
+                  profileId === 'verify' &&
+                  !state.trigger?.facts.verificationProfileExplicit &&
+                  !config.shared.profiles.some(({ id }) => id === profileId);
+                const coverage = canDefer
+                  ? approvedAcceptanceSet(taskSet.tasks)
+                  : resolveAcceptanceCoverage(
+                      taskSet.tasks,
+                      await this.ctx.evidenceCoordinator.compile(profileId),
+                    );
                 return { evidenceDigests: [coverage.acceptanceSetHash] };
               },
             }
@@ -1717,6 +1734,175 @@ export class WorkflowRuns extends Service {
     }
   }
 
+  private async approvedVerificationConfigPublication(
+    state: RunState,
+    observed: ExecutionWorkspaceBinding | null,
+    beforeBuildCheck?: ProjectSnapshot,
+  ) {
+    const repositoryId = this.projectInput?.workspaceRepositoryId;
+    const protocol = state.changeLifecycle?.buildProtocol;
+    const profileId = state.trigger?.facts.verificationProfileId;
+    const baselineExecutionDigest = state.trigger?.facts.projectConfigDigest;
+    if (
+      typeof baselineExecutionDigest !== 'string' ||
+      !repositoryId ||
+      protocol?.status !== 'ready-for-verify' ||
+      typeof profileId !== 'string'
+    )
+      return null;
+    const previous = protocol.workspaceCheckpoint?.repositories.find(
+      (repo) => repo.repositoryId === repositoryId,
+    );
+    const current = observed?.repositories.find((repo) => repo.repositoryId === repositoryId);
+    if (!previous || !current || current.branch !== previous.branchRef) return null;
+    const matchesBuildCheck = previous.headRevision === current.head;
+    const baselineHead = matchesBuildCheck
+      ? beforeBuildCheck?.repositories.find((repo) => repo.id === repositoryId)?.head
+      : previous.headRevision;
+    if (!baselineHead || baselineHead === current.head) return null;
+    const publication = await observeVerifyProfilePublication({
+      workspace: current.checkoutPath,
+      profileId,
+      checkpointHead: baselineHead,
+      requireConfigOnlyHistory: !matchesBuildCheck,
+      head: current.head,
+      baselineExecutionDigest,
+    });
+    return publication ? { ...publication, repositoryId } : null;
+  }
+
+  private async prepareChangeVerification(
+    state: RunState,
+    workspaceRepositoryId: string,
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    const { runId } = state;
+    const lifecycle = state.changeLifecycle!;
+    const check = lifecycle.buildProtocol?.checkEvidence;
+    const profileId = state.trigger?.facts.verificationProfileId;
+    if (!check?.accepted || typeof profileId !== 'string' || !profileId) {
+      throw new Error('Preparing Verify requires an accepted Build Check and a Profile identity');
+    }
+    const pending = async (message: string): Promise<RuntimeResult<RunStatusView>> => ({
+      value: await this.coordinator.status(runId),
+      diagnostics: [{ level: 'info', code: 'change.verify-configuration-required', message }],
+    });
+    const assertBuild = async (latest: RunState) => {
+      if (
+        !this.projectInput ||
+        latest.changeLifecycle?.buildProtocol?.checkEvidence?.evidenceId !== check.evidenceId
+      ) {
+        throw new Error('Preparing Verify requires the current accepted Build Check');
+      }
+      const [previous, current] = await Promise.all([
+        this.ctx.runStore.loadProjectSnapshot(runId),
+        this.ctx.project.snapshot(this.projectInput),
+      ]);
+      const observed = await this.bindExecutionWorkspace(latest, latest.changeLifecycle, current);
+      const publication = await this.approvedVerificationConfigPublication(latest, observed);
+      const recovery = classifyBuildWorkspaceRecovery({
+        state: latest,
+        previous,
+        current,
+        observed,
+        ...(publication ? { verificationConfigPublication: publication } : {}),
+      });
+      if (recovery.conflicts.length) {
+        throw new Error(`Workspace changed after Build Check: ${recovery.conflicts.join(', ')}`);
+      }
+      return (
+        publication ??
+        (await this.approvedVerificationConfigPublication(latest, observed, previous))
+      );
+    };
+    const config = await loadProjectConfig(this.workspaceRoot);
+    if (!config.shared.profiles.some(({ id }) => id === profileId)) {
+      return pending(
+        `Build Check passed. Configure the Verify Profile '${profileId}' and resume this Run.`,
+      );
+    }
+    const publication = await assertBuild(state);
+    const currentConfigDigest = `sha256:${config.effectiveDigest}`;
+    if (currentConfigDigest !== state.trigger?.facts.projectConfigDigest && !publication) {
+      return pending('Commit the approved Verify Profile update before resuming this Run.');
+    }
+
+    let evidencePlan: Awaited<ReturnType<EvidenceCoordinator['plan']>>;
+    try {
+      const plan = await this.ctx.evidenceCoordinator.compile(profileId);
+      resolveAcceptanceCoverage(lifecycle.tasks ?? [], plan);
+      evidencePlan = await this.ctx.evidenceCoordinator.plan(profileId, runId);
+    } catch (error) {
+      return pending(
+        `Verify inputs are not ready: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal, [], runId);
+    const boundSkills = [
+      ...(state.skillUsageSnapshots ?? []),
+      skills.actionSkill,
+      ...skills.augmentationSkills,
+    ].filter(
+      (skill, index, all) =>
+        all.findIndex(
+          (candidate) => candidate.name === skill.name && candidate.provider === skill.provider,
+        ) === index,
+    );
+    const freeze = (plan: typeof evidencePlan) =>
+      createVerificationInput({
+        runId,
+        checkEpoch: lifecycle.checkEpoch + 1,
+        tasks: lifecycle.tasks ?? [],
+        fingerprint: plan.fingerprint,
+        plan: plan.plan,
+        projectConfigDigest: `sha256:${plan.plan.configDigest}`,
+        compositionDigest: state.composition.compositionDigest,
+        skills: boundSkills,
+      });
+    const verificationInput = freeze(evidencePlan);
+    if (verificationInput.projectConfigDigest !== currentConfigDigest) {
+      return pending('Verify configuration changed during preparation. Retry the same Run.');
+    }
+    const work = createVerifyWork({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      checkEpoch: lifecycle.checkEpoch + 1,
+      verification: verificationInput,
+      actionSkill: skills.actionSkill,
+      augmentationSkills: skills.augmentationSkills,
+      skillComposition: skills.skillComposition,
+      workspaceRepositoryId,
+      repositoryIds: evidencePlan.fingerprint.manifest.repositories.map(
+        (repository) => repository.repositoryId,
+      ),
+    });
+    for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+      await this.coordinator.bindSkill(runId, skill);
+    }
+    const advanced = await this.coordinator.acceptChangeObservation(
+      runId,
+      {
+        kind: 'build-verification-ready',
+        buildCheckEvidenceId: check.evidenceId,
+        verificationInput,
+        work,
+      },
+      {
+        reobserve: async (latest) => {
+          const refreshedPublication = await assertBuild(latest);
+          const refreshed = freeze(await this.ctx.evidenceCoordinator.plan(profileId, runId));
+          if (
+            canonicalJson(publication) !== canonicalJson(refreshedPublication) ||
+            refreshed.digest !== verificationInput.digest
+          ) {
+            throw new Error('Verify inputs changed during preparation. Retry the same Run.');
+          }
+        },
+      },
+    );
+    await this.ctx.workExecutionAuthority.recordWorkCreated(runId, work);
+    return { ...advanced, value: await this.coordinator.status(runId) };
+  }
+
   private async recoverBoundBuildWorkspace(
     runId: string,
     entrypoint: 'next' | 'resume',
@@ -1769,7 +1955,9 @@ export class WorkflowRuns extends Service {
       lifecycle.currentWork?.kind === 'build.plan'
         ? await this.observeChangePlanning(state, lifecycle)
         : null;
+    const publication = await this.approvedVerificationConfigPublication(state, observed);
     const classified = classifyBuildWorkspaceRecovery({
+      ...(publication ? { verificationConfigPublication: publication } : {}),
       state,
       previous,
       current,
@@ -3020,6 +3208,13 @@ export class WorkflowRuns extends Service {
           if ('value' in evaluated) return evaluated;
           let assessment = evaluated.assessment;
           const { projectSnapshot, projectConfigDigest, workspaceRepositoryId } = evaluated;
+          if (
+            lifecycle.phase === 'build' &&
+            lifecycle.currentWork === null &&
+            lifecycle.blocker?.code === 'verification-input-pending'
+          ) {
+            return this.prepareChangeVerification(current, workspaceRepositoryId, signal);
+          }
           const legacyBuildProtocol = lifecycle.buildProtocol;
           if (
             lifecycle.phase === 'build' &&
@@ -4765,55 +4960,9 @@ export class WorkflowRuns extends Service {
                 await this.ctx.workExecutionAuthority.recordWorkCreated(runId, planWork);
                 return { ...revised, value: await this.coordinator.status(runId) };
               }
-              const profileId = current.trigger?.facts.verificationProfileId;
-              if (typeof profileId !== 'string' || !profileId.trim()) {
-                throw new Error('Verification Evidence Profile identity is missing');
-              }
-              const evidencePlan = await this.ctx.evidenceCoordinator.plan(profileId, runId);
-              const verifySkills = await this.resolveLifecycleWorkSkills(
-                'evidence.verify',
-                signal,
-                [],
-                runId,
-              );
-              const boundSkills = [
-                ...(current.skillUsageSnapshots ?? []),
-                verifySkills.actionSkill,
-                ...verifySkills.augmentationSkills,
-              ].filter(
-                (skill, index, all) =>
-                  all.findIndex(
-                    (candidate) =>
-                      candidate.name === skill.name && candidate.provider === skill.provider,
-                  ) === index,
-              );
-              const verificationInput = createVerificationInput({
-                runId,
-                checkEpoch: lifecycle.checkEpoch + 1,
-                tasks: lifecycle.tasks ?? [],
-                fingerprint: evidencePlan.fingerprint,
-                plan: evidencePlan.plan,
-                projectConfigDigest,
-                compositionDigest: current.composition.compositionDigest,
-                skills: boundSkills,
-              });
-              const verifyWork = createVerifyWork({
-                definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-                checkEpoch: lifecycle.checkEpoch + 1,
-                verification: verificationInput,
-                actionSkill: verifySkills.actionSkill,
-                augmentationSkills: verifySkills.augmentationSkills,
-                skillComposition: verifySkills.skillComposition,
-                workspaceRepositoryId,
-                repositoryIds: evidencePlan.fingerprint.manifest.repositories.map(
-                  (repository) => repository.repositoryId,
-                ),
-              });
               const checkObservation = {
                 kind: 'build-check-accepted',
                 evidence: checkEvidence,
-                verificationInput,
-                work: verifyWork,
               } as const;
               if (checkExecution?.status === 'submitted') {
                 if (checkCandidate?.kind !== 'candidate') {
@@ -4826,9 +4975,7 @@ export class WorkflowRuns extends Service {
                   validationBase: current,
                   validationInput: {
                     checkEvidence,
-                    verificationInput,
                     repairRetention,
-                    evidenceFingerprint: evidencePlan.fingerprint,
                     planDigest: plan.digest,
                     projectSnapshotDigest: current.projectSnapshotDigest,
                   },
@@ -4841,25 +4988,9 @@ export class WorkflowRuns extends Service {
                       refreshedProjectSnapshot,
                       protocol.workspaceCheckpoint!,
                     );
-                    const refreshedEvidencePlan = await this.ctx.evidenceCoordinator.plan(
-                      profileId,
-                      runId,
-                    );
-                    const refreshedVerificationInput = createVerificationInput({
-                      runId,
-                      checkEpoch: lifecycle.checkEpoch + 1,
-                      tasks: lifecycle.tasks ?? [],
-                      fingerprint: refreshedEvidencePlan.fingerprint,
-                      plan: refreshedEvidencePlan.plan,
-                      projectConfigDigest,
-                      compositionDigest: current.composition.compositionDigest,
-                      skills: boundSkills,
-                    });
                     return {
                       checkEvidence,
-                      verificationInput: refreshedVerificationInput,
                       repairRetention: await this.observeVerifyRepairRetention(current),
-                      evidenceFingerprint: refreshedEvidencePlan.fingerprint,
                       planDigest: plan.digest,
                       projectSnapshotDigest: refreshedProjectSnapshot.digest,
                     };
@@ -4883,19 +5014,22 @@ export class WorkflowRuns extends Service {
               } else {
                 this.coordinator.assertChangeObservationFeasible(current, checkObservation);
               }
-              for (const skill of [verifySkills.actionSkill, ...verifySkills.augmentationSkills]) {
-                await this.coordinator.bindSkill(runId, skill);
-              }
-              const checked = await this.coordinator.acceptChangeObservation(
-                runId,
-                checkObservation,
-                {
-                  reobserve: async (latest) =>
-                    this.assertVerifyRepairRetentionCurrent(latest, repairRetention),
+              await this.coordinator.acceptChangeObservation(runId, checkObservation, {
+                reobserve: async (latest) => {
+                  await this.assertBuildWorkspaceCheckpointCurrent(
+                    latest,
+                    lifecycle,
+                    projectSnapshot,
+                    protocol.workspaceCheckpoint!,
+                  );
+                  await this.assertVerifyRepairRetentionCurrent(latest, repairRetention);
                 },
+              });
+              return this.prepareChangeVerification(
+                await this.ctx.runStore.loadRun(runId),
+                workspaceRepositoryId,
+                signal,
               );
-              await this.ctx.workExecutionAuthority.recordWorkCreated(runId, verifyWork);
-              return { ...checked, value: await this.coordinator.status(runId) };
             }
             if (lifecycle.phase === 'verify' || lifecycle.currentWork) {
               return {
@@ -5276,7 +5410,7 @@ export class WorkflowRuns extends Service {
             tasks: lifecycle.tasks ?? [],
             fingerprint: refreshed.fingerprint,
             plan: refreshed.plan,
-            projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+            projectConfigDigest: `sha256:${refreshed.plan.configDigest}`,
             compositionDigest: state.composition.compositionDigest,
             skills: lifecycle.verificationInput.skills,
           })
@@ -5781,7 +5915,7 @@ export class WorkflowRuns extends Service {
       tasks: lifecycle.tasks ?? [],
       fingerprint: refreshed.fingerprint,
       plan: refreshed.plan,
-      projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+      projectConfigDigest: `sha256:${refreshed.plan.configDigest}`,
       compositionDigest: state.composition.compositionDigest,
       skills: [
         ...(state.skillUsageSnapshots ?? []),

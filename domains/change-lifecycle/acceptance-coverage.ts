@@ -20,10 +20,7 @@ function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
 }
 
-export function resolveAcceptanceCoverage(
-  tasks: readonly SpecificationTask[],
-  plan: EvidenceExecutionPlan,
-): AcceptanceCoverageResolution {
+export function approvedAcceptanceSet(tasks: readonly SpecificationTask[]) {
   const acceptanceCriteria = tasks
     .flatMap((task) => task.acceptanceCriteria.map((criterion) => structuredClone(criterion)))
     .sort((left, right) => left.acceptanceId.localeCompare(right.acceptanceId));
@@ -34,7 +31,20 @@ export function resolveAcceptanceCoverage(
   if (new Set(ids).size !== ids.length) {
     throw new Error('Verification input contains duplicate Acceptance identities');
   }
-  const nodeIdsByAcceptance = new Map(ids.map((id) => [id, new Set<string>()]));
+  return {
+    acceptanceCriteria,
+    acceptanceSetHash: sha256({ schemaVersion: 1, acceptanceCriteria }),
+  };
+}
+
+export function resolveAcceptanceCoverage(
+  tasks: readonly SpecificationTask[],
+  plan: EvidenceExecutionPlan,
+): AcceptanceCoverageResolution {
+  const { acceptanceCriteria, acceptanceSetHash } = approvedAcceptanceSet(tasks);
+  const nodeIdsByAcceptance = new Map(
+    acceptanceCriteria.map(({ acceptanceId }) => [acceptanceId, new Set<string>()]),
+  );
   for (const node of plan.nodes) {
     const selectors = node.covers ?? [];
     if (new Set(selectors).size !== selectors.length) {
@@ -76,7 +86,7 @@ export function resolveAcceptanceCoverage(
   }
   return {
     acceptanceCriteria,
-    acceptanceSetHash: sha256({ schemaVersion: 1, acceptanceCriteria }),
+    acceptanceSetHash,
     acceptanceCoverage,
   };
 }
