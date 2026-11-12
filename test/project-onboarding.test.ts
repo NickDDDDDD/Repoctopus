@@ -147,7 +147,17 @@ describe('project configuration onboarding', () => {
     expect(prepared.request).toMatchObject({
       entrySkills: [
         { host: 'codex', path: '.agents/skills/repoctopus/SKILL.md', status: 'create' },
+        {
+          host: 'codex',
+          path: '.agents/skills/repoctopus-configure-verify/SKILL.md',
+          status: 'create',
+        },
         { host: 'opencode', path: '.opencode/skills/repoctopus/SKILL.md', status: 'create' },
+        {
+          host: 'opencode',
+          path: '.opencode/skills/repoctopus-configure-verify/SKILL.md',
+          status: 'create',
+        },
       ],
     });
     await expect(access(entry)).rejects.toMatchObject({ code: 'ENOENT' });
@@ -232,8 +242,13 @@ describe('project configuration onboarding', () => {
       scanRoot: path.dirname(workspace),
       specificationAuthority: registration,
     });
-    expect(detected.draft.entrySkills?.map(({ status }) => status)).toEqual(['conflict', 'keep']);
-    expect(prepared.request.entrySkills).toHaveLength(2);
+    expect(detected.draft.entrySkills?.map(({ status }) => status)).toEqual([
+      'conflict',
+      'keep',
+      'keep',
+      'keep',
+    ]);
+    expect(prepared.request.entrySkills).toHaveLength(4);
   });
 
   it('installs only the chosen host in a single-repository Workspace', async () => {
@@ -250,7 +265,7 @@ describe('project configuration onboarding', () => {
       entryHosts: ['opencode'],
       specificationAuthority: registration,
     });
-    expect(detected.draft.entrySkills?.map(({ host }) => host)).toEqual(['opencode']);
+    expect(detected.draft.entrySkills?.map(({ host }) => host)).toEqual(['opencode', 'opencode']);
     const prepared = await prepareProjectConfigurationDecision({
       workspace,
       draftFile: detected.file,
@@ -273,7 +288,12 @@ describe('project configuration onboarding', () => {
       scanRoot: root,
       specificationAuthority: registration,
     });
-    expect(upgrade.draft.entrySkills?.map(({ status }) => status)).toEqual(['create', 'keep']);
+    expect(upgrade.draft.entrySkills?.map(({ status }) => status)).toEqual([
+      'create',
+      'create',
+      'keep',
+      'keep',
+    ]);
     const upgradeRequest = await prepareProjectConfigurationDecision({
       workspace,
       draftFile: upgrade.file,

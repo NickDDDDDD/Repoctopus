@@ -8,6 +8,7 @@ import { hashProjectConfig } from '../../domains/project-configuration/config.js
 import type { ProjectDetectionDraft } from '../../domains/project-configuration/detection.js';
 import {
   createProjectConfigurationDecision,
+  createVerifyProfileDecision,
   recordProjectConfigurationDecision,
   type ProjectConfigurationDecisionActor,
   type ProjectConfigurationDecisionRequest,
@@ -16,6 +17,7 @@ import {
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
 import type { OpenSpecStoreBindingProposal } from '../../domains/project-configuration/detection.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
+import { withRecoverableFileLock } from '../runtime/recoverable-file-lock.js';
 import { planWorkspaceEntrySkills, prepareWorkspaceEntryWrites } from './workspace-entry-skills.js';
 import { loadProjectConfig } from './file-config.js';
 import { ensureRepoctopusGitignore } from './gitignore.js';
@@ -425,6 +427,28 @@ export async function prepareProjectConfigurationDecision(input: {
   return { request, file };
 }
 
+export async function prepareVerifyProfileDecision(input: { workspace: string; profile: unknown }) {
+  const workspace = await realpath(input.workspace);
+  const current = await loadProjectConfig(workspace);
+  const request = createVerifyProfileDecision({
+    workspaceRoot: workspace,
+    current,
+    profile: input.profile,
+  });
+  const file = decisionFile(workspace, request.requestId);
+  await atomicWriteJson(
+    file,
+    {
+      schemaVersion: 1,
+      kind: 'ProjectConfigurationDecisionState',
+      status: 'awaiting_confirmation',
+      request,
+    } satisfies StoredProjectConfigurationDecision,
+    { containedRoot: workspace },
+  );
+  return { request, file };
+}
+
 export async function loadPendingProjectConfigurationDecision(
   workspace: string,
   file: string,
@@ -457,134 +481,215 @@ export async function applyProjectConfigurationDecision(
     input.decisionFile,
     'decisions',
   );
-  const state = asStoredDecision(JSON.parse(await readFile(stateFile, 'utf8')) as unknown);
-  const record = recordProjectConfigurationDecision({
-    request: state.request,
-    response: input.response,
-    actor: input.actor,
-    timestamp: state.record?.decidedAt ?? input.timestamp,
-  });
-  if (record.decision === 'approve' && !state.request.storeBinding) {
-    throw new Error(
-      'Approval request is missing its Workspace Store binding. Prepare a new request from the Workspace Git root.',
-    );
-  }
-  if (record.decision === 'approve' && state.request.storeBinding?.workspaceRoot !== workspace) {
-    throw new Error('Approved Store binding belongs to another Workspace checkout');
-  }
-  if (state.status === 'confirmed' && state.result) {
-    if (
-      !state.record ||
-      state.record.actorId !== record.actorId ||
-      state.record.decision !== record.decision
-    ) {
-      throw new Error('Project configuration replay does not match the trusted decision');
-    }
-    return structuredClone(state.result);
-  }
-  if (record.decision !== 'approve') {
-    await atomicWriteJson(
-      stateFile,
-      { ...state, status: record.decision === 'reject' ? 'rejected' : 'request_changes', record },
-      { containedRoot: workspace },
-    );
-    return {
-      status: record.decision === 'reject' ? 'rejected' : 'request_changes',
-      configFile: null,
-      configDigest: null,
-      bindingReceiptFiles: [],
-    };
-  }
+  return withRecoverableFileLock(
+    path.join(path.dirname(stateFile), 'project-configuration.lock'),
+    async () => {
+      const state = asStoredDecision(JSON.parse(await readFile(stateFile, 'utf8')) as unknown);
+      const record = recordProjectConfigurationDecision({
+        request: state.request,
+        response: input.response,
+        actor: input.actor,
+        timestamp: state.record?.decidedAt ?? input.timestamp,
+      });
+      const profileUpdate = state.request.profileUpdate;
+      if (profileUpdate && profileUpdate.workspaceRoot !== workspace) {
+        throw new Error('Verify Profile request belongs to another Workspace checkout');
+      }
+      if (record.decision === 'approve' && !profileUpdate && !state.request.storeBinding) {
+        throw new Error(
+          'Approval request is missing its Workspace Store binding. Prepare a new request from the Workspace Git root.',
+        );
+      }
+      if (
+        record.decision === 'approve' &&
+        !profileUpdate &&
+        state.request.storeBinding?.workspaceRoot !== workspace
+      ) {
+        throw new Error('Approved Store binding belongs to another Workspace checkout');
+      }
+      if (state.status === 'confirmed' && state.result) {
+        if (
+          !state.record ||
+          state.record.actorId !== record.actorId ||
+          state.record.decision !== record.decision
+        ) {
+          throw new Error('Project configuration replay does not match the trusted decision');
+        }
+        return structuredClone(state.result);
+      }
+      if (record.decision !== 'approve') {
+        await atomicWriteJson(
+          stateFile,
+          {
+            ...state,
+            status: record.decision === 'reject' ? 'rejected' : 'request_changes',
+            record,
+          },
+          { containedRoot: workspace },
+        );
+        return {
+          status: record.decision === 'reject' ? 'rejected' : 'request_changes',
+          configFile: null,
+          configDigest: null,
+          bindingReceiptFiles: [],
+        };
+      }
 
-  if (
-    state.record &&
-    (state.record.actorId !== record.actorId || state.record.decision !== 'approve')
-  ) {
-    throw new Error('Project configuration apply actor does not match the trusted decision');
-  }
+      if (
+        state.record &&
+        (state.record.actorId !== record.actorId || state.record.decision !== 'approve')
+      ) {
+        throw new Error('Project configuration apply actor does not match the trusted decision');
+      }
 
-  const current = await optionalCurrentConfig(workspace);
-  const currentDigest = current ? hashProjectConfig(current) : null;
-  if (
-    currentDigest !== state.request.baseConfigDigest &&
-    currentDigest !== state.request.candidateConfigDigest
-  ) {
-    throw new Error('Shared project configuration changed while awaiting confirmation');
-  }
-  const candidateDigest = hashProjectConfig(state.request.candidateConfig);
-  if (candidateDigest !== state.request.candidateConfigDigest) {
-    throw new Error('Approved project configuration no longer matches its digest');
-  }
-  const configFile = path.join(workspace, 'repoctopus.yaml');
-  const draftFile = await safeInputFile(
-    workspace,
-    input.workspace,
-    path.join(workspace, '.repoctopus', 'drafts', `project-detect-${state.request.draftId}.json`),
-    'drafts',
-  );
-  const draft = asDraft(JSON.parse(await readFile(draftFile, 'utf8')) as unknown);
-  if (state.request.storeBinding?.repositories.some((binding) => binding.selection === 'blocked')) {
-    throw new Error('Approved Store binding still contains blocked repository conflicts');
-  }
-  const guides = await planWorkspaceGuides(workspace, state.request.candidateConfig);
-  const entries = await prepareWorkspaceEntryWrites(
-    workspace,
-    state.request.entrySkills ?? [],
-    state.status === 'applying',
-    state.request.requestId,
-    (file) => input.hooks?.afterEntryWrite?.(file),
-  );
-  await atomicWriteJson(
-    stateFile,
-    { ...state, status: 'applying', record },
-    { containedRoot: workspace },
-  );
-  const receiptFiles = state.request.storeBinding
-    ? await applyStoreBinding({
+      const current = await optionalCurrentConfig(workspace);
+      const currentDigest = current ? hashProjectConfig(current) : null;
+      if (
+        currentDigest !== state.request.baseConfigDigest &&
+        currentDigest !== state.request.candidateConfigDigest
+      ) {
+        throw new Error('Shared project configuration changed while awaiting confirmation');
+      }
+      const candidateDigest = hashProjectConfig(state.request.candidateConfig);
+      if (candidateDigest !== state.request.candidateConfigDigest) {
+        throw new Error('Approved project configuration no longer matches its digest');
+      }
+      const configFile = path.join(workspace, 'repoctopus.yaml');
+      if (profileUpdate) {
+        if (!current) throw new Error('Verify Profile update requires an initialized Workspace');
+        const omitProfile = (config: SharedProjectConfig) => ({
+          ...config,
+          profiles: config.profiles.filter(({ id }) => id !== profileUpdate.profileId),
+        });
+        if (
+          hashProjectConfig(omitProfile(current)) !==
+          hashProjectConfig(omitProfile(state.request.candidateConfig))
+        ) {
+          throw new Error('Verify Profile approval may only update its selected Profile');
+        }
+        await atomicWriteJson(
+          stateFile,
+          { ...state, status: 'applying', record },
+          { containedRoot: workspace },
+        );
+        if (currentDigest !== candidateDigest) {
+          await atomicWriteText(
+            configFile,
+            stringify(state.request.candidateConfig, { lineWidth: 0 }),
+            {
+              containedRoot: workspace,
+              beforeCommit: async () => {
+                const latest = await loadProjectConfig(workspace);
+                if (hashProjectConfig(latest.shared) !== currentDigest) {
+                  throw new Error(
+                    'Shared project configuration changed before applying the Verify Profile',
+                  );
+                }
+              },
+            },
+          );
+        }
+        const written = await loadProjectConfig(workspace);
+        if (hashProjectConfig(written.shared) !== candidateDigest) {
+          throw new Error('Written Verify Profile does not match the approved configuration');
+        }
+        const result: ProjectConfigurationApplyResult = {
+          status: 'confirmed',
+          configFile,
+          configDigest: candidateDigest,
+          bindingReceiptFiles: [],
+        };
+        await atomicWriteJson(
+          stateFile,
+          { ...state, status: 'confirmed', record, result },
+          { containedRoot: workspace },
+        );
+        return result;
+      }
+      const draftFile = await safeInputFile(
         workspace,
-        requestId: state.request.requestId,
-        candidate: state.request.candidateConfig,
-        proposal: state.request.storeBinding,
-        timestamp: input.timestamp,
-        registration,
-        ...(input.hooks ? { hooks: input.hooks } : {}),
-      })
-    : [];
-  await installWorkspaceGuides(workspace, guides, (file) => input.hooks?.afterGuideWrite?.(file));
-  await entries.install();
-  await entries.verify();
-  await ensureRepoctopusGitignore(workspace);
-  if (currentDigest !== candidateDigest) {
-    await atomicWriteText(configFile, stringify(state.request.candidateConfig, { lineWidth: 0 }), {
-      containedRoot: workspace,
-      beforeCommit: async () => {
-        await verifyWorkspaceGuides(workspace, guides);
-        await entries.verify();
-      },
-    });
-  }
-  const written = await loadProjectConfig(workspace);
-  const writtenDigest = hashProjectConfig(written.shared);
-  if (writtenDigest !== candidateDigest) {
-    throw new Error('Written project configuration does not match the approved digest');
-  }
-  await verifyWorkspaceGuides(workspace, guides);
-  await entries.verify();
-  await atomicWriteJson(
-    draftFile,
-    { ...draft, status: 'confirmed' } satisfies ProjectDetectionDraft,
-    { containedRoot: workspace },
+        input.workspace,
+        path.join(
+          workspace,
+          '.repoctopus',
+          'drafts',
+          `project-detect-${state.request.draftId}.json`,
+        ),
+        'drafts',
+      );
+      const draft = asDraft(JSON.parse(await readFile(draftFile, 'utf8')) as unknown);
+      if (
+        state.request.storeBinding?.repositories.some((binding) => binding.selection === 'blocked')
+      ) {
+        throw new Error('Approved Store binding still contains blocked repository conflicts');
+      }
+      const guides = await planWorkspaceGuides(workspace, state.request.candidateConfig);
+      const entries = await prepareWorkspaceEntryWrites(
+        workspace,
+        state.request.entrySkills ?? [],
+        state.status === 'applying',
+        state.request.requestId,
+        (file) => input.hooks?.afterEntryWrite?.(file),
+      );
+      await atomicWriteJson(
+        stateFile,
+        { ...state, status: 'applying', record },
+        { containedRoot: workspace },
+      );
+      const receiptFiles = state.request.storeBinding
+        ? await applyStoreBinding({
+            workspace,
+            requestId: state.request.requestId,
+            candidate: state.request.candidateConfig,
+            proposal: state.request.storeBinding,
+            timestamp: input.timestamp,
+            registration,
+            ...(input.hooks ? { hooks: input.hooks } : {}),
+          })
+        : [];
+      await installWorkspaceGuides(workspace, guides, (file) =>
+        input.hooks?.afterGuideWrite?.(file),
+      );
+      await entries.install();
+      await entries.verify();
+      await ensureRepoctopusGitignore(workspace);
+      if (currentDigest !== candidateDigest) {
+        await atomicWriteText(
+          configFile,
+          stringify(state.request.candidateConfig, { lineWidth: 0 }),
+          {
+            containedRoot: workspace,
+            beforeCommit: async () => {
+              await verifyWorkspaceGuides(workspace, guides);
+              await entries.verify();
+            },
+          },
+        );
+      }
+      const written = await loadProjectConfig(workspace);
+      const writtenDigest = hashProjectConfig(written.shared);
+      if (writtenDigest !== candidateDigest) {
+        throw new Error('Written project configuration does not match the approved digest');
+      }
+      await verifyWorkspaceGuides(workspace, guides);
+      await entries.verify();
+      await atomicWriteJson(
+        draftFile,
+        { ...draft, status: 'confirmed' } satisfies ProjectDetectionDraft,
+        { containedRoot: workspace },
+      );
+      const result: ProjectConfigurationApplyResult = {
+        status: 'confirmed',
+        configFile,
+        configDigest: writtenDigest,
+        bindingReceiptFiles: receiptFiles,
+      };
+      await atomicWriteJson(
+        stateFile,
+        { ...state, status: 'confirmed', record, result },
+        { containedRoot: workspace },
+      );
+      return result;
+    },
   );
-  const result: ProjectConfigurationApplyResult = {
-    status: 'confirmed',
-    configFile,
-    configDigest: writtenDigest,
-    bindingReceiptFiles: receiptFiles,
-  };
-  await atomicWriteJson(
-    stateFile,
-    { ...state, status: 'confirmed', record, result },
-    { containedRoot: workspace },
-  );
-  return result;
 }

@@ -27,6 +27,7 @@ import type {
 import { parseWorkflowPackage } from '../../domains/workflow-contract/package.js';
 import { loadDeliveryPolicy } from '../../platform/delivery/config.js';
 import { loadProjectConfig } from '../../platform/project-configuration/file-config.js';
+import { installPersonalInitSkills } from '../../platform/project-configuration/workspace-entry-skills.js';
 import { execute } from '../../platform/process/execute.js';
 import type { ProvenanceCheck } from '../../platform/provenance/check.js';
 import {
@@ -75,16 +76,18 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <init|detect|prepare|decision|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <init|detect|prepare|configure-verify|decision|review> | skill <list|get|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const COMMANDS = new Set([
   'project init',
   'project detect',
   'project decision',
+  'project configure-verify',
   'project prepare',
   'project review',
   'skill list',
   'skill get',
   'skill project',
+  'skill install-init',
   'spec inspect',
   'spec validate',
   'spec approval prepare',
@@ -173,6 +176,7 @@ const CLI_FLAGS = new Set([
   'scan-root',
   'skip-pointer',
   'entry-hosts',
+  'preview',
   'layout',
   'repositories',
   'workflow-run',
@@ -829,6 +833,26 @@ async function projectPrepare(parsed: ParsedArguments): Promise<CliEnvelope<unkn
       command: 'project prepare',
       result,
       nextActions: [`repoctopus project review --workspace ${workspace} --request ${result.file}`],
+    });
+  } finally {
+    await app.close();
+  }
+}
+
+async function projectConfigureVerify(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const file = path.resolve(stringFlag(parsed, 'candidate', { required: true })!);
+  const profile = parse(await readFile(file, 'utf8')) as unknown;
+  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  try {
+    const result = await app.context.commandRouter.execute('project.configure-verify', {
+      workspace,
+      profile,
+    });
+    return successEnvelope({
+      command: 'project configure-verify',
+      result,
+      nextActions: ['Review the pending Verify Profile decision in the current host'],
     });
   } finally {
     await app.close();
@@ -1715,9 +1739,19 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   const command = parsed.command.join(' ');
   if (command === 'project init') return projectInit(parsed);
   if (command === 'project decision') return projectDecision(parsed);
+  if (command === 'project configure-verify') return projectConfigureVerify(parsed);
   if (command === 'project detect') return projectDetect(parsed);
   if (command === 'project prepare') return projectPrepare(parsed);
   if (command === 'project review') return projectReview(parsed);
+  if (command === 'skill install-init') {
+    const hosts = stringFlag(parsed, 'entry-hosts', { required: true })!
+      .split(',')
+      .map((host) => host.trim());
+    return successEnvelope({
+      command,
+      result: await installPersonalInitSkills(hosts, booleanFlag(parsed, 'preview')),
+    });
+  }
   if (command === 'skill list') return skillList(parsed);
   if (command === 'skill get') return skillGet(parsed);
   if (command === 'skill project') return skillProject(parsed);

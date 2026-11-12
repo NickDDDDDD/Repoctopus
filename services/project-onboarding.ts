@@ -9,6 +9,7 @@ import {
   applyProjectConfigurationDecision,
   loadPendingProjectConfigurationDecision,
   prepareProjectConfigurationDecision,
+  prepareVerifyProfileDecision,
 } from '../platform/project-configuration/onboarding.js';
 import { detectProjectConfiguration } from '../platform/project-configuration/detect.js';
 
@@ -53,6 +54,10 @@ export class ProjectOnboarding extends Service {
 
   prepare(input: { workspace: string; draftFile: string; completedCandidate: unknown }) {
     return prepareProjectConfigurationDecision(input);
+  }
+
+  configureVerify(input: { workspace: string; profile: unknown }) {
+    return prepareVerifyProfileDecision(input);
   }
 
   load(workspace: string, decisionFile: string): Promise<ProjectConfigurationDecisionRequest> {

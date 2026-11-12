@@ -25,6 +25,13 @@ const plugin = ((context: Context) => {
           ),
       }),
       context.commandRouter.register({
+        name: 'project.configure-verify',
+        execute: ({ input }) =>
+          context.projectOnboarding.configureVerify(
+            input as { workspace: string; profile: unknown },
+          ),
+      }),
+      context.commandRouter.register({
         name: 'project.decision.load',
         execute: ({ input }) => {
           const request = input as { workspace: string; decisionFile: string };
