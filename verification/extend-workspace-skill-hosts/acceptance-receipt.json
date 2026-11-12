@@ -39,22 +39,22 @@
     {
       "host": "codebuddy-ide",
       "version": "4.12.4",
-      "reason": "workspace trust prompt"
+      "reason": "IDE-originated packaged CLI execution has not been observed"
     },
     {
       "host": "codearts",
       "version": "26.11.100",
-      "reason": "workspace trust prompt; Agent sign-in state to recheck after trust"
+      "reason": "IDE-originated packaged CLI execution has not been observed"
     },
     {
       "host": "trae",
       "version": "3.5.55",
-      "reason": "workspace trust prompt and separate international Agent sign-in required"
+      "reason": "trusted workspace; separate international Agent sign-in required for native verification"
     },
     {
       "host": "trae-cn",
       "version": "3.4.18",
-      "reason": "workspace trust prompt"
+      "reason": "IDE-originated packaged CLI execution has not been observed"
     }
   ],
   "workspaceScope": [
@@ -89,6 +89,89 @@
         ".trae/skills/repoctopus/SKILL.md",
         ".trae/skills/repoctopus-configure-verify/SKILL.md"
       ]
+    }
+  ],
+  "nativeIde": [
+    {
+      "host": "codebuddy-ide",
+      "version": "4.12.4",
+      "nativeLoader": "UseSkill",
+      "menuOnlyReadProbe": "loaded",
+      "trustedWorkspace": true,
+      "discoveredSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "loadedSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "packagedCliExecutedByIde": false
+    },
+    {
+      "host": "codearts",
+      "version": "26.11.100",
+      "nativeLoader": "SkillTool",
+      "menuOnlyReadProbe": "reported not loaded",
+      "trustedWorkspace": true,
+      "discoveredSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "loadedSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "packagedCliExecutedByIde": false
+    },
+    {
+      "host": "trae-cn",
+      "version": "3.4.18",
+      "nativeLoader": "three native Skill calls in the Agent activity",
+      "menuOnlyReadProbe": "reported not loaded",
+      "trustedWorkspace": true,
+      "discoveredSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "loadedSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "packagedCliExecutedByIde": false
+    }
+  ],
+  "nativeIdeExcerpts": {
+    "repoctopus": "Report missing or unavailable content before executing.",
+    "repoctopus-init": "If you cannot identify the user's host or edition, ask them to select it.",
+    "repoctopus-configure-verify": "Preserve unrelated configuration."
+  },
+  "workspaceVerifyScope": [
+    {
+      "host": "codebuddy",
+      "requestId": "f2a3e679-1f26-4ed3-811a-9e1f77a5da56",
+      "unchangedBeforeApproval": true
+    },
+    {
+      "host": "codearts",
+      "requestId": "aad35b31-065b-44c6-baaf-435f708d48c6",
+      "unchangedBeforeApproval": true
+    },
+    {
+      "host": "trae",
+      "requestId": "55814aaa-7dd1-4edd-8439-43ca485054ff",
+      "unchangedBeforeApproval": true
+    },
+    {
+      "host": "trae-cn",
+      "requestId": "f6bb125e-d6da-40f5-89d0-6a5727d116bf",
+      "unchangedBeforeApproval": true
     }
   ]
 }

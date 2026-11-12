@@ -17,8 +17,17 @@ Archive SHA-256: `9ccdf5ea39137c7787b8e053888dc32c9fda1ecdd422b2ce68bfd3de0f84f7
 
 完整仓库检查 npm run verify 已通过，1234 项测试通过、4 项跳过。生成产物、名称、架构、来源、Dashboard、19 项 OpenSpec 严格校验和安装包证据检查均通过。该结果覆盖当前候选代码与自动化检查，原生宿主矩阵仍待完成。
 
-## 待验证的宿主行为
+## Windows IDE 原生 Skill
 
-CodeBuddy CN IDE 4.12.4、CodeArts Agent 26.11.100 和 TRAE CN 3.4.18 已打开同一隔离实验 Workspace，均停在宿主的文件夹信任确认。TRAE CN 在更新日志中明确说明，受限模式下不加载项目 Skill。CodeArts 曾显示登录成功通知，智能体面板仍显示登录入口，需在确认目录信任后核对。TRAE 国际版 3.5.55 也已在独立窗口打开同一个实验仓，需要确认文件夹信任及登录该版本的智能体。
+| 宿主 | 原生菜单发现 | 正文装填 |
+| --- | --- | --- |
+| CodeBuddy CN IDE 4.12.4 | Skills 列表显示全部三个入口 | 三次 `UseSkill` 成功 |
+| CodeArts Agent 26.11.100 | 斜杠菜单显示全部三个入口 | 三次 `SkillTool` 成功 |
+| TRAE CN 3.4.18 | 斜杠菜单显示全部三个入口 | Agent 轨迹记录三次技能调用 |
+| TRAE 国际版 3.5.55 | 工作区已信任，Agent 仍显示独立登录入口 | 待验证 |
+
+上述三个已登录 IDE 返回的工作流、个人 Init 和 Verify 配置原句均与候选包正文一致。CodeArts 和 TRAE CN 在第一次只附加工作流入口、限制工具的试验中报告未加载。显式允许并请求宿主使用原生 Skill 加载器后，三个正文均可读取。此次 IDE 对话没有触发 Repoctopus CLI。
+
+在四个已接入的独立实验仓，通过同一安装包分别发起 Verify 配置请求。四次均生成独立审批请求，批准前 `repoctopus.yaml` 摘要保持一致。该结果来自直接执行 CLI。CodeArts 和 TRAE 原生宿主实际执行候选 CLI 的 Init、Run continuation 和 Verify 配置仍待取证，当前 Comet Build 保留已完成项。
 
 [验收回执](acceptance-receipt.json) 保存已验证的候选包和运行身份。
