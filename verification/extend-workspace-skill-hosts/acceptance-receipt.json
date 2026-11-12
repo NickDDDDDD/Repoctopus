@@ -37,19 +37,58 @@
   ],
   "pending": [
     {
+      "host": "codebuddy-ide",
+      "version": "4.12.4",
+      "reason": "workspace trust prompt"
+    },
+    {
       "host": "codearts",
-      "version": "26.9.901",
-      "reason": "expired sign-in"
+      "version": "26.11.100",
+      "reason": "workspace trust prompt; Agent sign-in state to recheck after trust"
     },
     {
       "host": "trae",
       "version": "3.5.55",
-      "reason": "sign-in required"
+      "reason": "international IDE session has not been opened and authenticated for this attempt"
     },
     {
       "host": "trae-cn",
-      "version": "3.3.72",
-      "reason": "sign-in required"
+      "version": "3.4.18",
+      "reason": "workspace trust prompt"
+    }
+  ],
+  "workspaceScope": [
+    {
+      "host": "codebuddy",
+      "requestId": "39df8f52-3bef-4742-97b0-84595f16ce02",
+      "paths": [
+        ".codebuddy/skills/repoctopus/SKILL.md",
+        ".codebuddy/skills/repoctopus-configure-verify/SKILL.md"
+      ]
+    },
+    {
+      "host": "codearts",
+      "requestId": "eb7dc543-b840-4caf-adcb-aa38dca02809",
+      "paths": [
+        ".codeartsdoer/skills/repoctopus/SKILL.md",
+        ".codeartsdoer/skills/repoctopus-configure-verify/SKILL.md"
+      ]
+    },
+    {
+      "host": "trae",
+      "requestId": "7bbc9391-225d-4b12-9cc7-38eb4688fc51",
+      "paths": [
+        ".trae/skills/repoctopus/SKILL.md",
+        ".trae/skills/repoctopus-configure-verify/SKILL.md"
+      ]
+    },
+    {
+      "host": "trae-cn",
+      "requestId": "ff9ddf87-583b-401a-a65f-14342c1aaf55",
+      "paths": [
+        ".trae/skills/repoctopus/SKILL.md",
+        ".trae/skills/repoctopus-configure-verify/SKILL.md"
+      ]
     }
   ]
 }
