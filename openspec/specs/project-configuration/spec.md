@@ -41,37 +41,54 @@ Repoctopus MUST 只允许被忽略的 `.repoctopus/local.yaml` 覆盖机器路�
 
 ### Requirement: 项目探测只生成候选草稿
 
-`project detect` MUST 只读扫描显式作用域内的仓库和常见构建文件，把候选配置写入 `.repoctopus/drafts/`，不得直接创建或覆盖正式共享配置。为探测出的 Change Verify 命令生成候选时，required 节点 MUST 使用显式、保守的 workspace-wide Acceptance selector，并 MUST 把该 coverage 选择登记为待人工复核项；Runtime MUST NOT 猜测未来 Task 或 Requirement selector。
+接入探测 MUST 只读检查显式范围内的 Git 仓库、Workspace Git 根与 Store，在本地生成最小可审阅候选，正式共享配置保持原状。首次接入 MUST 独立于构建文件识别、测试命令推断和 Verify coverage 配置。已接入 Workspace 的候选 MUST 保留已配置的 Profile 和不在本次更新范围内的共享字段。
 
 #### Scenario: 首次探测项目
 
-- **WHEN** 工作区尚无 `repoctopus.yaml`
-- **THEN** 命令生成带来源和不确定项的候选草稿，并提示由 Agent 补全后交给用户确认
-- **AND** 每个探测出的 required Verify 命令显式声明 `covers: ['*']`，其 workspace-wide coverage 被标记为需要确认或收窄
+- **WHEN** 用户在单仓业务 Git 根或独立的多仓 Workspace 选择接入
+- **THEN** Repoctopus 根据所选布局生成含明确 Git 根、仓库及 Store 的接入候选
+- **AND** 无可识别的构建文件或 Verify Profile 时仍可准备审批
+
+#### Scenario: 无效 Workspace 布局
+
+- **WHEN** Workspace 是业务仓普通子目录，或扫描范围中无法识别所选 Workspace Git 根
+- **THEN** Repoctopus 在审批前报告实际路径、预期布局和恢复操作
+- **AND** 不生成缺失 Store binding 的可批准接入请求
 
 #### Scenario: 已存在共享配置
 
-- **WHEN** 探测结果与当前 `repoctopus.yaml` 不同
-- **THEN** 命令输出 reconcile diff 且保持正式配置不变
+- **WHEN** 用户重新运行接入或补齐受管入口
+- **THEN** Repoctopus 输出相关 diff 并保留已有 Verify Profile 和其他未授权修改的配置
 
 ### Requirement: 用户确认后才能写入共享配置
 
-Repoctopus MUST 把候选配置、Agent 补全内容和现有配置差异作为 Human Decision 输入，只有可信用户确认后才允许生成或更新 `repoctopus.yaml`。约定的默认 Change `verify` Profile MUST 在建立审批请求前存在，并至少包含一个声明非空 Acceptance coverage 的 required 节点；完全无 coverage 或只有 optional coverage 的候选 MUST 被拒绝。具体 Run 显式选择的其他 `verificationProfileId` MUST 由该 Run 的 Design preflight 精确校验。
+Repoctopus MUST 把候选、作用范围及现有配置差异作为 Human Decision 输入，只有可信用户确认后才生成或更新 `repoctopus.yaml`。首次接入 MAY 无 Verify Profile；配置一个 Verify Profile 时 MUST 校验其结构和 required coverage 声明。已选 Profile 的 Run coverage 校验沿用 Evidence 权威。
+
+#### Scenario: 首次调用的接入确认
+
+- **WHEN** Runtime 已形成包含 Workspace、仓库、Store 和入口目标的有效候选
+- **THEN** 用户在同一宿主调用中审阅一次计划并选择
+- **AND** 可信批准后 Runtime 应用同一请求，无需用户搬运草稿或候选路径
 
 #### Scenario: 没有可信确认通道
 
-- **WHEN** Agent 已补全候选配置但 Runtime 无法获得可信用户决定
-- **THEN** 草稿保持待确认状态且正式配置不变
+- **WHEN** Runtime 未获得可信批准
+- **THEN** 接入或配置请求保持待确认，正式配置保持原状
+
+#### Scenario: 传错候选或缺少绑定
+
+- **WHEN** 用户把探测草稿交给候选参数，或请求缺少可验证的 Workspace Store binding
+- **THEN** Repoctopus 在审批前报告对应的输入或绑定错误，并引导重新获取正确候选
 
 #### Scenario: Verify Profile 没有 required coverage
 
-- **WHEN** 候选 `verify` Profile 的节点全部未声明 coverage，或 coverage 只存在于 optional 节点
-- **THEN** Repoctopus 在创建可批准请求和写正式配置前拒绝候选，并指出需要 `*`、`task:`、`requirement:` 或精确 Acceptance selector
+- **WHEN** 候选 Verify Profile 没有声明非空 coverage 的 required 验证节点
+- **THEN** Repoctopus 在写共享配置前报告缺少 required coverage
 
 #### Scenario: 前置节点不直接覆盖 Acceptance
 
-- **WHEN** Profile 至少有一个 required 验证节点声明 coverage，另有 service 或准备节点不直接覆盖 Acceptance
-- **THEN** 静态可用性检查允许该结构，精确覆盖关系交给 Change Design preflight 判断
+- **WHEN** Profile 有带 coverage 的 required 验证节点，且有服务或准备节点不直接覆盖 Acceptance
+- **THEN** 静态校验接受该结构，精确覆盖由当前 Run 的 preflight 校验
 
 ### Requirement: 有效配置具有稳定摘要
 
@@ -293,3 +310,13 @@ Repoctopus MUST 在入口写入前校验目标、所有权和已有内容。对�
 
 - **WHEN** 获批请求已完成部分入口安装，但尚未报告接入完成
 - **THEN** 续接同一请求时核对已完成目标，仅补齐剩余目标，并在全部通过校验后报告完成
+
+### Requirement: Verify Profile 可按需独立配置
+
+Repoctopus MUST 提供独立 Verify 配置流程，在用户选定范围内检查实际命令和 Acceptance coverage，展示 Profile 变更，经可信批准后更新共享配置。生成的 required 检查 MUST 明确声明 coverage，推断的 coverage MUST 作为待确认内容。此流程 MUST 保留 Workspace、Store、其他共享配置和既有 Run。
+
+#### Scenario: 初始化后补配 Verify
+
+- **WHEN** 已接入 Workspace 的用户调用 Verify 配置流程
+- **THEN** Repoctopus 展示拟用的命令、仓库和覆盖范围
+- **AND** 仅获批后更新相关 Profile，返回当前 Run 的继续方式（如有）

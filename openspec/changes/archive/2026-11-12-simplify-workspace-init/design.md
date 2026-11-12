@@ -2,6 +2,8 @@
 comet_change: simplify-workspace-init
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-12-simplify-workspace-init
+status: final
 ---
 
 # Design

@@ -2,6 +2,7 @@
 change: simplify-workspace-init
 design-doc: openspec/changes/simplify-workspace-init/design.md
 base-ref: bb4670b529550ca46b067d43a7b9d82f062aba9e
+archived-with: 2026-11-12-simplify-workspace-init
 ---
 
 # 轻量 Workspace 初始化实施计划
