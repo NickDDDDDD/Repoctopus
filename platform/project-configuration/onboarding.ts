@@ -665,7 +665,6 @@ export async function applyProjectConfigurationDecision(
         );
         await entries.install();
         await entries.verify();
-        await checkScope();
         const result: ProjectConfigurationApplyResult = {
           status: 'confirmed',
           configFile,
@@ -675,7 +674,7 @@ export async function applyProjectConfigurationDecision(
         await atomicWriteJson(
           stateFile,
           { ...state, status: 'confirmed', record, result },
-          { containedRoot: workspace },
+          { containedRoot: workspace, beforeCommit: checkScope },
         );
         return result;
       }
