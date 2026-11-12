@@ -25,7 +25,9 @@ import { detectProjectConfiguration } from '../platform/project-configuration/de
 import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
 import {
   applyProjectConfigurationDecision,
+  observeVerifyProfilePublication,
   prepareProjectConfigurationDecision,
+  prepareVerifyProfileDecision,
 } from '../platform/project-configuration/onboarding.js';
 import { OpenSpecProcess } from '../platform/specification/openspec-process.js';
 import {
@@ -116,6 +118,55 @@ async function guideDecisionFixture() {
 }
 
 describe('project configuration onboarding', () => {
+  it('recognizes a second approved Verify update after a Build Check that bound the first update', async () => {
+    const { workspace, prepared } = await guideDecisionFixture();
+    const configFile = path.join(workspace, 'repoctopus.yaml');
+    const profile = prepared.request.candidateConfig.profiles[0]!;
+    await writeFile(
+      configFile,
+      JSON.stringify({ ...prepared.request.candidateConfig, profiles: [] }),
+    );
+    const commit = async (message: string) => {
+      await execFileAsync('git', ['add', 'repoctopus.yaml'], { cwd: workspace });
+      await execFileAsync('git', ['commit', '-m', message], { cwd: workspace });
+      return (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: workspace })).stdout.trim();
+    };
+    const baselineHead = await commit('Configure minimal Workspace');
+    const baselineExecutionDigest = `sha256:${(await loadProjectConfig(workspace)).effectiveDigest}`;
+    const approveProfile = async (nodes: typeof profile.nodes) => {
+      const next = await prepareVerifyProfileDecision({
+        workspace,
+        profile: { ...profile, nodes },
+      });
+      await applyDecision({
+        workspace,
+        decisionFile: next.file,
+        response: response(next.request),
+        actor: { actorId: 'user', source: 'cli', authenticated: true },
+        timestamp: '2026-01-01T00:00:00.000Z',
+      });
+    };
+    await approveProfile(profile.nodes);
+    const checkpointHead = await commit('Approve the initial Verify Profile');
+    await approveProfile(
+      profile.nodes.map((node) =>
+        node.type === 'command' ? { ...node, timeoutMs: node.timeoutMs + 1000 } : node,
+      ),
+    );
+    const head = await commit('Approve the revised Verify Profile');
+    await expect(
+      observeVerifyProfilePublication({
+        workspace,
+        profileId: profile.id,
+        checkpointHead,
+        head,
+        baselineHead,
+        baselineExecutionDigest,
+        requireConfigOnlyHistory: true,
+      }),
+    ).resolves.toMatchObject({ observedHead: head });
+  });
+
   it('accepts a minimal configuration and rejects a draft without a Store binding', async () => {
     const { workspace, prepared } = await guideDecisionFixture();
     const draftFile = path.join(workspace, '.repoctopus', 'drafts', 'minimal.json');

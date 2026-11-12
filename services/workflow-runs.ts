@@ -1737,7 +1737,7 @@ export class WorkflowRuns extends Service {
   private async approvedVerificationConfigPublication(
     state: RunState,
     observed: ExecutionWorkspaceBinding | null,
-    beforeBuildCheck?: ProjectSnapshot,
+    runBaseline: ProjectSnapshot,
   ) {
     const repositoryId = this.projectInput?.workspaceRepositoryId;
     const protocol = state.changeLifecycle?.buildProtocol;
@@ -1756,14 +1756,13 @@ export class WorkflowRuns extends Service {
     const current = observed?.repositories.find((repo) => repo.repositoryId === repositoryId);
     if (!previous || !current || current.branch !== previous.branchRef) return null;
     const matchesBuildCheck = previous.headRevision === current.head;
-    const baselineHead = matchesBuildCheck
-      ? beforeBuildCheck?.repositories.find((repo) => repo.id === repositoryId)?.head
-      : previous.headRevision;
+    const baselineHead = runBaseline.repositories.find((repo) => repo.id === repositoryId)?.head;
     if (!baselineHead || baselineHead === current.head) return null;
     const publication = await observeVerifyProfilePublication({
       workspace: current.checkoutPath,
       profileId,
-      checkpointHead: baselineHead,
+      checkpointHead: previous.headRevision,
+      baselineHead,
       requireConfigOnlyHistory: !matchesBuildCheck,
       head: current.head,
       baselineExecutionDigest,
@@ -1799,7 +1798,11 @@ export class WorkflowRuns extends Service {
         this.ctx.project.snapshot(this.projectInput),
       ]);
       const observed = await this.bindExecutionWorkspace(latest, latest.changeLifecycle, current);
-      const publication = await this.approvedVerificationConfigPublication(latest, observed);
+      const publication = await this.approvedVerificationConfigPublication(
+        latest,
+        observed,
+        previous,
+      );
       const recovery = classifyBuildWorkspaceRecovery({
         state: latest,
         previous,
@@ -1810,10 +1813,7 @@ export class WorkflowRuns extends Service {
       if (recovery.conflicts.length) {
         throw new Error(`Workspace changed after Build Check: ${recovery.conflicts.join(', ')}`);
       }
-      return (
-        publication ??
-        (await this.approvedVerificationConfigPublication(latest, observed, previous))
-      );
+      return publication;
     };
     const config = await loadProjectConfig(this.workspaceRoot);
     if (!config.shared.profiles.some(({ id }) => id === profileId)) {
@@ -1955,7 +1955,7 @@ export class WorkflowRuns extends Service {
       lifecycle.currentWork?.kind === 'build.plan'
         ? await this.observeChangePlanning(state, lifecycle)
         : null;
-    const publication = await this.approvedVerificationConfigPublication(state, observed);
+    const publication = await this.approvedVerificationConfigPublication(state, observed, previous);
     const classified = classifyBuildWorkspaceRecovery({
       ...(publication ? { verificationConfigPublication: publication } : {}),
       state,

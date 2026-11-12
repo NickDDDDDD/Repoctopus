@@ -763,12 +763,14 @@ export async function observeVerifyProfilePublication(input: {
   profileId: string;
   checkpointHead: string;
   head: string;
+  baselineHead: string;
   baselineExecutionDigest: string;
   requireConfigOnlyHistory: boolean;
 }): Promise<{ observedHead: string; decisionDigest: string } | null> {
-  const { workspace, profileId, checkpointHead, head } = input;
+  const { workspace, profileId, checkpointHead, baselineHead, head } = input;
   if (
-    checkpointHead === head ||
+    baselineHead === head ||
+    !(await isExecutionRevisionAncestor(workspace, baselineHead, checkpointHead)) ||
     !(await isExecutionRevisionAncestor(workspace, checkpointHead, head))
   )
     return null;
@@ -787,7 +789,7 @@ export async function observeVerifyProfilePublication(input: {
   )
     return null;
   const [beforeText, afterText, current] = await Promise.all([
-    git(['show', `${checkpointHead}:repoctopus.yaml`]),
+    git(['show', `${baselineHead}:repoctopus.yaml`]),
     git(['show', `${head}:repoctopus.yaml`]),
     loadProjectConfig(workspace),
   ]);

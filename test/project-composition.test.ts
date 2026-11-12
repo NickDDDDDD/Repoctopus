@@ -5,7 +5,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { compileProjectComposition } from '../app/boot/project-composition.js';
 import { compositionIdentity } from '../app/boot/composition.js';
 import { createRepoctopusBuiltinCatalog } from '../plugins/builtin-catalog.js';
-import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
+import {
+  loadProjectConfig,
+  projectExecutionConfigDigests,
+} from '../platform/project-configuration/file-config.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
@@ -31,10 +34,11 @@ describe('project composition assembly', () => {
     );
     const ids = composition.entries.map((entry) => entry.id);
     expect(compositionIdentity(composition).compositionDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    const shared = { ...config.shared, profiles: [] };
     const withoutProfiles = compileProjectComposition(
       path.resolve(import.meta.dirname, '..'),
       workspaceRoot,
-      { ...config, shared: { ...config.shared, profiles: [] } },
+      { ...config, shared, ...projectExecutionConfigDigests(shared, config.local) },
       await createRepoctopusBuiltinCatalog(path.resolve(import.meta.dirname, '..')),
     );
     expect(compositionIdentity(withoutProfiles)).toEqual(compositionIdentity(composition));
