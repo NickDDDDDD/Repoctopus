@@ -14,7 +14,7 @@
 
 上游 `dsh-skill-filesystem` 同时支持 DSH Home、Agents Home、可选 `ctx.fs` 沙箱、工作区探测和 watcher。Repoctopus 需要其中的目录发现、frontmatter、稳定 rank、失效与取消语义，不需要 DSH 文件沙箱、Session 或 DSH Home 约定。
 
-因此文件 Provider 在 `plugins/skill/file-skill-provider.ts` 中做来源登记的最小适配：使用 Node 文件系统和 Repoctopus 明确配置的项目、用户目录；Provider 仍注册到原生 `ctx.skills`，不会建立第二个 Registry。新基线修复了 Chokidar 在 Windows 关闭后仍可能发出迟到错误的问题，Repoctopus 已把同一生命周期约束移植到适配器。
+因此文件 Provider 在 `plugins/skill/file-skill-provider.ts` 中做来源登记的最小适配：使用 Node 文件系统和 Repoctopus 明确配置的项目、用户目录；Provider 仍注册到原生 `ctx.skills`。平铺 Skill 提供正文，目录形式只提供本 Skill 内资源。Workspace 安装的入口由宿主发现，文件 Provider 跳过带有有效安装标记的入口。新基线修复了 Chokidar 在 Windows 关闭后仍可能发出迟到错误的问题，Repoctopus 已把同一生命周期约束移植到适配器。
 
 ## GitHub Webhook
 

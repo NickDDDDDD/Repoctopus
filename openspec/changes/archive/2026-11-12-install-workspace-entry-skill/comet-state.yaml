@@ -1,0 +1,4827 @@
+# comet-execution: managed-run
+change_id: c4983cdc-3507-430f-9424-c88c0160cef0
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 87dcd9631a801b9d551a3d24de9a6a36e49035c7
+design_doc: openspec/changes/archive/2026-11-12-install-workspace-entry-skill/design.md
+plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/install-workspace-entry-skill.md
+branch_status: pending
+created_at: 2026-11-11
+verified_at: 2026-11-12
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/install-workspace-entry-skill
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-12-install-workspace-entry-skill/.comet/handoff/design-context.json
+handoff_hash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: b10ce8707bc5cb1dc5446e6939f44c0e00a816f0b2a45d2e9b896dbccf01a0bf
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: install-workspace-entry-skill
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: e133d2df0668a0710efed3c4ec75e0ff57b6bb70b83a7fd528bb1413a5e4a05b
+    input:
+      change: install-workspace-entry-skill
+      changeDir: openspec/changes/install-workspace-entry-skill
+      workspaceBaseline:
+        ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 87dcd9631a801b9d551a3d24de9a6a36e49035c7
+      boundBranch: comet/install-workspace-entry-skill
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 12
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-11
+      designDoc: openspec/changes/archive/2026-11-12-install-workspace-entry-skill/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-12-install-workspace-entry-skill/.comet/handoff/design-context.json
+      handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+      verifiedAt: 2026-11-12
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 46
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-8400da9ec7a1ac13c6d9c9d81063a59a0b417ace67abe9e183d0da08b102b261
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:1
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 1618c555f7262941958604f02a0b4e696d2a5ca7d72bd7c01f3589178fdd9004
+        outcome:
+          actionId: install-workspace-entry-skill:1
+          attempt: 1
+          claimToken: portable-8400da9ec7a1ac13c6d9c9d81063a59a0b417ace67abe9e183d0da08b102b261
+          inputHash: 1618c555f7262941958604f02a0b4e696d2a5ca7d72bd7c01f3589178fdd9004
+          outcomeId: 991ca441-d4e7-4bb0-afa3-abd1c577cd07
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 05a980e8acc1b93168557897d7c6740b3aee693579c42cbb68f59052cd046bcc
+            outcomeId: 991ca441-d4e7-4bb0-afa3-abd1c577cd07
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-38a6dd701362e9a1e8479fefed0dff9bce905a7daea4a333724b6b499ef2b999
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:4
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: e430632037fda4fc106d598e1d9afba463b7b73d36273578f141746f7d537e2e
+        outcome:
+          actionId: install-workspace-entry-skill:4
+          attempt: 1
+          claimToken: portable-38a6dd701362e9a1e8479fefed0dff9bce905a7daea4a333724b6b499ef2b999
+          inputHash: e430632037fda4fc106d598e1d9afba463b7b73d36273578f141746f7d537e2e
+          outcomeId: install-workspace-entry-skill:4:1:executor-result
+          output:
+            contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: db477e82170c342cd8f0799bacadcafb7377ba68a0cf5f1a99383f01f00920a9
+            outcomeId: install-workspace-entry-skill:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-234b13a660be35c45d3fcdbbfb671b42ddf30cc0005096a361e804286bef4c6e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:5
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 632005cd23fa65a6f6b4930edc8fe5fce838f6daf3c172df8315cf34c8a96fed
+        outcome:
+          actionId: install-workspace-entry-skill:5
+          attempt: 1
+          claimToken: portable-234b13a660be35c45d3fcdbbfb671b42ddf30cc0005096a361e804286bef4c6e
+          inputHash: 632005cd23fa65a6f6b4930edc8fe5fce838f6daf3c172df8315cf34c8a96fed
+          outcomeId: 023088ea-da4e-4ba3-8091-fa7685744564
+          output:
+            handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
+            handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
+            proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
+              目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
+              start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
+              的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
+              组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
+              后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
+              design.md 的失败路径检验。无 Spec Patch。
+            requirementsEvidence:
+              contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
+              ref: openspec/changes/install-workspace-entry-skill
+            sourceEvidence:
+              contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
+              ref: openspec/changes/install-workspace-entry-skill
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 178a8893748285e5f308b4d5e08fa36edb96f255243ad1a5fbe447fc70680384
+            outcomeId: 023088ea-da4e-4ba3-8091-fa7685744564
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-b9168a896ec222dd6af1f1105c914e21b98fc7719626df11cb69dfbd766ba0af
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:7
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 9e2c631a84455109c7ca079eb02f4ec1eb14817926e7408b0b6722ca2cabacf0
+        outcome:
+          actionId: install-workspace-entry-skill:7
+          attempt: 1
+          claimToken: portable-b9168a896ec222dd6af1f1105c914e21b98fc7719626df11cb69dfbd766ba0af
+          inputHash: 9e2c631a84455109c7ca079eb02f4ec1eb14817926e7408b0b6722ca2cabacf0
+          outcomeId: 169551cd-6440-41b4-810d-019584679238
+          output:
+            designDoc: openspec/changes/install-workspace-entry-skill/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 195822b4bd92f62afd22363ca69dcefe802602239f47296b74c67ba6dd553de0
+            outcomeId: 169551cd-6440-41b4-810d-019584679238
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-88e9c331a9b4cef9cdccb622a532451b3fef4b2689087ace63c7c6837c5254de
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:9
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 03bdd95648cfa44b3cbbbf74ba768d8795f2cef2e6f2e359d381af3359cb6707
+        outcome:
+          actionId: install-workspace-entry-skill:9
+          attempt: 1
+          claimToken: portable-88e9c331a9b4cef9cdccb622a532451b3fef4b2689087ace63c7c6837c5254de
+          inputHash: 03bdd95648cfa44b3cbbbf74ba768d8795f2cef2e6f2e359d381af3359cb6707
+          outcomeId: 32cb260d-d460-408e-9914-332ea7e205b9
+          output:
+            boundBranch: comet/install-workspace-entry-skill
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6a3d4270f5e127c865be479ed3d3eb512a62d6b87911ddd7484300369992aef6
+            outcomeId: 32cb260d-d460-408e-9914-332ea7e205b9
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-5e8a606b5bbb0379b64e1546c1befe0edc32b81890548558178a3fdbaad19cfd
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:11
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 13b420f78967f6c50f214ba9b0194a534d91eb70768b63a2550088b09c5399c3
+        outcome:
+          actionId: install-workspace-entry-skill:11
+          attempt: 1
+          claimToken: portable-5e8a606b5bbb0379b64e1546c1befe0edc32b81890548558178a3fdbaad19cfd
+          inputHash: 13b420f78967f6c50f214ba9b0194a534d91eb70768b63a2550088b09c5399c3
+          outcomeId: 564d8abb-ec45-49e0-97ee-9443a67e2525
+          output:
+            designEvidence:
+              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+              ref: openspec/changes/install-workspace-entry-skill/design.md
+            plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+            planEvidence:
+              contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+              ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+            taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: edea5d5e530fbcc116aeb716c972aa56acd9fde942dbcfda475d8d500211a3d5
+            outcomeId: 564d8abb-ec45-49e0-97ee-9443a67e2525
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-install-workspace-entry-skill-build
+          token: portable-b4e7cf748615b0bb246873bca6e3890a497e03fbbe9a0bf99c35bab7cb82bc54
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:13
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 866c77eccc35e39a27e2a7d2d12826c4ebdd973c4bfd2cacfcd8ab61d995eff4
+        outcome:
+          actionId: install-workspace-entry-skill:13
+          attempt: 1
+          claimToken: portable-b4e7cf748615b0bb246873bca6e3890a497e03fbbe9a0bf99c35bab7cb82bc54
+          inputHash: 866c77eccc35e39a27e2a7d2d12826c4ebdd973c4bfd2cacfcd8ab61d995eff4
+          outcomeId: c563deaf-e964-432b-898a-b7514aa94f5d
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 94393713076e5171138a31724accdfdc204070aac8f32671350fb9c28512d592
+            outcomeId: c563deaf-e964-432b-898a-b7514aa94f5d
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-95b67453cf64465349bb1e38682229d0661f457295cdd6f21b8d12b998abd2ba
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:14
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 059c2c3977a53457bf6841099abb3ed5ce053880c33a3b1b779e2e5e31f26a45
+        outcome:
+          actionId: install-workspace-entry-skill:14
+          attempt: 1
+          claimToken: portable-95b67453cf64465349bb1e38682229d0661f457295cdd6f21b8d12b998abd2ba
+          inputHash: 059c2c3977a53457bf6841099abb3ed5ce053880c33a3b1b779e2e5e31f26a45
+          outcomeId: a249264a-4484-4d76-a10f-8b69944754ea
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
+            cwd: .
+            environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
+            exitCode: 0
+            inputAfter: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
+            inputBefore: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
+            manifestHash: fd0212a359a0bd34e5db05f9d1dd026d682353de7df3bf6880048d06ea7ef681
+            manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b1b7bdbe-9b7b-432a-952c-0ff16c1d16ef.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 799ccae3130b0ad7ed4dcfe4512b8dd6539e160f7f901e937ae1147c14f473ea
+            outcomeId: a249264a-4484-4d76-a10f-8b69944754ea
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-38cc890c0d60249992b6a591f0b5d9071ccc28a81b9356e783b1f8b69a561b89
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:16
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 180e85aed4eed3bc61761e5e3e3d263dfdc03aa7cc6245d7df62fef8232b22e6
+        outcome:
+          actionId: install-workspace-entry-skill:16
+          attempt: 1
+          claimToken: portable-38cc890c0d60249992b6a591f0b5d9071ccc28a81b9356e783b1f8b69a561b89
+          inputHash: 180e85aed4eed3bc61761e5e3e3d263dfdc03aa7cc6245d7df62fef8232b22e6
+          outcomeId: f0b37852-e315-4b7c-80ec-55405470c41d
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 50bcd1c36cc9cec6ea33d3f5f22a78deea36354c5df7cd52f7f77363332c2f78
+            outcomeId: f0b37852-e315-4b7c-80ec-55405470c41d
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-39ac8f338873dcb228147490eadef04f4fdc4fd66fef86fd9ddde8e383fe49d8
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:18
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 2f397dc67b1ecf48eb7d2cac187ad68cccf1fd7bbd88217049a8693a279bdb7a
+        outcome:
+          actionId: install-workspace-entry-skill:18
+          attempt: 1
+          claimToken: portable-39ac8f338873dcb228147490eadef04f4fdc4fd66fef86fd9ddde8e383fe49d8
+          inputHash: 2f397dc67b1ecf48eb7d2cac187ad68cccf1fd7bbd88217049a8693a279bdb7a
+          outcomeId: 13e0552f-52b8-4c22-b9dc-fc8bf7636be9
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: a92c8177a6a241cc2e67825a1c7704ce53da9414021959ef03533e1e922cc55f
+            cwd: .
+            deliveryInputs: {}
+            environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+            exitCode: 1
+            inputAfter: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+            inputBefore: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+            manifestHash: 3fd2431653af94ef58ef7240ce295f248abd92adc2eb5ced97c919649ced9167
+            manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/ecdc2a68-5524-4292-8a67-cdf1f4f89a25.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/c5690dfe-c24e-46fb-aaf9-9d34362fecdb.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: ebd8d570d864ee4c677ce99595509feb45e303724fd23df911996752ef90c29b
+            outcomeId: 13e0552f-52b8-4c22-b9dc-fc8bf7636be9
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-8d78cbe7ac4e0c52187004f0b5894e9c327e2458b6ea93942b0fb093d02e40a8
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:19
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 6739ac038c183beced932b9247d9c0b9a4bab4098e1fa87c240a2bdab429ca5a
+        outcome:
+          actionId: install-workspace-entry-skill:19
+          attempt: 1
+          claimToken: portable-8d78cbe7ac4e0c52187004f0b5894e9c327e2458b6ea93942b0fb093d02e40a8
+          inputHash: 6739ac038c183beced932b9247d9c0b9a4bab4098e1fa87c240a2bdab429ca5a
+          outcomeId: e1f4d14c-2ab4-47be-baa9-121dde356051
+          output:
+            designEvidence:
+              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+              ref: openspec/changes/install-workspace-entry-skill/design.md
+            plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+            planEvidence:
+              contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+              ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+            taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ad6043386845613d62a1321f7bee509f72a31df42c8efb9f3dfacb82895ea753
+            outcomeId: e1f4d14c-2ab4-47be-baa9-121dde356051
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-install-workspace-entry-skill-build
+          token: portable-64a17b164a1337a52ad99f53e8a7f7c023d9ce32d51049c0b23bb4962ef248ea
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:21
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 6739ac038c183beced932b9247d9c0b9a4bab4098e1fa87c240a2bdab429ca5a
+        outcome:
+          actionId: install-workspace-entry-skill:21
+          attempt: 1
+          claimToken: portable-64a17b164a1337a52ad99f53e8a7f7c023d9ce32d51049c0b23bb4962ef248ea
+          inputHash: 6739ac038c183beced932b9247d9c0b9a4bab4098e1fa87c240a2bdab429ca5a
+          outcomeId: 88a14a58-2be8-402b-8df0-4dae45f2dcd2
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 47623560e79d0fe4f990c4a5fc40ba813355f7ff4e6338012e0434846940d4c6
+            outcomeId: 88a14a58-2be8-402b-8df0-4dae45f2dcd2
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-c760fedc682d4d2c422152cf90a5f20b3a563648fc061e8b1555380808531ab6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:22
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 6739ac038c183beced932b9247d9c0b9a4bab4098e1fa87c240a2bdab429ca5a
+        outcome:
+          actionId: install-workspace-entry-skill:22
+          attempt: 1
+          claimToken: portable-c760fedc682d4d2c422152cf90a5f20b3a563648fc061e8b1555380808531ab6
+          inputHash: 6739ac038c183beced932b9247d9c0b9a4bab4098e1fa87c240a2bdab429ca5a
+          outcomeId: 5f77d5f8-58be-4c06-959c-344e22cad258
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 2c5884836b710d4bb4a7091c20f8f51b2789e31d22973906f8d131365f271dfc
+            cwd: .
+            environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
+            exitCode: 0
+            inputAfter: 361d3a2159a4ccdfe9588993888d8a1ee09cc782f7cae510eb6657f094060ee6
+            inputBefore: 361d3a2159a4ccdfe9588993888d8a1ee09cc782f7cae510eb6657f094060ee6
+            manifestHash: 393a867446ac947f54d279b93312d16342199088389b5e1402aa60639bbcc34c
+            manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/63b4b3da-06f5-4291-a87a-257d6b8565fe.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/6b9bcba0-231f-4328-8401-8ce283a5305e.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7ce8178ad6432b3424eff5f879abf7ddbc6cb271a3d10ea53433390c27e259b6
+            outcomeId: 5f77d5f8-58be-4c06-959c-344e22cad258
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-0270e48476c2627500029e27e2a15d68ba6df8efc5565898a92c83e8a6c68cb5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:24
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: c467de51e01db0a4f7250083efa88d9091cbbaf9af17e2565485a5b454bb22cc
+        outcome:
+          actionId: install-workspace-entry-skill:24
+          attempt: 1
+          claimToken: portable-0270e48476c2627500029e27e2a15d68ba6df8efc5565898a92c83e8a6c68cb5
+          inputHash: c467de51e01db0a4f7250083efa88d9091cbbaf9af17e2565485a5b454bb22cc
+          outcomeId: eb1827e5-7089-4c8d-aafc-3b95a07c021c
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0b1de4c26d2780435c948e04a14e7c683a2bc496ca37cf6eee11ec1b50613723
+            outcomeId: eb1827e5-7089-4c8d-aafc-3b95a07c021c
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-efde9c8eff9140e9e4b3246156dcdf2359f02ceba8cec7f66fcf22f92e9af6c6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:26
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: f6d6d5b61a1c19cfa25e7254d35b812ad7ae8c26b9accd8a92d5f29db0d610a6
+        outcome:
+          actionId: install-workspace-entry-skill:26
+          attempt: 1
+          claimToken: portable-efde9c8eff9140e9e4b3246156dcdf2359f02ceba8cec7f66fcf22f92e9af6c6
+          inputHash: f6d6d5b61a1c19cfa25e7254d35b812ad7ae8c26b9accd8a92d5f29db0d610a6
+          outcomeId: 59018228-3beb-4114-b0ce-20470da57b02
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: 6acab3bf87da47b543975167e8b190ff7cdc74e86f1d6958249f73522e0e8354
+            cwd: .
+            deliveryInputs: {}
+            environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+            exitCode: 1
+            inputAfter: 50e67a745e52be7cf065d83f1388501f0f0f994f45c2dc81a64a79060f5bd2b8
+            inputBefore: 50e67a745e52be7cf065d83f1388501f0f0f994f45c2dc81a64a79060f5bd2b8
+            manifestHash: 393a867446ac947f54d279b93312d16342199088389b5e1402aa60639bbcc34c
+            manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/f8692a4c-1194-4620-8ad3-38f6e748afa4.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b942e4e6-8c28-41d3-9174-3ff3e660d2db.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: de2b882031eaf2204a7f3e27dec29f544ead7c22869a7ac6043993f279481556
+            outcomeId: 59018228-3beb-4114-b0ce-20470da57b02
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-682caeee7f40dc50aaa610a1911adf4c52b5c3197be814d5311e9f2442e95a25
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:27
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 1e71b3be07ac4f93d1c2870df4671e28415d0120282648cb5b1cd4b9bcf8bfd1
+        outcome:
+          actionId: install-workspace-entry-skill:27
+          attempt: 1
+          claimToken: portable-682caeee7f40dc50aaa610a1911adf4c52b5c3197be814d5311e9f2442e95a25
+          inputHash: 1e71b3be07ac4f93d1c2870df4671e28415d0120282648cb5b1cd4b9bcf8bfd1
+          outcomeId: 658aed3d-a8b3-4d97-aa6b-7a0aecf5493a
+          output:
+            designEvidence:
+              contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+              ref: openspec/changes/install-workspace-entry-skill/design.md
+            plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+            planEvidence:
+              contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+              ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+            taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c5e64a0fddd77a521fdd90f6d40d56f0da744e45b60ff46a73719bb4a27c54ed
+            outcomeId: 658aed3d-a8b3-4d97-aa6b-7a0aecf5493a
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-install-workspace-entry-skill-build
+          token: portable-d1a2b530776a4b9784c9126b9fd941f53946b21b08bd2ab79cc7a5c35a34e707
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:29
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 1e71b3be07ac4f93d1c2870df4671e28415d0120282648cb5b1cd4b9bcf8bfd1
+        outcome:
+          actionId: install-workspace-entry-skill:29
+          attempt: 1
+          claimToken: portable-d1a2b530776a4b9784c9126b9fd941f53946b21b08bd2ab79cc7a5c35a34e707
+          inputHash: 1e71b3be07ac4f93d1c2870df4671e28415d0120282648cb5b1cd4b9bcf8bfd1
+          outcomeId: 95357265-990c-4bc8-8b3f-3d1072528fc6
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7221231703217265598628f56ca1aad95b6a8258b6820065e139f9416b39fcce
+            outcomeId: 95357265-990c-4bc8-8b3f-3d1072528fc6
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-495b9675f8a4c30c68b676f68e0275c73125dc2dba0f4ffed12f65f775b2bedf
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:30
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 1e71b3be07ac4f93d1c2870df4671e28415d0120282648cb5b1cd4b9bcf8bfd1
+        outcome:
+          actionId: install-workspace-entry-skill:30
+          attempt: 1
+          claimToken: portable-495b9675f8a4c30c68b676f68e0275c73125dc2dba0f4ffed12f65f775b2bedf
+          inputHash: 1e71b3be07ac4f93d1c2870df4671e28415d0120282648cb5b1cd4b9bcf8bfd1
+          outcomeId: 8212954a-996d-4e81-99bf-66de2b257c7a
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 6
+            contentHash: 1382dd4c4b2d7d58b60b7cc3a4ab149521f5980a1b97c00c8c8128d204f96002
+            cwd: .
+            environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
+            exitCode: 0
+            inputAfter: 870e0ee0538f566e4b122ce340f0b4aea4ba113031daa85a68d79b713fd83e38
+            inputBefore: 870e0ee0538f566e4b122ce340f0b4aea4ba113031daa85a68d79b713fd83e38
+            manifestHash: cd15546407145533b05213a7700e57c696ce7f6d207ef4e59f0fc4c8702b82e8
+            manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/378a25d4-f3f1-45d7-94b2-b13f4509f130.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/5033cfd5-277a-4579-88be-42aead0a4f1c.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3dee9b26c5cf482d69bc4c1ca3db50b550598bd9186e12c3703bc24f4c048f1c
+            outcomeId: 8212954a-996d-4e81-99bf-66de2b257c7a
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-44aeeb2ac6cd1acf1b8788b6228c19e08a0c39a9f356190a9e3f36a9d3b5b161
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:32
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 5b4b7ced56bf6398128e16d3adb9e8543348f00e2ab8798955bbe60e4ec1a8a5
+        outcome:
+          actionId: install-workspace-entry-skill:32
+          attempt: 1
+          claimToken: portable-44aeeb2ac6cd1acf1b8788b6228c19e08a0c39a9f356190a9e3f36a9d3b5b161
+          inputHash: 5b4b7ced56bf6398128e16d3adb9e8543348f00e2ab8798955bbe60e4ec1a8a5
+          outcomeId: 78c12a4a-40d7-4ca9-a76e-9d325f746009
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 246994e2298b5fbb0330b0314bbc32604e153a7040f733f631daf1be13b5f427
+            outcomeId: 78c12a4a-40d7-4ca9-a76e-9d325f746009
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-e0e1c8d0fd20ff44c536cb57ac76dca88a72a0b02719d6a10e9582001ba5baf7
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:34
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 36bea1eed7dd1b9f9a57735964b55544ac5d31d3e6ce6057aaf3bd8f4616480c
+        outcome:
+          actionId: install-workspace-entry-skill:34
+          attempt: 1
+          claimToken: portable-e0e1c8d0fd20ff44c536cb57ac76dca88a72a0b02719d6a10e9582001ba5baf7
+          inputHash: 36bea1eed7dd1b9f9a57735964b55544ac5d31d3e6ce6057aaf3bd8f4616480c
+          outcomeId: 9d47ec5f-a7d2-4560-bd48-c9a822e7818a
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 7
+            contentHash: 74e0b34a1d735213bfd6f8d7023c9783fba937e52cc8bc559e012ef82de6c876
+            cwd: .
+            deliveryInputs: {}
+            environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+            exitCode: 0
+            inputAfter: e65a552eb2ded29beb369e05f2b303a42cd84735fb39e67257e88b1f2004ac6a
+            inputBefore: e65a552eb2ded29beb369e05f2b303a42cd84735fb39e67257e88b1f2004ac6a
+            manifestHash: cd15546407145533b05213a7700e57c696ce7f6d207ef4e59f0fc4c8702b82e8
+            manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/1f132005-6b57-401b-a793-7a7f82be8d83.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/f27e39a8-d236-41a4-bbe9-6f5e8edaf283.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8ec588a378e93e92d7e2897e646d06c51e5d1b07b3be52b796814328f8a46406
+            outcomeId: 9d47ec5f-a7d2-4560-bd48-c9a822e7818a
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-32a0ef738cf616a625cfe48583b6577d9fac1ed676e9e522ac66f0a852a1d86c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:36
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: daa25c8772eb96fca0b4029edb6a93241fea8503c034eb508c547b99e2335b9a
+        outcome:
+          actionId: install-workspace-entry-skill:36
+          attempt: 1
+          claimToken: portable-32a0ef738cf616a625cfe48583b6577d9fac1ed676e9e522ac66f0a852a1d86c
+          inputHash: daa25c8772eb96fca0b4029edb6a93241fea8503c034eb508c547b99e2335b9a
+          outcomeId: b2cbf4cc-9e90-4575-94b6-33e2d7da5e6e
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档 install-workspace-entry-skill，合并两个 delta spec 到主规格，保留已通过的 8 项任务和
+              Windows 真实宿主及旧 Run 验收。完整 Verify 通过，1223 项测试通过、4 项跳过，19
+              项严格规格校验与包内容校验通过。交付目标 origin/main，准备一个 PR，CI 通过后合入。
+            targetBranch: comet/install-workspace-entry-skill
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 990a613134f246350e9c4fe7fd9efb5e4144b13db81c26b1fa10facbd93aa29f
+            outcomeId: b2cbf4cc-9e90-4575-94b6-33e2d7da5e6e
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-445d1381c5b20da02c84fe1852d2d8b55c8489ef2660391a340baf6643abced2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:38
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: ad50caecd2ad6bbeb271d043b0fc8910da0824a0cff958f542cfa67ab32cd10c
+        outcome:
+          actionId: install-workspace-entry-skill:38
+          attempt: 1
+          claimToken: portable-445d1381c5b20da02c84fe1852d2d8b55c8489ef2660391a340baf6643abced2
+          inputHash: ad50caecd2ad6bbeb271d043b0fc8910da0824a0cff958f542cfa67ab32cd10c
+          outcomeId: 43116322-1d0c-44e7-b9d7-85eb01f9f2a0
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7747d3501817222049e6994100df14f4fed898f11319297d2337574a6db1cc61
+            outcomeId: 43116322-1d0c-44e7-b9d7-85eb01f9f2a0
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-381611b92e2ca56d39b022d7c64fed44c950f8b02a2b4d1bc027ae84b86183cc
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:40
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: ad50caecd2ad6bbeb271d043b0fc8910da0824a0cff958f542cfa67ab32cd10c
+        outcome:
+          actionId: install-workspace-entry-skill:40
+          attempt: 1
+          claimToken: portable-381611b92e2ca56d39b022d7c64fed44c950f8b02a2b4d1bc027ae84b86183cc
+          inputHash: ad50caecd2ad6bbeb271d043b0fc8910da0824a0cff958f542cfa67ab32cd10c
+          outcomeId: 4ea12b8b-de1d-4447-831d-fb8427f89e45
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 9
+            contentHash: 12bdf127a43cf2057b629ad6d8af6889ebfff2bc17ad10098636ab1c484ba1ca
+            cwd: .
+            deliveryInputs: {}
+            environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+            exitCode: 0
+            inputAfter: 4967099cc754a2dab40df151804bd38dd4caf6355b62aa41194036b446422a81
+            inputBefore: 4967099cc754a2dab40df151804bd38dd4caf6355b62aa41194036b446422a81
+            manifestHash: a773463b1fc02659958294f616b7c4bc1f0c3712b3b7b1a648a802d6a8fa0a38
+            manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/c88fde66-323f-4eee-bbde-7142a76f9e5a.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/25befdc3-f62c-4340-9d30-5a613c8ec7db.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: cfcdcf3da17837675525596ee8b698de4a0d3533de59a930d6dcd6ea266feefd
+            outcomeId: 4ea12b8b-de1d-4447-831d-fb8427f89e45
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-44d2730df8ac7a030188ddbb6ce3b0fb30bdfa5c1e4e3578eacaa16c8e30259d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:42
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: eb2bad5cbd1665fa18fe04e7771de9381e32c877807488bf1eab231b34f5a333
+        outcome:
+          actionId: install-workspace-entry-skill:42
+          attempt: 1
+          claimToken: portable-44d2730df8ac7a030188ddbb6ce3b0fb30bdfa5c1e4e3578eacaa16c8e30259d
+          inputHash: eb2bad5cbd1665fa18fe04e7771de9381e32c877807488bf1eab231b34f5a333
+          outcomeId: 09935484-d732-4bf3-9d3f-72af216dac2f
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档 Workspace 入口 Skill 和当前 Action Skill 装填的两份 delta spec；8 项任务、完整
+              Verify、实际安装包和三仓验收均通过；向 origin/main 创建一个 PR，CI 通过后合入
+            targetBranch: comet/install-workspace-entry-skill
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6f0b74e4957372bc58520ba6df985071efd8cb36607003a7b39cf19578f83882
+            outcomeId: 09935484-d732-4bf3-9d3f-72af216dac2f
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-e755d247c401e5ee2702379d676172127d097a6902cfdfbfede0de5f9d76e11e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:44
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 7c5dfd1902362db4828dc7c38a68d52f3c6ef5d78dfa6746aad290a0ea1624fa
+        outcome:
+          actionId: install-workspace-entry-skill:44
+          attempt: 1
+          claimToken: portable-e755d247c401e5ee2702379d676172127d097a6902cfdfbfede0de5f9d76e11e
+          inputHash: 7c5dfd1902362db4828dc7c38a68d52f3c6ef5d78dfa6746aad290a0ea1624fa
+          outcomeId: a4af0c9b-1ce8-4466-9892-45e222cbf40b
+          output:
+            baseCommit: 1348afa5584bb079ea91dc48cdeaca97d5375ac7
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/install-workspace-entry-skill
+            verifiedBranch: comet/install-workspace-entry-skill
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7f53b807240831158514007f001f1c03435f239c566536a7e2fc83a5d5b39c38
+            outcomeId: a4af0c9b-1ce8-4466-9892-45e222cbf40b
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-50a065706795d75db7b1a27f37806bcda7c42e1146a59769f57e561757fde9f3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-entry-skill:45
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 39d6547fd0ac506b21bd2afe7e77a9ee39bdbe9de102ccea296b019e87cbb455
+        outcome:
+          actionId: install-workspace-entry-skill:45
+          artifacts:
+            - sha256: 5d59fe55ce5682a82aafb99f18990a868714d5168ecae8e81c50c7bffc3da356
+              uri: openspec/changes/archive/2026-11-12-install-workspace-entry-skill/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-50a065706795d75db7b1a27f37806bcda7c42e1146a59769f57e561757fde9f3
+          inputHash: 39d6547fd0ac506b21bd2afe7e77a9ee39bdbe9de102ccea296b019e87cbb455
+          outcomeId: e884a935-d8bb-4d75-9062-1924eef94565
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-12-install-workspace-entry-skill
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6256ed7b1d1695d7e5ba2401ff70555dfd01e887317ea117c020117328eb4022
+            outcomeId: e884a935-d8bb-4d75-9062-1924eef94565
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: install-workspace-entry-skill:46
+        input:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs: {}
+        inputHash: 6632eb072dc1875d798b966e386a588b38761b74b907c0c84c879dfd97c6197a
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-entry-skill
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      install-workspace-entry-skill:1:
+        results: {}
+        sequence: 1
+      install-workspace-entry-skill:11:
+        results: {}
+        sequence: 11
+      install-workspace-entry-skill:13:
+        results: {}
+        sequence: 13
+      install-workspace-entry-skill:14:
+        results: {}
+        sequence: 14
+      install-workspace-entry-skill:16:
+        results: {}
+        sequence: 16
+      install-workspace-entry-skill:18:
+        results: {}
+        sequence: 18
+      install-workspace-entry-skill:19:
+        results: {}
+        sequence: 19
+      install-workspace-entry-skill:21:
+        results: {}
+        sequence: 21
+      install-workspace-entry-skill:22:
+        results: {}
+        sequence: 22
+      install-workspace-entry-skill:24:
+        results: {}
+        sequence: 24
+      install-workspace-entry-skill:26:
+        results: {}
+        sequence: 26
+      install-workspace-entry-skill:27:
+        results: {}
+        sequence: 27
+      install-workspace-entry-skill:29:
+        results: {}
+        sequence: 29
+      install-workspace-entry-skill:30:
+        results: {}
+        sequence: 30
+      install-workspace-entry-skill:32:
+        results: {}
+        sequence: 32
+      install-workspace-entry-skill:34:
+        results: {}
+        sequence: 34
+      install-workspace-entry-skill:36:
+        results: {}
+        sequence: 36
+      install-workspace-entry-skill:38:
+        results: {}
+        sequence: 38
+      install-workspace-entry-skill:4:
+        results: {}
+        sequence: 4
+      install-workspace-entry-skill:40:
+        results: {}
+        sequence: 40
+      install-workspace-entry-skill:42:
+        results: {}
+        sequence: 42
+      install-workspace-entry-skill:44:
+        results: {}
+        sequence: 44
+      install-workspace-entry-skill:45:
+        results: {}
+        sequence: 45
+      install-workspace-entry-skill:46:
+        results: {}
+        sequence: 46
+      install-workspace-entry-skill:5:
+        results: {}
+        sequence: 5
+      install-workspace-entry-skill:7:
+        results: {}
+        sequence: 7
+      install-workspace-entry-skill:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: install-workspace-entry-skill:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+              ref: openspec/changes/install-workspace-entry-skill
+        proposalHash: eef9dbc4ab60385043819e22b354bbe062b761758e8ae9cad540e04d81974fb9
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+          choice: approved
+          proposalHash: eef9dbc4ab60385043819e22b354bbe062b761758e8ae9cad540e04d81974fb9
+      - id: install-workspace-entry-skill:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
+              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
+              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
+                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
+                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
+                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
+                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
+                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
+                design.md 的失败路径检验。无 Spec Patch。
+              requirementsEvidence:
+                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
+                ref: openspec/changes/install-workspace-entry-skill
+              sourceEvidence:
+                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
+                ref: openspec/changes/install-workspace-entry-skill
+        proposalHash: 80be353fc4a2309350850c6e6ff898d3f12ec13d58c6372e3ec5f23b7bf97806
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-80be353fc4a2309350850c6e6ff898d3f12ec13d58c6372e3ec5f23b7bf97806-approved
+          choice: approved
+          proposalHash: 80be353fc4a2309350850c6e6ff898d3f12ec13d58c6372e3ec5f23b7bf97806
+      - id: install-workspace-entry-skill:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.build.configure:
+              boundBranch: comet/install-workspace-entry-skill
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 6295afdfb946a2be7f5795dca6c663281198de89d7282957a6fabb2fdd2f2b5a
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 281504bb-ed31-4a40-b56a-c563137edbb3
+          choice: approved
+          proposalHash: 6295afdfb946a2be7f5795dca6c663281198de89d7282957a6fabb2fdd2f2b5a
+      - id: install-workspace-entry-skill:37
+        stepId: full.archive.confirm
+        sequence: 37
+        status: resolved
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 install-workspace-entry-skill，合并两个 delta spec 到主规格，保留已通过的 8 项任务和
+                Windows 真实宿主及旧 Run 验收。完整 Verify 通过，1223 项测试通过、4 项跳过，19
+                项严格规格校验与包内容校验通过。交付目标 origin/main，准备一个 PR，CI 通过后合入。
+              targetBranch: comet/install-workspace-entry-skill
+        proposalHash: 200b1c69d58978d5e9f139da17752cbff3b9a5636cfb7590dde628b55f5d3306
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-200b1c69d58978d5e9f139da17752cbff3b9a5636cfb7590dde628b55f5d3306-reverify
+          choice: reverify
+          proposalHash: 200b1c69d58978d5e9f139da17752cbff3b9a5636cfb7590dde628b55f5d3306
+      - id: install-workspace-entry-skill:43
+        stepId: full.archive.confirm
+        sequence: 43
+        status: resolved
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Workspace 入口 Skill 和当前 Action Skill 装填的两份 delta spec；8 项任务、完整
+                Verify、实际安装包和三仓验收均通过；向 origin/main 创建一个 PR，CI 通过后合入
+              targetBranch: comet/install-workspace-entry-skill
+        proposalHash: f12df90d6272ea1177262411ffb9271fc10a62e62116023905d50d45329c6188
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-f12df90d6272ea1177262411ffb9271fc10a62e62116023905d50d45329c6188-pr
+          choice: pr
+          proposalHash: f12df90d6272ea1177262411ffb9271fc10a62e62116023905d50d45329c6188
+    evidenceWaits:
+      - id: install-workspace-entry-skill:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/install-workspace-entry-skill
+          contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+          submissionId: 4ba797cb-e0e9-4fcb-a74f-29ee62320b12
+      - id: install-workspace-entry-skill:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/install-workspace-entry-skill/design.md
+          contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+          submissionId: 67bbcf3b-2501-4536-956c-b89c31cee58c
+      - id: install-workspace-entry-skill:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+          contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+          submissionId: c9472ffb-1dab-42e3-a3f9-f7b25d7a5402
+      - id: install-workspace-entry-skill:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
+          contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
+          submissionId: 63455b25-8cb6-47d5-a7f1-c502e61f2193
+      - id: install-workspace-entry-skill:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/install-workspace-entry-skill.md
+          contentHash: 760ee68bc8dac77a2238de52f1f9f1bb692314898c8c78395aaa980589a2f6d7
+          submissionId: f43dd919-1eba-4eb1-a93b-222095572add
+      - id: install-workspace-entry-skill:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+          contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+          submissionId: 28ad4063-75e7-4775-bccf-3a9732447e51
+      - id: install-workspace-entry-skill:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/6b9bcba0-231f-4328-8401-8ce283a5305e.log
+          contentHash: 2c5884836b710d4bb4a7091c20f8f51b2789e31d22973906f8d131365f271dfc
+          submissionId: b835297b-eaec-4094-857f-c9a91f368d4e
+      - id: install-workspace-entry-skill:25
+        stepId: full.verify.report.evidence
+        sequence: 25
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/install-workspace-entry-skill.md
+          contentHash: e6c594fa8366eeed564cf7643a045d57ce855084cfa7be2a401b9ddc670cd7c8
+          submissionId: a1d5b2f1-04c1-4316-8832-f55255a8d101
+      - id: install-workspace-entry-skill:28
+        stepId: full.build.plan.evidence
+        sequence: 28
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+          contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+          submissionId: 1dcfb397-ea04-44ca-962f-747da21e9a4e
+      - id: install-workspace-entry-skill:31
+        stepId: full.build.check.evidence
+        sequence: 31
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/5033cfd5-277a-4579-88be-42aead0a4f1c.log
+          contentHash: 1382dd4c4b2d7d58b60b7cc3a4ab149521f5980a1b97c00c8c8128d204f96002
+          submissionId: 0bd795d8-fc13-4f08-ac17-fe1ef2571d47
+      - id: install-workspace-entry-skill:33
+        stepId: full.verify.report.evidence
+        sequence: 33
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/install-workspace-entry-skill.md
+          contentHash: ff359a3777316f4287a2a88a087c666f2047740c986e523392368843696f032b
+          submissionId: 6bf59419-afb3-453a-a3cc-e0b62c151927
+      - id: install-workspace-entry-skill:35
+        stepId: full.verify.check.evidence
+        sequence: 35
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/f27e39a8-d236-41a4-bbe9-6f5e8edaf283.log
+          contentHash: 74e0b34a1d735213bfd6f8d7023c9783fba937e52cc8bc559e012ef82de6c876
+          submissionId: 5d93fa25-215e-4794-8c6e-2297908268f7
+      - id: install-workspace-entry-skill:39
+        stepId: full.verify.report.evidence
+        sequence: 39
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/install-workspace-entry-skill.md
+          contentHash: ff359a3777316f4287a2a88a087c666f2047740c986e523392368843696f032b
+          submissionId: 376eb1d2-8e1b-42f5-aad3-e4ebdd42688d
+      - id: install-workspace-entry-skill:41
+        stepId: full.verify.check.evidence
+        sequence: 41
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/25befdc3-f62c-4340-9d30-5a613c8ec7db.log
+          contentHash: 12bdf127a43cf2057b629ad6d8af6889ebfff2bc17ad10098636ab1c484ba1ca
+          submissionId: 967665ff-f852-426f-9195-2899c064e0dc
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 72
+  sourceHash: d8df3eb6be18645212e575034afa9b866e621ac2fb6dd82ca97d9e9991796bbc
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+              ref: openspec/changes/install-workspace-entry-skill
+      - contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+        ref: openspec/changes/install-workspace-entry-skill
+      - contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+      - choice: approved
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
+              handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
+              proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
+                目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
+                start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
+                的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
+                组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
+                后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
+                design.md 的失败路径检验。无 Spec Patch。
+              requirementsEvidence:
+                contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
+                ref: openspec/changes/install-workspace-entry-skill
+              sourceEvidence:
+                contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
+                ref: openspec/changes/install-workspace-entry-skill
+      - handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
+        handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
+        proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
+          目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开 start/resume/next
+          处理同一 Run，仅取得当前执行权后装填 claim 的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner
+          标识跨进程保持。现有阶段、人工决策、Skill 组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build
+          Configure
+          后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
+          design.md 的失败路径检验。无 Spec Patch。
+        requirementsEvidence:
+          contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
+          ref: openspec/changes/install-workspace-entry-skill
+        sourceEvidence:
+          contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
+          ref: openspec/changes/install-workspace-entry-skill
+      - designDoc: openspec/changes/install-workspace-entry-skill/design.md
+      - contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+        ref: openspec/changes/install-workspace-entry-skill/design.md
+      - boundBranch: comet/install-workspace-entry-skill
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.build.configure:
+              boundBranch: comet/install-workspace-entry-skill
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+          ref: openspec/changes/install-workspace-entry-skill/design.md
+        plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+        planEvidence:
+          contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+          ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+        taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
+      - contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+        ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
+        cwd: .
+        environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
+        exitCode: 0
+        inputAfter: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
+        inputBefore: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
+        manifestHash: fd0212a359a0bd34e5db05f9d1dd026d682353de7df3bf6880048d06ea7ef681
+        manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b1b7bdbe-9b7b-432a-952c-0ff16c1d16ef.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
+        ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
+      - contentHash: 760ee68bc8dac77a2238de52f1f9f1bb692314898c8c78395aaa980589a2f6d7
+        ref: docs/superpowers/reports/install-workspace-entry-skill.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: a92c8177a6a241cc2e67825a1c7704ce53da9414021959ef03533e1e922cc55f
+        cwd: .
+        deliveryInputs: {}
+        environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+        exitCode: 1
+        inputAfter: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+        inputBefore: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+        manifestHash: 3fd2431653af94ef58ef7240ce295f248abd92adc2eb5ced97c919649ced9167
+        manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/ecdc2a68-5524-4292-8a67-cdf1f4f89a25.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/c5690dfe-c24e-46fb-aaf9-9d34362fecdb.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 2c5884836b710d4bb4a7091c20f8f51b2789e31d22973906f8d131365f271dfc
+        cwd: .
+        environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
+        exitCode: 0
+        inputAfter: 361d3a2159a4ccdfe9588993888d8a1ee09cc782f7cae510eb6657f094060ee6
+        inputBefore: 361d3a2159a4ccdfe9588993888d8a1ee09cc782f7cae510eb6657f094060ee6
+        manifestHash: 393a867446ac947f54d279b93312d16342199088389b5e1402aa60639bbcc34c
+        manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/63b4b3da-06f5-4291-a87a-257d6b8565fe.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/6b9bcba0-231f-4328-8401-8ce283a5305e.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 2c5884836b710d4bb4a7091c20f8f51b2789e31d22973906f8d131365f271dfc
+        ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/6b9bcba0-231f-4328-8401-8ce283a5305e.log
+      - contentHash: e6c594fa8366eeed564cf7643a045d57ce855084cfa7be2a401b9ddc670cd7c8
+        ref: docs/superpowers/reports/install-workspace-entry-skill.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: 6acab3bf87da47b543975167e8b190ff7cdc74e86f1d6958249f73522e0e8354
+        cwd: .
+        deliveryInputs: {}
+        environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+        exitCode: 1
+        inputAfter: 50e67a745e52be7cf065d83f1388501f0f0f994f45c2dc81a64a79060f5bd2b8
+        inputBefore: 50e67a745e52be7cf065d83f1388501f0f0f994f45c2dc81a64a79060f5bd2b8
+        manifestHash: 393a867446ac947f54d279b93312d16342199088389b5e1402aa60639bbcc34c
+        manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/f8692a4c-1194-4620-8ad3-38f6e748afa4.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b942e4e6-8c28-41d3-9174-3ff3e660d2db.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 6
+        contentHash: 1382dd4c4b2d7d58b60b7cc3a4ab149521f5980a1b97c00c8c8128d204f96002
+        cwd: .
+        environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
+        exitCode: 0
+        inputAfter: 870e0ee0538f566e4b122ce340f0b4aea4ba113031daa85a68d79b713fd83e38
+        inputBefore: 870e0ee0538f566e4b122ce340f0b4aea4ba113031daa85a68d79b713fd83e38
+        manifestHash: cd15546407145533b05213a7700e57c696ce7f6d207ef4e59f0fc4c8702b82e8
+        manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/378a25d4-f3f1-45d7-94b2-b13f4509f130.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/5033cfd5-277a-4579-88be-42aead0a4f1c.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 1382dd4c4b2d7d58b60b7cc3a4ab149521f5980a1b97c00c8c8128d204f96002
+        ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/5033cfd5-277a-4579-88be-42aead0a4f1c.log
+      - contentHash: ff359a3777316f4287a2a88a087c666f2047740c986e523392368843696f032b
+        ref: docs/superpowers/reports/install-workspace-entry-skill.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 7
+        contentHash: 74e0b34a1d735213bfd6f8d7023c9783fba937e52cc8bc559e012ef82de6c876
+        cwd: .
+        deliveryInputs: {}
+        environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+        exitCode: 0
+        inputAfter: e65a552eb2ded29beb369e05f2b303a42cd84735fb39e67257e88b1f2004ac6a
+        inputBefore: e65a552eb2ded29beb369e05f2b303a42cd84735fb39e67257e88b1f2004ac6a
+        manifestHash: cd15546407145533b05213a7700e57c696ce7f6d207ef4e59f0fc4c8702b82e8
+        manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/1f132005-6b57-401b-a793-7a7f82be8d83.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/f27e39a8-d236-41a4-bbe9-6f5e8edaf283.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 74e0b34a1d735213bfd6f8d7023c9783fba937e52cc8bc559e012ef82de6c876
+        ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/f27e39a8-d236-41a4-bbe9-6f5e8edaf283.log
+      - choice: reverify
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 install-workspace-entry-skill，合并两个 delta spec 到主规格，保留已通过的 8 项任务和
+                Windows 真实宿主及旧 Run 验收。完整 Verify 通过，1223 项测试通过、4 项跳过，19
+                项严格规格校验与包内容校验通过。交付目标 origin/main，准备一个 PR，CI 通过后合入。
+              targetBranch: comet/install-workspace-entry-skill
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档 install-workspace-entry-skill，合并两个 delta spec 到主规格，保留已通过的 8 项任务和
+          Windows 真实宿主及旧 Run 验收。完整 Verify 通过，1223 项测试通过、4 项跳过，19
+          项严格规格校验与包内容校验通过。交付目标 origin/main，准备一个 PR，CI 通过后合入。
+        targetBranch: comet/install-workspace-entry-skill
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 9
+        contentHash: 12bdf127a43cf2057b629ad6d8af6889ebfff2bc17ad10098636ab1c484ba1ca
+        cwd: .
+        deliveryInputs: {}
+        environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+        exitCode: 0
+        inputAfter: 4967099cc754a2dab40df151804bd38dd4caf6355b62aa41194036b446422a81
+        inputBefore: 4967099cc754a2dab40df151804bd38dd4caf6355b62aa41194036b446422a81
+        manifestHash: a773463b1fc02659958294f616b7c4bc1f0c3712b3b7b1a648a802d6a8fa0a38
+        manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/c88fde66-323f-4eee-bbde-7142a76f9e5a.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/25befdc3-f62c-4340-9d30-5a613c8ec7db.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 12bdf127a43cf2057b629ad6d8af6889ebfff2bc17ad10098636ab1c484ba1ca
+        ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/25befdc3-f62c-4340-9d30-5a613c8ec7db.log
+      - choice: pr
+        proposal:
+          input:
+            change: install-workspace-entry-skill
+            changeDir: openspec/changes/install-workspace-entry-skill
+            workspaceBaseline:
+              ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Workspace 入口 Skill 和当前 Action Skill 装填的两份 delta spec；8 项任务、完整
+                Verify、实际安装包和三仓验收均通过；向 origin/main 创建一个 PR，CI 通过后合入
+              targetBranch: comet/install-workspace-entry-skill
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档 Workspace 入口 Skill 和当前 Action Skill 装填的两份 delta spec；8 项任务、完整
+          Verify、实际安装包和三仓验收均通过；向 origin/main 创建一个 PR，CI 通过后合入
+        targetBranch: comet/install-workspace-entry-skill
+      - baseCommit: 1348afa5584bb079ea91dc48cdeaca97d5375ac7
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: comet/install-workspace-entry-skill
+        verifiedBranch: comet/install-workspace-entry-skill
+      - archiveDirectory: openspec/changes/archive/2026-11-12-install-workspace-entry-skill
+      - sequence: 9
+        value:
+          boundBranch: comet/install-workspace-entry-skill
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: install-workspace-entry-skill
+              changeDir: openspec/changes/install-workspace-entry-skill
+              workspaceBaseline:
+                ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+            outputs:
+              full.build.configure:
+                boundBranch: comet/install-workspace-entry-skill
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: install-workspace-entry-skill
+              changeDir: openspec/changes/install-workspace-entry-skill
+              workspaceBaseline:
+                ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
+                handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
+                proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
+                  目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开
+                  start/resume/next 处理同一 Run，仅取得当前执行权后装填 claim
+                  的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner 标识跨进程保持。现有阶段、人工决策、Skill
+                  组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build Configure
+                  后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
+                  design.md 的失败路径检验。无 Spec Patch。
+                requirementsEvidence:
+                  contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
+                  ref: openspec/changes/install-workspace-entry-skill
+                sourceEvidence:
+                  contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
+                  ref: openspec/changes/install-workspace-entry-skill
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/install-workspace-entry-skill/design.md
+      - sequence: 8
+        value:
+          contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+          ref: openspec/changes/install-workspace-entry-skill/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/install-workspace-entry-skill/.comet/handoff/design-context.json
+          handoffHash: 59dffca5285d150d21a971c068121e1efd1656c994ef8d5b146465258dce57fe
+          proposal: 安装独立、可发现的 Repoctopus Workspace 入口。接入预览 Codex/OpenCode
+            目标，审批绑定相对路径、内容摘要与前态，沿原事务幂等续接并保护团队文件；旧团队获批补齐。宿主沿公开 start/resume/next
+            处理同一 Run，仅取得当前执行权后装填 claim 的正文及资源；资源在提交前校验并冻结，沿原包身份恢复，Runner
+            标识跨进程保持。现有阶段、人工决策、Skill 组合与回执权威保留。用实际包与真实宿主验证发现、等待、冷恢复及 Build
+            Configure
+            后领取。取舍：入口单独安装，不做全目录投影；按包加载，避免同名和版本漂移。主要风险是宿主发现优先级、接入并发及资源漂移，按
+            design.md 的失败路径检验。无 Spec Patch。
+          requirementsEvidence:
+            contentHash: 29ced56f5013d5ab659b74edf400b851f6d0124867ab10e3a57787230ded68ec
+            ref: openspec/changes/install-workspace-entry-skill
+          sourceEvidence:
+            contentHash: 23f32d5ee3387798285d958cd8b0021b6775493ad3bb325a00385de9be6acb7f
+            ref: openspec/changes/install-workspace-entry-skill
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: install-workspace-entry-skill
+              changeDir: openspec/changes/install-workspace-entry-skill
+              workspaceBaseline:
+                ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+                ref: openspec/changes/install-workspace-entry-skill
+      - sequence: 2
+        value:
+          contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+          ref: openspec/changes/install-workspace-entry-skill
+      - sequence: 4
+        value:
+          contentHash: cd6c7a0a25370ce69151ff135f0e6bf8d8338e9bffb0d7885bb7fa9c3be8fe63
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+            ref: openspec/changes/install-workspace-entry-skill/design.md
+          plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+          planEvidence:
+            contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+            ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+          taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
+      - sequence: 12
+        value:
+          contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+          ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
+          cwd: .
+          environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
+          exitCode: 0
+          inputAfter: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
+          inputBefore: 70a02746e8a256b86a0304d30981bc0f7ef8dbccffd055825303402d6ba361b5
+          manifestHash: fd0212a359a0bd34e5db05f9d1dd026d682353de7df3bf6880048d06ea7ef681
+          manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b1b7bdbe-9b7b-432a-952c-0ff16c1d16ef.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 5871339866711f10dc2e48941335e472295a36ebe3d147b86858ee4bef05b927
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/30d4c15c-d1be-45f6-ab1f-fa2557280feb.log
+      - sequence: 17
+        value:
+          contentHash: 760ee68bc8dac77a2238de52f1f9f1bb692314898c8c78395aaa980589a2f6d7
+          ref: docs/superpowers/reports/install-workspace-entry-skill.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: a92c8177a6a241cc2e67825a1c7704ce53da9414021959ef03533e1e922cc55f
+          cwd: .
+          deliveryInputs: {}
+          environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+          exitCode: 1
+          inputAfter: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+          inputBefore: 8c2a6cc8f220c15894bbd0f9bef3cd9c8ff4a1a5e59418a1edb8d120429a7e78
+          manifestHash: 3fd2431653af94ef58ef7240ce295f248abd92adc2eb5ced97c919649ced9167
+          manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/ecdc2a68-5524-4292-8a67-cdf1f4f89a25.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/c5690dfe-c24e-46fb-aaf9-9d34362fecdb.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+            ref: openspec/changes/install-workspace-entry-skill/design.md
+          plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+          planEvidence:
+            contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+            ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+          taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
+      - sequence: 20
+        value:
+          contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+          ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 2c5884836b710d4bb4a7091c20f8f51b2789e31d22973906f8d131365f271dfc
+          cwd: .
+          environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
+          exitCode: 0
+          inputAfter: 361d3a2159a4ccdfe9588993888d8a1ee09cc782f7cae510eb6657f094060ee6
+          inputBefore: 361d3a2159a4ccdfe9588993888d8a1ee09cc782f7cae510eb6657f094060ee6
+          manifestHash: 393a867446ac947f54d279b93312d16342199088389b5e1402aa60639bbcc34c
+          manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/63b4b3da-06f5-4291-a87a-257d6b8565fe.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/6b9bcba0-231f-4328-8401-8ce283a5305e.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 23
+        value:
+          contentHash: 2c5884836b710d4bb4a7091c20f8f51b2789e31d22973906f8d131365f271dfc
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/6b9bcba0-231f-4328-8401-8ce283a5305e.log
+      - sequence: 25
+        value:
+          contentHash: e6c594fa8366eeed564cf7643a045d57ce855084cfa7be2a401b9ddc670cd7c8
+          ref: docs/superpowers/reports/install-workspace-entry-skill.md
+      - sequence: 24
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: 6acab3bf87da47b543975167e8b190ff7cdc74e86f1d6958249f73522e0e8354
+          cwd: .
+          deliveryInputs: {}
+          environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+          exitCode: 1
+          inputAfter: 50e67a745e52be7cf065d83f1388501f0f0f994f45c2dc81a64a79060f5bd2b8
+          inputBefore: 50e67a745e52be7cf065d83f1388501f0f0f994f45c2dc81a64a79060f5bd2b8
+          manifestHash: 393a867446ac947f54d279b93312d16342199088389b5e1402aa60639bbcc34c
+          manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/f8692a4c-1194-4620-8ad3-38f6e748afa4.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/b942e4e6-8c28-41d3-9174-3ff3e660d2db.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 27
+        value:
+          designEvidence:
+            contentHash: 0ba485766aced90bdae168fbcf1a7857cce99176ed6923640fae2056d3250b8c
+            ref: openspec/changes/install-workspace-entry-skill/design.md
+          plan: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+          planEvidence:
+            contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+            ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+          taskRevision: ddc97b85c16d82aad6609383f5cb928fe02daa750b66144a6bd8103ceb92f85a
+      - sequence: 28
+        value:
+          contentHash: a8759b5dd8d66a6be7b797d1c16bf497518b4fe7f0eb4f11b2fecf04dc1318fc
+          ref: docs/superpowers/plans/2026-11-11-install-workspace-entry-skill.md
+      - sequence: 29
+        value:
+          event: build-complete
+      - sequence: 30
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 6
+          contentHash: 1382dd4c4b2d7d58b60b7cc3a4ab149521f5980a1b97c00c8c8128d204f96002
+          cwd: .
+          environment: 6ae5f61f6f79b0c0329d49a976b18e58889f60e2ea3baeece1bae00e9ca5a67a
+          exitCode: 0
+          inputAfter: 870e0ee0538f566e4b122ce340f0b4aea4ba113031daa85a68d79b713fd83e38
+          inputBefore: 870e0ee0538f566e4b122ce340f0b4aea4ba113031daa85a68d79b713fd83e38
+          manifestHash: cd15546407145533b05213a7700e57c696ce7f6d207ef4e59f0fc4c8702b82e8
+          manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/378a25d4-f3f1-45d7-94b2-b13f4509f130.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/5033cfd5-277a-4579-88be-42aead0a4f1c.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 31
+        value:
+          contentHash: 1382dd4c4b2d7d58b60b7cc3a4ab149521f5980a1b97c00c8c8128d204f96002
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/5033cfd5-277a-4579-88be-42aead0a4f1c.log
+      - sequence: 33
+        value:
+          contentHash: ff359a3777316f4287a2a88a087c666f2047740c986e523392368843696f032b
+          ref: docs/superpowers/reports/install-workspace-entry-skill.md
+      - sequence: 32
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+      - sequence: 34
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 7
+          contentHash: 74e0b34a1d735213bfd6f8d7023c9783fba937e52cc8bc559e012ef82de6c876
+          cwd: .
+          deliveryInputs: {}
+          environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+          exitCode: 0
+          inputAfter: e65a552eb2ded29beb369e05f2b303a42cd84735fb39e67257e88b1f2004ac6a
+          inputBefore: e65a552eb2ded29beb369e05f2b303a42cd84735fb39e67257e88b1f2004ac6a
+          manifestHash: cd15546407145533b05213a7700e57c696ce7f6d207ef4e59f0fc4c8702b82e8
+          manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/1f132005-6b57-401b-a793-7a7f82be8d83.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/f27e39a8-d236-41a4-bbe9-6f5e8edaf283.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 35
+        value:
+          contentHash: 74e0b34a1d735213bfd6f8d7023c9783fba937e52cc8bc559e012ef82de6c876
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/f27e39a8-d236-41a4-bbe9-6f5e8edaf283.log
+      - sequence: 37
+        value:
+          choice: reverify
+          proposal:
+            input:
+              change: install-workspace-entry-skill
+              changeDir: openspec/changes/install-workspace-entry-skill
+              workspaceBaseline:
+                ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档 install-workspace-entry-skill，合并两个 delta spec 到主规格，保留已通过的 8 项任务和
+                  Windows 真实宿主及旧 Run 验收。完整 Verify 通过，1223 项测试通过、4 项跳过，19
+                  项严格规格校验与包内容校验通过。交付目标 origin/main，准备一个 PR，CI 通过后合入。
+                targetBranch: comet/install-workspace-entry-skill
+      - sequence: 36
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档 install-workspace-entry-skill，合并两个 delta spec 到主规格，保留已通过的 8 项任务和
+            Windows 真实宿主及旧 Run 验收。完整 Verify 通过，1223 项测试通过、4 项跳过，19
+            项严格规格校验与包内容校验通过。交付目标 origin/main，准备一个 PR，CI 通过后合入。
+          targetBranch: comet/install-workspace-entry-skill
+      - sequence: 39
+        value:
+          contentHash: ff359a3777316f4287a2a88a087c666f2047740c986e523392368843696f032b
+          ref: docs/superpowers/reports/install-workspace-entry-skill.md
+      - sequence: 38
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/install-workspace-entry-skill.md
+      - sequence: 40
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 9
+          contentHash: 12bdf127a43cf2057b629ad6d8af6889ebfff2bc17ad10098636ab1c484ba1ca
+          cwd: .
+          deliveryInputs: {}
+          environment: 2705d8a25777b68a9e9e1ca978a38f35ffa41a3893611a42ca47a831a8953eae
+          exitCode: 0
+          inputAfter: 4967099cc754a2dab40df151804bd38dd4caf6355b62aa41194036b446422a81
+          inputBefore: 4967099cc754a2dab40df151804bd38dd4caf6355b62aa41194036b446422a81
+          manifestHash: a773463b1fc02659958294f616b7c4bc1f0c3712b3b7b1a648a802d6a8fa0a38
+          manifestRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/c88fde66-323f-4eee-bbde-7142a76f9e5a.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/25befdc3-f62c-4340-9d30-5a613c8ec7db.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 41
+        value:
+          contentHash: 12bdf127a43cf2057b629ad6d8af6889ebfff2bc17ad10098636ab1c484ba1ca
+          ref: .comet/runtime/classic-sdk-checks/b93083f023218b80913a22dad978a7ab0cf3511b7ae04f6d0136db9fd802ebdc/25befdc3-f62c-4340-9d30-5a613c8ec7db.log
+      - sequence: 43
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: install-workspace-entry-skill
+              changeDir: openspec/changes/install-workspace-entry-skill
+              workspaceBaseline:
+                ref: 5610cd6e-aff0-4527-9c98-109e268bbc47
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档 Workspace 入口 Skill 和当前 Action Skill 装填的两份 delta spec；8 项任务、完整
+                  Verify、实际安装包和三仓验收均通过；向 origin/main 创建一个 PR，CI 通过后合入
+                targetBranch: comet/install-workspace-entry-skill
+      - sequence: 42
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档 Workspace 入口 Skill 和当前 Action Skill 装填的两份 delta spec；8 项任务、完整
+            Verify、实际安装包和三仓验收均通过；向 origin/main 创建一个 PR，CI 通过后合入
+          targetBranch: comet/install-workspace-entry-skill
+      - sequence: 44
+        value:
+          baseCommit: 1348afa5584bb079ea91dc48cdeaca97d5375ac7
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/install-workspace-entry-skill
+          verifiedBranch: comet/install-workspace-entry-skill
+      - sequence: 45
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-12-install-workspace-entry-skill
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.verify.report.evidence
+        value: 20
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 54
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 55
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 56
+        height: 5
+      - key: full.verify.check
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 58
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 59
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 61
+        height: 5
+      - key: full.build.check
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 23
+        left: 63
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 64
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 65
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 66
+        right: 61
+        height: 5
+      - key: full.verify.report.evidence
+        value: 24
+        left: 58
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 68
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 69
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 66
+        right: 70
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 24
+        left: 73
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 25
+        left: 72
+        right: 74
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 75
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 66
+        right: 76
+        height: 5
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 28
+        left: 78
+        right: 79
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 23
+        left: 80
+        right: 81
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 82
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 83
+        right: 76
+        height: 5
+      - key: full.verify.check.evidence
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 24
+        left: 85
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 29
+        left: 72
+        right: 86
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 87
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 83
+        right: 88
+        height: 5
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 32
+        left: 90
+        right: 79
+        height: 2
+      - key: full.build.check.evidence
+        value: 23
+        left: 91
+        right: 81
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 92
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 93
+        right: 88
+        height: 5
+      - key: full.archive.preflight
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: 95
+        height: 2
+      - key: full.archive.prepare
+        value: 32
+        left: 96
+        right: 79
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 81
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 23
+        left: 97
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 99
+        right: 88
+        height: 5
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 34
+        left: 101
+        right: 102
+        height: 2
+      - key: full.archive.prepare
+        value: 32
+        left: 103
+        right: 79
+        height: 3
+      - key: full.build.check.evidence
+        value: 23
+        left: 104
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 105
+        right: 88
+        height: 5
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 107
+        right: 108
+        height: 2
+      - key: full.design.evidence
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: 110
+        right: 111
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: null
+        right: 113
+        height: 2
+      - key: full.open.confirm
+        value: 42
+        left: 112
+        right: 114
+        height: 3
+      - key: full.design.document
+        value: 38
+        left: 109
+        right: 115
+        height: 4
+      - key: full.build.plan
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: 117
+        right: 118
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 107
+        right: 119
+        height: 3
+      - key: full.design.document
+        value: 38
+        left: 120
+        right: 115
+        height: 4
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 107
+        right: 122
+        height: 2
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: 118
+        height: 2
+      - key: full.build.plan
+        value: 45
+        left: 123
+        right: 124
+        height: 3
+      - key: full.design.document
+        value: 38
+        left: 125
+        right: 115
+        height: 4
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: 127
+        right: 128
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 129
+        right: 122
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 130
+        right: 124
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 131
+        right: 115
+        height: 5
+      - key: full.open.evidence
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: null
+        right: 134
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: 133
+        right: 135
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 112
+        right: 136
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 131
+        right: 137
+        height: 5
+      - key: full.verify.check
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 139
+        right: 134
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: 133
+        right: 140
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 112
+        right: 141
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 131
+        right: 142
+        height: 5
+      - key: full.build.plan.evidence
+        value: 54
+        left: null
+        right: 118
+        height: 2
+      - key: full.build.plan
+        value: 53
+        left: 130
+        right: 144
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 145
+        right: 142
+        height: 5
+      - key: full.build.execute
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 129
+        right: 147
+        height: 3
+      - key: full.build.plan
+        value: 53
+        left: 148
+        right: 144
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 149
+        right: 142
+        height: 5
+      - key: full.build.check
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 57
+        left: 151
+        right: 128
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 152
+        right: 147
+        height: 3
+      - key: full.build.plan
+        value: 53
+        left: 153
+        right: 144
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 154
+        right: 142
+        height: 5
+      - key: full.verify.run
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 58
+        left: 139
+        right: 156
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: 133
+        right: 157
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 112
+        right: 158
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 154
+        right: 159
+        height: 5
+      - key: full.verify.check
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 58
+        left: 161
+        right: 156
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: 133
+        right: 162
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 112
+        right: 163
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 154
+        right: 164
+        height: 5
+      - key: full.build.plan.evidence
+        value: 62
+        left: null
+        right: 118
+        height: 2
+      - key: full.build.plan
+        value: 61
+        left: 153
+        right: 166
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 167
+        right: 164
+        height: 5
+      - key: full.build.execute
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 152
+        right: 169
+        height: 3
+      - key: full.build.plan
+        value: 61
+        left: 170
+        right: 166
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 171
+        right: 164
+        height: 5
+      - key: full.build.check
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 65
+        left: 173
+        right: 128
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 174
+        right: 169
+        height: 3
+      - key: full.build.plan
+        value: 61
+        left: 175
+        right: 166
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 176
+        right: 164
+        height: 5
+      - key: full.verify.run
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 66
+        left: 161
+        right: 178
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: 133
+        right: 179
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 112
+        right: 180
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 176
+        right: 181
+        height: 5
+      - key: full.open.revalidate
+        value: 44
+        left: 133
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 69
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 66
+        left: 184
+        right: 178
+        height: 2
+      - key: full.verify.check
+        value: 68
+        left: 183
+        right: 185
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 112
+        right: 186
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 176
+        right: 187
+        height: 5
+      - key: full.archive.confirm
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 71
+        left: 189
+        right: 190
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 128
+        right: 169
+        height: 2
+      - key: full.build.check.evidence
+        value: 65
+        left: 191
+        right: 192
+        height: 3
+      - key: full.build.plan
+        value: 61
+        left: 193
+        right: 166
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 194
+        right: 187
+        height: 5
+      - key: full.open
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 42
+        left: 196
+        right: 197
+        height: 2
+      - key: full.archive.confirm
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 71
+        left: 199
+        right: 200
+        height: 2
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 65
+        left: 201
+        right: 202
+        height: 3
+      - key: full.build.execute
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 61
+        left: 204
+        right: 205
+        height: 2
+      - key: full.design.document
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 39
+        left: 207
+        right: 208
+        height: 2
+      - key: full.design.confirm
+        value: 37
+        left: 206
+        right: 209
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: 211
+        right: 212
+        height: 2
+      - key: full.verify.check.evidence
+        value: 69
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 73
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 72
+        left: 214
+        right: 215
+        height: 2
+      - key: full.verify.check
+        value: 68
+        left: 213
+        right: 216
+        height: 3
+      - key: full.open
+        value: 41
+        left: 210
+        right: 217
+        height: 4
+      - key: full.build.confirm
+        value: 36
+        left: 203
+        right: 218
+        height: 5
+      - key: full.verify.check.evidence
+        value: 75
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 72
+        left: 220
+        right: 215
+        height: 2
+      - key: full.verify.check
+        value: 74
+        left: 213
+        right: 221
+        height: 3
+      - key: full.open
+        value: 41
+        left: 210
+        right: 222
+        height: 4
+      - key: full.build.confirm
+        value: 36
+        left: 203
+        right: 223
+        height: 5
+      - key: full.archive.confirm
+        value: 76
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 77
+        left: 225
+        right: 200
+        height: 2
+      - key: full.build.check.evidence
+        value: 65
+        left: 226
+        right: 202
+        height: 3
+      - key: full.build.confirm
+        value: 36
+        left: 227
+        right: 223
+        height: 5
+      - key: full.archive.preflight
+        value: 78
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 76
+        left: null
+        right: 229
+        height: 2
+      - key: full.build.check.evidence
+        value: 65
+        left: 200
+        right: 202
+        height: 2
+      - key: full.archive.prepare
+        value: 77
+        left: 230
+        right: 231
+        height: 3
+      - key: full.build.confirm
+        value: 36
+        left: 232
+        right: 223
+        height: 5
+      - key: full.archive.confirm
+        value: 76
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 78
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 79
+        left: 234
+        right: 235
+        height: 2
+      - key: full.archive.prepare
+        value: 77
+        left: 236
+        right: 231
+        height: 3
+      - key: full.build.confirm
+        value: 36
+        left: 237
+        right: 223
+        height: 5
+      - key: full.open
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: null
+        right: 240
+        height: 2
+      - key: full.open.confirm
+        value: 42
+        left: 239
+        right: 241
+        height: 3
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: 243
+        right: 244
+        height: 2
+      - key: full.open.confirm
+        value: 42
+        left: 245
+        right: 241
+        height: 3
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 38
+        left: 247
+        right: 248
+        height: 2
+      - key: full.design.handoff
+        value: 40
+        left: 249
+        right: 244
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 250
+        right: 241
+        height: 4
+      - key: full.open.evidence
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 41
+        left: null
+        right: 252
+        height: 2
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: 255
+        right: 256
+        height: 2
+      - key: full.open
+        value: 41
+        left: 254
+        right: 257
+        height: 3
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 39
+        left: 260
+        right: 261
+        height: 2
+      - key: full.design.confirm
+        value: 37
+        left: 259
+        right: 262
+        height: 3
+      - key: full.open
+        value: 41
+        left: 263
+        right: 257
+        height: 4
+      - key: full.archive.prepare
+        value: 71
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 65
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 64
+        left: 265
+        right: 266
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 61
+        left: null
+        right: 269
+        height: 2
+      - key: full.build.execute
+        value: 63
+        left: 268
+        right: 270
+        height: 3
+      - key: full.build.configure
+        value: 35
+        left: 267
+        right: 271
+        height: 4
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: 255
+        right: 273
+        height: 2
+      - key: full.verify.check.evidence
+        value: 69
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 66
+        left: 275
+        right: 276
+        height: 2
+      - key: full.verify.check
+        value: 68
+        left: 274
+        right: 277
+        height: 3
+      - key: full.open
+        value: 41
+        left: 262
+        right: 278
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 272
+        right: 279
+        height: 5
+      - key: full.archive.confirm
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 77
+        left: 281
+        right: null
+        height: 2
+      - key: full.build.check
+        value: 64
+        left: 282
+        right: 266
+        height: 3
+      - key: full.build.configure
+        value: 35
+        left: 283
+        right: 271
+        height: 4
+      - key: full.verify.check.evidence
+        value: 75
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 73
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 72
+        left: 285
+        right: 286
+        height: 2
+      - key: full.verify.check
+        value: 74
+        left: 274
+        right: 287
+        height: 3
+      - key: full.open
+        value: 41
+        left: 262
+        right: 288
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 284
+        right: 289
+        height: 5
+      - key: full.open
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 38
+        left: 292
+        right: 293
+        height: 2
+      - key: full.open.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: 295
+        right: 296
+        height: 2
+      - key: full.open
+        value: 41
+        left: 294
+        right: 297
+        height: 3
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 299
+        right: 300
+        height: 2
+      - key: full.design.document
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 39
+        left: 302
+        right: 303
+        height: 2
+      - key: full.design.confirm
+        value: 37
+        left: 301
+        right: 304
+        height: 3
+      - key: full.open
+        value: 41
+        left: 305
+        right: 297
+        height: 4
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 35
+        left: 307
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: 309
+        right: 310
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 308
+        right: 311
+        height: 3
+      - key: full.open
+        value: 41
+        left: 304
+        right: 297
+        height: 3
+      - key: full.design.confirm
+        value: 37
+        left: 312
+        right: 313
+        height: 4
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: 315
+        right: 316
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 317
+        right: 311
+        height: 3
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: 319
+        height: 2
+      - key: full.open.evidence
+        value: 43
+        left: 295
+        right: 320
+        height: 3
+      - key: full.open
+        value: 41
+        left: 304
+        right: 321
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 318
+        right: 322
+        height: 5
+      - key: full.build.plan
+        value: 53
+        left: 309
+        right: 310
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 317
+        right: 324
+        height: 3
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: 295
+        right: 326
+        height: 2
+      - key: full.verify.report.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: 328
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 327
+        right: 329
+        height: 3
+      - key: full.open
+        value: 41
+        left: 304
+        right: 330
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 325
+        right: 331
+        height: 5
+      - key: full.build.check
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: 333
+        right: 316
+        height: 2
+      - key: full.build.execute
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 53
+        left: 335
+        right: 336
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 334
+        right: 337
+        height: 3
+      - key: full.design.confirm
+        value: 37
+        left: 338
+        right: 331
+        height: 5
+      - key: full.build.check.evidence
+        value: 57
+        left: 333
+        right: 316
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 340
+        right: 337
+        height: 3
+      - key: full.verify.run
+        value: 59
+        left: 328
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 327
+        right: 342
+        height: 3
+      - key: full.open
+        value: 41
+        left: 304
+        right: 343
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 341
+        right: 344
+        height: 5
+      - key: full.build.plan
+        value: 61
+        left: 335
+        right: 336
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 340
+        right: 346
+        height: 3
+      - key: full.verify.report.evidence
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 59
+        left: 348
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 60
+        left: 327
+        right: 349
+        height: 3
+      - key: full.open
+        value: 41
+        left: 304
+        right: 350
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 347
+        right: 351
+        height: 5
+      - key: full.build.check
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 57
+        left: 353
+        right: 316
+        height: 2
+      - key: full.build.execute
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 61
+        left: 355
+        right: 356
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 354
+        right: 357
+        height: 3
+      - key: full.design.confirm
+        value: 37
+        left: 358
+        right: 351
+        height: 5
+      - key: full.build.check.evidence
+        value: 65
+        left: 353
+        right: 316
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 360
+        right: 357
+        height: 3
+      - key: full.verify.run
+        value: 67
+        left: 348
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 60
+        left: 327
+        right: 362
+        height: 3
+      - key: full.open
+        value: 41
+        left: 304
+        right: 363
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 361
+        right: 364
+        height: 5
+      - key: full.verify.report.evidence
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 67
+        left: 366
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 68
+        left: 327
+        right: 367
+        height: 3
+      - key: full.open
+        value: 41
+        left: 304
+        right: 368
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 361
+        right: 369
+        height: 5
+      - key: full.archive.confirm
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 71
+        left: 371
+        right: 372
+        height: 2
+      - key: full.build.check.evidence
+        value: 65
+        left: 373
+        right: 316
+        height: 3
+      - key: full.build.confirm
+        value: 36
+        left: 374
+        right: 357
+        height: 4
+      - key: full.verify.check.evidence
+        value: 69
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 73
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 66
+        left: 376
+        right: 377
+        height: 2
+      - key: full.verify.check
+        value: 68
+        left: 327
+        right: 378
+        height: 3
+      - key: full.open
+        value: 41
+        left: 304
+        right: 379
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 375
+        right: 380
+        height: 5
+      - key: full.verify.report.evidence
+        value: 72
+        left: 376
+        right: 377
+        height: 2
+      - key: full.verify.check
+        value: 74
+        left: 327
+        right: 382
+        height: 3
+      - key: full.open
+        value: 41
+        left: 304
+        right: 383
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 375
+        right: 384
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 57
+      - 62
+      - 67
+      - 71
+      - 77
+      - 84
+      - 89
+      - 94
+      - 100
+      - 106
+      - 116
+      - 121
+      - 126
+      - 132
+      - 138
+      - 143
+      - 146
+      - 150
+      - 155
+      - 160
+      - 165
+      - 168
+      - 172
+      - 177
+      - 182
+      - 188
+      - 195
+      - 198
+      - 219
+      - 224
+      - 228
+      - 233
+      - 238
+      - 242
+      - 246
+      - 251
+      - 253
+      - 258
+      - 264
+      - 280
+      - 290
+      - 291
+      - 298
+      - 306
+      - 314
+      - 323
+      - 332
+      - 339
+      - 345
+      - 352
+      - 359
+      - 365
+      - 370
+      - 381
+      - 385
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "21"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actions
+          - "22"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actions
+          - "23"
+          - input
+          - outputs
+        map: 18
+      - path:
+          - actions
+          - "24"
+          - input
+          - outputs
+        map: 19
+      - path:
+          - actions
+          - "25"
+          - input
+          - outputs
+        map: 20
+      - path:
+          - actions
+          - "26"
+          - input
+          - outputs
+        map: 21
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:11
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:13
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:14
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:16
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:18
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:19
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:21
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:22
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:24
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:26
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:27
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:29
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:30
+          - results
+        map: 34
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:32
+          - results
+        map: 35
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:34
+          - results
+        map: 36
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:36
+          - results
+        map: 37
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:38
+          - results
+        map: 38
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:4
+          - results
+        map: 39
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:40
+          - results
+        map: 40
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:42
+          - results
+        map: 41
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:44
+          - results
+        map: 42
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:45
+          - results
+        map: 43
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:46
+          - results
+        map: 44
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:5
+          - results
+        map: 45
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:7
+          - results
+        map: 46
+      - path:
+          - actionContexts
+          - install-workspace-entry-skill:9
+          - results
+        map: 47
+      - path:
+          - outputs
+        map: 44
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 48
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 49
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 50
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 51
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 52
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 53
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 54
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 55
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 56
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 57
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 58
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 59
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 60
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 61
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 62
+      - path:
+          - evidenceWaits
+          - "10"
+          - results
+        map: 63
+      - path:
+          - evidenceWaits
+          - "11"
+          - results
+        map: 64
+      - path:
+          - evidenceWaits
+          - "12"
+          - results
+        map: 65
+      - path:
+          - evidenceWaits
+          - "13"
+          - results
+        map: 66
+  storageHash: 17b26fde14c2b4e24e2ebf7b49f74da77187d83244d3326fa090fa5b504ea647
+check_epoch: 12

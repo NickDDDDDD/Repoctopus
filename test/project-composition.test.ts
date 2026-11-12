@@ -31,9 +31,8 @@ describe('project composition assembly', () => {
     );
     const ids = composition.entries.map((entry) => entry.id);
     expect(compositionIdentity(composition).compositionDigest).toBe(
-      // The existing owners now bind Host decision contracts/coordinator and
-      // the added fixed Comet references; no second decision service is added.
-      'sha256:a5b237937eb3b9da14989e3b7d213164ee3ea2239eacb7da068751e09a0cb664',
+      // The existing owners bind Workspace onboarding and frozen Skill resource delivery.
+      'sha256:c1f6ae38f7e8c5c5c48ae4aeb7b17afc8ed13eb4815d4a56e80a046998b3f7a7',
     );
     expect(ids).toEqual(
       expect.arrayContaining([

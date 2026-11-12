@@ -3,7 +3,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { atomicWriteText } from '../platform/filesystem/atomic-write.js';
+import {
+  atomicWriteText,
+  prepareContainedFileCleanup,
+} from '../platform/filesystem/atomic-write.js';
 import { readFileRaceSafe } from '../platform/filesystem/race-safe-read.js';
 
 describe('filesystem safety primitives', () => {
@@ -55,6 +58,22 @@ describe('filesystem safety primitives', () => {
       }),
     ).rejects.toThrow(/temporary file changed before commit/u);
     await expect(fs.readFile(target, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  it('rejects cleanup when the original file is reached through a replaced parent', async () => {
+    const parent = path.join(root, 'entry');
+    const displaced = path.join(outside, 'entry');
+    const file = path.join(parent, 'staged.tmp');
+    await fs.mkdir(parent);
+    await fs.writeFile(file, 'original staging bytes');
+    const cleanup = await prepareContainedFileCleanup(file, root);
+    await fs.rename(parent, displaced);
+    await fs.symlink(displaced, parent, process.platform === 'win32' ? 'junction' : 'dir');
+
+    await expect(cleanup()).rejects.toThrow(/parent changed|real directory/u);
+    expect(await fs.readFile(path.join(displaced, 'staged.tmp'), 'utf8')).toBe(
+      'original staging bytes',
+    );
   });
 
   it('does not follow a replaced parent outside the managed root', async () => {

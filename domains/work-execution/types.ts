@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import type { ActionIntent, ClaimedActionOutcome } from '../action/types.js';
-import type { WorkExecutionContext } from '../change-lifecycle/work-context.js';
+import type { WorkExecutionContext, WorkSkillResource } from '../change-lifecycle/work-context.js';
 import type { WorkDescriptor } from '../change-lifecycle/transition.js';
 import type { WorkPackageCandidate } from '../change-lifecycle/build-protocol.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
@@ -106,7 +106,14 @@ export interface WorkExecutionPacket {
   hostRequirement: WorkExecutionHostRequirement;
 }
 
+export interface RecoveredSkillResources {
+  layerIndex: number;
+  layerDigest: `sha256:${string}`;
+  resources: readonly WorkSkillResource[];
+}
+
 export interface WorkClaimResult {
+  recoveredSkillResources?: readonly RecoveredSkillResources[];
   intent: ActionIntent;
   packet: WorkExecutionPacket;
 }
@@ -327,10 +334,14 @@ export interface WorkExecutionHostPreflight {
 
 export interface WorkExecutionHost {
   readonly identity: WorkExecutionHostIdentity;
-  preflight(packet: WorkExecutionPacket): Promise<WorkExecutionHostPreflight>;
+  preflight(
+    packet: WorkExecutionPacket,
+    recoveredSkillResources?: readonly RecoveredSkillResources[],
+  ): Promise<WorkExecutionHostPreflight>;
   invoke(
     packet: WorkExecutionPacket,
     session: WorkExecutionSessionIdentity,
+    recoveredSkillResources?: readonly RecoveredSkillResources[],
   ): Promise<WorkExecutionHostOutcome>;
   reconcile?(invocation: WorkExecutionHostInvocation): Promise<WorkExecutionHostReconciliation>;
 }

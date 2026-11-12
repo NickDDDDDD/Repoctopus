@@ -275,6 +275,8 @@ const definitions: readonly BuiltinDefinition[] = [
       'platform/project-configuration/detect.ts',
       'platform/project-configuration/gitignore.ts',
       'platform/project-configuration/workspace-guides.ts',
+      'platform/project-configuration/workspace-entry-skills.ts',
+      'domains/project-configuration/entry-skills.ts',
       'domains/project-configuration/workspace-guides.ts',
     ],
   },
@@ -373,6 +375,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: mattSkillProvider,
     sourceFiles: [
+      'domains/project-configuration/entry-skills.ts',
       'plugins/skill/file-skill-provider.ts',
       'plugins/skill/matt-skill-provider.ts',
       'third_party/matt-skills/method-adoptions.json',
@@ -414,6 +417,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: lifecycleSkillProvider,
     sourceFiles: [
+      'domains/project-configuration/entry-skills.ts',
       'plugins/skill/file-skill-provider.ts',
       'plugins/skill/lifecycle-skill-provider.ts',
       'skills/lifecycle/repoctopus-open-change/SKILL.md',
@@ -441,6 +445,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: filesystemSkillProvider,
     sourceFiles: [
+      'domains/project-configuration/entry-skills.ts',
       'plugins/skill/file-skill-provider.ts',
       'plugins/skill/filesystem-skill-provider.ts',
     ],
@@ -460,6 +465,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: consistencyMethodProvider,
     sourceFiles: [
+      'domains/project-configuration/entry-skills.ts',
       'plugins/skill/file-skill-provider.ts',
       'plugins/skill/consistency-method-provider.ts',
       'third_party/matt-skills/method-adoptions.json',
@@ -826,6 +832,7 @@ const definitions: readonly BuiltinDefinition[] = [
     sourceFiles: [
       'domains/change-lifecycle/method-profile.ts',
       'domains/change-lifecycle/work-context.ts',
+      'platform/filesystem/race-safe-read.ts',
       'platform/skill/snapshot.ts',
       'services/work-context-assembler.ts',
     ],
@@ -994,6 +1001,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['action-adapter:git', 'action-adapter:process', 'action-adapter:specification'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:eec329322b704c0332fac463f13e1e2904343f70a0b7f097cb5ca3614e8337d2',
+          descriptorDigest:
+            'sha256:7f96982ec70e6583f934bd964965510fd41547162a15414f71879a204a814873',
+        },
+      ],
     },
     plugin: runtimeWorkContributors,
     sourceFiles: ['plugins/action/runtime-work-contributors.ts', 'services/work-dispatcher.ts'],
@@ -1010,6 +1024,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['action-adapter:manual'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:8aa93effa7136d6ec4666e92ac196968750abaef7a14b2d5dbbcc064452486f8',
+          descriptorDigest:
+            'sha256:60335fd0b157c0c563527cd8f18db0ae48fdede38628edf9bb4c50894857fba2',
+        },
+      ],
     },
     plugin: manualActionContributor,
     sourceFiles: ['plugins/action/manual-action-contributor.ts', 'services/work-dispatcher.ts'],
@@ -1239,9 +1260,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: { run: '1' },
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:0054b1fd3c9cbbc1b9ccd82ce396a0d230fe4120ca1ca799fa61231a6cdf531a',
+          codeDigest: 'sha256:464e17cc7d576d04b79aceae82bf06519cf8159f65539fa6bb9df2e39c7065a5',
           descriptorDigest:
-            'sha256:2e4683748cf8450219c8cab108164b39ab54561c94d90981d26ad2b315dad0dc',
+            'sha256:d91cb2e612695650c225c9096b746b788ad9afe1a9078ce6750678826290c8f5',
         },
       ],
     },

@@ -1,0 +1,73 @@
+{
+  "lifecyclePackage": {
+    "implementationCommit": "527da10",
+    "tarballSha256": "68ae8f0211eb038467ec5322a7b081c9b0eaa979d17f7c8f6831c2f6667a37dc"
+  },
+  "finalInstallPackage": {
+    "implementationCommit": "f3da2c4",
+    "tarballSha256": "9318c1b65ccdd7848552a328338021129a2420d577444b7a3cc3539384527a7e"
+  },
+  "hosts": {
+    "codex": "0.154.0",
+    "openCode": "1.19.5",
+    "openCodeDriver": "local deterministic model via native skill tool"
+  },
+  "runId": "change-workspace-verify-entry-skill-ace7f366f77d385b",
+  "open": {
+    "invocation": "sha256:d8b0024f993ceb70b041925bee3e37e48aa0c06c8e10f14439479b0e5a3db5b5",
+    "packetDigest": "sha256:464d6b2fdf1c3b16d779f073b72384cdb73663f4d3f897a583e89a4b444c4b41"
+  },
+  "design": {
+    "invocation": "sha256:9997d772c6a9b55abccd594dbae296e937378620fbe494bac99c098f331eb5bb",
+    "packetDigest": "sha256:9250fc3ff8c83eea024984a35d5fc9f5ccb4d9cca3d2caf2d72ea23df22e6db3",
+    "observedResource": "DESIGN-IT-TWICE.md"
+  },
+  "build": {
+    "configure": "sha256:2317c44c074c270e2996af0e8f3f9db4e3c77eb69bcb967f762824763e465054",
+    "planAfterColdResume": "sha256:7e6f2c5bc0a8cde14ce352cf0a0f24c5c7d2ac417f7aadc97cd3ead679b8cdea",
+    "sameRunner": true,
+    "duplicateAcquired": false
+  },
+  "consumed": [
+    {
+      "phase": "open",
+      "workKind": "change.intake",
+      "skillName": "repoctopus-open-change",
+      "invocationId": "sha256:d8b0024f993ceb70b041925bee3e37e48aa0c06c8e10f14439479b0e5a3db5b5",
+      "packetDigest": "sha256:464d6b2fdf1c3b16d779f073b72384cdb73663f4d3f897a583e89a4b444c4b41"
+    },
+    {
+      "phase": "open",
+      "workKind": "change.intake",
+      "skillName": "grilling",
+      "invocationId": "sha256:d8b0024f993ceb70b041925bee3e37e48aa0c06c8e10f14439479b0e5a3db5b5",
+      "packetDigest": "sha256:464d6b2fdf1c3b16d779f073b72384cdb73663f4d3f897a583e89a4b444c4b41"
+    },
+    {
+      "phase": "design",
+      "workKind": "specification.plan",
+      "skillName": "repoctopus-design-change",
+      "invocationId": "sha256:9997d772c6a9b55abccd594dbae296e937378620fbe494bac99c098f331eb5bb",
+      "packetDigest": "sha256:9250fc3ff8c83eea024984a35d5fc9f5ccb4d9cca3d2caf2d72ea23df22e6db3"
+    },
+    {
+      "phase": "design",
+      "workKind": "specification.plan",
+      "skillName": "codebase-design",
+      "invocationId": "sha256:9997d772c6a9b55abccd594dbae296e937378620fbe494bac99c098f331eb5bb",
+      "packetDigest": "sha256:9250fc3ff8c83eea024984a35d5fc9f5ccb4d9cca3d2caf2d72ea23df22e6db3"
+    },
+    {
+      "phase": "build",
+      "workKind": "build.configure",
+      "skillName": "repoctopus-build-configure",
+      "invocationId": "sha256:2317c44c074c270e2996af0e8f3f9db4e3c77eb69bcb967f762824763e465054",
+      "packetDigest": "sha256:2637c5f758cd0498226304ac4ba78775187e4749c68fcb103aae587dd6c07bb1"
+    }
+  ],
+  "legacy": {
+    "predecessor": "87dcd963",
+    "originalPacket": "sha256:3f2b9b80da2243e716caec6493b323ef9ca1e0d5d1b82440b4fde78578f2cf9f",
+    "redeliveredResource": ["agents/openai.yaml"]
+  }
+}

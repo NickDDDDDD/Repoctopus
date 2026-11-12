@@ -25,7 +25,15 @@ export const WORK_CONTEXT_LAYER_ORDER = [
 
 export type WorkContextLayerKind = (typeof WORK_CONTEXT_LAYER_ORDER)[number];
 
+export interface WorkSkillResource {
+  path: string;
+  digest: `sha256:${string}`;
+  encoding: 'utf8' | 'base64';
+  content: string;
+}
+
 export interface ResolvedWorkContextSkill {
+  resources?: readonly WorkSkillResource[];
   snapshot: SkillUsageSnapshot;
   content: string;
   artifactProtocolOwner: boolean;
@@ -38,6 +46,7 @@ export interface WorkContextLayer {
   source: string;
   content: string;
   digest: `sha256:${string}`;
+  resources?: readonly WorkSkillResource[];
   skillRole?: EffectiveSkillLayerRole;
   bindingId?: string | null;
   slotId?: string | null;
@@ -68,6 +77,7 @@ function layer(
     NonNullable<WorkDescriptor['skillComposition']>['layers'][number],
     'role' | 'bindingId' | 'slotId' | 'position' | 'replacedSkillName'
   >,
+  resources?: readonly WorkSkillResource[],
 ): WorkContextLayer {
   if (!content.trim()) throw new Error(`Work context layer is empty: ${kind}/${source}`);
   return {
@@ -76,6 +86,7 @@ function layer(
     source,
     content,
     digest: sha256(content),
+    ...(resources ? { resources } : {}),
     ...(skill
       ? {
           skillRole: skill.role,
@@ -151,7 +162,15 @@ export function assembleWorkExecutionContext(input: {
       (candidate) => candidate.role === 'action',
     );
     if (!compositionLayer) throw new Error('Work context action composition is missing');
-    layers.push(layer('action-skill', action.snapshot.name, action.content, compositionLayer));
+    layers.push(
+      layer(
+        'action-skill',
+        action.snapshot.name,
+        action.content,
+        compositionLayer,
+        action.resources,
+      ),
+    );
   } else if (input.actionSkill) {
     throw new Error('Work context contains a second, undeclared action owner');
   }
@@ -235,6 +254,7 @@ export function assembleWorkExecutionContext(input: {
         augmentation.snapshot.name,
         augmentation.content,
         compositionLayer,
+        augmentation.resources,
       ),
     );
   });
@@ -250,6 +270,8 @@ export function assembleWorkExecutionContext(input: {
         'augmentation-skill',
         input.diagnosticSkill.snapshot.name,
         input.diagnosticSkill.content,
+        undefined,
+        input.diagnosticSkill.resources,
       ),
     );
   }
@@ -280,6 +302,9 @@ export function assembleWorkExecutionContext(input: {
       priority: entry.priority,
       source: entry.source,
       digest: entry.digest,
+      ...(entry.resources
+        ? { resources: entry.resources.map(({ path, digest }) => ({ path, digest })) }
+        : {}),
     })),
   };
   return { ...stable, layers, digest: sha256(canonicalJson(stable)) };

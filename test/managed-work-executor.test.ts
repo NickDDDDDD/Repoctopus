@@ -587,6 +587,116 @@ describe('Managed Work Executor Build contract', () => {
     },
   );
 
+  it.each([
+    { status: 'claimed', recovered: true },
+    { status: 'context-delivered', recovered: true },
+    { status: 'claimed', recovered: false },
+    { status: 'context-delivered', recovered: false },
+  ] as const)(
+    'handles legacy $status resource recovery ($recovered)',
+    async ({ status, recovered }) => {
+      const packet = structuredClone(frozenPacket('specification.plan'));
+      packet.context = {
+        ...packet.context,
+        layers: [
+          {
+            kind: 'action-skill',
+            priority: 2,
+            source: 'test',
+            content: 'Skill body',
+            digest: digest('1'),
+          },
+        ],
+      };
+      packet.work = {
+        ...packet.work,
+        workId: packet.claim.workId,
+        checkEpoch: packet.claim.checkEpoch,
+        actionSkill: {
+          schemaVersion: 1,
+          name: 'test',
+          provider: 'test',
+          invocation: { modelInvocable: true, userInvocable: true },
+          contentDigest: digest('1'),
+          resourceManifestDigest: digest('2'),
+        },
+        augmentationSkills: [],
+        capabilities: [],
+      };
+      const markContextDelivered = vi.fn();
+      const markHostStarted = vi.fn().mockResolvedValue({ acquired: true });
+      const recoveredResources = [
+        {
+          path: 'reference.md',
+          digest: digest('5'),
+          encoding: 'utf8',
+          content: 'Original resource',
+        },
+      ];
+      const recoverSkillResources = recovered
+        ? vi.fn().mockResolvedValue(recoveredResources)
+        : vi.fn().mockRejectedValue(new Error('resource drift'));
+      const runStore = {
+        loadRun: vi.fn().mockResolvedValue({
+          status: 'running',
+          changeLifecycle: { phase: 'design', currentWork: packet.work },
+          workExecution: {
+            workId: packet.work.workId,
+            attempt: 1,
+            checkEpoch: packet.work.checkEpoch,
+            status,
+          },
+        }),
+      };
+      const authority = {
+        loadAuthoritativePacket: vi.fn().mockResolvedValue({ packet, intent: {} }),
+        markContextDelivered,
+        markHostStarted,
+        recordSkillFacts: vi.fn(),
+      };
+      const dispatcher = Object.create(WorkDispatcher.prototype) as WorkDispatcher;
+      Object.defineProperty(dispatcher, 'contributors', { value: new Map() });
+      Object.defineProperty(dispatcher, 'ctx', {
+        value: {
+          runStore,
+          workExecutionAuthority: authority,
+          workContextAssembler: { recoverSkillResources },
+        },
+      });
+      dispatcher.register({
+        id: 'manual',
+        identity: { id: 'manual', kind: 'work' } as never,
+        requiredCapabilities: [],
+      });
+      const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+      Object.defineProperty(service, 'ctx', {
+        value: { runStore, workDispatcher: dispatcher, workExecutionAuthority: authority },
+      });
+      const result = service.claimExternal({
+        runId: 'run-1',
+        adapter: 'manual',
+        executor: { actorId: 'user', runnerId: 'runner', source: 'cli', authenticated: true },
+      });
+      if (recovered) {
+        await expect(result).resolves.toMatchObject({
+          executionAcquired: true,
+          packet,
+          recoveredSkillResources: [
+            { layerIndex: 0, layerDigest: digest('1'), resources: recoveredResources },
+          ],
+        });
+        expect(packet.context.layers[0]?.resources).toBeUndefined();
+        expect(markHostStarted).toHaveBeenCalledOnce();
+      } else {
+        await expect(result).rejects.toMatchObject({
+          code: 'runtime.work-packet-resources-missing',
+        });
+        expect(markContextDelivered).not.toHaveBeenCalled();
+        expect(markHostStarted).not.toHaveBeenCalled();
+      }
+    },
+  );
+
   it('rejects an under-capable external Runner before persisting the Work claim', async () => {
     const claim = vi
       .fn()

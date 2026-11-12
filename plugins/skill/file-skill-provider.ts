@@ -15,6 +15,8 @@ import type {
 import chokidar, { type FSWatcher } from 'chokidar';
 import { parse } from 'yaml';
 
+import { isOwnedWorkspaceEntrySkill } from '../../domains/project-configuration/entry-skills.js';
+
 export interface SkillDirectoryRoot {
   readonly path: string;
   readonly rank: number;
@@ -31,7 +33,7 @@ export interface FileSkillProviderOptions {
 
 interface FileLocator {
   readonly file: string;
-  readonly directory: string;
+  readonly directory?: string;
 }
 
 interface ParsedSkill {
@@ -113,7 +115,9 @@ export class FileSkillProvider implements SkillProvider {
       invocation: parsed.invocation,
       source: candidate.source,
       provider: this.name,
-      resourceBase: { kind: 'directory', path: locator.directory },
+      ...(locator.directory
+        ? { resourceBase: { kind: 'directory', path: locator.directory } }
+        : {}),
       path: parsed.file,
       ...(parsed.metadata ? { metadata: parsed.metadata } : {}),
       content: parsed.content,
@@ -188,7 +192,7 @@ export class FileSkillProvider implements SkillProvider {
       if (entry.isDirectory() && (await isManagedProjection(path.dirname(file)))) continue;
       const parsed = await parseSkillFile(file, signal);
       if (!parsed) continue;
-      const directory = entry.isDirectory() ? path.dirname(file) : root.path;
+      const directory = entry.isDirectory() ? path.dirname(file) : undefined;
       candidates.push({
         name: parsed.name,
         description: parsed.description,
@@ -197,8 +201,8 @@ export class FileSkillProvider implements SkillProvider {
         source: root.source,
         provider: this.name,
         rank: root.rank,
-        locator: { file, directory } satisfies FileLocator,
-        resourceBase: { kind: 'directory', path: directory },
+        locator: { file, ...(directory ? { directory } : {}) } satisfies FileLocator,
+        ...(directory ? { resourceBase: { kind: 'directory', path: directory } } : {}),
         path: parsed.file,
         ...(parsed.metadata ? { metadata: parsed.metadata } : {}),
       });
@@ -221,6 +225,13 @@ async function parseSkillFile(
     signal?.throwIfAborted();
     if (hasCode(error, 'ENOENT') || hasCode(error, 'ENOTDIR')) return undefined;
     throw error;
+  }
+  if (
+    path.basename(file) === 'SKILL.md' &&
+    path.basename(path.dirname(file)) === 'repoctopus' &&
+    isOwnedWorkspaceEntrySkill(raw)
+  ) {
+    return undefined;
   }
   const frontmatter = parseFrontmatter(raw);
   if (!frontmatter) return undefined;

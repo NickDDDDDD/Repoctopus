@@ -16,6 +16,7 @@ import {
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
 import type { OpenSpecStoreBindingProposal } from '../../domains/project-configuration/detection.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
+import { planWorkspaceEntrySkills, prepareWorkspaceEntryWrites } from './workspace-entry-skills.js';
 import { loadProjectConfig } from './file-config.js';
 import { ensureRepoctopusGitignore } from './gitignore.js';
 import {
@@ -385,8 +386,12 @@ export async function prepareProjectConfigurationDecision(input: {
   const draftFile = await safeInputFile(workspace, input.workspace, input.draftFile, 'drafts');
   const draft = asDraft(JSON.parse(await readFile(draftFile, 'utf8')) as unknown);
   const currentConfig = await optionalCurrentConfig(workspace);
+  const entrySkills = await planWorkspaceEntrySkills(
+    workspace,
+    draft.entrySkills?.map(({ host }) => host),
+  );
   const request = createProjectConfigurationDecision({
-    draft,
+    draft: { ...draft, entrySkills },
     completedCandidate: input.completedCandidate,
     currentConfig,
     ...(input.requestId ? { requestId: input.requestId } : {}),
@@ -432,6 +437,7 @@ export async function applyProjectConfigurationDecision(
       afterIntent?(intent: StoreBindingIntent): Promise<void> | void;
       afterPointerWrite?(intent: StoreBindingIntent): Promise<void> | void;
       afterGuideWrite?(file: string): Promise<void> | void;
+      afterEntryWrite?(file: string): Promise<void> | void;
     };
   },
   registration: OpenSpecStoreRegistrationPort = new OpenSpecStoreRegistration(),
@@ -508,6 +514,13 @@ export async function applyProjectConfigurationDecision(
     throw new Error('Approved Store binding still contains blocked repository conflicts');
   }
   const guides = await planWorkspaceGuides(workspace, state.request.candidateConfig);
+  const entries = await prepareWorkspaceEntryWrites(
+    workspace,
+    state.request.entrySkills ?? [],
+    state.status === 'applying',
+    state.request.requestId,
+    (file) => input.hooks?.afterEntryWrite?.(file),
+  );
   await atomicWriteJson(
     stateFile,
     { ...state, status: 'applying', record },
@@ -525,11 +538,16 @@ export async function applyProjectConfigurationDecision(
       })
     : [];
   await installWorkspaceGuides(workspace, guides, (file) => input.hooks?.afterGuideWrite?.(file));
+  await entries.install();
+  await entries.verify();
   await ensureRepoctopusGitignore(workspace);
   if (currentDigest !== candidateDigest) {
     await atomicWriteText(configFile, stringify(state.request.candidateConfig, { lineWidth: 0 }), {
       containedRoot: workspace,
-      beforeCommit: () => verifyWorkspaceGuides(workspace, guides),
+      beforeCommit: async () => {
+        await verifyWorkspaceGuides(workspace, guides);
+        await entries.verify();
+      },
     });
   }
   const written = await loadProjectConfig(workspace);
@@ -538,6 +556,7 @@ export async function applyProjectConfigurationDecision(
     throw new Error('Written project configuration does not match the approved digest');
   }
   await verifyWorkspaceGuides(workspace, guides);
+  await entries.verify();
   await atomicWriteJson(
     draftFile,
     { ...draft, status: 'confirmed' } satisfies ProjectDetectionDraft,

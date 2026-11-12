@@ -506,7 +506,9 @@ export class ManagedWorkExecutor extends Service {
   async execute(request: WorkClaimRequest): Promise<ManagedWorkExecutionResult> {
     const claim = await this.ctx.workDispatcher.claim(request);
     const host = this.ctx.workExecutionHosts.select(claim.packet);
-    const preflight = await host.preflight(claim.packet);
+    const preflight = claim.recoveredSkillResources
+      ? await host.preflight(claim.packet, claim.recoveredSkillResources)
+      : await host.preflight(claim.packet);
     if (!preflight.accepted) {
       throw new Error(
         `Work Execution Host ${host.identity.id} rejected preflight: ${preflight.reason ?? 'unspecified'}`,
@@ -543,7 +545,9 @@ export class ManagedWorkExecutor extends Service {
     });
     let rawHostOutcome: unknown;
     try {
-      rawHostOutcome = await host.invoke(claim.packet, session);
+      rawHostOutcome = claim.recoveredSkillResources
+        ? await host.invoke(claim.packet, session, claim.recoveredSkillResources)
+        : await host.invoke(claim.packet, session);
     } catch (error) {
       await this.ctx.workExecutionAuthority.markHostUnknown(
         claim.intent,

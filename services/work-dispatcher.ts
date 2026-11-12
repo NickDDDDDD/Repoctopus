@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
 
@@ -12,6 +12,8 @@ import type {
 import {
   createWorkExecutionPacket,
   type WorkClaimResult,
+  type RecoveredSkillResources,
+  type WorkExecutionPacket,
   type WorkOutcomeValidationRecord,
 } from '../domains/work-execution/types.js';
 import type {
@@ -22,6 +24,8 @@ import {
   lifecycleContributorSnapshot,
   type LifecycleContributorIdentity,
 } from '../domains/change-lifecycle/contributors.js';
+
+import { assertWorkSkillResourceBudget } from './work-context-assembler.js';
 
 export interface WorkContributor {
   id: string;
@@ -60,6 +64,45 @@ export function missingHostCapabilities(
     hostCapabilities.map((capability) => capability.trim()).filter(Boolean),
   );
   return work.capabilities.filter((capability) => !available.has(capability));
+}
+
+const EMPTY_RESOURCE_MANIFESTS = new Set(
+  ['[]', 'null'].map((value) => `sha256:${createHash('sha256').update(value).digest('hex')}`),
+);
+
+async function recoverUnstartedPacketResources(
+  packet: WorkExecutionPacket,
+  recover: (
+    skill: NonNullable<WorkDescriptor['actionSkill']>,
+  ) => Promise<RecoveredSkillResources['resources']>,
+): Promise<RecoveredSkillResources[]> {
+  const snapshots = [packet.work.actionSkill, ...packet.work.augmentationSkills].filter(
+    (skill) => skill !== undefined,
+  );
+  const resources: RecoveredSkillResources[] = [];
+  let skillIndex = 0;
+  for (const [layerIndex, layer] of packet.context.layers.entries()) {
+    if (layer.kind !== 'action-skill' && layer.kind !== 'augmentation-skill') continue;
+    const snapshot = snapshots[skillIndex++];
+    if (layer.resources !== undefined) continue;
+    try {
+      if (!snapshot || snapshot.name !== layer.source || snapshot.contentDigest !== layer.digest) {
+        throw new Error('The original resource identity is unavailable');
+      }
+      if (EMPTY_RESOURCE_MANIFESTS.has(snapshot.resourceManifestDigest)) continue;
+      resources.push({ layerIndex, layerDigest: layer.digest, resources: await recover(snapshot) });
+    } catch (cause) {
+      throw Object.assign(
+        new Error(
+          `Current frozen Work has no verified resources for ${layer.source}. Resume with the original Runtime and Skill versions to settle this claim.`,
+          { cause },
+        ),
+        { code: 'runtime.work-packet-resources-missing' },
+      );
+    }
+  }
+  assertWorkSkillResourceBudget([...packet.context.layers, ...resources]);
+  return resources;
 }
 
 function createChangeInputs(input: {
@@ -206,12 +249,18 @@ export class WorkDispatcher extends Service {
       existing.checkEpoch === work.checkEpoch
     ) {
       const resumed = await this.ctx.workExecutionAuthority.loadAuthoritativePacket(request.runId);
+      const recoveredSkillResources =
+        existing.status === 'claimed' || existing.status === 'context-delivered'
+          ? await recoverUnstartedPacketResources(resumed.packet, (snapshot) =>
+              this.ctx.workContextAssembler.recoverSkillResources(snapshot),
+            )
+          : [];
       if (existing.status === 'claimed') {
         await this.ctx.workExecutionAuthority.recordSkillFacts(resumed.packet, 'resolved');
         await this.ctx.workExecutionAuthority.markContextDelivered(resumed.packet);
         await this.ctx.workExecutionAuthority.recordSkillFacts(resumed.packet, 'delivered');
       }
-      return resumed;
+      return recoveredSkillResources.length ? { ...resumed, recoveredSkillResources } : resumed;
     }
     const executionContext = await this.ctx.workContextAssembler.assemble({
       work,

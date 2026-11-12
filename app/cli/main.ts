@@ -1,5 +1,6 @@
-import { readFile } from 'node:fs/promises';
-import { userInfo } from 'node:os';
+import { createHash } from 'node:crypto';
+import { readFile, realpath } from 'node:fs/promises';
+import { hostname, userInfo } from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -163,6 +164,7 @@ const CLI_FLAGS = new Set([
   'store',
   'scan-root',
   'skip-pointer',
+  'entry-hosts',
   'workflow-run',
   'max-age-days',
   'max-bytes',
@@ -727,9 +729,13 @@ async function projectDetect(parsed: ParsedArguments): Promise<CliEnvelope<unkno
     .filter(Boolean);
   const app = await bootBootstrapComposition(PRODUCT_ROOT);
   try {
+    const entryHosts = stringFlag(parsed, 'entry-hosts')
+      ?.split(',')
+      .map((host) => host.trim());
     const result = await app.context.commandRouter.execute('project.detect', {
       workspace,
       scanRoot,
+      ...(entryHosts ? { entryHosts } : {}),
       ...(stringFlag(parsed, 'store') ? { storeId: stringFlag(parsed, 'store') } : {}),
       ...(skippedPointerRepositoryIds && skippedPointerRepositoryIds.length > 0
         ? { skippedPointerRepositoryIds }
@@ -1048,10 +1054,17 @@ async function runStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
       'run.status',
       { runId },
     );
+    const entryRunner = status.changeLifecycle
+      ? `workspace-entry:${createHash('sha256')
+          .update(
+            JSON.stringify([await realpath(workspace), runId, hostname(), userInfo().username]),
+          )
+          .digest('hex')}`
+      : undefined;
     return successEnvelope({
       command: 'run status',
       runId,
-      result: status,
+      result: { ...status, ...(entryRunner ? { entryRunner } : {}) },
       diagnostics: continuationDiagnostics(status.continuation),
       nextActions: nextActions(status),
     });

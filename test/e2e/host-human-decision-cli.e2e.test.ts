@@ -254,6 +254,11 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
       'repository.read,repository.write,specification.read,specification.write',
     ])
   ).result!;
+  const designReference = designClaim.packet.context.layers
+    .find(({ source }) => source === 'codebase-design')
+    ?.resources?.find(({ path }) => path === 'DESIGN-IT-TWICE.md');
+  expect(designReference?.encoding).toBe('utf8');
+  expect(designReference?.content).toContain('design');
   await write(
     `${change}/design.md`,
     `${beforeDrift}\n## Implementation\nUse the existing public CLI for the demo.\n`,

@@ -1,3 +1,4 @@
+import type { WorkspaceEntrySkillPlan } from './entry-skills.js';
 import type { SharedProjectConfig } from './types.js';
 
 export type DetectionConfidence = 'confirmed' | 'inferred';
@@ -125,4 +126,5 @@ export interface ProjectDetectionDraft {
   baseConfigDigest: string | null;
   reconcile: ProjectConfigReconcileDiff | null;
   storeBinding: OpenSpecStoreBindingProposal | null;
+  entrySkills?: WorkspaceEntrySkillPlan[];
 }
