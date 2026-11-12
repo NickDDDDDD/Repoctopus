@@ -18,12 +18,12 @@ import {
   type ProjectConfigurationDecisionResponse,
 } from '../../domains/project-configuration/onboarding.js';
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
+import type { SpecificationTask } from '../../domains/specification/types.js';
 import type { OpenSpecStoreBindingProposal } from '../../domains/project-configuration/detection.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
 import { isExecutionRevisionAncestor } from '../git/execution-workspace.js';
 import { execute } from '../process/execute.js';
 import { inspectRepository } from '../git/probe.js';
-import { FileRuntimeStore } from '../runtime/file-runtime-store.js';
 import { withRecoverableFileLock } from '../runtime/recoverable-file-lock.js';
 import { planWorkspaceEntrySkills, prepareWorkspaceEntryWrites } from './workspace-entry-skills.js';
 import { loadProjectConfig, projectExecutionConfigDigests } from './file-config.js';
@@ -477,21 +477,15 @@ export async function prepareProjectConfigurationDecision(input: {
 export async function prepareVerifyProfileDecision(input: {
   workspace: string;
   profile: unknown;
-  runId?: string;
+  run?: { profileId: string; tasks: readonly SpecificationTask[] };
 }) {
   const workspace = await realpath(input.workspace);
   const current = await loadProjectConfig(workspace);
-  const state = input.runId ? await new FileRuntimeStore(workspace).loadRun(input.runId) : null;
-  const profileId = state?.trigger?.facts.verificationProfileId;
-  const tasks = state?.changeLifecycle?.tasks;
-  if (state && (typeof profileId !== 'string' || !tasks?.length)) {
-    throw new Error('Verify Profile setup requires the Run to have approved Acceptance criteria');
-  }
   const request = createVerifyProfileDecision({
     workspaceRoot: workspace,
     current,
     profile: input.profile,
-    ...(typeof profileId === 'string' && tasks ? { run: { profileId, tasks } } : {}),
+    ...(input.run ? { run: input.run } : {}),
   });
   const file = decisionFile(workspace, request.requestId);
   await atomicWriteJson(

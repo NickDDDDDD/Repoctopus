@@ -851,7 +851,9 @@ async function projectConfigureVerify(parsed: ParsedArguments): Promise<CliEnvel
   const file = path.resolve(stringFlag(parsed, 'candidate', { required: true })!);
   const profile = parse(await readFile(file, 'utf8')) as unknown;
   const runId = stringFlag(parsed, 'run', { required: parsed.flags.has('run') });
-  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  const app = runId
+    ? await bootProjectComposition(PRODUCT_ROOT, workspace)
+    : await bootBootstrapComposition(PRODUCT_ROOT);
   try {
     const result = await app.context.commandRouter.execute('project.configure-verify', {
       workspace,

@@ -130,7 +130,11 @@ function projectSelections(
     { id: 'project-git' },
     { id: 'execution-workspace-git' },
     { id: 'project-probe-command' },
-    { id: 'project-onboarding' },
+    runtimeSelection(
+      'project-onboarding',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
     { id: 'project-onboarding-command' },
     { id: 'browser-maintenance' },
     runtimeSelection(
