@@ -35,28 +35,7 @@
       "loaded": true
     }
   ],
-  "pending": [
-    {
-      "host": "codebuddy-ide",
-      "version": "4.12.4",
-      "reason": "IDE-originated packaged CLI execution has not been observed"
-    },
-    {
-      "host": "codearts",
-      "version": "26.11.100",
-      "reason": "IDE-originated packaged CLI execution has not been observed"
-    },
-    {
-      "host": "trae",
-      "version": "3.5.55",
-      "reason": "trusted workspace; separate international Agent sign-in required for native verification"
-    },
-    {
-      "host": "trae-cn",
-      "version": "3.4.18",
-      "reason": "IDE-originated packaged CLI execution has not been observed"
-    }
-  ],
+  "pending": [],
   "workspaceScope": [
     {
       "host": "codebuddy",
@@ -108,7 +87,7 @@
         "repoctopus-init",
         "repoctopus-configure-verify"
       ],
-      "packagedCliExecutedByIde": false
+      "packagedCliExecutedByIde": true
     },
     {
       "host": "codearts",
@@ -126,7 +105,7 @@
         "repoctopus-init",
         "repoctopus-configure-verify"
       ],
-      "packagedCliExecutedByIde": false
+      "packagedCliExecutedByIde": true
     },
     {
       "host": "trae-cn",
@@ -144,7 +123,7 @@
         "repoctopus-init",
         "repoctopus-configure-verify"
       ],
-      "packagedCliExecutedByIde": false
+      "packagedCliExecutedByIde": true
     }
   ],
   "nativeIdeExcerpts": {
@@ -173,5 +152,71 @@
       "requestId": "f6bb125e-d6da-40f5-89d0-6a5727d116bf",
       "unchangedBeforeApproval": true
     }
-  ]
+  ],
+  "nativeEndToEnd": [
+    {
+      "host": "codebuddy-ide",
+      "initRequestId": "8d1fc670-1f27-4bde-8dc1-b849e90ea667",
+      "verifyRequestId": "0b4ba954-4b3d-4c9a-a0a1-442728094f11",
+      "requestStatus": "awaiting_confirmation",
+      "runId": "change-buddy-workspace-host-entry-5f814938f2441c21",
+      "phase": "open",
+      "work": "change.intake",
+      "workId": "change-buddy-workspace-host-entry-5f814938f2441c21:change.intake:2a1d1114c78b685a",
+      "continuation": "execute",
+      "diagnosticCodes": [
+        "runtime.project-content-changed"
+      ]
+    },
+    {
+      "host": "codearts",
+      "initRequestId": "3384794c-869d-4a70-9714-46c02878d3cf",
+      "verifyRequestId": "fee30233-4848-40b1-966a-ee3f8cb8e487",
+      "requestStatus": "awaiting_confirmation",
+      "runId": "change-buddy-workspace-host-entry-5f814938f2441c21",
+      "phase": "open",
+      "work": "change.intake",
+      "workId": "change-buddy-workspace-host-entry-5f814938f2441c21:change.intake:2a1d1114c78b685a",
+      "continuation": "execute",
+      "diagnosticCodes": [
+        "runtime.project-content-changed"
+      ]
+    },
+    {
+      "host": "trae-cn",
+      "initRequestId": "d41d78c4-7573-486d-be11-978356aecaa5",
+      "verifyRequestId": "c0ab8c43-6067-4742-9b21-5ba8d38d5074",
+      "requestStatus": "awaiting_confirmation",
+      "runId": "change-buddy-workspace-host-entry-5f814938f2441c21",
+      "phase": "open",
+      "work": "change.intake",
+      "workId": "change-buddy-workspace-host-entry-5f814938f2441c21:change.intake:2a1d1114c78b685a",
+      "continuation": "execute",
+      "diagnosticCodes": [
+        "runtime.project-content-changed"
+      ]
+    }
+  ],
+  "nativeAcceptanceScope": {
+    "decision": "User narrowed the TRAE native acceptance to the China edition",
+    "included": [
+      "codebuddy-ide",
+      "codearts",
+      "trae-cn"
+    ],
+    "excluded": [
+      "trae"
+    ]
+  },
+  "codeBuddyIdeInstallation": {
+    "defaultArchiveInstall": "CLI did not start under the IDE shell with npm dependency junctions",
+    "directArchiveInstallLinks": "npm returned ENOENT resolving a bundled file dependency",
+    "retry": "Extract the exact candidate archive and npm install the extracted directory with --install-links in the trusted lab Workspace",
+    "verifiedIdenticalFiles": [
+      "package.json",
+      "bin/repoctopus.js",
+      "dist/repoctopus.mjs"
+    ],
+    "actualRuntimeCallsPassed": true
+  }
 }
