@@ -385,6 +385,14 @@ export async function prepareProjectConfigurationDecision(input: {
   const workspace = await realpath(input.workspace);
   const draftFile = await safeInputFile(workspace, input.workspace, input.draftFile, 'drafts');
   const draft = asDraft(JSON.parse(await readFile(draftFile, 'utf8')) as unknown);
+  if (
+    draft.workspace !== workspace ||
+    (draft.storeBinding && draft.storeBinding.workspaceRoot !== workspace)
+  ) {
+    throw new Error(
+      'Project detection draft belongs to another Workspace checkout. Run project detect again.',
+    );
+  }
   const currentConfig = await optionalCurrentConfig(workspace);
   const entrySkills = await planWorkspaceEntrySkills(
     workspace,
@@ -456,6 +464,11 @@ export async function applyProjectConfigurationDecision(
     actor: input.actor,
     timestamp: state.record?.decidedAt ?? input.timestamp,
   });
+  if (record.decision === 'approve' && !state.request.storeBinding) {
+    throw new Error(
+      'Approval request is missing its Workspace Store binding. Prepare a new request from the Workspace Git root.',
+    );
+  }
   if (record.decision === 'approve' && state.request.storeBinding?.workspaceRoot !== workspace) {
     throw new Error('Approved Store binding belongs to another Workspace checkout');
   }

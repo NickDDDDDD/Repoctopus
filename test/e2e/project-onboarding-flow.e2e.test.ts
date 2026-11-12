@@ -33,6 +33,70 @@ const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 describe('documented project onboarding flow', () => {
+  it('prepares and rejects the same minimal Init request through the public Host CLI', async () => {
+    const root = await temporaryDirectory('repoctopus init host ');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    await createGitRepository(root, 'unrelated');
+    const environment = {
+      XDG_DATA_HOME: path.join(root, 'xdg-data'),
+      XDG_CONFIG_HOME: path.join(root, 'xdg-config'),
+      OPENSPEC_TELEMETRY: '0',
+      OPENSPEC_NO_UPDATE_CHECK: '1',
+      OPENSPEC_NO_AUTO_CONFIG: '1',
+    };
+    const invoke = <T>(...args: string[]) =>
+      runCli<T>({ packageRoot, cwd: workspace, args, environment });
+    const prepared = await invoke<{ file: string; request: ProjectConfigurationDecisionRequest }>(
+      'project',
+      'init',
+      '--layout',
+      'single',
+      '--store',
+      'init-host-test',
+    );
+    expect(prepared.result?.request.candidateConfig).toMatchObject({
+      profiles: [],
+      repositories: [{ id: 'workspace', path: '.' }],
+    });
+    const { file, request } = prepared.result!;
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    const observed = await invoke<ProjectConfigurationDecisionRequest>(
+      'project',
+      'decision',
+      '--request',
+      file,
+    );
+    expect(observed.result?.snapshotDigest).toBe(request.snapshotDigest);
+    const response = path.join(root, 'response.json');
+    await writeFile(
+      response,
+      JSON.stringify({
+        apiVersion: request.apiVersion,
+        kind: 'HumanDecisionResponse',
+        requestId: request.requestId,
+        snapshotDigest: request.snapshotDigest,
+        decision: 'reject',
+      }),
+    );
+    const result = await invoke(
+      'project',
+      'review',
+      '--request',
+      file,
+      '--response-file',
+      response,
+    );
+    expect(result.result).toMatchObject({ status: 'rejected' });
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    await expect(access(path.join(workspace, 'openspec'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+  });
   it('runs detect, Agent completion, trusted confirmation and first Evidence', async () => {
     const root = await temporaryDirectory('repoctopus-onboarding-flow-');
     cleanup.push(root);

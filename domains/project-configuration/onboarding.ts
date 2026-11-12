@@ -73,10 +73,11 @@ function projectConfigurationSnapshotDigest(input: {
 
 function assertDefaultVerifyProfileReady(candidate: SharedProjectConfig): void {
   const profile = candidate.profiles.find((item) => item.id === 'verify');
+  if (!profile) return;
   const hasRequiredCoverage = profile?.nodes.some(
     (node) => node.required && (node.covers?.length ?? 0) > 0,
   );
-  if (!profile || !hasRequiredCoverage) {
+  if (!hasRequiredCoverage) {
     throw new Error(
       'Default verify Profile requires at least one required coverage selector before approval',
     );
@@ -89,26 +90,35 @@ export function createProjectConfigurationDecision(input: {
   currentConfig: SharedProjectConfig | null;
   requestId?: string;
 }): ProjectConfigurationDecisionRequest {
+  if ((input.completedCandidate as { kind?: unknown } | null)?.kind === 'ProjectDetectionDraft') {
+    throw new Error(
+      'Candidate must be a RepoctopusWorkspace configuration. Use candidateConfig from the detection draft, or use project init.',
+    );
+  }
   const candidateConfig = parseSharedProjectConfig(input.completedCandidate);
   assertDefaultVerifyProfileReady(candidateConfig);
-  if (input.draft.storeBinding) {
-    if (
-      !['registered-exact', 'healthy-unregistered', 'missing-root'].includes(
-        input.draft.storeBinding.root.disposition,
-      )
-    ) {
-      throw new Error(
-        `OpenSpec Root blocks project configuration approval: ${input.draft.storeBinding.root.diagnosticCode ?? input.draft.storeBinding.root.disposition}`,
-      );
-    }
-    const configured = candidateConfig.specificationProvider?.store;
-    if (
-      !configured ||
-      configured.id !== input.draft.storeBinding.storeId ||
-      configured.repositoryId !== input.draft.storeBinding.workspaceRepositoryId
-    ) {
-      throw new Error('Candidate Specification Store does not match the detected binding proposal');
-    }
+  const storeBinding = input.draft.storeBinding;
+  if (!storeBinding) {
+    throw new Error(
+      'Project detection draft is missing its Workspace Store binding. Run project init from the Workspace Git root.',
+    );
+  }
+  if (
+    !['registered-exact', 'healthy-unregistered', 'missing-root'].includes(
+      storeBinding.root.disposition,
+    )
+  ) {
+    throw new Error(
+      `OpenSpec Root blocks project configuration approval: ${storeBinding.root.diagnosticCode ?? storeBinding.root.disposition}`,
+    );
+  }
+  const configured = candidateConfig.specificationProvider?.store;
+  if (
+    !configured ||
+    configured.id !== storeBinding.storeId ||
+    configured.repositoryId !== storeBinding.workspaceRepositoryId
+  ) {
+    throw new Error('Candidate Specification Store does not match the detected binding proposal');
   }
   const currentDigest = input.currentConfig ? hashProjectConfig(input.currentConfig) : null;
   if (currentDigest !== input.draft.baseConfigDigest) {

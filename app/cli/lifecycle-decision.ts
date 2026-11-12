@@ -6,7 +6,7 @@ import {
 } from '../../domains/change-lifecycle/human-decision.js';
 
 /** Read at most limit+1 bytes even if the file grows after stat. */
-export async function readLifecycleDecisionResponse(file: string) {
+export async function readHumanDecisionResponseJson(file: string): Promise<unknown> {
   const handle = await open(file, 'r');
   try {
     const buffer = Buffer.alloc(HUMAN_DECISION_RESPONSE_MAX_BYTES + 1);
@@ -18,15 +18,17 @@ export async function readLifecycleDecisionResponse(file: string) {
     }
     if (size > HUMAN_DECISION_RESPONSE_MAX_BYTES)
       throw new Error('Human Decision response exceeds 64 KiB');
-    return parseLifecycleHumanDecisionResponse(
-      JSON.parse(
-        buffer
-          .subarray(0, size)
-          .toString('utf8')
-          .replace(/^\uFEFF/u, ''),
-      ),
-    );
+    return JSON.parse(
+      buffer
+        .subarray(0, size)
+        .toString('utf8')
+        .replace(/^\uFEFF/u, ''),
+    ) as unknown;
   } finally {
     await handle.close();
   }
+}
+
+export async function readLifecycleDecisionResponse(file: string) {
+  return parseLifecycleHumanDecisionResponse(await readHumanDecisionResponseJson(file));
 }

@@ -26,6 +26,46 @@ async function expectMissing(file: string): Promise<void> {
 }
 
 describe('project configuration detection', () => {
+  it('prepares a single-repository candidate without inspecting neighboring repositories or build files', async () => {
+    const root = await temporaryDirectory('repoctopus-minimal-single-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'single');
+    await createGitRepository(root, 'unrelated');
+    await writeFile(path.join(workspace, 'package.json'), '{');
+
+    const { draft } = await detectProjectConfiguration({
+      workspace,
+      scanRoot: root,
+      mode: 'minimal',
+      layout: 'single',
+    });
+
+    expect(draft.candidateConfig).toMatchObject({
+      workspace: { repositoryId: 'single' },
+      repositories: [{ id: 'single', path: '.' }],
+      profiles: [],
+    });
+    expect(draft.storeBinding?.workspaceRepositoryId).toBe('single');
+    expect(draft.repositories[0]?.commands).toEqual([]);
+  });
+
+  it('rejects a directory inside another Git checkout before producing an onboarding draft', async () => {
+    const root = await temporaryDirectory('repoctopus-minimal-invalid-');
+    cleanup.push(root);
+    const business = await createGitRepository(root, 'business');
+    const workspace = path.join(business, 'workspace');
+    await mkdir(workspace);
+
+    await expect(
+      detectProjectConfiguration({
+        workspace,
+        scanRoot: business,
+        mode: 'minimal',
+        layout: 'multi',
+      }),
+    ).rejects.toThrow(/Workspace must be a Git repository root/u);
+    await expectMissing(path.join(workspace, '.repoctopus'));
+  });
   it('classifies OpenSpec Store pointer candidates without writing business repositories', async () => {
     const root = await temporaryDirectory('repoctopus-store-detect-');
     cleanup.push(root);

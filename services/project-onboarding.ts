@@ -23,6 +23,9 @@ export interface ApplyProjectConfigurationDecisionInput {
 export interface DetectProjectConfigurationInput {
   workspace: string;
   scanRoot: string;
+  mode?: 'minimal' | 'verify';
+  layout?: 'single' | 'multi';
+  selectedRepositoryIds?: readonly string[];
   storeId?: string;
   skippedPointerRepositoryIds?: readonly string[];
   entryHosts?: readonly string[];
@@ -35,6 +38,17 @@ export class ProjectOnboarding extends Service {
 
   detect(input: DetectProjectConfigurationInput) {
     return detectProjectConfiguration(input);
+  }
+
+  async init(input: DetectProjectConfigurationInput) {
+    const detected = await this.detect({ ...input, mode: 'minimal' });
+    if (!detected.draft.candidateConfig)
+      throw new Error('Workspace initialization has no valid candidate');
+    return this.prepare({
+      workspace: input.workspace,
+      draftFile: detected.file,
+      completedCandidate: detected.draft.candidateConfig,
+    });
   }
 
   prepare(input: { workspace: string; draftFile: string; completedCandidate: unknown }) {

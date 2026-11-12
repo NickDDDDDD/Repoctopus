@@ -606,8 +606,8 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
       `repositories.${workspaceRepositoryId}.path`,
     );
   }
-  if (!Array.isArray(root.profiles) || root.profiles.length === 0) {
-    throw new ProjectConfigError('expected at least one profile', 'profiles');
+  if (!Array.isArray(root.profiles)) {
+    throw new ProjectConfigError('expected an array', 'profiles');
   }
   const profiles = root.profiles.map((item, index) => {
     const profile = object(item, `profiles[${index}]`);

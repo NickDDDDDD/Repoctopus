@@ -46,7 +46,10 @@ import type {
 } from '../../domains/work-execution/types.js';
 import { bootBootstrapComposition, bootProjectComposition } from '../boot/bootstrap.js';
 import { reviewHumanDecision } from './human-decision.js';
-import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
+import {
+  parseProjectConfigurationResponse,
+  reviewProjectConfigurationDecision,
+} from './project-configuration-decision.js';
 import type { SpecificationApprovalState } from '../../domains/specification/types.js';
 import { inspectPublishedChangeBranch } from '../../platform/git/change-branch.js';
 import {
@@ -54,7 +57,10 @@ import {
   reviewSpecificationApproval,
 } from './specification-approval-decision.js';
 import { changeProjection, renderChangeProjection } from './change-run-view.js';
-import { readLifecycleDecisionResponse } from './lifecycle-decision.js';
+import {
+  readHumanDecisionResponseJson,
+  readLifecycleDecisionResponse,
+} from './lifecycle-decision.js';
 import type { LifecycleHumanDecisionView } from '../../services/lifecycle-human-decisions.js';
 import type { ConsistencyReconciliationResult } from '../../services/consistency-reconciler.js';
 import {
@@ -69,9 +75,11 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <init|detect|prepare|decision|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const COMMANDS = new Set([
+  'project init',
   'project detect',
+  'project decision',
   'project prepare',
   'project review',
   'skill list',
@@ -165,6 +173,8 @@ const CLI_FLAGS = new Set([
   'scan-root',
   'skip-pointer',
   'entry-hosts',
+  'layout',
+  'repositories',
   'workflow-run',
   'max-age-days',
   'max-bytes',
@@ -187,7 +197,11 @@ const REQUIRED_FLAGS = new Map<string, readonly string[]>([
 
 function preflightCli(parsed: ParsedArguments): void {
   for (const flag of parsed.flags.keys()) {
-    if (!CLI_FLAGS.has(flag)) throw new Error(`Unknown option: --${flag}`);
+    if (CLI_FLAGS.has(flag)) continue;
+    if (/^draft[A-Za-z]:[\\/]/u.test(flag)) {
+      throw new Error('Pass --draft and its path as separate arguments, or use --draft=<path>.');
+    }
+    throw new Error(`Unknown option: --${flag}`);
   }
   if (booleanFlag(parsed, 'help') || booleanFlag(parsed, 'version')) return;
   const command = parsed.command.join(' ');
@@ -720,6 +734,50 @@ async function specificationApprovalReview(parsed: ParsedArguments): Promise<Cli
   }
 }
 
+function projectLayout(parsed: ParsedArguments): 'single' | 'multi' | undefined {
+  const layout = stringFlag(parsed, 'layout', { required: parsed.flags.has('layout') });
+  if (layout !== undefined && layout !== 'single' && layout !== 'multi') {
+    throw new Error('Project --layout must be single or multi');
+  }
+  return layout;
+}
+
+async function projectInit(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const layout = projectLayout(parsed) ?? 'single';
+  const scanRoot = path.resolve(
+    stringFlag(parsed, 'scan-root', { fallback: path.dirname(workspace) })!,
+  );
+  const selectedRepositoryIds = stringFlag(parsed, 'repositories')
+    ?.split(',')
+    .map((id) => id.trim());
+  const entryHosts = stringFlag(parsed, 'entry-hosts')
+    ?.split(',')
+    .map((host) => host.trim());
+  const storeId = stringFlag(parsed, 'store');
+  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  try {
+    const result = await app.context.commandRouter.execute<unknown, { file: string }>(
+      'project.init',
+      {
+        workspace,
+        scanRoot,
+        layout,
+        ...(selectedRepositoryIds ? { selectedRepositoryIds } : {}),
+        ...(entryHosts ? { entryHosts } : {}),
+        ...(storeId ? { storeId } : {}),
+      },
+    );
+    return successEnvelope({
+      command: 'project init',
+      result,
+      nextActions: ['Review the pending project configuration decision in the current host'],
+    });
+  } finally {
+    await app.close();
+  }
+}
+
 async function projectDetect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const scanRoot = path.resolve(stringFlag(parsed, 'scan-root', { required: true })!);
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
@@ -732,9 +790,11 @@ async function projectDetect(parsed: ParsedArguments): Promise<CliEnvelope<unkno
     const entryHosts = stringFlag(parsed, 'entry-hosts')
       ?.split(',')
       .map((host) => host.trim());
+    const layout = projectLayout(parsed);
     const result = await app.context.commandRouter.execute('project.detect', {
       workspace,
       scanRoot,
+      ...(layout ? { layout, mode: 'minimal' } : {}),
       ...(entryHosts ? { entryHosts } : {}),
       ...(stringFlag(parsed, 'store') ? { storeId: stringFlag(parsed, 'store') } : {}),
       ...(skippedPointerRepositoryIds && skippedPointerRepositoryIds.length > 0
@@ -775,8 +835,26 @@ async function projectPrepare(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   }
 }
 
+async function projectDecision(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const decisionFile = path.resolve(stringFlag(parsed, 'request', { required: true })!);
+  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  try {
+    const result = await app.context.commandRouter.execute('project.decision.load', {
+      workspace,
+      decisionFile,
+    });
+    return successEnvelope({ command: 'project decision', result });
+  } finally {
+    await app.close();
+  }
+}
+
 async function projectReview(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+  const responseFile = stringFlag(parsed, 'response-file', {
+    required: parsed.flags.has('response-file'),
+  });
+  if (!responseFile && (!process.stdin.isTTY || !process.stdout.isTTY)) {
     throw new Error(
       'Project configuration approval requires an interactive terminal or a trusted IDE Adapter',
     );
@@ -789,22 +867,25 @@ async function projectReview(parsed: ParsedArguments): Promise<CliEnvelope<unkno
       { workspace: string; decisionFile: string },
       Parameters<typeof reviewProjectConfigurationDecision>[0]['request']
     >('project.decision.load', { workspace, decisionFile });
-    const selected = await reviewProjectConfigurationDecision({
-      request,
-      input: process.stdin,
-      output: process.stdout,
-    });
+    const response = responseFile
+      ? parseProjectConfigurationResponse(
+          await readHumanDecisionResponseJson(path.resolve(responseFile)),
+        )
+      : {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: request.requestId,
+          snapshotDigest: request.snapshotDigest,
+          ...(await reviewProjectConfigurationDecision({
+            request,
+            input: process.stdin,
+            output: process.stdout,
+          })),
+        };
     const result = await app.context.commandRouter.execute('project.decision.apply', {
       workspace,
       decisionFile,
-      response: {
-        apiVersion: 'repoctopus/v1alpha1',
-        kind: 'HumanDecisionResponse',
-        requestId: request.requestId,
-        snapshotDigest: request.snapshotDigest,
-        decision: selected.decision,
-        ...(selected.comment ? { comment: selected.comment } : {}),
-      },
+      response,
       actor: {
         actorId: userInfo().username,
         source: 'cli',
@@ -1632,6 +1713,8 @@ async function browserInstall(parsed: ParsedArguments): Promise<CliEnvelope<unkn
 
 async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const command = parsed.command.join(' ');
+  if (command === 'project init') return projectInit(parsed);
+  if (command === 'project decision') return projectDecision(parsed);
   if (command === 'project detect') return projectDetect(parsed);
   if (command === 'project prepare') return projectPrepare(parsed);
   if (command === 'project review') return projectReview(parsed);

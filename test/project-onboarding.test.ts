@@ -116,6 +116,31 @@ async function guideDecisionFixture() {
 }
 
 describe('project configuration onboarding', () => {
+  it('accepts a minimal configuration and rejects a draft without a Store binding', async () => {
+    const { workspace, prepared } = await guideDecisionFixture();
+    const draftFile = path.join(workspace, '.repoctopus', 'drafts', 'minimal.json');
+    const detected = await detectProjectConfiguration({
+      workspace,
+      scanRoot: path.dirname(workspace),
+    });
+    const candidate = { ...prepared.request.candidateConfig, profiles: [] };
+    await writeFile(draftFile, JSON.stringify(detected.draft));
+    const minimal = await prepareProjectConfigurationDecision({
+      workspace,
+      draftFile,
+      completedCandidate: candidate,
+    });
+    expect(minimal.request.candidateConfig.profiles).toEqual([]);
+
+    await writeFile(draftFile, JSON.stringify({ ...detected.draft, storeBinding: null }));
+    await expect(
+      prepareProjectConfigurationDecision({
+        workspace,
+        draftFile,
+        completedCandidate: candidate,
+      }),
+    ).rejects.toThrow(/missing.*Store binding/i);
+  });
   it('previews the managed Workspace entry and installs it only on approval', async () => {
     const { workspace, prepared, input } = await guideDecisionFixture();
     const entry = path.join(workspace, '.agents/skills/repoctopus/SKILL.md');
@@ -335,7 +360,7 @@ describe('project configuration onboarding', () => {
     expect(await readFile(path.join(workspace, 'AGENTS.md'), 'utf8')).toBe('# Later team change\n');
   });
 
-  it('requires a usable default verify profile before creating an approval request', async () => {
+  it('validates required coverage when the default verify profile is configured', async () => {
     const root = await temporaryDirectory('repoctopus-onboarding-coverage-');
     cleanup.push(root);
     const workspace = await createGitRepository(root, 'workspace');
@@ -355,7 +380,7 @@ describe('project configuration onboarding', () => {
         requestId: 'coverage-readiness',
       });
 
-    expect(() =>
+    expect(
       decide({
         ...candidate,
         profiles: [
@@ -364,8 +389,8 @@ describe('project configuration onboarding', () => {
             nodes: [{ ...detectedNode, id: 'diagnostics', required: false, covers: [] }],
           },
         ],
-      }),
-    ).toThrow(/default verify.*required coverage/iu);
+      }).candidateConfig.profiles.map(({ id }) => id),
+    ).toEqual(['independent-diagnostics']);
     expect(() =>
       decide({
         ...candidate,

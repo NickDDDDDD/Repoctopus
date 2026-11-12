@@ -13,6 +13,11 @@ const plugin = ((context: Context) => {
           context.projectOnboarding.detect(input as DetectProjectConfigurationInput),
       }),
       context.commandRouter.register({
+        name: 'project.init',
+        execute: ({ input }) =>
+          context.projectOnboarding.init(input as DetectProjectConfigurationInput),
+      }),
+      context.commandRouter.register({
         name: 'project.prepare',
         execute: ({ input }) =>
           context.projectOnboarding.prepare(
