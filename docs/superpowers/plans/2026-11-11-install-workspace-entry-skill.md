@@ -2,6 +2,7 @@
 change: install-workspace-entry-skill
 design-doc: openspec/changes/install-workspace-entry-skill/design.md
 base-ref: 87dcd9631a801b9d551a3d24de9a6a36e49035c7
+archived-with: 2026-11-12-install-workspace-entry-skill
 ---
 
 # Workspace 入口 Skill 实施计划

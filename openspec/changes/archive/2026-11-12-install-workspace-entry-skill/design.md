@@ -2,6 +2,8 @@
 comet_change: install-workspace-entry-skill
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-12-install-workspace-entry-skill
+status: final
 ---
 
 # Workspace 入口与受管 Action 装填设计
