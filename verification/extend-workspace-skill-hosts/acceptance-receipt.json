@@ -1,0 +1,55 @@
+{
+  "schema": "repoctopus.workspace-skill-hosts.acceptance.v1",
+  "platform": "Windows",
+  "package": {
+    "testedImplementationCommit": "081a1aa4e453f1c7f1732f4ad7c4894d022f54ee",
+    "contentSha256": "6d70e30e5e789d40af800820e6c159eedd00ae3ff51195cd9dc6695c448bb096",
+    "files": 481,
+    "contentBytes": 6271603,
+    "archiveSha256": "9ccdf5ea39137c7787b8e053888dc32c9fda1ecdd422b2ce68bfd3de0f84f700"
+  },
+  "codeBuddy": {
+    "version": "2.183.0",
+    "nativeSkillLoad": true,
+    "packagedCliExecution": true,
+    "model": "deterministic local fixture",
+    "initRequest": "4f0f2f1c-eb8f-46de-8efb-4a7e3da17416",
+    "verifyRequest": "0e928458-298f-4136-9de2-5d382d07c591",
+    "runId": "change-buddy-workspace-host-entry-5f814938f2441c21"
+  },
+  "supplement": {
+    "requestId": "26321e96-9c11-4555-bca0-b48508b531a1",
+    "runId": "change-buddy-workspace-host-entry-5f814938f2441c21",
+    "phase": "open",
+    "work": "change.intake",
+    "unchangedFiles": 8,
+    "writtenFiles": 4
+  },
+  "nativeRegression": [
+    {
+      "host": "codex",
+      "loaded": true
+    },
+    {
+      "host": "opencode",
+      "loaded": true
+    }
+  ],
+  "pending": [
+    {
+      "host": "codearts",
+      "version": "26.9.901",
+      "reason": "expired sign-in"
+    },
+    {
+      "host": "trae",
+      "version": "3.5.55",
+      "reason": "sign-in required"
+    },
+    {
+      "host": "trae-cn",
+      "version": "3.3.72",
+      "reason": "sign-in required"
+    }
+  ]
+}
