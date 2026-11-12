@@ -2,19 +2,19 @@
 change_id: 53882251-a409-4af7-87e2-ba821d438f9e
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: bb4670b529550ca46b067d43a7b9d82f062aba9e
-design_doc: null
-plan: null
+design_doc: openspec/changes/extend-workspace-skill-hosts/design.md
+plan: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: codex/extend-workspace-skill-hosts
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
 handoff_hash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 451d0019c633828fc1233a946bbccd2062d22f332f25a9885d4063210d927b7e
+  hash: d6d169d15fe4f2aade01a84bb169a10845d0fed4892bef4c08d81a92fb3c8f6a
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,32 +56,32 @@ run_checkpoint:
       baseRef: bb4670b529550ca46b067d43a7b9d82f062aba9e
       boundBranch: codex/extend-workspace-skill-hosts
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-12
-      designDoc: null
-      directOverride: null
+      designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+      directOverride: false
       handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
       handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
       isolation: worktree
       language: zh-CN
-      phase: design
-      plan: null
+      phase: build
+      plan: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 6
+    status: running
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -252,10 +252,713 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-6579b2581237580a4ea020b0378e835111fd64a8de9d2a2f1d0a77d9cf092aee
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: extend-workspace-skill-hosts:7
+        input:
+          input:
+            change: extend-workspace-skill-hosts
+            changeDir: openspec/changes/extend-workspace-skill-hosts
+            workspaceBaseline:
+              ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                    handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                    proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                      使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                      按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE
+                      和两种 TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归
+                      Codex/OpenCode。TRAE 目录和 CodeArts 启用以真实宿主为准。OpenSpec
+                      需求和验收范围沿用已批准产物。
+                    requirementsEvidence:
+                      contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                      ref: openspec/changes/extend-workspace-skill-hosts
+                    sourceEvidence:
+                      contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                      ref: openspec/changes/extend-workspace-skill-hosts
+            full.design.handoff:
+              handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+              handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+              proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE 目录和
+                CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+              requirementsEvidence:
+                contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                ref: openspec/changes/extend-workspace-skill-hosts
+              sourceEvidence:
+                contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                ref: openspec/changes/extend-workspace-skill-hosts
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+                    ref: openspec/changes/extend-workspace-skill-hosts
+            full.open.evidence:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+              ref: openspec/changes/extend-workspace-skill-hosts
+            full.open.revalidate:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        inputHash: d56eea2c7c62baf69efa631bbed07554ea0bca252ab2f2af1ba8c924dd7720b4
+        outcome:
+          actionId: extend-workspace-skill-hosts:7
+          attempt: 1
+          claimToken: portable-6579b2581237580a4ea020b0378e835111fd64a8de9d2a2f1d0a77d9cf092aee
+          inputHash: d56eea2c7c62baf69efa631bbed07554ea0bca252ab2f2af1ba8c924dd7720b4
+          outcomeId: c6b0bc24-6be5-455b-a437-e990c7374b28
+          output:
+            designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 501f4afcf0de880a2feaf91ac05aee1f5207a8eef13646af67c86434440725f7
+            outcomeId: c6b0bc24-6be5-455b-a437-e990c7374b28
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: extend-workspace-skill-hosts
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e30fbd0d613a72fa086ffd69872bcc217e63b3a23f2b0342985eeb130958e8ad
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: extend-workspace-skill-hosts:9
+        input:
+          input:
+            change: extend-workspace-skill-hosts
+            changeDir: openspec/changes/extend-workspace-skill-hosts
+            workspaceBaseline:
+              ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                    handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                    proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                      使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                      按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE
+                      和两种 TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归
+                      Codex/OpenCode。TRAE 目录和 CodeArts 启用以真实宿主为准。OpenSpec
+                      需求和验收范围沿用已批准产物。
+                    requirementsEvidence:
+                      contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                      ref: openspec/changes/extend-workspace-skill-hosts
+                    sourceEvidence:
+                      contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                      ref: openspec/changes/extend-workspace-skill-hosts
+            full.design.document:
+              designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+            full.design.evidence:
+              contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+              ref: openspec/changes/extend-workspace-skill-hosts/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+              handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+              proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE 目录和
+                CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+              requirementsEvidence:
+                contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                ref: openspec/changes/extend-workspace-skill-hosts
+              sourceEvidence:
+                contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                ref: openspec/changes/extend-workspace-skill-hosts
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+                    ref: openspec/changes/extend-workspace-skill-hosts
+            full.open.evidence:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+              ref: openspec/changes/extend-workspace-skill-hosts
+            full.open.revalidate:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        inputHash: 7e3a975c237a0d316725be729f6f556b79f340d08be70cc396821b1b3f14a3d6
+        outcome:
+          actionId: extend-workspace-skill-hosts:9
+          attempt: 1
+          claimToken: portable-e30fbd0d613a72fa086ffd69872bcc217e63b3a23f2b0342985eeb130958e8ad
+          inputHash: 7e3a975c237a0d316725be729f6f556b79f340d08be70cc396821b1b3f14a3d6
+          outcomeId: 8652919f-4341-4eeb-b6a6-cbbea756b4f9
+          output:
+            boundBranch: codex/extend-workspace-skill-hosts
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9b2a37ddf7369d4323b09eefdb71b7097c175e3beab5590a31e74d2b301df161
+            outcomeId: 8652919f-4341-4eeb-b6a6-cbbea756b4f9
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: extend-workspace-skill-hosts
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d6d00904a3aa4869bd670b5254d9976db2efe667a00fc4a6aca2642b99e0f0a1
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: extend-workspace-skill-hosts:11
+        input:
+          input:
+            change: extend-workspace-skill-hosts
+            changeDir: openspec/changes/extend-workspace-skill-hosts
+            workspaceBaseline:
+              ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+          outputs:
+            full.build.configure:
+              boundBranch: codex/extend-workspace-skill-hosts
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/extend-workspace-skill-hosts
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                    handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                    proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                      使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                      按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE
+                      和两种 TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归
+                      Codex/OpenCode。TRAE 目录和 CodeArts 启用以真实宿主为准。OpenSpec
+                      需求和验收范围沿用已批准产物。
+                    requirementsEvidence:
+                      contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                      ref: openspec/changes/extend-workspace-skill-hosts
+                    sourceEvidence:
+                      contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                      ref: openspec/changes/extend-workspace-skill-hosts
+            full.design.document:
+              designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+            full.design.evidence:
+              contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+              ref: openspec/changes/extend-workspace-skill-hosts/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+              handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+              proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE 目录和
+                CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+              requirementsEvidence:
+                contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                ref: openspec/changes/extend-workspace-skill-hosts
+              sourceEvidence:
+                contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                ref: openspec/changes/extend-workspace-skill-hosts
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+                    ref: openspec/changes/extend-workspace-skill-hosts
+            full.open.evidence:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+              ref: openspec/changes/extend-workspace-skill-hosts
+            full.open.revalidate:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        inputHash: cb8aa6605225232464d63f4ac5b54f4b3f4f3acc1757cb6aa17f78bc4beb78c9
+        outcome:
+          actionId: extend-workspace-skill-hosts:11
+          attempt: 1
+          claimToken: portable-d6d00904a3aa4869bd670b5254d9976db2efe667a00fc4a6aca2642b99e0f0a1
+          inputHash: cb8aa6605225232464d63f4ac5b54f4b3f4f3acc1757cb6aa17f78bc4beb78c9
+          outcomeId: 72e975dd-f11f-4be2-800b-ee58bdb7c758
+          output:
+            designEvidence:
+              contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+              ref: openspec/changes/extend-workspace-skill-hosts/design.md
+            plan: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+            planEvidence:
+              contentHash: 3f2f01e952c011e83416cffc8b269c2c55513438efbfa87f215350efd614b179
+              ref: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+            taskRevision: 99b18a68a1dd4fce878bd5c5ff4431a0e38cf794d141a762b305a947a786dd99
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 4fa1ee16473e110fcce79d001e6d696d906c68322d7affcb0f16eca2b9a6ff64
+            outcomeId: 72e975dd-f11f-4be2-800b-ee58bdb7c758
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: extend-workspace-skill-hosts
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: extend-workspace-skill-hosts:13
+        input:
+          input:
+            change: extend-workspace-skill-hosts
+            changeDir: openspec/changes/extend-workspace-skill-hosts
+            workspaceBaseline:
+              ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+          outputs:
+            full.build.configure:
+              boundBranch: codex/extend-workspace-skill-hosts
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/extend-workspace-skill-hosts
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+                ref: openspec/changes/extend-workspace-skill-hosts/design.md
+              plan: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+              planEvidence:
+                contentHash: 3f2f01e952c011e83416cffc8b269c2c55513438efbfa87f215350efd614b179
+                ref: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+              taskRevision: 99b18a68a1dd4fce878bd5c5ff4431a0e38cf794d141a762b305a947a786dd99
+            full.build.plan.evidence:
+              contentHash: 3f2f01e952c011e83416cffc8b269c2c55513438efbfa87f215350efd614b179
+              ref: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                    handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                    proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                      使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                      按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE
+                      和两种 TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归
+                      Codex/OpenCode。TRAE 目录和 CodeArts 启用以真实宿主为准。OpenSpec
+                      需求和验收范围沿用已批准产物。
+                    requirementsEvidence:
+                      contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                      ref: openspec/changes/extend-workspace-skill-hosts
+                    sourceEvidence:
+                      contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                      ref: openspec/changes/extend-workspace-skill-hosts
+            full.design.document:
+              designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+            full.design.evidence:
+              contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+              ref: openspec/changes/extend-workspace-skill-hosts/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+              handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+              proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE 目录和
+                CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+              requirementsEvidence:
+                contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                ref: openspec/changes/extend-workspace-skill-hosts
+              sourceEvidence:
+                contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                ref: openspec/changes/extend-workspace-skill-hosts
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+                    ref: openspec/changes/extend-workspace-skill-hosts
+            full.open.evidence:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+              ref: openspec/changes/extend-workspace-skill-hosts
+            full.open.revalidate:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        inputHash: e0b94a6e74a331bdefc005dd76c3b6fec2c892d82543227932861ce946c50c94
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: extend-workspace-skill-hosts
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
     actionContexts:
       extend-workspace-skill-hosts:1:
         results: {}
         sequence: 1
+      extend-workspace-skill-hosts:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/extend-workspace-skill-hosts
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/extend-workspace-skill-hosts
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                    handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                    proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                      使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                      按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE
+                      和两种 TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归
+                      Codex/OpenCode。TRAE 目录和 CodeArts 启用以真实宿主为准。OpenSpec
+                      需求和验收范围沿用已批准产物。
+                    requirementsEvidence:
+                      contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                      ref: openspec/changes/extend-workspace-skill-hosts
+                    sourceEvidence:
+                      contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                      ref: openspec/changes/extend-workspace-skill-hosts
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+              ref: openspec/changes/extend-workspace-skill-hosts/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+              handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+              proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE 目录和
+                CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+              requirementsEvidence:
+                contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                ref: openspec/changes/extend-workspace-skill-hosts
+              sourceEvidence:
+                contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                ref: openspec/changes/extend-workspace-skill-hosts
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+                    ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+              ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        sequence: 11
+      extend-workspace-skill-hosts:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/extend-workspace-skill-hosts
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/extend-workspace-skill-hosts
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+                ref: openspec/changes/extend-workspace-skill-hosts/design.md
+              plan: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+              planEvidence:
+                contentHash: 3f2f01e952c011e83416cffc8b269c2c55513438efbfa87f215350efd614b179
+                ref: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+              taskRevision: 99b18a68a1dd4fce878bd5c5ff4431a0e38cf794d141a762b305a947a786dd99
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 3f2f01e952c011e83416cffc8b269c2c55513438efbfa87f215350efd614b179
+              ref: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                    handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                    proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                      使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                      按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE
+                      和两种 TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归
+                      Codex/OpenCode。TRAE 目录和 CodeArts 启用以真实宿主为准。OpenSpec
+                      需求和验收范围沿用已批准产物。
+                    requirementsEvidence:
+                      contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                      ref: openspec/changes/extend-workspace-skill-hosts
+                    sourceEvidence:
+                      contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                      ref: openspec/changes/extend-workspace-skill-hosts
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+              ref: openspec/changes/extend-workspace-skill-hosts/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+              handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+              proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE 目录和
+                CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+              requirementsEvidence:
+                contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                ref: openspec/changes/extend-workspace-skill-hosts
+              sourceEvidence:
+                contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                ref: openspec/changes/extend-workspace-skill-hosts
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+                    ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+              ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        sequence: 13
       extend-workspace-skill-hosts:4:
         results:
           full.open:
@@ -316,6 +1019,163 @@ run_checkpoint:
             value:
               contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
         sequence: 5
+      extend-workspace-skill-hosts:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                    handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                    proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                      使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                      按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE
+                      和两种 TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归
+                      Codex/OpenCode。TRAE 目录和 CodeArts 启用以真实宿主为准。OpenSpec
+                      需求和验收范围沿用已批准产物。
+                    requirementsEvidence:
+                      contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                      ref: openspec/changes/extend-workspace-skill-hosts
+                    sourceEvidence:
+                      contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                      ref: openspec/changes/extend-workspace-skill-hosts
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+              handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+              proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE 目录和
+                CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+              requirementsEvidence:
+                contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                ref: openspec/changes/extend-workspace-skill-hosts
+              sourceEvidence:
+                contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                ref: openspec/changes/extend-workspace-skill-hosts
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+                    ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+              ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        sequence: 7
+      extend-workspace-skill-hosts:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                    handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                    proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                      使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                      按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE
+                      和两种 TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归
+                      Codex/OpenCode。TRAE 目录和 CodeArts 启用以真实宿主为准。OpenSpec
+                      需求和验收范围沿用已批准产物。
+                    requirementsEvidence:
+                      contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                      ref: openspec/changes/extend-workspace-skill-hosts
+                    sourceEvidence:
+                      contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                      ref: openspec/changes/extend-workspace-skill-hosts
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+              ref: openspec/changes/extend-workspace-skill-hosts/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+              handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+              proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE 目录和
+                CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+              requirementsEvidence:
+                contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                ref: openspec/changes/extend-workspace-skill-hosts
+              sourceEvidence:
+                contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                ref: openspec/changes/extend-workspace-skill-hosts
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+                    ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+              ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        sequence: 9
     waits:
       - id: extend-workspace-skill-hosts:3
         stepId: full.open.confirm
@@ -354,7 +1214,7 @@ run_checkpoint:
       - id: extend-workspace-skill-hosts:6
         stepId: full.design.confirm
         sequence: 6
-        status: pending
+        status: resolved
         proposal:
           input:
             change: extend-workspace-skill-hosts
@@ -426,6 +1286,128 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        decision:
+          id: classic-design-9b710518b1fab9a5e71a5e775bbd566d4db446a3a494d12bc8aacb69b2e72fd0-approved
+          choice: approved
+          proposalHash: 9b710518b1fab9a5e71a5e775bbd566d4db446a3a494d12bc8aacb69b2e72fd0
+      - id: extend-workspace-skill-hosts:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: extend-workspace-skill-hosts
+            changeDir: openspec/changes/extend-workspace-skill-hosts
+            workspaceBaseline:
+              ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+          outputs:
+            full.build.configure:
+              boundBranch: codex/extend-workspace-skill-hosts
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 026c7e698ae0eee634bacd586760c49c5b4777d17f718da52a12ae794c01b35e
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/extend-workspace-skill-hosts
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                    handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                    proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                      使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                      按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE
+                      和两种 TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归
+                      Codex/OpenCode。TRAE 目录和 CodeArts 启用以真实宿主为准。OpenSpec
+                      需求和验收范围沿用已批准产物。
+                    requirementsEvidence:
+                      contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                      ref: openspec/changes/extend-workspace-skill-hosts
+                    sourceEvidence:
+                      contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                      ref: openspec/changes/extend-workspace-skill-hosts
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+              ref: openspec/changes/extend-workspace-skill-hosts/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+              handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+              proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE 目录和
+                CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+              requirementsEvidence:
+                contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                ref: openspec/changes/extend-workspace-skill-hosts
+              sourceEvidence:
+                contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                ref: openspec/changes/extend-workspace-skill-hosts
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+                    ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+              ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        decision:
+          id: 14cc2a61-982d-4fce-969a-b35da95390bb
+          choice: approved
+          proposalHash: 026c7e698ae0eee634bacd586760c49c5b4777d17f718da52a12ae794c01b35e
     evidenceWaits:
       - id: extend-workspace-skill-hosts:2
         stepId: full.open.evidence
@@ -441,9 +1423,303 @@ run_checkpoint:
           ref: openspec/changes/extend-workspace-skill-hosts
           contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
           submissionId: fae69d29-536d-4173-b8b0-6f9747cd2b5c
+      - id: extend-workspace-skill-hosts:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                    handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                    proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                      使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                      按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE
+                      和两种 TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归
+                      Codex/OpenCode。TRAE 目录和 CodeArts 启用以真实宿主为准。OpenSpec
+                      需求和验收范围沿用已批准产物。
+                    requirementsEvidence:
+                      contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                      ref: openspec/changes/extend-workspace-skill-hosts
+                    sourceEvidence:
+                      contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                      ref: openspec/changes/extend-workspace-skill-hosts
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+              handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+              proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE 目录和
+                CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+              requirementsEvidence:
+                contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                ref: openspec/changes/extend-workspace-skill-hosts
+              sourceEvidence:
+                contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                ref: openspec/changes/extend-workspace-skill-hosts
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+                    ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+              ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        receipt:
+          ref: openspec/changes/extend-workspace-skill-hosts/design.md
+          contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+          submissionId: afe0314c-5e69-41a1-9658-7aefb414f288
+      - id: extend-workspace-skill-hosts:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/extend-workspace-skill-hosts
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/extend-workspace-skill-hosts
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+                ref: openspec/changes/extend-workspace-skill-hosts/design.md
+              plan: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+              planEvidence:
+                contentHash: 3f2f01e952c011e83416cffc8b269c2c55513438efbfa87f215350efd614b179
+                ref: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+              taskRevision: 99b18a68a1dd4fce878bd5c5ff4431a0e38cf794d141a762b305a947a786dd99
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                    handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                    proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                      使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                      按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE
+                      和两种 TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归
+                      Codex/OpenCode。TRAE 目录和 CodeArts 启用以真实宿主为准。OpenSpec
+                      需求和验收范围沿用已批准产物。
+                    requirementsEvidence:
+                      contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                      ref: openspec/changes/extend-workspace-skill-hosts
+                    sourceEvidence:
+                      contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                      ref: openspec/changes/extend-workspace-skill-hosts
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+              ref: openspec/changes/extend-workspace-skill-hosts/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+              handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+              proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE 目录和
+                CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+              requirementsEvidence:
+                contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                ref: openspec/changes/extend-workspace-skill-hosts
+              sourceEvidence:
+                contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                ref: openspec/changes/extend-workspace-skill-hosts
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: extend-workspace-skill-hosts
+                  changeDir: openspec/changes/extend-workspace-skill-hosts
+                  workspaceBaseline:
+                    ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+                    ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+              ref: openspec/changes/extend-workspace-skill-hosts
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
+        receipt:
+          ref: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+          contentHash: 3f2f01e952c011e83416cffc8b269c2c55513438efbfa87f215350efd614b179
+          submissionId: dd658b32-c7d9-4cdd-9eec-cc7d79234e74
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: codex/extend-workspace-skill-hosts
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: extend-workspace-skill-hosts
+              changeDir: openspec/changes/extend-workspace-skill-hosts
+              workspaceBaseline:
+                ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+            outputs:
+              full.build.configure:
+                boundBranch: codex/extend-workspace-skill-hosts
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+            ref: openspec/changes/extend-workspace-skill-hosts/design.md
+          plan: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+          planEvidence:
+            contentHash: 3f2f01e952c011e83416cffc8b269c2c55513438efbfa87f215350efd614b179
+            ref: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+          taskRevision: 99b18a68a1dd4fce878bd5c5ff4431a0e38cf794d141a762b305a947a786dd99
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: 3f2f01e952c011e83416cffc8b269c2c55513438efbfa87f215350efd614b179
+          ref: docs/superpowers/plans/2026-11-12-extend-workspace-skill-hosts.md
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: extend-workspace-skill-hosts
+              changeDir: openspec/changes/extend-workspace-skill-hosts
+              workspaceBaseline:
+                ref: 5780a92d-2f9c-45cb-ac09-9993b3a01297
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/extend-workspace-skill-hosts/.comet/handoff/design-context.json
+                handoffHash: e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116
+                proposal: 共用三份入口 Skill 正文与已有安装器，按宿主和作用域映射目标，新宿主显式选择；现有 Workspace
+                  使用只授权所选入口的补装请求，沿用审批、路径摘要与中断恢复。补装保留原 Run，由 Runtime
+                  按既有规则核对输入变化。Windows 以 CodeBuddy Code CLI、CodeArts 码道 IDE 和两种
+                  TRAE 发行版为最低原生验收，核对发现、装填和实际 Runtime 结果，回归 Codex/OpenCode。TRAE
+                  目录和 CodeArts 启用以真实宿主为准。OpenSpec 需求和验收范围沿用已批准产物。
+                requirementsEvidence:
+                  contentHash: 5ddf9ce795086c3e0a998701e5a1332670e51e18ae2309104ffdb772b957a233
+                  ref: openspec/changes/extend-workspace-skill-hosts
+                sourceEvidence:
+                  contentHash: 38f6412cdf34aefbd090f32041863eeb345138be867e9adc943f24923cb18079
+                  ref: openspec/changes/extend-workspace-skill-hosts
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/extend-workspace-skill-hosts/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: 7adc9d7ec2bef7b5cd650e9cb23ec79c71311b869d9fbded0f0c56179815d635
+          ref: openspec/changes/extend-workspace-skill-hosts/design.md
       full.design.handoff:
         sequence: 5
         value:
@@ -491,6 +1767,6 @@ run_checkpoint:
           contentHash: 74f933711d9c09b9b0f8d67d4c81e04bcdd81c2a186547569d4665f37d340a21
     children: []
     lineage: []
-  sourceRevision: 9
-  sourceHash: f0d695cb9b6fabd016ab11e2248b1bee232c0602f786cd9705ee27a437cdd8bc
-check_epoch: 1
+  sourceRevision: 19
+  sourceHash: ca2ba2541248cee26144a2071e048ff68dc70b2f17b1ca55b6cd2c21aaccb30e
+check_epoch: 2
