@@ -33,4 +33,4 @@ Archive SHA-256: `9ccdf5ea39137c7787b8e053888dc32c9fda1ecdd422b2ce68bfd3de0f84f7
 
 CodeBuddy IDE 的初次 CLI 启动失败发生在 npm 将打包的 Cordis 本地依赖安装为 Windows junction 时。直接对 .tgz 使用 npm `--install-links` 返回 ENOENT。把同一个候选包解压后，从解压目录通过 npm `--install-links` 安装，两个 Cordis 依赖均成为普通目录。包清单、入口和 CLI bundle 与原安装逐字节一致。CodeBuddy IDE 在这个条件下完成三项调用，默认 .tgz 安装下的 IDE 启动问题仍存在。
 
-[验收回执](acceptance-receipt.json) 保存已验证的候选包和运行身份。
+[验收回执](../../../verification/extend-workspace-skill-hosts/acceptance-receipt.json) 保存已验证的候选包和运行身份。
