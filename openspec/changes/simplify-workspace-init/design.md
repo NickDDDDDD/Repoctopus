@@ -1,3 +1,9 @@
+---
+comet_change: simplify-workspace-init
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
