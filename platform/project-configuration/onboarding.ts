@@ -12,6 +12,7 @@ import type { ProjectDetectionDraft } from '../../domains/project-configuration/
 import {
   createProjectConfigurationDecision,
   createVerifyProfileDecision,
+  createWorkspaceEntryInstallDecision,
   recordProjectConfigurationDecision,
   type ProjectConfigurationDecisionActor,
   type ProjectConfigurationDecisionRequest,
@@ -474,6 +475,22 @@ export async function prepareProjectConfigurationDecision(input: {
   return { request, file };
 }
 
+export async function prepareWorkspaceEntryInstallDecision(input: {
+  workspace: string;
+  entryHosts: readonly string[];
+}) {
+  const workspace = await realpath(input.workspace);
+  if (!(await inspectRepository(workspace))) {
+    throw new Error('Workspace entry installation requires the Workspace Git root');
+  }
+  const { shared } = await loadProjectConfig(workspace);
+  const entrySkills = await planWorkspaceEntrySkills(workspace, input.entryHosts);
+  return persistConfigurationDecision(
+    workspace,
+    createWorkspaceEntryInstallDecision({ workspaceRoot: workspace, current: shared, entrySkills }),
+  );
+}
+
 export async function prepareVerifyProfileDecision(input: {
   workspace: string;
   profile: unknown;
@@ -487,6 +504,13 @@ export async function prepareVerifyProfileDecision(input: {
     profile: input.profile,
     ...(input.run ? { run: input.run } : {}),
   });
+  return persistConfigurationDecision(workspace, request);
+}
+
+async function persistConfigurationDecision(
+  workspace: string,
+  request: ProjectConfigurationDecisionRequest,
+) {
   const file = decisionFile(workspace, request.requestId);
   await atomicWriteJson(
     file,
@@ -543,19 +567,23 @@ export async function applyProjectConfigurationDecision(
         actor: input.actor,
         timestamp: state.record?.decidedAt ?? input.timestamp,
       });
-      const profileUpdate = state.request.profileUpdate;
+      const { profileUpdate, entryInstall, storeBinding } = state.request;
       if (profileUpdate && profileUpdate.workspaceRoot !== workspace) {
         throw new Error('Verify Profile request belongs to another Workspace checkout');
       }
-      if (record.decision === 'approve' && !profileUpdate && !state.request.storeBinding) {
+      if (entryInstall && entryInstall.workspaceRoot !== workspace) {
+        throw new Error('Entry Skill installation request belongs to another Workspace checkout');
+      }
+      const fullOnboarding = !profileUpdate && !entryInstall;
+      if (record.decision === 'approve' && fullOnboarding && !storeBinding) {
         throw new Error(
           'Approval request is missing its Workspace Store binding. Prepare a new request from the Workspace Git root.',
         );
       }
       if (
         record.decision === 'approve' &&
-        !profileUpdate &&
-        state.request.storeBinding?.workspaceRoot !== workspace
+        fullOnboarding &&
+        storeBinding?.workspaceRoot !== workspace
       ) {
         throw new Error('Approved Store binding belongs to another Workspace checkout');
       }
@@ -606,6 +634,51 @@ export async function applyProjectConfigurationDecision(
         throw new Error('Approved project configuration no longer matches its digest');
       }
       const configFile = path.join(workspace, 'repoctopus.yaml');
+      if (entryInstall) {
+        if (
+          currentDigest !== candidateDigest ||
+          currentDigest !== state.request.baseConfigDigest ||
+          !(await inspectRepository(workspace))
+        ) {
+          throw new Error(
+            'Entry Skill installation requires the approved Workspace Git root and configuration',
+          );
+        }
+        const checkScope = async () => {
+          const latest = await optionalCurrentConfig(workspace);
+          if (!latest || hashProjectConfig(latest) !== candidateDigest) {
+            throw new Error('Shared project configuration changed during entry Skill installation');
+          }
+        };
+        const entries = await prepareWorkspaceEntryWrites(
+          workspace,
+          state.request.entrySkills ?? [],
+          state.status === 'applying',
+          state.request.requestId,
+          (file) => input.hooks?.afterEntryWrite?.(file),
+          checkScope,
+        );
+        await atomicWriteJson(
+          stateFile,
+          { ...state, status: 'applying', record },
+          { containedRoot: workspace },
+        );
+        await entries.install();
+        await entries.verify();
+        await checkScope();
+        const result: ProjectConfigurationApplyResult = {
+          status: 'confirmed',
+          configFile,
+          configDigest: candidateDigest,
+          bindingReceiptFiles: [],
+        };
+        await atomicWriteJson(
+          stateFile,
+          { ...state, status: 'confirmed', record, result },
+          { containedRoot: workspace },
+        );
+        return result;
+      }
       if (profileUpdate) {
         if (!current) throw new Error('Verify Profile update requires an initialized Workspace');
         const omitProfile = (config: SharedProjectConfig) => ({

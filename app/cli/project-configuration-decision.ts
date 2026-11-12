@@ -38,26 +38,31 @@ export async function reviewProjectConfigurationDecision(options: {
 }): Promise<{ decision: ProjectConfigurationDecision; comment?: string }> {
   const terminal = createInterface({ input: options.input, output: options.output });
   try {
-    const plan = options.request.profileUpdate
-      ? {
-          profile: options.request.candidateConfig.profiles.find(
-            ({ id }) => id === options.request.profileUpdate?.profileId,
-          ),
-          workspace: options.request.profileUpdate.workspaceRoot,
-        }
-      : {
-          workspace: options.request.storeBinding?.workspaceRoot,
-          repositories: options.request.candidateConfig.repositories,
-          store: options.request.storeBinding,
-          reconcile: options.request.reconcile,
-        };
+    const plan = options.request.entryInstall
+      ? { workspace: options.request.entryInstall.workspaceRoot, scope: 'Workspace entry Skills' }
+      : options.request.profileUpdate
+        ? {
+            profile: options.request.candidateConfig.profiles.find(
+              ({ id }) => id === options.request.profileUpdate?.profileId,
+            ),
+            workspace: options.request.profileUpdate.workspaceRoot,
+          }
+        : {
+            workspace: options.request.storeBinding?.workspaceRoot,
+            repositories: options.request.candidateConfig.repositories,
+            store: options.request.storeBinding,
+            reconcile: options.request.reconcile,
+          };
     options.output.write(`${JSON.stringify(plan, null, 2)}\n`);
     const entrySkills = (options.request.entrySkills ?? []).map(
       ({ host, path, status, diagnostic }) =>
         `  ${host}: ${status} ${path}${diagnostic ? ` — ${diagnostic}` : ''}`,
     );
+    const guides = options.request.storeBinding
+      ? `Workspace guides: ${WORKSPACE_GUIDE_FILES.join(', ')}\nOnly Repoctopus managed blocks are installed or updated; team content is preserved.\n`
+      : '';
     options.output.write(
-      `\nProject configuration approval\nDraft: ${options.request.draftId}\nSnapshot: ${options.request.snapshotDigest}\nCandidate: ${options.request.candidateConfigDigest}\nUnresolved findings: ${options.request.unresolved.length}\nReconcile changed: ${options.request.reconcile?.changed ?? false}\nWorkspace guides: ${WORKSPACE_GUIDE_FILES.join(', ')}\nOnly Repoctopus managed blocks are installed or updated; team content is preserved.\nWorkspace entry Skills:\n${entrySkills.join('\n') || '  (none)'}\n\n1) Approve\n2) Request changes\n3) Reject\n`,
+      `\nProject configuration approval\nDraft: ${options.request.draftId}\nSnapshot: ${options.request.snapshotDigest}\nCandidate: ${options.request.candidateConfigDigest}\nUnresolved findings: ${options.request.unresolved.length}\nReconcile changed: ${options.request.reconcile?.changed ?? false}\n${guides}Workspace entry Skills:\n${entrySkills.join('\n') || '  (none)'}\n\n1) Approve\n2) Request changes\n3) Reject\n`,
     );
     const answer = (await terminal.question('Decision [1-3]: ')).trim();
     const decision: ProjectConfigurationDecision =

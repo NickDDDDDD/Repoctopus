@@ -12,6 +12,7 @@ import {
   loadPendingProjectConfigurationDecision,
   prepareProjectConfigurationDecision,
   prepareVerifyProfileDecision,
+  prepareWorkspaceEntryInstallDecision,
 } from '../platform/project-configuration/onboarding.js';
 import { detectProjectConfiguration } from '../platform/project-configuration/detect.js';
 
@@ -59,6 +60,10 @@ export class ProjectOnboarding extends Service {
 
   prepare(input: { workspace: string; draftFile: string; completedCandidate: unknown }) {
     return prepareProjectConfigurationDecision(input);
+  }
+
+  installEntrySkills(input: { workspace: string; entryHosts: readonly string[] }) {
+    return prepareWorkspaceEntryInstallDecision(input);
   }
 
   async configureVerify({

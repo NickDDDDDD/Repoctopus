@@ -41,7 +41,7 @@ repoctopus.cmd --version
 
 ### 安装宿主入口
 
-包含轻量接入功能的 CLI 可为当前用户安装 Init Skill。以下用 Codex 举例。使用 OpenCode 时，将 `codex` 换为 `opencode`。
+包含轻量接入功能的 CLI 可为当前用户安装 Init Skill。以下用 Codex 举例。宿主选择值、安装路径和已有 Workspace 的补装步骤见 [Skills 接入](docs/skills.md#在宿主中调用-repoctopus)。
 
 ```powershell
 repoctopus.cmd skill install-init --entry-hosts codex

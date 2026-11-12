@@ -76,12 +76,13 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <init|detect|prepare|configure-verify|decision|review> | skill <list|get|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <init|detect|prepare|install-entry-skills|configure-verify|decision|review> | skill <list|get|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const COMMANDS = new Set([
   'project init',
   'project detect',
   'project decision',
   'project configure-verify',
+  'project install-entry-skills',
   'project prepare',
   'project review',
   'skill list',
@@ -864,6 +865,27 @@ async function projectConfigureVerify(parsed: ParsedArguments): Promise<CliEnvel
       command: 'project configure-verify',
       result,
       nextActions: ['Review the pending Verify Profile decision in the current host'],
+    });
+  } finally {
+    await app.close();
+  }
+}
+
+async function projectInstallEntrySkills(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const entryHosts = stringFlag(parsed, 'entry-hosts', { required: true })!
+    .split(',')
+    .map((host) => host.trim());
+  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  try {
+    const result = await app.context.commandRouter.execute('project.install-entry-skills', {
+      workspace,
+      entryHosts,
+    });
+    return successEnvelope({
+      command: 'project install-entry-skills',
+      result,
+      nextActions: ['Review the pending entry Skill installation decision in the current host'],
     });
   } finally {
     await app.close();
@@ -1757,6 +1779,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'project init') return projectInit(parsed);
   if (command === 'project decision') return projectDecision(parsed);
   if (command === 'project configure-verify') return projectConfigureVerify(parsed);
+  if (command === 'project install-entry-skills') return projectInstallEntrySkills(parsed);
   if (command === 'project detect') return projectDetect(parsed);
   if (command === 'project prepare') return projectPrepare(parsed);
   if (command === 'project review') return projectReview(parsed);

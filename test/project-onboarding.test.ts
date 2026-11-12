@@ -28,6 +28,7 @@ import {
   observeVerifyProfilePublication,
   prepareProjectConfigurationDecision,
   prepareVerifyProfileDecision,
+  prepareWorkspaceEntryInstallDecision,
 } from '../platform/project-configuration/onboarding.js';
 import { OpenSpecProcess } from '../platform/specification/openspec-process.js';
 import {
@@ -118,6 +119,68 @@ async function guideDecisionFixture() {
 }
 
 describe('project configuration onboarding', () => {
+  it('resumes an entry-only installation and keeps the approved scope bound', async () => {
+    const { workspace, prepared } = await guideDecisionFixture();
+    const configFile = path.join(workspace, 'repoctopus.yaml');
+    await writeFile(configFile, JSON.stringify(prepared.request.candidateConfig));
+    const original = await readFile(configFile, 'utf8');
+    const pending = await prepareWorkspaceEntryInstallDecision({
+      workspace,
+      entryHosts: ['codebuddy', 'trae-cn'],
+    });
+    const decision = {
+      workspace,
+      decisionFile: pending.file,
+      response: response(pending.request),
+      actor: { actorId: 'user', source: 'cli' as const, authenticated: true },
+      timestamp: '2026-01-01T00:00:00.000Z',
+    };
+    const stored = await readFile(pending.file, 'utf8');
+    const request = JSON.parse(stored) as { request: typeof pending.request };
+    await writeFile(
+      pending.file,
+      JSON.stringify({
+        ...request,
+        request: { ...request.request, entryInstall: { workspaceRoot: path.dirname(workspace) } },
+      }),
+    );
+    await expect(applyDecision(decision)).rejects.toThrow('no longer matches its snapshot');
+    await writeFile(pending.file, stored);
+    const [first, ...rest] = pending.request.entrySkills!.map((entry) =>
+      path.join(workspace, entry.path),
+    );
+    await expect(
+      applyDecision({
+        ...decision,
+        hooks: {
+          afterEntryWrite: () =>
+            writeFile(
+              configFile,
+              JSON.stringify({
+                ...prepared.request.candidateConfig,
+                telemetry: { endpoint: 'https://collector.example.invalid' },
+              }),
+            ),
+        },
+      }),
+    ).rejects.toThrow('Shared project configuration changed during entry Skill installation');
+    expect(await readFile(first!, 'utf8')).toContain('name: repoctopus');
+    for (const target of rest)
+      await expect(access(target)).rejects.toMatchObject({ code: 'ENOENT' });
+    const beforeRetry = await stat(first!);
+    await writeFile(configFile, original);
+    await expect(applyDecision(decision)).resolves.toMatchObject({
+      status: 'confirmed',
+      bindingReceiptFiles: [],
+    });
+    expect((await stat(first!)).mtimeMs).toBe(beforeRetry.mtimeMs);
+    for (const target of rest) await expect(access(target)).resolves.toBeUndefined();
+    expect(await readFile(configFile, 'utf8')).toBe(original);
+    await expect(access(path.join(workspace, 'openspec'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+  });
+
   it('recognizes a second approved Verify update after a Build Check that bound the first update', async () => {
     const { workspace, prepared } = await guideDecisionFixture();
     const configFile = path.join(workspace, 'repoctopus.yaml');

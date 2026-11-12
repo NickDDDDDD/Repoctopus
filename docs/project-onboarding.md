@@ -37,7 +37,7 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份。团队共用同一个
 
 ## 使用宿主一次完成接入
 
-在已安装 CLI 的终端，为自己使用的宿主安装入口。选定 Codex 或 OpenCode，新会话会发现对应的个人级 `repoctopus-init`。
+在已安装 CLI 的终端，为自己使用的宿主安装个人级 `repoctopus-init`。下面以 Codex 为例。其他宿主和已有 Workspace 补装见 [Skills 接入](skills.md#在宿主中调用-repoctopus)。
 
 ```powershell
 repoctopus.cmd skill install-init --entry-hosts codex
