@@ -1,11 +1,11 @@
 {
   "schema": "repoctopus.workspace-init.acceptance.v1",
   "package": {
-    "testedImplementationCommit": "0d00e2568dc28b3011ec01069e861cf16262a5f7",
-    "contentSha256": "5bb0ae0dc5c488329387b20568f8ae958710d21b7ee7d3481701628d182155a0",
+    "testedImplementationCommit": "b497f4d157e6ad102cd9e989028561bab5996077",
+    "contentSha256": "b0f660411ee34bed37d281f2059a3cd09ddffe983b3e300bf10d467ac2e9b58e",
     "files": 481,
-    "contentBytes": 6254471,
-    "archiveSha256": "9b99eb7e46f1e3480e85592c2cc57b245a90b80b33e33ac5c2eb038c8714d0fb"
+    "contentBytes": 6256123,
+    "archiveSha256": "3eba11c1cba91fc4188c42fcebf0c379fa7dd6f5a9bcdeabee2c36145326e56f"
   },
   "platform": "Windows",
   "nativeHosts": [
@@ -14,14 +14,14 @@
       "version": "0.154.0",
       "scope": "user",
       "skill": "repoctopus-init",
-      "requestId": "3a2a160f-68a1-4c9d-9ddf-f5953e61fe5b"
+      "requestId": "31fec1d4-50cd-4eb9-aa6b-e8002336e8e2"
     },
     {
       "host": "opencode",
       "version": "1.19.5",
       "scope": "user",
       "skill": "repoctopus-init",
-      "requestId": "eb58663c-6d76-4014-b92e-93c2387ef3ad"
+      "requestId": "22c4beb5-b071-4877-a9c6-2a795a6a0281"
     }
   ],
   "hostFixture": "Installed native hosts driven by a deterministic local model; each invoked the packaged CLI and returned a pending plan.",

@@ -1,10 +1,10 @@
 # Workspace 初始化安装包验收
 
-Tested implementation commit: `0d00e2568dc28b3011ec01069e861cf16262a5f7`
-Package content SHA-256: `5bb0ae0dc5c488329387b20568f8ae958710d21b7ee7d3481701628d182155a0`
+Tested implementation commit: `b497f4d157e6ad102cd9e989028561bab5996077`
+Package content SHA-256: `b0f660411ee34bed37d281f2059a3cd09ddffe983b3e300bf10d467ac2e9b58e`
 Package files: `481`
-Package content bytes: `6254471`
-Archive SHA-256: `9b99eb7e46f1e3480e85592c2cc57b245a90b80b33e33ac5c2eb038c8714d0fb`
+Package content bytes: `6256123`
+Archive SHA-256: `3eba11c1cba91fc4188c42fcebf0c379fa7dd6f5a9bcdeabee2c36145326e56f`
 
 Windows 上独立安装 `npm pack` 生成的候选包。Codex 和 OpenCode 从各自的个人级入口发现并实际加载 Init Skill，在带空格路径的单仓调用已安装 CLI，分别收到待审批的最小计划。宿主原生调用由本地确定性模型驱动，两个单仓的共享配置均保持未写入状态。
 
