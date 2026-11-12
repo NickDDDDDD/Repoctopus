@@ -47,6 +47,7 @@ Repoctopus MUST 把候选、作用范围及现有配置差异作为 Human Decisi
 
 - **WHEN** 候选 Verify Profile 没有声明非空 coverage 的 required 验证节点
 - **THEN** Repoctopus 在写共享配置前报告缺少 required coverage
+
 #### Scenario: 前置节点不直接覆盖 Acceptance
 
 - **WHEN** Profile 有带 coverage 的 required 验证节点，且有服务或准备节点不直接覆盖 Acceptance
