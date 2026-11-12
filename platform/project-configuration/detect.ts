@@ -471,9 +471,10 @@ export async function detectProjectConfiguration(input: {
     storeId,
     workspace,
   });
+  const minimal = input.mode === 'minimal';
   const skipped = new Set(input.skippedPointerRepositoryIds ?? []);
   const existingIds = new Map(
-    current?.repositories.map((repository) => [
+    (minimal ? current?.repositories : undefined)?.map((repository) => [
       path.resolve(workspace, repository.path),
       repository.id,
     ]),
@@ -498,7 +499,7 @@ export async function detectProjectConfiguration(input: {
   }
   const scopedIds =
     input.selectedRepositoryIds ??
-    (input.mode === 'minimal' ? current?.repositories.map(({ id }) => id) : undefined);
+    (minimal ? current?.repositories.map(({ id }) => id) : undefined);
   const selectedIds = new Set(scopedIds);
   for (const id of selectedIds) {
     if (!identified.some((item) => item.id === id)) {
@@ -517,7 +518,7 @@ export async function detectProjectConfiguration(input: {
         workspaceRepositoryId,
         skipped: skipped.has(id),
       });
-      if (input.mode === 'minimal') {
+      if (minimal) {
         const detected: DetectedRepository = {
           id,
           name: repository.name,
@@ -572,22 +573,19 @@ export async function detectProjectConfiguration(input: {
     (repository) => repository.id === workspaceRepositoryId,
   )!;
   const detectedCandidate: SharedProjectConfig | null =
-    input.mode === 'minimal' || commandNodes.length > 0
+    minimal || commandNodes.length > 0
       ? {
           apiVersion: 'repoctopus/v1alpha1',
           kind: 'RepoctopusWorkspace',
           workspace: {
-            id: current?.workspace.id ?? slug(path.basename(workspace)),
+            id: (minimal ? current?.workspace.id : undefined) ?? slug(path.basename(workspace)),
             repositoryId: workspaceRepository.id,
           },
           repositories: repositories.map((repository) => ({
             id: repository.id,
             path: repository.path,
           })),
-          profiles:
-            input.mode === 'minimal'
-              ? (current?.profiles ?? [])
-              : [{ id: 'verify', nodes: commandNodes }],
+          profiles: minimal ? (current?.profiles ?? []) : [{ id: 'verify', nodes: commandNodes }],
           specificationProvider: {
             id: current?.specificationProvider?.id ?? 'specification-openspec',
             store: { id: storeId, repositoryId: workspaceRepository.id },
