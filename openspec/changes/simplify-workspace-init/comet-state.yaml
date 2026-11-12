@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v2
-  hash: 3881ce5dbe9ffcfbb7b354fc26a76bada8c4372b2d12ccce4e4d0c30ae429973
+  hash: dd476f0f99121669bd37aad2fa1b4bac5526b4b202e62ba4dce1d2c2eb882d7f
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: fail
       workflow: full
     status: running
-    sequence: 19
+    sequence: 22
     actions:
       - attempt: 1
         claim:
@@ -541,7 +541,93 @@ run_checkpoint:
         stepId: full.verify.check
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c4213e82f2359efa0167b577fc68c36eaeaefc44fefa36b4e74308f51654accd
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: simplify-workspace-init:19
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: e8289db19666594b65e01c5f687e38b91d2fbee1e2032519d92ce25828f17232
+        outcome:
+          actionId: simplify-workspace-init:19
+          attempt: 1
+          claimToken: portable-c4213e82f2359efa0167b577fc68c36eaeaefc44fefa36b4e74308f51654accd
+          inputHash: e8289db19666594b65e01c5f687e38b91d2fbee1e2032519d92ce25828f17232
+          outcomeId: 5a08f611-40ec-4a2f-a94a-64e5e9f704c3
+          output:
+            designEvidence:
+              contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+              ref: openspec/changes/simplify-workspace-init/design.md
+            plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+            planEvidence:
+              contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+              ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+            taskRevision: af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 28983282eaf047924ee56cccf0b8d54c3c9ece502c3b339d4db34bb5460c906a
+            outcomeId: 5a08f611-40ec-4a2f-a94a-64e5e9f704c3
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-workspace-init-and-hosts-20261112
+          token: portable-fdc4f2983ce004895df9f9748623b6e5fe1792deabfc20563a49d1ea620eae5c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:21
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: e8289db19666594b65e01c5f687e38b91d2fbee1e2032519d92ce25828f17232
+        outcome:
+          actionId: simplify-workspace-init:21
+          attempt: 1
+          claimToken: portable-fdc4f2983ce004895df9f9748623b6e5fe1792deabfc20563a49d1ea620eae5c
+          inputHash: e8289db19666594b65e01c5f687e38b91d2fbee1e2032519d92ce25828f17232
+          outcomeId: 03cbbdee-f728-45dd-96a3-75a40065be02
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d0a79cc3a3c9723df831ec23cb7b1d0ebf8265440980a64ce6df55ea7ad05892
+            outcomeId: 03cbbdee-f728-45dd-96a3-75a40065be02
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        id: simplify-workspace-init:22
         input:
           input:
             change: simplify-workspace-init
@@ -553,13 +639,13 @@ run_checkpoint:
         protocolVersion: 1
         receipts: []
         reconciliations: []
-        ref: comet-build
+        ref: classic-check
         requiredCapabilities: []
         retry: manual
         runId: simplify-workspace-init
         status: pending
-        stepId: full.build.plan
-        type: invoke_skill
+        stepId: full.build.check
+        type: call_tool
     actionContexts:
       simplify-workspace-init:1:
         results: {}
@@ -582,6 +668,12 @@ run_checkpoint:
       simplify-workspace-init:19:
         results: {}
         sequence: 19
+      simplify-workspace-init:21:
+        results: {}
+        sequence: 21
+      simplify-workspace-init:22:
+        results: {}
+        sequence: 22
       simplify-workspace-init:4:
         results: {}
         sequence: 4
@@ -734,13 +826,23 @@ run_checkpoint:
           ref: docs/superpowers/reports/simplify-workspace-init.md
           contentHash: 413131714664619126ff36c5c6b35e2a500006519090c96b1e966f934f3043a3
           submissionId: 0ecac6e0-6d32-4908-919a-131d5db4eb19
+      - id: simplify-workspace-init:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+          submissionId: b11aeb75-687b-4e2b-83bf-65b672fa0fd6
     ready: []
     joins: {}
     outputs: {}
     children: []
     lineage: []
-  sourceRevision: 29
-  sourceHash: cb4b579d3ac521d8574ced137875fccd316fc8f8ea17eb81959b5a4163728296
+  sourceRevision: 34
+  sourceHash: f2385eec199c08816a766f5d4318c8a2bb39d9a3b2f0aa8354b700e583db4c75
   pool:
     version: 3
     values:
@@ -1056,6 +1158,23 @@ run_checkpoint:
           scope: verify
           tier: full
           timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+            ref: openspec/changes/simplify-workspace-init/design.md
+          plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          planEvidence:
+            contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+            ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          taskRevision: af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421
+      - sequence: 20
+        value:
+          contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+          ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+      - sequence: 21
+        value:
+          event: build-complete
     nodes:
       - key: full.open
         value: 0
@@ -1487,6 +1606,41 @@ run_checkpoint:
         left: 73
         right: 84
         height: 5
+      - key: full.build.plan.evidence
+        value: 37
+        left: null
+        right: 60
+        height: 2
+      - key: full.build.plan
+        value: 36
+        left: 72
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 87
+        right: 84
+        height: 5
+      - key: full.build.execute
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 19
+        left: 71
+        right: 89
+        height: 3
+      - key: full.build.plan
+        value: 36
+        left: 90
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 91
+        right: 84
+        height: 5
       - key: full.open
         value: 24
         left: null
@@ -1499,8 +1653,8 @@ run_checkpoint:
         height: 1
       - key: full.open.confirm
         value: 25
-        left: 86
-        right: 87
+        left: 93
+        right: 94
         height: 2
       - key: full.open.revalidate
         value: 27
@@ -1510,12 +1664,12 @@ run_checkpoint:
       - key: full.open.evidence
         value: 26
         left: null
-        right: 89
+        right: 96
         height: 2
       - key: full.open.confirm
         value: 25
-        left: 86
-        right: 90
+        left: 93
+        right: 97
         height: 3
       - key: full.design.confirm
         value: 20
@@ -1529,13 +1683,13 @@ run_checkpoint:
         height: 1
       - key: full.design.handoff
         value: 23
-        left: 92
-        right: 93
+        left: 99
+        right: 100
         height: 2
       - key: full.open.confirm
         value: 25
-        left: 94
-        right: 90
+        left: 101
+        right: 97
         height: 3
       - key: full.design.confirm
         value: 20
@@ -1549,18 +1703,18 @@ run_checkpoint:
         height: 1
       - key: full.design.document
         value: 21
-        left: 96
-        right: 97
+        left: 103
+        right: 104
         height: 2
       - key: full.design.handoff
         value: 23
-        left: 98
-        right: 93
+        left: 105
+        right: 100
         height: 3
       - key: full.open.confirm
         value: 25
-        left: 99
-        right: 90
+        left: 106
+        right: 97
         height: 4
       - key: full.open.evidence
         value: 26
@@ -1570,7 +1724,7 @@ run_checkpoint:
       - key: full.open
         value: 24
         left: null
-        right: 101
+        right: 108
         height: 2
       - key: full.design.handoff
         value: 23
@@ -1589,13 +1743,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 26
-        left: 104
-        right: 105
+        left: 111
+        right: 112
         height: 2
       - key: full.open
         value: 24
-        left: 103
-        right: 106
+        left: 110
+        right: 113
         height: 3
       - key: full.build.configure
         value: 18
@@ -1614,18 +1768,18 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 22
-        left: 109
-        right: 110
+        left: 116
+        right: 117
         height: 2
       - key: full.design.confirm
         value: 20
-        left: 108
-        right: 111
+        left: 115
+        right: 118
         height: 3
       - key: full.open
         value: 24
-        left: 112
-        right: 106
+        left: 119
+        right: 113
         height: 4
       - key: full.open
         value: 24
@@ -1644,8 +1798,8 @@ run_checkpoint:
         height: 1
       - key: full.design.document
         value: 21
-        left: 115
-        right: 116
+        left: 122
+        right: 123
         height: 2
       - key: full.open.confirm
         value: 25
@@ -1659,13 +1813,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 26
-        left: 118
-        right: 119
+        left: 125
+        right: 126
         height: 2
       - key: full.open
         value: 24
-        left: 117
-        right: 120
+        left: 124
+        right: 127
         height: 3
       - key: full.build.configure
         value: 18
@@ -1679,8 +1833,8 @@ run_checkpoint:
         height: 1
       - key: full.build.confirm
         value: 19
-        left: 122
-        right: 123
+        left: 129
+        right: 130
         height: 2
       - key: full.design.document
         value: 21
@@ -1694,18 +1848,18 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 22
-        left: 125
-        right: 126
+        left: 132
+        right: 133
         height: 2
       - key: full.design.confirm
         value: 20
-        left: 124
-        right: 127
+        left: 131
+        right: 134
         height: 3
       - key: full.open
         value: 24
-        left: 128
-        right: 120
+        left: 135
+        right: 127
         height: 4
       - key: full.build.check
         value: 31
@@ -1714,7 +1868,7 @@ run_checkpoint:
         height: 1
       - key: full.build.configure
         value: 18
-        left: 130
+        left: 137
         right: null
         height: 2
       - key: full.build.execute
@@ -1729,23 +1883,23 @@ run_checkpoint:
         height: 1
       - key: full.build.plan
         value: 28
-        left: 132
-        right: 133
+        left: 139
+        right: 140
         height: 2
       - key: full.build.confirm
         value: 19
-        left: 131
-        right: 134
+        left: 138
+        right: 141
         height: 3
       - key: full.open
         value: 24
-        left: 127
-        right: 120
+        left: 134
+        right: 127
         height: 3
       - key: full.design.confirm
         value: 20
-        left: 135
-        right: 136
+        left: 142
+        right: 143
         height: 4
       - key: full.build.check
         value: 31
@@ -1759,13 +1913,13 @@ run_checkpoint:
         height: 1
       - key: full.build.check.evidence
         value: 32
-        left: 138
-        right: 139
+        left: 145
+        right: 146
         height: 2
       - key: full.build.confirm
         value: 19
-        left: 140
-        right: 134
+        left: 147
+        right: 141
         height: 3
       - key: full.verify.run
         value: 34
@@ -1775,22 +1929,67 @@ run_checkpoint:
       - key: full.open.revalidate
         value: 27
         left: null
-        right: 142
+        right: 149
         height: 2
       - key: full.open.evidence
         value: 26
-        left: 118
-        right: 143
+        left: 125
+        right: 150
         height: 3
       - key: full.open
         value: 24
-        left: 127
-        right: 144
+        left: 134
+        right: 151
         height: 4
       - key: full.design.confirm
         value: 20
-        left: 141
-        right: 145
+        left: 148
+        right: 152
+        height: 5
+      - key: full.build.plan
+        value: 36
+        left: 139
+        right: 140
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 147
+        right: 154
+        height: 3
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: 125
+        right: 156
+        height: 2
+      - key: full.verify.report.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 34
+        left: 158
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 35
+        left: 157
+        right: 159
+        height: 3
+      - key: full.open
+        value: 24
+        left: 134
+        right: 160
+        height: 4
+      - key: full.design.confirm
+        value: 20
+        left: 155
+        right: 161
         height: 5
     maps:
       - null
@@ -1811,17 +2010,20 @@ run_checkpoint:
       - 80
       - 85
       - 88
-      - 91
+      - 92
       - 95
-      - 100
+      - 98
       - 102
       - 107
-      - 113
+      - 109
       - 114
+      - 120
       - 121
-      - 129
-      - 137
-      - 146
+      - 128
+      - 136
+      - 144
+      - 153
+      - 162
     bindings:
       - path:
           - actions
@@ -1890,6 +2092,18 @@ run_checkpoint:
           - outputs
         map: 10
       - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
           - actionContexts
           - simplify-workspace-init:1
           - results
@@ -1926,66 +2140,81 @@ run_checkpoint:
         map: 16
       - path:
           - actionContexts
-          - simplify-workspace-init:4
+          - simplify-workspace-init:21
           - results
         map: 17
       - path:
           - actionContexts
-          - simplify-workspace-init:5
+          - simplify-workspace-init:22
           - results
         map: 18
       - path:
           - actionContexts
-          - simplify-workspace-init:7
+          - simplify-workspace-init:4
           - results
         map: 19
       - path:
           - actionContexts
-          - simplify-workspace-init:9
+          - simplify-workspace-init:5
           - results
         map: 20
       - path:
-          - outputs
-        map: 16
-      - path:
-          - waits
-          - "0"
+          - actionContexts
+          - simplify-workspace-init:7
           - results
         map: 21
       - path:
-          - waits
-          - "1"
+          - actionContexts
+          - simplify-workspace-init:9
           - results
         map: 22
       - path:
+          - outputs
+        map: 18
+      - path:
           - waits
-          - "2"
+          - "0"
           - results
         map: 23
       - path:
-          - evidenceWaits
-          - "0"
+          - waits
+          - "1"
           - results
         map: 24
       - path:
-          - evidenceWaits
-          - "1"
+          - waits
+          - "2"
           - results
         map: 25
       - path:
           - evidenceWaits
-          - "2"
+          - "0"
           - results
         map: 26
       - path:
           - evidenceWaits
-          - "3"
+          - "1"
           - results
         map: 27
       - path:
           - evidenceWaits
-          - "4"
+          - "2"
           - results
         map: 28
-  storageHash: 7d1943c7a01a4a53c2752f6b61c50cc88df6e1103904f1d5693c9039bb200713
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 29
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 31
+  storageHash: 4a462c2a0f74ad32f71a8322481ee5f083b1aa121c014c11610fd031105e7684
 check_epoch: 4

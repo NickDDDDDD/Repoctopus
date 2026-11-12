@@ -17,3 +17,5 @@
 新增回归在旧行为上暴露了入口缺失、空 Profile 阻断、Build Check 与 Verify 耦合、两次批准之间的 Git 基线混用。实现后回归转绿。独立审查分别核对接入和运行恢复。发现的稳定仓库 ID、审批重放、配置作用域、审批预览和多次 Profile 提交问题已修复，最终候选重新执行安装包和真实多仓验收。
 
 [安装包验收](../../../verification/simplify-workspace-init/verification-report.md) 绑定实现提交和包内容身份。完整仓库检查由 Comet Guard 使用仓库登记的 Windows 命令执行并保存收据。
+
+首轮正式 Verify 的 lint 拒绝了两处测试中的未校验 JSON。两处改用共享配置解析器后，接入回归通过，重新打出的包与已实测候选字节一致。

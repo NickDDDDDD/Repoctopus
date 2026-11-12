@@ -1,7 +1,7 @@
 {
   "schema": "repoctopus.workspace-init.acceptance.v1",
   "package": {
-    "testedImplementationCommit": "96cf2dc8960b5746d2bf7352efdc848ee97c1287",
+    "testedImplementationCommit": "5556f33b54085482bf5627a5b9b61997a6084595",
     "contentSha256": "2fd0ac27225c337a60002f4ece1f177234cfad06f5a918bb75dce6c5cbb9d702",
     "files": 481,
     "contentBytes": 6254467,
