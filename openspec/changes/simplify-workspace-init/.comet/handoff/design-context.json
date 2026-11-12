@@ -1,0 +1,19 @@
+{
+  "change": "simplify-workspace-init",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3",
+  "files": [
+    { "path": "openspec/changes/simplify-workspace-init/proposal.md", "sha256": "44bb1283ebd0d7c24bcf39c05722d8e40f788f684df65bda722695f1c5be49aa" },
+    { "path": "openspec/changes/simplify-workspace-init/design.md", "sha256": "4f5bf26d2a34e59af905ae9e25f15817fcd37155284811a34689f5d822469751" },
+    { "path": "openspec/changes/simplify-workspace-init/tasks.md", "sha256": "af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421" },
+    { "path": "openspec/changes/simplify-workspace-init/.openspec.yaml", "sha256": "81efc95b309487579cc63ceff200744cbd9fab2401597cbbdcf38d0cb54bace8" },
+    { "path": "openspec/changes/simplify-workspace-init/specs/change-lifecycle/spec.md", "sha256": "8b898f74ad3a788bf30a97430b41a19b617e0b2871a939470f073a2b419023d7" },
+    { "path": "openspec/changes/simplify-workspace-init/specs/implementation-evidence/spec.md", "sha256": "ff78b492f5b44c3928cd919e24f9ee6dcf0285a177a9e15e7148a931db521876" },
+    { "path": "openspec/changes/simplify-workspace-init/specs/project-configuration/spec.md", "sha256": "248dcb728ece9e7d22d6836636aa56972b2317e117d8a4cb3ecf48e9200b714b" },
+    { "path": "openspec/changes/simplify-workspace-init/specs/skill-integration/spec.md", "sha256": "51f874df4008a2232b511033af3624916dcbf1167db7f7aed8afa694c640f952" }
+  ]
+}

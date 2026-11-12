@@ -2,7 +2,7 @@
 change_id: 9983b534-0806-4e52-a42f-c9b7364383a6
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/simplify-workspace-init
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+handoff_hash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 0dc7a861d122da62436e35cc95e2d0ad440322babe320669d6c8c6b1c1ae8f84
+  hash: 4febfb7d12a852b971cacbd5ce1cbdc1328fdecb2db61bac98291259fc31fc98
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,17 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 1
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-12
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+      handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
       isolation: worktree
       language: zh-CN
-      phase: open
+      phase: design
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -79,10 +80,18 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 1
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-641d48ae5bb4464428499effcccf9d9ce1e7c9478cd7ba31bb21e22e642ad981
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: simplify-workspace-init:1
         input:
           input:
@@ -92,25 +101,400 @@ run_checkpoint:
               ref: 65ae959b-da43-4039-941e-b19aadd55c32
           outputs: {}
         inputHash: b66565d2b75dd821ab692ee5ceeb114c09b9af67ff739aa4d53b111f85e9e88c
+        outcome:
+          actionId: simplify-workspace-init:1
+          attempt: 1
+          claimToken: portable-641d48ae5bb4464428499effcccf9d9ce1e7c9478cd7ba31bb21e22e642ad981
+          inputHash: b66565d2b75dd821ab692ee5ceeb114c09b9af67ff739aa4d53b111f85e9e88c
+          outcomeId: 837d3a3e-a219-403b-a3aa-c802bea2caaa
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: e3152663f701f6c26aa33180137167d9ddf103388f8b23ebaf7122895e7eb6a8
+            outcomeId: 837d3a3e-a219-403b-a3aa-c802bea2caaa
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: simplify-workspace-init
-        status: pending
+        status: succeeded
         stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-7d0c939195a156f3a01e282f8558edc283b9e878d0cf11ae02b75decfb1fc324
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:4
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: simplify-workspace-init
+                  changeDir: openspec/changes/simplify-workspace-init
+                  workspaceBaseline:
+                    ref: 65ae959b-da43-4039-941e-b19aadd55c32
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+                    ref: openspec/changes/simplify-workspace-init
+            full.open.evidence:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+              ref: openspec/changes/simplify-workspace-init
+        inputHash: ca6065a3a491fa7623419508a53b86708f3f0f85285b6b294df5cd836c12b06d
+        outcome:
+          actionId: simplify-workspace-init:4
+          attempt: 1
+          claimToken: portable-7d0c939195a156f3a01e282f8558edc283b9e878d0cf11ae02b75decfb1fc324
+          inputHash: ca6065a3a491fa7623419508a53b86708f3f0f85285b6b294df5cd836c12b06d
+          outcomeId: simplify-workspace-init:4:1:executor-result
+          output:
+            contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 573d05ab7ad45922a11a55bd5c92d673c501f863dd84ff6c220034d3d6ee59bd
+            outcomeId: simplify-workspace-init:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-63070a5606184365b816f2276fbb90aacba33679a44a5119bd11e51dc5a411ef
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:5
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: simplify-workspace-init
+                  changeDir: openspec/changes/simplify-workspace-init
+                  workspaceBaseline:
+                    ref: 65ae959b-da43-4039-941e-b19aadd55c32
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+                    ref: openspec/changes/simplify-workspace-init
+            full.open.evidence:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+              ref: openspec/changes/simplify-workspace-init
+            full.open.revalidate:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+        inputHash: c5b37614b31b41a8c4920ea67db01e76fe9caec50e253d95c994b8dbbb68ad9d
+        outcome:
+          actionId: simplify-workspace-init:5
+          attempt: 1
+          claimToken: portable-63070a5606184365b816f2276fbb90aacba33679a44a5119bd11e51dc5a411ef
+          inputHash: c5b37614b31b41a8c4920ea67db01e76fe9caec50e253d95c994b8dbbb68ad9d
+          outcomeId: 3eb0969d-4005-482b-8dda-1be4786494a2
+          output:
+            handoffContext: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+            handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+            proposal: 单仓和同级多仓共用个人级 Init，Runtime 一次预览、可信宿主回传与现有可恢复接入事务。首次配置允许空 Profile，已有
+              Profile 保留；单独的 Verify 配置 Skill 以实际命令与覆盖为输入，获批只更新目标 Profile。Build
+              Check 独立持久化，在原 Run 的验证准备边界等待配置；重新观察批准的配置、精确 checkout 及只改目标 Profile
+              的提交，保留有效 Build，绑定当前 Verification Input。解除 Delivery
+              对未消费的全配置摘要耦合，保留实际策略、凭据和组合漂移校验。Windows 发布候选包验证真实宿主、同一多仓 Run
+              两次冷恢复和真实 Archive。规格不改。
+            requirementsEvidence:
+              contentHash: efc22131c4362b0b3918f0620702187c7d33e7c901653e3e23836b501070d5aa
+              ref: openspec/changes/simplify-workspace-init
+            sourceEvidence:
+              contentHash: ea4f7453ad5789c50c7215b1af29f2c32f59c006252720d01fed70973d661b9f
+              ref: openspec/changes/simplify-workspace-init
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ce26f2ebaa45bc90c69c6c59ddb370683e58ec8d47c7a9ea4700b9d43e3ecaa2
+            outcomeId: 3eb0969d-4005-482b-8dda-1be4786494a2
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
       simplify-workspace-init:1:
         results: {}
         sequence: 1
-    waits: []
+      simplify-workspace-init:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: simplify-workspace-init
+                  changeDir: openspec/changes/simplify-workspace-init
+                  workspaceBaseline:
+                    ref: 65ae959b-da43-4039-941e-b19aadd55c32
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+                    ref: openspec/changes/simplify-workspace-init
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+              ref: openspec/changes/simplify-workspace-init
+        sequence: 4
+      simplify-workspace-init:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: simplify-workspace-init
+                  changeDir: openspec/changes/simplify-workspace-init
+                  workspaceBaseline:
+                    ref: 65ae959b-da43-4039-941e-b19aadd55c32
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+                    ref: openspec/changes/simplify-workspace-init
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+              ref: openspec/changes/simplify-workspace-init
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+        sequence: 5
+    waits:
+      - id: simplify-workspace-init:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+              ref: openspec/changes/simplify-workspace-init
+        proposalHash: 586e1dcd5de8a9b4961073ef037c5e5b45943dc888afd814fec6192aef8eb042
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+              ref: openspec/changes/simplify-workspace-init
+        decision:
+          id: classic-open-8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+          choice: approved
+          proposalHash: 586e1dcd5de8a9b4961073ef037c5e5b45943dc888afd814fec6192aef8eb042
+      - id: simplify-workspace-init:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+              handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+              proposal: 单仓和同级多仓共用个人级 Init，Runtime 一次预览、可信宿主回传与现有可恢复接入事务。首次配置允许空 Profile，已有
+                Profile 保留；单独的 Verify 配置 Skill 以实际命令与覆盖为输入，获批只更新目标 Profile。Build
+                Check 独立持久化，在原 Run 的验证准备边界等待配置；重新观察批准的配置、精确 checkout 及只改目标
+                Profile 的提交，保留有效 Build，绑定当前 Verification Input。解除 Delivery
+                对未消费的全配置摘要耦合，保留实际策略、凭据和组合漂移校验。Windows 发布候选包验证真实宿主、同一多仓 Run
+                两次冷恢复和真实 Archive。规格不改。
+              requirementsEvidence:
+                contentHash: efc22131c4362b0b3918f0620702187c7d33e7c901653e3e23836b501070d5aa
+                ref: openspec/changes/simplify-workspace-init
+              sourceEvidence:
+                contentHash: ea4f7453ad5789c50c7215b1af29f2c32f59c006252720d01fed70973d661b9f
+                ref: openspec/changes/simplify-workspace-init
+        proposalHash: f510a1a70e405ede209717b29a4bf79200bd6a2b10aecf3ca813be2155d8a6f2
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+              handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+              proposal: 单仓和同级多仓共用个人级 Init，Runtime 一次预览、可信宿主回传与现有可恢复接入事务。首次配置允许空 Profile，已有
+                Profile 保留；单独的 Verify 配置 Skill 以实际命令与覆盖为输入，获批只更新目标 Profile。Build
+                Check 独立持久化，在原 Run 的验证准备边界等待配置；重新观察批准的配置、精确 checkout 及只改目标
+                Profile 的提交，保留有效 Build，绑定当前 Verification Input。解除 Delivery
+                对未消费的全配置摘要耦合，保留实际策略、凭据和组合漂移校验。Windows 发布候选包验证真实宿主、同一多仓 Run
+                两次冷恢复和真实 Archive。规格不改。
+              requirementsEvidence:
+                contentHash: efc22131c4362b0b3918f0620702187c7d33e7c901653e3e23836b501070d5aa
+                ref: openspec/changes/simplify-workspace-init
+              sourceEvidence:
+                contentHash: ea4f7453ad5789c50c7215b1af29f2c32f59c006252720d01fed70973d661b9f
+                ref: openspec/changes/simplify-workspace-init
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: simplify-workspace-init
+                  changeDir: openspec/changes/simplify-workspace-init
+                  workspaceBaseline:
+                    ref: 65ae959b-da43-4039-941e-b19aadd55c32
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+                    ref: openspec/changes/simplify-workspace-init
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+              ref: openspec/changes/simplify-workspace-init
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+    evidenceWaits:
+      - id: simplify-workspace-init:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/simplify-workspace-init
+          contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+          submissionId: 72359fa0-47cb-4fcb-8acb-b6a21a6f4487
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+          handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+          proposal: 单仓和同级多仓共用个人级 Init，Runtime 一次预览、可信宿主回传与现有可恢复接入事务。首次配置允许空 Profile，已有
+            Profile 保留；单独的 Verify 配置 Skill 以实际命令与覆盖为输入，获批只更新目标 Profile。Build
+            Check 独立持久化，在原 Run 的验证准备边界等待配置；重新观察批准的配置、精确 checkout 及只改目标 Profile
+            的提交，保留有效 Build，绑定当前 Verification Input。解除 Delivery
+            对未消费的全配置摘要耦合，保留实际策略、凭据和组合漂移校验。Windows 发布候选包验证真实宿主、同一多仓 Run 两次冷恢复和真实
+            Archive。规格不改。
+          requirementsEvidence:
+            contentHash: efc22131c4362b0b3918f0620702187c7d33e7c901653e3e23836b501070d5aa
+            ref: openspec/changes/simplify-workspace-init
+          sourceEvidence:
+            contentHash: ea4f7453ad5789c50c7215b1af29f2c32f59c006252720d01fed70973d661b9f
+            ref: openspec/changes/simplify-workspace-init
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: simplify-workspace-init
+              changeDir: openspec/changes/simplify-workspace-init
+              workspaceBaseline:
+                ref: 65ae959b-da43-4039-941e-b19aadd55c32
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+                ref: openspec/changes/simplify-workspace-init
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+          ref: openspec/changes/simplify-workspace-init
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: 3278c00ad117c8f144893f3e3b1144a2a28d0b8d6612f6c0053419b7fe664649
+  sourceRevision: 9
+  sourceHash: 963ed0bff0a585e02cd8cd1e00ee80acdfa2d59679ffe42b1ee8111929beae2c
+check_epoch: 1
