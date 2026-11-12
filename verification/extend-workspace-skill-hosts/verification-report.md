@@ -19,6 +19,6 @@ Archive SHA-256: `9ccdf5ea39137c7787b8e053888dc32c9fda1ecdd422b2ce68bfd3de0f84f7
 
 ## 待验证的宿主行为
 
-CodeBuddy CN IDE 4.12.4、CodeArts Agent 26.11.100 和 TRAE CN 3.4.18 已打开同一隔离实验 Workspace，均停在宿主的文件夹信任确认。TRAE CN 在更新日志中明确说明，受限模式下不加载项目 Skill。CodeArts 曾显示登录成功通知，智能体面板仍显示登录入口，需在确认目录信任后核对。TRAE 国际版 3.5.55 未在本轮打开，原生验收仍待完成。
+CodeBuddy CN IDE 4.12.4、CodeArts Agent 26.11.100 和 TRAE CN 3.4.18 已打开同一隔离实验 Workspace，均停在宿主的文件夹信任确认。TRAE CN 在更新日志中明确说明，受限模式下不加载项目 Skill。CodeArts 曾显示登录成功通知，智能体面板仍显示登录入口，需在确认目录信任后核对。TRAE 国际版 3.5.55 也已在独立窗口打开同一个实验仓，需要确认文件夹信任及登录该版本的智能体。
 
 [验收回执](acceptance-receipt.json) 保存已验证的候选包和运行身份。

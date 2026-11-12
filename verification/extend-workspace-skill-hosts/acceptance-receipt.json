@@ -49,7 +49,7 @@
     {
       "host": "trae",
       "version": "3.5.55",
-      "reason": "international IDE session has not been opened and authenticated for this attempt"
+      "reason": "workspace trust prompt and separate international Agent sign-in required"
     },
     {
       "host": "trae-cn",
