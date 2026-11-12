@@ -17,7 +17,7 @@ import { reconcileProjectConfig } from '../../domains/project-configuration/reco
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
 import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
-import { probeProject } from '../git/probe.js';
+import { inspectRepository, probeProject } from '../git/probe.js';
 import {
   OpenSpecStoreRegistration,
   type OpenSpecStoreRegistrationPort,
@@ -437,6 +437,9 @@ async function optionalExistingConfig(workspace: string): Promise<SharedProjectC
 export async function detectProjectConfiguration(input: {
   workspace: string;
   scanRoot: string;
+  mode?: 'minimal' | 'verify';
+  layout?: 'single' | 'multi';
+  selectedRepositoryIds?: readonly string[];
   storeId?: string;
   skippedPointerRepositoryIds?: readonly string[];
   entryHosts?: readonly string[];
@@ -444,11 +447,20 @@ export async function detectProjectConfiguration(input: {
   specificationAuthority?: OpenSpecStoreRegistrationPort;
 }): Promise<{ draft: ProjectDetectionDraft; file: string }> {
   const workspace = await realpath(input.workspace);
-  const snapshot = await probeProject({
-    root: input.scanRoot,
-    duplicateIdentity: 'omit-ambiguous',
-    ...(input.now ? { now: input.now } : {}),
-  });
+  const workspaceRepositorySnapshot = await inspectRepository(workspace);
+  if (!workspaceRepositorySnapshot) {
+    throw new Error(
+      `Workspace must be a Git repository root: ${workspace}. Use the business repository root for single-repository setup, or a separate Git repository alongside the business repositories.`,
+    );
+  }
+  const snapshot =
+    input.layout === 'single'
+      ? { root: workspace, repositories: [workspaceRepositorySnapshot] }
+      : await probeProject({
+          root: input.scanRoot,
+          duplicateIdentity: 'omit-ambiguous',
+          ...(input.now ? { now: input.now } : {}),
+        });
   const current = await optionalExistingConfig(workspace);
   const storeId =
     input.storeId ?? current?.specificationProvider?.store.id ?? slug(path.basename(workspace));
@@ -459,25 +471,66 @@ export async function detectProjectConfiguration(input: {
     storeId,
     workspace,
   });
+  const minimal = input.mode === 'minimal';
   const skipped = new Set(input.skippedPointerRepositoryIds ?? []);
-  const ids = new Map<string, number>();
+  const existingIds = new Map(
+    (minimal ? current?.repositories : undefined)?.map((repository) => [
+      path.resolve(workspace, repository.path),
+      repository.id,
+    ]),
+  );
+  const usedIds = new Set(existingIds.values());
   const identified = snapshot.repositories.map((repository) => {
+    const existing = existingIds.get(repository.path);
+    if (existing) return { repository, id: existing };
     const base = slug(repository.name);
-    const count = (ids.get(base) ?? 0) + 1;
-    ids.set(base, count);
-    return { repository, id: count === 1 ? base : `${base}-${count}` };
+    let id = base;
+    for (let suffix = 2; usedIds.has(id); suffix += 1) id = `${base}-${suffix}`;
+    usedIds.add(id);
+    return { repository, id };
   });
-  const workspaceRepositoryId =
-    identified.find(({ repository }) => repository.path === workspace)?.id ?? null;
+  const workspaceRepositoryId = identified.find(
+    ({ repository }) => repository.path === workspace,
+  )?.id;
+  if (!workspaceRepositoryId) {
+    throw new Error(
+      `Workspace Git root ${workspace} was not uniquely discovered in ${snapshot.root}. Choose a scan root containing the Workspace and its sibling repositories.`,
+    );
+  }
+  const scopedIds =
+    input.selectedRepositoryIds ??
+    (minimal ? current?.repositories.map(({ id }) => id) : undefined);
+  const selectedIds = new Set(scopedIds);
+  for (const id of selectedIds) {
+    if (!identified.some((item) => item.id === id)) {
+      throw new Error(`Selected repository is not in the current scan: ${id}`);
+    }
+  }
+  const selected = scopedIds
+    ? identified.filter(({ id }) => id === workspaceRepositoryId || selectedIds.has(id))
+    : identified;
   const inspected = await Promise.all(
-    identified.map(async ({ repository, id }) => {
+    selected.map(async ({ repository, id }) => {
       const openSpec = await inspectOpenSpecBinding({
         repositoryId: id,
         absolutePath: repository.path,
         storeId,
-        workspaceRepositoryId: workspaceRepositoryId ?? '',
+        workspaceRepositoryId,
         skipped: skipped.has(id),
       });
+      if (minimal) {
+        const detected: DetectedRepository = {
+          id,
+          name: repository.name,
+          path: path.relative(workspace, repository.path).replaceAll('\\', '/') || '.',
+          remoteIdentity: repository.remoteIdentity,
+          technologies: [],
+          commands: [],
+          services: [],
+          openSpec,
+        };
+        return { repository: detected, unresolved: [] };
+      }
       return inspectDetectedRepository({
         id,
         name: repository.name,
@@ -516,21 +569,23 @@ export async function detectProjectConfiguration(input: {
       })),
     ),
   );
-  const workspaceRepository = repositories.find((repository) => repository.path === '.');
+  const workspaceRepository = repositories.find(
+    (repository) => repository.id === workspaceRepositoryId,
+  )!;
   const detectedCandidate: SharedProjectConfig | null =
-    workspaceRepository && commandNodes.length > 0
+    minimal || commandNodes.length > 0
       ? {
           apiVersion: 'repoctopus/v1alpha1',
           kind: 'RepoctopusWorkspace',
           workspace: {
-            id: slug(path.basename(workspace)),
+            id: (minimal ? current?.workspace.id : undefined) ?? slug(path.basename(workspace)),
             repositoryId: workspaceRepository.id,
           },
           repositories: repositories.map((repository) => ({
             id: repository.id,
             path: repository.path,
           })),
-          profiles: [{ id: 'verify', nodes: commandNodes }],
+          profiles: minimal ? (current?.profiles ?? []) : [{ id: 'verify', nodes: commandNodes }],
           specificationProvider: {
             id: current?.specificationProvider?.id ?? 'specification-openspec',
             store: { id: storeId, repositoryId: workspaceRepository.id },
@@ -539,24 +594,21 @@ export async function detectProjectConfiguration(input: {
       : null;
   const candidateConfig: SharedProjectConfig | null = detectedCandidate
     ? {
+        ...current,
         ...detectedCandidate,
-        ...(current?.evidence ? { evidence: structuredClone(current.evidence) } : {}),
-        ...(current?.delivery ? { delivery: structuredClone(current.delivery) } : {}),
       }
     : null;
   const baseConfigDigest = current ? hashProjectConfig(current) : null;
   const reconcile =
     current && candidateConfig ? reconcileProjectConfig(current, candidateConfig) : null;
   const capturedAt = (input.now ?? (() => new Date()))().toISOString();
-  const storeBinding = workspaceRepository
-    ? {
-        storeId,
-        workspaceRepositoryId: workspaceRepository.id,
-        workspaceRoot: workspace,
-        root,
-        repositories: repositories.map((repository) => structuredClone(repository.openSpec)),
-      }
-    : null;
+  const storeBinding = {
+    storeId,
+    workspaceRepositoryId,
+    workspaceRoot: workspace,
+    root,
+    repositories: repositories.map((repository) => structuredClone(repository.openSpec)),
+  };
   const entrySkills = await planWorkspaceEntrySkills(workspace, input.entryHosts);
   const content = {
     entrySkills,

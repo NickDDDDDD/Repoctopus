@@ -4,7 +4,32 @@ import { WORKSPACE_GUIDE_FILES } from '../../domains/project-configuration/works
 import type {
   ProjectConfigurationDecision,
   ProjectConfigurationDecisionRequest,
+  ProjectConfigurationDecisionResponse,
 } from '../../domains/project-configuration/onboarding.js';
+
+export function parseProjectConfigurationResponse(
+  value: unknown,
+): ProjectConfigurationDecisionResponse {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Expected a project configuration Human Decision response object');
+  }
+  const item = value as Record<string, unknown>;
+  const allowed = ['apiVersion', 'kind', 'requestId', 'snapshotDigest', 'decision', 'comment'];
+  if (
+    Object.keys(item).some((key) => !allowed.includes(key)) ||
+    item.apiVersion !== 'repoctopus/v1alpha1' ||
+    item.kind !== 'HumanDecisionResponse' ||
+    typeof item.requestId !== 'string' ||
+    !item.requestId ||
+    typeof item.snapshotDigest !== 'string' ||
+    !/^sha256:[a-f0-9]{64}$/u.test(item.snapshotDigest) ||
+    !['approve', 'request_changes', 'reject'].includes(String(item.decision)) ||
+    (item.comment !== undefined && typeof item.comment !== 'string')
+  ) {
+    throw new Error('Invalid project configuration Human Decision response');
+  }
+  return item as unknown as ProjectConfigurationDecisionResponse;
+}
 
 export async function reviewProjectConfigurationDecision(options: {
   request: ProjectConfigurationDecisionRequest;
@@ -13,6 +38,20 @@ export async function reviewProjectConfigurationDecision(options: {
 }): Promise<{ decision: ProjectConfigurationDecision; comment?: string }> {
   const terminal = createInterface({ input: options.input, output: options.output });
   try {
+    const plan = options.request.profileUpdate
+      ? {
+          profile: options.request.candidateConfig.profiles.find(
+            ({ id }) => id === options.request.profileUpdate?.profileId,
+          ),
+          workspace: options.request.profileUpdate.workspaceRoot,
+        }
+      : {
+          workspace: options.request.storeBinding?.workspaceRoot,
+          repositories: options.request.candidateConfig.repositories,
+          store: options.request.storeBinding,
+          reconcile: options.request.reconcile,
+        };
+    options.output.write(`${JSON.stringify(plan, null, 2)}\n`);
     const entrySkills = (options.request.entrySkills ?? []).map(
       ({ host, path, status, diagnostic }) =>
         `  ${host}: ${status} ${path}${diagnostic ? ` — ${diagnostic}` : ''}`,

@@ -1,0 +1,59 @@
+{
+  "schema": "repoctopus.workspace-init.acceptance.v1",
+  "package": {
+    "testedImplementationCommit": "b497f4d157e6ad102cd9e989028561bab5996077",
+    "contentSha256": "b0f660411ee34bed37d281f2059a3cd09ddffe983b3e300bf10d467ac2e9b58e",
+    "files": 481,
+    "contentBytes": 6256123,
+    "archiveSha256": "3eba11c1cba91fc4188c42fcebf0c379fa7dd6f5a9bcdeabee2c36145326e56f"
+  },
+  "platform": "Windows",
+  "nativeHosts": [
+    {
+      "host": "codex",
+      "version": "0.154.0",
+      "scope": "user",
+      "skill": "repoctopus-init",
+      "requestId": "31fec1d4-50cd-4eb9-aa6b-e8002336e8e2"
+    },
+    {
+      "host": "opencode",
+      "version": "1.19.5",
+      "scope": "user",
+      "skill": "repoctopus-init",
+      "requestId": "22c4beb5-b071-4877-a9c6-2a795a6a0281"
+    }
+  ],
+  "hostFixture": "Installed native hosts driven by a deterministic local model; each invoked the packaged CLI and returned a pending plan.",
+  "packagedRuns": [
+    {
+      "layout": "single",
+      "repositories": 1,
+      "profiles": 0,
+      "entryHost": "codex",
+      "runId": "change-single-repo-verify-init-ba0d09596c8f3e8a",
+      "phase": "open"
+    },
+    {
+      "layout": "multi",
+      "repositories": 3,
+      "profiles": 0,
+      "entryHost": "opencode",
+      "runId": "change-workspace-verify-init-0ee26ed75076a180",
+      "phase": "open"
+    }
+  ],
+  "managedExecution": {
+    "test": "test/managed-change-execution.e2e.test.ts",
+    "layout": "multi",
+    "repositories": 3,
+    "gitRemotes": "local",
+    "phase": "archive",
+    "checks": [
+      "Build Check is durable before Verify configuration",
+      "Fresh CLI processes preserve accepted work packages and Build Check",
+      "Approved Profile is committed and pushed, then compiled by Verify",
+      "Actual commands, evidence gate and Archive complete"
+    ]
+  }
+}

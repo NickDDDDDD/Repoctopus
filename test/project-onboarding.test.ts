@@ -25,7 +25,9 @@ import { detectProjectConfiguration } from '../platform/project-configuration/de
 import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
 import {
   applyProjectConfigurationDecision,
+  observeVerifyProfilePublication,
   prepareProjectConfigurationDecision,
+  prepareVerifyProfileDecision,
 } from '../platform/project-configuration/onboarding.js';
 import { OpenSpecProcess } from '../platform/specification/openspec-process.js';
 import {
@@ -116,13 +118,97 @@ async function guideDecisionFixture() {
 }
 
 describe('project configuration onboarding', () => {
+  it('recognizes a second approved Verify update after a Build Check that bound the first update', async () => {
+    const { workspace, prepared } = await guideDecisionFixture();
+    const configFile = path.join(workspace, 'repoctopus.yaml');
+    const profile = prepared.request.candidateConfig.profiles[0]!;
+    await writeFile(
+      configFile,
+      JSON.stringify({ ...prepared.request.candidateConfig, profiles: [] }),
+    );
+    const commit = async (message: string) => {
+      await execFileAsync('git', ['add', 'repoctopus.yaml'], { cwd: workspace });
+      await execFileAsync('git', ['commit', '-m', message], { cwd: workspace });
+      return (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: workspace })).stdout.trim();
+    };
+    const baselineHead = await commit('Configure minimal Workspace');
+    const baselineExecutionDigest = `sha256:${(await loadProjectConfig(workspace)).effectiveDigest}`;
+    const approveProfile = async (nodes: typeof profile.nodes) => {
+      const next = await prepareVerifyProfileDecision({
+        workspace,
+        profile: { ...profile, nodes },
+      });
+      await applyDecision({
+        workspace,
+        decisionFile: next.file,
+        response: response(next.request),
+        actor: { actorId: 'user', source: 'cli', authenticated: true },
+        timestamp: '2026-01-01T00:00:00.000Z',
+      });
+    };
+    await approveProfile(profile.nodes);
+    const checkpointHead = await commit('Approve the initial Verify Profile');
+    await approveProfile(
+      profile.nodes.map((node) =>
+        node.type === 'command' ? { ...node, timeoutMs: node.timeoutMs + 1000 } : node,
+      ),
+    );
+    const head = await commit('Approve the revised Verify Profile');
+    await expect(
+      observeVerifyProfilePublication({
+        workspace,
+        profileId: profile.id,
+        checkpointHead,
+        head,
+        baselineHead,
+        baselineExecutionDigest,
+        requireConfigOnlyHistory: true,
+      }),
+    ).resolves.toMatchObject({ observedHead: head });
+  });
+
+  it('accepts a minimal configuration and rejects a draft without a Store binding', async () => {
+    const { workspace, prepared } = await guideDecisionFixture();
+    const draftFile = path.join(workspace, '.repoctopus', 'drafts', 'minimal.json');
+    const detected = await detectProjectConfiguration({
+      workspace,
+      scanRoot: path.dirname(workspace),
+    });
+    const candidate = { ...prepared.request.candidateConfig, profiles: [] };
+    await writeFile(draftFile, JSON.stringify(detected.draft));
+    const minimal = await prepareProjectConfigurationDecision({
+      workspace,
+      draftFile,
+      completedCandidate: candidate,
+    });
+    expect(minimal.request.candidateConfig.profiles).toEqual([]);
+
+    await writeFile(draftFile, JSON.stringify({ ...detected.draft, storeBinding: null }));
+    await expect(
+      prepareProjectConfigurationDecision({
+        workspace,
+        draftFile,
+        completedCandidate: candidate,
+      }),
+    ).rejects.toThrow(/missing.*Store binding/i);
+  });
   it('previews the managed Workspace entry and installs it only on approval', async () => {
     const { workspace, prepared, input } = await guideDecisionFixture();
     const entry = path.join(workspace, '.agents/skills/repoctopus/SKILL.md');
     expect(prepared.request).toMatchObject({
       entrySkills: [
         { host: 'codex', path: '.agents/skills/repoctopus/SKILL.md', status: 'create' },
+        {
+          host: 'codex',
+          path: '.agents/skills/repoctopus-configure-verify/SKILL.md',
+          status: 'create',
+        },
         { host: 'opencode', path: '.opencode/skills/repoctopus/SKILL.md', status: 'create' },
+        {
+          host: 'opencode',
+          path: '.opencode/skills/repoctopus-configure-verify/SKILL.md',
+          status: 'create',
+        },
       ],
     });
     await expect(access(entry)).rejects.toMatchObject({ code: 'ENOENT' });
@@ -207,8 +293,13 @@ describe('project configuration onboarding', () => {
       scanRoot: path.dirname(workspace),
       specificationAuthority: registration,
     });
-    expect(detected.draft.entrySkills?.map(({ status }) => status)).toEqual(['conflict', 'keep']);
-    expect(prepared.request.entrySkills).toHaveLength(2);
+    expect(detected.draft.entrySkills?.map(({ status }) => status)).toEqual([
+      'conflict',
+      'keep',
+      'keep',
+      'keep',
+    ]);
+    expect(prepared.request.entrySkills).toHaveLength(4);
   });
 
   it('installs only the chosen host in a single-repository Workspace', async () => {
@@ -225,7 +316,7 @@ describe('project configuration onboarding', () => {
       entryHosts: ['opencode'],
       specificationAuthority: registration,
     });
-    expect(detected.draft.entrySkills?.map(({ host }) => host)).toEqual(['opencode']);
+    expect(detected.draft.entrySkills?.map(({ host }) => host)).toEqual(['opencode', 'opencode']);
     const prepared = await prepareProjectConfigurationDecision({
       workspace,
       draftFile: detected.file,
@@ -248,7 +339,12 @@ describe('project configuration onboarding', () => {
       scanRoot: root,
       specificationAuthority: registration,
     });
-    expect(upgrade.draft.entrySkills?.map(({ status }) => status)).toEqual(['create', 'keep']);
+    expect(upgrade.draft.entrySkills?.map(({ status }) => status)).toEqual([
+      'create',
+      'create',
+      'keep',
+      'keep',
+    ]);
     const upgradeRequest = await prepareProjectConfigurationDecision({
       workspace,
       draftFile: upgrade.file,
@@ -335,7 +431,7 @@ describe('project configuration onboarding', () => {
     expect(await readFile(path.join(workspace, 'AGENTS.md'), 'utf8')).toBe('# Later team change\n');
   });
 
-  it('requires a usable default verify profile before creating an approval request', async () => {
+  it('validates required coverage when the default verify profile is configured', async () => {
     const root = await temporaryDirectory('repoctopus-onboarding-coverage-');
     cleanup.push(root);
     const workspace = await createGitRepository(root, 'workspace');
@@ -355,7 +451,7 @@ describe('project configuration onboarding', () => {
         requestId: 'coverage-readiness',
       });
 
-    expect(() =>
+    expect(
       decide({
         ...candidate,
         profiles: [
@@ -364,8 +460,8 @@ describe('project configuration onboarding', () => {
             nodes: [{ ...detectedNode, id: 'diagnostics', required: false, covers: [] }],
           },
         ],
-      }),
-    ).toThrow(/default verify.*required coverage/iu);
+      }).candidateConfig.profiles.map(({ id }) => id),
+    ).toEqual(['independent-diagnostics']);
     expect(() =>
       decide({
         ...candidate,

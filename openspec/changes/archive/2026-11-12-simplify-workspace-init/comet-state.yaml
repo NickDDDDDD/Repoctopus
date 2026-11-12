@@ -1,0 +1,4962 @@
+# comet-execution: managed-run
+change_id: 9983b534-0806-4e52-a42f-c9b7364383a6
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: bb4670b529550ca46b067d43a7b9d82f062aba9e
+design_doc: openspec/changes/archive/2026-11-12-simplify-workspace-init/design.md
+plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/simplify-workspace-init.md
+branch_status: pending
+created_at: 2026-11-12
+verified_at: 2026-11-12
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/simplify-workspace-init
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-12-simplify-workspace-init/.comet/handoff/design-context.json
+handoff_hash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: fad6aeb2f46d22266068767af92503647e07ed05a9014875e9b6dcc816590325
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: simplify-workspace-init
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: c62efb12e21bdebcf1027b5182bc3b8d718611d613a242b08f654ceaba13b3de
+    input:
+      change: simplify-workspace-init
+      changeDir: openspec/changes/simplify-workspace-init
+      workspaceBaseline:
+        ref: 65ae959b-da43-4039-941e-b19aadd55c32
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: bb4670b529550ca46b067d43a7b9d82f062aba9e
+      boundBranch: codex/simplify-workspace-init
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 12
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-12
+      designDoc: openspec/changes/archive/2026-11-12-simplify-workspace-init/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-12-simplify-workspace-init/.comet/handoff/design-context.json
+      handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/simplify-workspace-init.md
+      verifiedAt: 2026-11-12
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 48
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-641d48ae5bb4464428499effcccf9d9ce1e7c9478cd7ba31bb21e22e642ad981
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:1
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: b66565d2b75dd821ab692ee5ceeb114c09b9af67ff739aa4d53b111f85e9e88c
+        outcome:
+          actionId: simplify-workspace-init:1
+          attempt: 1
+          claimToken: portable-641d48ae5bb4464428499effcccf9d9ce1e7c9478cd7ba31bb21e22e642ad981
+          inputHash: b66565d2b75dd821ab692ee5ceeb114c09b9af67ff739aa4d53b111f85e9e88c
+          outcomeId: 837d3a3e-a219-403b-a3aa-c802bea2caaa
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e3152663f701f6c26aa33180137167d9ddf103388f8b23ebaf7122895e7eb6a8
+            outcomeId: 837d3a3e-a219-403b-a3aa-c802bea2caaa
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-7d0c939195a156f3a01e282f8558edc283b9e878d0cf11ae02b75decfb1fc324
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:4
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: ca6065a3a491fa7623419508a53b86708f3f0f85285b6b294df5cd836c12b06d
+        outcome:
+          actionId: simplify-workspace-init:4
+          attempt: 1
+          claimToken: portable-7d0c939195a156f3a01e282f8558edc283b9e878d0cf11ae02b75decfb1fc324
+          inputHash: ca6065a3a491fa7623419508a53b86708f3f0f85285b6b294df5cd836c12b06d
+          outcomeId: simplify-workspace-init:4:1:executor-result
+          output:
+            contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 573d05ab7ad45922a11a55bd5c92d673c501f863dd84ff6c220034d3d6ee59bd
+            outcomeId: simplify-workspace-init:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-63070a5606184365b816f2276fbb90aacba33679a44a5119bd11e51dc5a411ef
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:5
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: c5b37614b31b41a8c4920ea67db01e76fe9caec50e253d95c994b8dbbb68ad9d
+        outcome:
+          actionId: simplify-workspace-init:5
+          attempt: 1
+          claimToken: portable-63070a5606184365b816f2276fbb90aacba33679a44a5119bd11e51dc5a411ef
+          inputHash: c5b37614b31b41a8c4920ea67db01e76fe9caec50e253d95c994b8dbbb68ad9d
+          outcomeId: 3eb0969d-4005-482b-8dda-1be4786494a2
+          output:
+            handoffContext: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+            handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+            proposal: 单仓和同级多仓共用个人级 Init，Runtime 一次预览、可信宿主回传与现有可恢复接入事务。首次配置允许空 Profile，已有
+              Profile 保留；单独的 Verify 配置 Skill 以实际命令与覆盖为输入，获批只更新目标 Profile。Build
+              Check 独立持久化，在原 Run 的验证准备边界等待配置；重新观察批准的配置、精确 checkout 及只改目标 Profile
+              的提交，保留有效 Build，绑定当前 Verification Input。解除 Delivery
+              对未消费的全配置摘要耦合，保留实际策略、凭据和组合漂移校验。Windows 发布候选包验证真实宿主、同一多仓 Run
+              两次冷恢复和真实 Archive。规格不改。
+            requirementsEvidence:
+              contentHash: efc22131c4362b0b3918f0620702187c7d33e7c901653e3e23836b501070d5aa
+              ref: openspec/changes/simplify-workspace-init
+            sourceEvidence:
+              contentHash: ea4f7453ad5789c50c7215b1af29f2c32f59c006252720d01fed70973d661b9f
+              ref: openspec/changes/simplify-workspace-init
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ce26f2ebaa45bc90c69c6c59ddb370683e58ec8d47c7a9ea4700b9d43e3ecaa2
+            outcomeId: 3eb0969d-4005-482b-8dda-1be4786494a2
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-fa96e4a8fc176945652700dbd2a800ca20c14261a788adbd3bf815cb909b8c03
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:7
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 49bc3648752d42d14561e81b408370e9971efc86eb233335a7adf090afab76aa
+        outcome:
+          actionId: simplify-workspace-init:7
+          attempt: 1
+          claimToken: portable-fa96e4a8fc176945652700dbd2a800ca20c14261a788adbd3bf815cb909b8c03
+          inputHash: 49bc3648752d42d14561e81b408370e9971efc86eb233335a7adf090afab76aa
+          outcomeId: 76b3db7d-f0d8-449a-8ccb-51da7cd367f6
+          output:
+            designDoc: openspec/changes/simplify-workspace-init/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e6ff2c86b4ed04d46ea863309118108b6740f24c7d47be1c4fefe128c0aeca27
+            outcomeId: 76b3db7d-f0d8-449a-8ccb-51da7cd367f6
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-11431fb355e10a1643a9ddd0d9eb5d910b0f094bde4559de0432e9cb2c022e94
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:9
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: ee6f1051929020c3ccd144cbc4d37fa34793fe85d50fbf13de927559fb358b45
+        outcome:
+          actionId: simplify-workspace-init:9
+          attempt: 1
+          claimToken: portable-11431fb355e10a1643a9ddd0d9eb5d910b0f094bde4559de0432e9cb2c022e94
+          inputHash: ee6f1051929020c3ccd144cbc4d37fa34793fe85d50fbf13de927559fb358b45
+          outcomeId: bde90895-ee31-4211-95d8-a7958f79e086
+          output:
+            boundBranch: codex/simplify-workspace-init
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bf09a226f48ee70071b2a40b35f2b8c75fd974a3377cdb3c61a4f1568321fd5f
+            outcomeId: bde90895-ee31-4211-95d8-a7958f79e086
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-2ff524eb028dd0d380f2607a5222a47df593b419ba1017169e053d565c2de2c0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:11
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: a97252d2b3a0682828f3f65953cf0199314b61d3cfdf63b70f20cf083bb3aa0f
+        outcome:
+          actionId: simplify-workspace-init:11
+          attempt: 1
+          claimToken: portable-2ff524eb028dd0d380f2607a5222a47df593b419ba1017169e053d565c2de2c0
+          inputHash: a97252d2b3a0682828f3f65953cf0199314b61d3cfdf63b70f20cf083bb3aa0f
+          outcomeId: 4d2b1978-f31a-4df3-961f-956895c95740
+          output:
+            designEvidence:
+              contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+              ref: openspec/changes/simplify-workspace-init/design.md
+            plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+            planEvidence:
+              contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+              ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+            taskRevision: af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3b2666cfae265ebf8cb303690c7b624f0a8a25d0a7cfce893d34138e2a948a79
+            outcomeId: 4d2b1978-f31a-4df3-961f-956895c95740
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-workspace-init-and-hosts-20261112
+          token: portable-f1546091eb6dece08ba55e0ad69eb3192919dc78c726651ea8b6bd8e626549c9
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:13
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: f3e96f9f1caf1d7ffc436843d47fa26b37f648f03e105f0ff4130274a49be176
+        outcome:
+          actionId: simplify-workspace-init:13
+          attempt: 1
+          claimToken: portable-f1546091eb6dece08ba55e0ad69eb3192919dc78c726651ea8b6bd8e626549c9
+          inputHash: f3e96f9f1caf1d7ffc436843d47fa26b37f648f03e105f0ff4130274a49be176
+          outcomeId: 171cdbd3-6867-4751-97f2-761f3617c2ac
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 869072b698fa6243130deeb3df7413024252045915044e7fd6ca94cec703fdb4
+            outcomeId: 171cdbd3-6867-4751-97f2-761f3617c2ac
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-f5714dd3333d35d279003671793824ce2adffcbbaf7ebaab2f85a11d12ce0672
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:14
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: b1b2fb799fca42cdb6d3cac91088027c3a9f7d65b5a428f6ec12437bf3729090
+        outcome:
+          actionId: simplify-workspace-init:14
+          attempt: 1
+          claimToken: portable-f5714dd3333d35d279003671793824ce2adffcbbaf7ebaab2f85a11d12ce0672
+          inputHash: b1b2fb799fca42cdb6d3cac91088027c3a9f7d65b5a428f6ec12437bf3729090
+          outcomeId: 8d7c09a2-da43-40c8-8728-3796616ab6c2
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 8674a9f1dbfc8c1660caf5e7a6dc927448f39e2901b0a8ab31031d1e15c7fe9c
+            cwd: .
+            environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+            exitCode: 0
+            inputAfter: c4dd0e86ca1dca7698bcc57afd7942cf29aff4d3d8e7905d1c46f44032d2cf41
+            inputBefore: c4dd0e86ca1dca7698bcc57afd7942cf29aff4d3d8e7905d1c46f44032d2cf41
+            manifestHash: ca910a17e10c70ffd580dedc8ad4901f55937c41023d2f49ea84f93c7a14fc91
+            manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/7d9aeab9-8e5b-4929-80a6-7354506b321c.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/35eb3d2c-9b73-49ff-aad5-44d1c02618e6.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5a5d6d9d172cfcb5df6da95d2ea4d9595f6ed33d13fe0579c349c5d356cb6c5c
+            outcomeId: 8d7c09a2-da43-40c8-8728-3796616ab6c2
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-747936eb40fb8e2f0fcb129aebf76a1484e9da9a54f6969cc7b4f07794e9d4e5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:16
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 457ac6af80e27fe6e57bde458e1b6ef9fae29e31d10323ae051ca50c627f549d
+        outcome:
+          actionId: simplify-workspace-init:16
+          attempt: 1
+          claimToken: portable-747936eb40fb8e2f0fcb129aebf76a1484e9da9a54f6969cc7b4f07794e9d4e5
+          inputHash: 457ac6af80e27fe6e57bde458e1b6ef9fae29e31d10323ae051ca50c627f549d
+          outcomeId: ee0ddfdc-64b1-4f67-bde7-db2d8fd9c4af
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/simplify-workspace-init.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 549dee506cc3258194c3894553ba4821b3fa3098783de22cd46f5c9e7c013774
+            outcomeId: ee0ddfdc-64b1-4f67-bde7-db2d8fd9c4af
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-762712c204aea4e7718632db9af81aba3696b8ad75511ea2c1164fa3d4713589
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:18
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: ac31eb63bd055fbb4386f64c48a1a220c39c80ce2ed0b14f6341fc1cac4850ab
+        outcome:
+          actionId: simplify-workspace-init:18
+          attempt: 1
+          claimToken: portable-762712c204aea4e7718632db9af81aba3696b8ad75511ea2c1164fa3d4713589
+          inputHash: ac31eb63bd055fbb4386f64c48a1a220c39c80ce2ed0b14f6341fc1cac4850ab
+          outcomeId: c3d6768d-81ee-4e57-a67a-4e14e0bc6361
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 7e5831abb057f854583c3e2a334dae965b4cfeb3e08b5d5b8197ecd06704d0a3
+            cwd: .
+            deliveryInputs: {}
+            environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+            exitCode: 1
+            inputAfter: a2013648a5435fde7e709c965c8512834e3dceb8aaaf8cdd3d02373e8981cefc
+            inputBefore: a2013648a5435fde7e709c965c8512834e3dceb8aaaf8cdd3d02373e8981cefc
+            manifestHash: 711af03147470acea4f73a66296ee34d7c57a2a2d80959afb6ebc1b2715586fa
+            manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/8d27f3a9-7b6e-4b34-b473-0b71e5a3d33a.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/b0432ba4-f10e-46a5-87cd-66dda33286c6.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 5c60f151286714675bf6413dcad362e54ca939ca60495bced4ce22ecca592250
+            outcomeId: c3d6768d-81ee-4e57-a67a-4e14e0bc6361
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c4213e82f2359efa0167b577fc68c36eaeaefc44fefa36b4e74308f51654accd
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:19
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: e8289db19666594b65e01c5f687e38b91d2fbee1e2032519d92ce25828f17232
+        outcome:
+          actionId: simplify-workspace-init:19
+          attempt: 1
+          claimToken: portable-c4213e82f2359efa0167b577fc68c36eaeaefc44fefa36b4e74308f51654accd
+          inputHash: e8289db19666594b65e01c5f687e38b91d2fbee1e2032519d92ce25828f17232
+          outcomeId: 5a08f611-40ec-4a2f-a94a-64e5e9f704c3
+          output:
+            designEvidence:
+              contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+              ref: openspec/changes/simplify-workspace-init/design.md
+            plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+            planEvidence:
+              contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+              ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+            taskRevision: af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 28983282eaf047924ee56cccf0b8d54c3c9ece502c3b339d4db34bb5460c906a
+            outcomeId: 5a08f611-40ec-4a2f-a94a-64e5e9f704c3
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-workspace-init-and-hosts-20261112
+          token: portable-fdc4f2983ce004895df9f9748623b6e5fe1792deabfc20563a49d1ea620eae5c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:21
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: e8289db19666594b65e01c5f687e38b91d2fbee1e2032519d92ce25828f17232
+        outcome:
+          actionId: simplify-workspace-init:21
+          attempt: 1
+          claimToken: portable-fdc4f2983ce004895df9f9748623b6e5fe1792deabfc20563a49d1ea620eae5c
+          inputHash: e8289db19666594b65e01c5f687e38b91d2fbee1e2032519d92ce25828f17232
+          outcomeId: 03cbbdee-f728-45dd-96a3-75a40065be02
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d0a79cc3a3c9723df831ec23cb7b1d0ebf8265440980a64ce6df55ea7ad05892
+            outcomeId: 03cbbdee-f728-45dd-96a3-75a40065be02
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-249a135a9698747f9526aeb4d3c7c87b3449b9f4429d86aca965aadc70db74ba
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:22
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: e8289db19666594b65e01c5f687e38b91d2fbee1e2032519d92ce25828f17232
+        outcome:
+          actionId: simplify-workspace-init:22
+          attempt: 1
+          claimToken: portable-249a135a9698747f9526aeb4d3c7c87b3449b9f4429d86aca965aadc70db74ba
+          inputHash: e8289db19666594b65e01c5f687e38b91d2fbee1e2032519d92ce25828f17232
+          outcomeId: dd643a95-e591-4ba2-9599-6a6d8dcb9d92
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 354e4ed6c3de1769ef93498e401b695a2ad207361ecf09a42679ae54c3ef69c8
+            cwd: .
+            environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+            exitCode: 0
+            inputAfter: b395eaf41d6a9704827d9df8a39573a6524acec50c80aca7086cd082ebeb3ee8
+            inputBefore: b395eaf41d6a9704827d9df8a39573a6524acec50c80aca7086cd082ebeb3ee8
+            manifestHash: 72bf375b2a8046fe78996fd8ef3ab423d3c58a46416c68d0cf57c363b06810fb
+            manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/a8e51312-6a1b-4824-b1c6-221e891bde40.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/660a75d8-ae65-442a-8ae6-5cf2f9aa51ac.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ea01561c714ffa6658f1901ce25b36d225a39e1d0520c13d943c79fff0c2d283
+            outcomeId: dd643a95-e591-4ba2-9599-6a6d8dcb9d92
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-43fb40fef5d077beb65c8813d7b89e161ea9feb954168ffbd35cc895d1fba27c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:24
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 4169ace672079159f157d04e9739e3a91ed2ab88b35de603ad9a5a2a3c4bcb46
+        outcome:
+          actionId: simplify-workspace-init:24
+          attempt: 1
+          claimToken: portable-43fb40fef5d077beb65c8813d7b89e161ea9feb954168ffbd35cc895d1fba27c
+          inputHash: 4169ace672079159f157d04e9739e3a91ed2ab88b35de603ad9a5a2a3c4bcb46
+          outcomeId: f233035b-c7b1-41e7-ab00-11eebb4b9064
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/simplify-workspace-init.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e8efa1302cfba2c60572ba94b64873f11595d08f5e540b43eeecba425c003385
+            outcomeId: f233035b-c7b1-41e7-ab00-11eebb4b9064
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-046296434494ce8ab0702ce8f44a0d2ba5afbc1caa1195126b39ba141c72bf75
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:26
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 3955bfcaea3fde20b970e3b5ae4cb9aa6e849339e0cc5409f9b739ba5d5f9a71
+        outcome:
+          actionId: simplify-workspace-init:26
+          attempt: 1
+          claimToken: portable-046296434494ce8ab0702ce8f44a0d2ba5afbc1caa1195126b39ba141c72bf75
+          inputHash: 3955bfcaea3fde20b970e3b5ae4cb9aa6e849339e0cc5409f9b739ba5d5f9a71
+          outcomeId: a067478f-d9c8-47de-9398-6e1bfca6e1d4
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: 9786cbda62ed022d6fb31385cc07b511b6fb106a22d28cb87d88865fa8822a51
+            cwd: .
+            deliveryInputs: {}
+            environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+            exitCode: 1
+            inputAfter: 3d8d9b089ce3b0a307887cca82dd4644a4ca2f8ab1194f6c4547e1eddeb0dd97
+            inputBefore: 3d8d9b089ce3b0a307887cca82dd4644a4ca2f8ab1194f6c4547e1eddeb0dd97
+            manifestHash: 9b4dfc2ac434d3e84bacd702645da40be09ed776c294fcdc31b52913d8ae1be4
+            manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/9d2da42c-40c4-4841-8c00-5061e685073d.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/fe4eda96-c20b-4675-bee9-c488c42f99e5.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: d62d61c0ecd6911005d76fcf93a54f2d61af4096f10ad9108eace94166ea2693
+            outcomeId: a067478f-d9c8-47de-9398-6e1bfca6e1d4
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e8d63875bcca03b65077d04bba6531d2066945ed63d5e10d90a2734291b2cb14
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:27
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 0cded92d3ea3be1d710b486b05b0c4a6f6fb4e70ddaba13423e13feba3813008
+        outcome:
+          actionId: simplify-workspace-init:27
+          attempt: 1
+          claimToken: portable-e8d63875bcca03b65077d04bba6531d2066945ed63d5e10d90a2734291b2cb14
+          inputHash: 0cded92d3ea3be1d710b486b05b0c4a6f6fb4e70ddaba13423e13feba3813008
+          outcomeId: b036d9dd-35c0-4994-af08-deccfd0c7fca
+          output:
+            designEvidence:
+              contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+              ref: openspec/changes/simplify-workspace-init/design.md
+            plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+            planEvidence:
+              contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+              ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+            taskRevision: af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f63e84d147a81277a71dc09794585666b6cc6c05a54f777aef9f295b6b54ef42
+            outcomeId: b036d9dd-35c0-4994-af08-deccfd0c7fca
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-workspace-init-and-hosts-20261112
+          token: portable-de756bf49e0e9304836ad3fccfc46a418a5abb1fccf6fe5d6b351f92ed9bde0a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:29
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 0cded92d3ea3be1d710b486b05b0c4a6f6fb4e70ddaba13423e13feba3813008
+        outcome:
+          actionId: simplify-workspace-init:29
+          attempt: 1
+          claimToken: portable-de756bf49e0e9304836ad3fccfc46a418a5abb1fccf6fe5d6b351f92ed9bde0a
+          inputHash: 0cded92d3ea3be1d710b486b05b0c4a6f6fb4e70ddaba13423e13feba3813008
+          outcomeId: 9781600f-2388-4712-8dc2-9208bf48b5c8
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c66c53c2dedf34eb0ac4bdaef8da419f653b074a307c9be9a79f0f8343b32c42
+            outcomeId: 9781600f-2388-4712-8dc2-9208bf48b5c8
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-4a8c7729334fccb58ae48f5ed9306e75bca08050ac055ae772a8ff9b12103da5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:30
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 0cded92d3ea3be1d710b486b05b0c4a6f6fb4e70ddaba13423e13feba3813008
+        outcome:
+          actionId: simplify-workspace-init:30
+          attempt: 1
+          claimToken: portable-4a8c7729334fccb58ae48f5ed9306e75bca08050ac055ae772a8ff9b12103da5
+          inputHash: 0cded92d3ea3be1d710b486b05b0c4a6f6fb4e70ddaba13423e13feba3813008
+          outcomeId: a4bb8807-0289-43f4-8664-d975877d2ff5
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 6
+            contentHash: 401a9c2258b9ce647ed682ce28a9d8e39436b937a2f7057453e655ccd76b93a8
+            cwd: .
+            environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+            exitCode: 0
+            inputAfter: 066bb78f098959e188253c02821296c25cc8746a835282acc0bd82188b620960
+            inputBefore: 066bb78f098959e188253c02821296c25cc8746a835282acc0bd82188b620960
+            manifestHash: 5aee1321f2c4cfe3be58b2c6f22b443c037a5920fd4909775de265f8402dbfe4
+            manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/0b200eb0-9c9f-49af-ac75-5ac3d9fa8a5c.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/776531f5-cbd1-44a7-8360-6dcb99b3acfd.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1e77c2e33c31370254eae1b41931717677d833fca093d9677e1e3ec6d509a27c
+            outcomeId: a4bb8807-0289-43f4-8664-d975877d2ff5
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-f19178d535b672fbeb3fdd963dbf78652b536fc4959f8d23b1fa7bf47939d0f7
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:32
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 2248e7235cbb44b2fcc852323c2f7abb797bdadfe5db4e12940894871122487c
+        outcome:
+          actionId: simplify-workspace-init:32
+          attempt: 1
+          claimToken: portable-f19178d535b672fbeb3fdd963dbf78652b536fc4959f8d23b1fa7bf47939d0f7
+          inputHash: 2248e7235cbb44b2fcc852323c2f7abb797bdadfe5db4e12940894871122487c
+          outcomeId: ed37b702-b7e3-4b84-91bd-83460401902e
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/simplify-workspace-init.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8b96ae9995bc3e4424eeb87f4dd87123c1930294252129091225f171c5e29708
+            outcomeId: ed37b702-b7e3-4b84-91bd-83460401902e
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-43d729aab1fdf4848b0aee9a622c045d2df4e9e6d84f9e4c8c7141048a5baed1
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:34
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: c5c4beef1d1f79a2dfc2af1b1110c3b71609b5033ae474db41a4d0d75e476845
+        outcome:
+          actionId: simplify-workspace-init:34
+          attempt: 1
+          claimToken: portable-43d729aab1fdf4848b0aee9a622c045d2df4e9e6d84f9e4c8c7141048a5baed1
+          inputHash: c5c4beef1d1f79a2dfc2af1b1110c3b71609b5033ae474db41a4d0d75e476845
+          outcomeId: 3883e505-69b4-48c0-ad75-91f83da80ae8
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 7
+            contentHash: c617a26fd619be5797756bd76a7bfe3c3a87a34e49fcb7dfdc76011fd02a1a0d
+            cwd: .
+            deliveryInputs: {}
+            environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+            exitCode: 1
+            inputAfter: 1756920476e27fffec6ecdfea59c9435b969c4cfd4f6cf1537aa077d9b3a2ea7
+            inputBefore: 1756920476e27fffec6ecdfea59c9435b969c4cfd4f6cf1537aa077d9b3a2ea7
+            manifestHash: 6882776b25238c02bc28ab80783fbe46aaecf4b34a23c58712d84221e1960c48
+            manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/f5033ef9-5e91-41c0-9667-550bea0a889c.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/a5ff61dc-c5fa-455b-8485-15ca63e968e6.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: a70210b0423b4838afa6355239e965f62ba695b55d716f6853f0ccab2c2027c3
+            outcomeId: 3883e505-69b4-48c0-ad75-91f83da80ae8
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-803fee39ece7c0ef3e00f0b6df2fe8ca3457de99d0471ba365455be68ebe4fc2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:35
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: cb27bd8502c89452185b97a2353886bb4aeead834f7a423ade8f571f259efa8b
+        outcome:
+          actionId: simplify-workspace-init:35
+          attempt: 1
+          claimToken: portable-803fee39ece7c0ef3e00f0b6df2fe8ca3457de99d0471ba365455be68ebe4fc2
+          inputHash: cb27bd8502c89452185b97a2353886bb4aeead834f7a423ade8f571f259efa8b
+          outcomeId: eb7e03ff-99a2-4945-bbe8-bb15559a21d0
+          output:
+            designEvidence:
+              contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+              ref: openspec/changes/simplify-workspace-init/design.md
+            plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+            planEvidence:
+              contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+              ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+            taskRevision: af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f69f37d105c8a1a7d813c82f7528549a993ea70a4f08edcc7a217e29faada8b2
+            outcomeId: eb7e03ff-99a2-4945-bbe8-bb15559a21d0
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-workspace-init-and-hosts-20261112
+          token: portable-3e6be31719f18803b6f83f753a5ad5e3c92330cef2fbb12465e932d4878aab00
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:37
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: cb27bd8502c89452185b97a2353886bb4aeead834f7a423ade8f571f259efa8b
+        outcome:
+          actionId: simplify-workspace-init:37
+          attempt: 1
+          claimToken: portable-3e6be31719f18803b6f83f753a5ad5e3c92330cef2fbb12465e932d4878aab00
+          inputHash: cb27bd8502c89452185b97a2353886bb4aeead834f7a423ade8f571f259efa8b
+          outcomeId: 3cd0d382-4e72-4105-b7ca-bfca70fe8d12
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: de6b06384ca8c7195ce0910fb635e69401e012f5fde9147048c3e9783841e3e0
+            outcomeId: 3cd0d382-4e72-4105-b7ca-bfca70fe8d12
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-407ffc0471392c8110acdf202122909ef17c63e7dfc805b54fdd131bf7d9a1c4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:38
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: cb27bd8502c89452185b97a2353886bb4aeead834f7a423ade8f571f259efa8b
+        outcome:
+          actionId: simplify-workspace-init:38
+          attempt: 1
+          claimToken: portable-407ffc0471392c8110acdf202122909ef17c63e7dfc805b54fdd131bf7d9a1c4
+          inputHash: cb27bd8502c89452185b97a2353886bb4aeead834f7a423ade8f571f259efa8b
+          outcomeId: 371ea748-1e47-4a0b-a9bb-facd2775e16f
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 8
+            contentHash: 8dd2e3c6500be13d7878234e956bd04cf799bcd1a30af05ef3e2e33fc1ee3797
+            cwd: .
+            environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+            exitCode: 0
+            inputAfter: 5029d7878d25ea7fd8a0eda12d99a87da2369f43da1114addb2375fd4d80b312
+            inputBefore: 5029d7878d25ea7fd8a0eda12d99a87da2369f43da1114addb2375fd4d80b312
+            manifestHash: d407acac32e48001d738ad362cb21525df3850bacdd83bcdc6060efc7057f65d
+            manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/fe08d0c0-0201-4cd4-a3e1-b869f445b7ed.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/bc5ce9a2-9d6e-41b1-ab09-2722886aaba7.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: eefda78316300f64fe692021e3480def3de65c6f5300b97ab715dfc4fc4a9f5b
+            outcomeId: 371ea748-1e47-4a0b-a9bb-facd2775e16f
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-19511afa9f7f3fa9c2ce830e7b8ada8881520b5531117f755038d76afc1408b7
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:40
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 1c6b5676b4d2dacef293388f6a41fb05425891ba6a49e748b7faa927151f5838
+        outcome:
+          actionId: simplify-workspace-init:40
+          attempt: 1
+          claimToken: portable-19511afa9f7f3fa9c2ce830e7b8ada8881520b5531117f755038d76afc1408b7
+          inputHash: 1c6b5676b4d2dacef293388f6a41fb05425891ba6a49e748b7faa927151f5838
+          outcomeId: 52434b1e-a289-4fcb-bbb0-63e6000335aa
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/simplify-workspace-init.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f472f97003b75c150e7ce5c8a63bbf82e5a320c4209f60d65d8793e899b0a316
+            outcomeId: 52434b1e-a289-4fcb-bbb0-63e6000335aa
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-e0c98ad69344bec10b524a4bd78b8c0bdeb09baaefb305269077768554060104
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:42
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 0af94460f1f996bf83eb68f5ea16932ca4a5c392cf288eab670a99718c41c3fb
+        outcome:
+          actionId: simplify-workspace-init:42
+          attempt: 1
+          claimToken: portable-e0c98ad69344bec10b524a4bd78b8c0bdeb09baaefb305269077768554060104
+          inputHash: 0af94460f1f996bf83eb68f5ea16932ca4a5c392cf288eab670a99718c41c3fb
+          outcomeId: abbba930-2461-49cc-be28-e298044085f2
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 9
+            contentHash: f0ce71d50deb140de225944b687017083b1d0af6aad4e3ec9c1e3a4b7033a451
+            cwd: .
+            deliveryInputs: {}
+            environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+            exitCode: 0
+            inputAfter: 9047a960a25528754af2f1730201f8f0220101be80f47141e3fb4cc3b0850fce
+            inputBefore: 9047a960a25528754af2f1730201f8f0220101be80f47141e3fb4cc3b0850fce
+            manifestHash: aad9a2ffa4508878dbca5607789473a00ba58e6f66b7b3a8db4954cdb9f8d0b6
+            manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/a68d0471-3e2e-45f7-a648-6bd53ddba6fd.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/16fc7de7-4113-4983-8399-3c5eafcdf527.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d2e00ea7e43ca927bab8dd885e6c86c617d30b9410172b8c09247c7441725e93
+            outcomeId: abbba930-2461-49cc-be28-e298044085f2
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-5872cc8adce0bdc926e7b3c70ff73ec2adb340f40385845f58205e28fb973ce0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:44
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 32d9d4d37dccde6d836efad345bc07c55e34ec5ecdc44514672346eb353ac371
+        outcome:
+          actionId: simplify-workspace-init:44
+          attempt: 1
+          claimToken: portable-5872cc8adce0bdc926e7b3c70ff73ec2adb340f40385845f58205e28fb973ce0
+          inputHash: 32d9d4d37dccde6d836efad345bc07c55e34ec5ecdc44514672346eb353ac371
+          outcomeId: dde6e701-e778-4c44-b1fa-0f520c8145d5
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档轻量 Workspace 初始化和独立 Verify 配置。将四项规格增量合入 OpenSpec
+              主规格，保留最终候选包和三仓恢复的证据。交付目标为 origin/main，通过 PR 审查与 CI。
+            targetBranch: codex/simplify-workspace-init
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c3c68793fbb2f7f23fcbd87c3d59ceca43de6b62d9f56a21cba55ff09770c520
+            outcomeId: dde6e701-e778-4c44-b1fa-0f520c8145d5
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-0b56378661f5aa28ff44c98d53d60ad192cd93e2a5cadb02bfb50b20eb118449
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:46
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: fd6c88214935c72a8f14062413283dc5889bc763df244f101561704b760099a2
+        outcome:
+          actionId: simplify-workspace-init:46
+          attempt: 1
+          claimToken: portable-0b56378661f5aa28ff44c98d53d60ad192cd93e2a5cadb02bfb50b20eb118449
+          inputHash: fd6c88214935c72a8f14062413283dc5889bc763df244f101561704b760099a2
+          outcomeId: 48d5d7e5-408e-4958-a3e2-01c2c7c34cf2
+          output:
+            baseCommit: f685a985b362681f2c224d73be72ed36e9159c17
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/simplify-workspace-init
+            verifiedBranch: codex/simplify-workspace-init
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 472d8afa461bec2b81b710df87bd97a9ea2750784f45f074645118e376b9eda9
+            outcomeId: 48d5d7e5-408e-4958-a3e2-01c2c7c34cf2
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-e67a6719d6f4ecf2c3d3a50bf0b28556d47b7076f47498cffac8e1dc902febcf
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: simplify-workspace-init:47
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 533e5032278101833892ea4fd6b61909dba219b37eaa621f7c86dd8db77a9df4
+        outcome:
+          actionId: simplify-workspace-init:47
+          artifacts:
+            - sha256: d944b27b6be4a6ff1dd403ab20663b69af3522332676cb3f027e34f112de730e
+              uri: openspec/changes/archive/2026-11-12-simplify-workspace-init/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-e67a6719d6f4ecf2c3d3a50bf0b28556d47b7076f47498cffac8e1dc902febcf
+          inputHash: 533e5032278101833892ea4fd6b61909dba219b37eaa621f7c86dd8db77a9df4
+          outcomeId: 6af358cc-9a73-4f93-8da5-6e55093f74f6
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-12-simplify-workspace-init
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 80becd6fc6413768eb4ef5919429b284a6fe25d5b80599c9e843b5d26812aaca
+            outcomeId: 6af358cc-9a73-4f93-8da5-6e55093f74f6
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: simplify-workspace-init:48
+        input:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs: {}
+        inputHash: 883eab0c1bb4e782a71c7fb9271804a217ec509c3498e015151156fe8e8be0cd
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: simplify-workspace-init
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      simplify-workspace-init:1:
+        results: {}
+        sequence: 1
+      simplify-workspace-init:11:
+        results: {}
+        sequence: 11
+      simplify-workspace-init:13:
+        results: {}
+        sequence: 13
+      simplify-workspace-init:14:
+        results: {}
+        sequence: 14
+      simplify-workspace-init:16:
+        results: {}
+        sequence: 16
+      simplify-workspace-init:18:
+        results: {}
+        sequence: 18
+      simplify-workspace-init:19:
+        results: {}
+        sequence: 19
+      simplify-workspace-init:21:
+        results: {}
+        sequence: 21
+      simplify-workspace-init:22:
+        results: {}
+        sequence: 22
+      simplify-workspace-init:24:
+        results: {}
+        sequence: 24
+      simplify-workspace-init:26:
+        results: {}
+        sequence: 26
+      simplify-workspace-init:27:
+        results: {}
+        sequence: 27
+      simplify-workspace-init:29:
+        results: {}
+        sequence: 29
+      simplify-workspace-init:30:
+        results: {}
+        sequence: 30
+      simplify-workspace-init:32:
+        results: {}
+        sequence: 32
+      simplify-workspace-init:34:
+        results: {}
+        sequence: 34
+      simplify-workspace-init:35:
+        results: {}
+        sequence: 35
+      simplify-workspace-init:37:
+        results: {}
+        sequence: 37
+      simplify-workspace-init:38:
+        results: {}
+        sequence: 38
+      simplify-workspace-init:4:
+        results: {}
+        sequence: 4
+      simplify-workspace-init:40:
+        results: {}
+        sequence: 40
+      simplify-workspace-init:42:
+        results: {}
+        sequence: 42
+      simplify-workspace-init:44:
+        results: {}
+        sequence: 44
+      simplify-workspace-init:46:
+        results: {}
+        sequence: 46
+      simplify-workspace-init:47:
+        results: {}
+        sequence: 47
+      simplify-workspace-init:48:
+        results: {}
+        sequence: 48
+      simplify-workspace-init:5:
+        results: {}
+        sequence: 5
+      simplify-workspace-init:7:
+        results: {}
+        sequence: 7
+      simplify-workspace-init:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: simplify-workspace-init:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+              ref: openspec/changes/simplify-workspace-init
+        proposalHash: 586e1dcd5de8a9b4961073ef037c5e5b45943dc888afd814fec6192aef8eb042
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+          choice: approved
+          proposalHash: 586e1dcd5de8a9b4961073ef037c5e5b45943dc888afd814fec6192aef8eb042
+      - id: simplify-workspace-init:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+              handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+              proposal: 单仓和同级多仓共用个人级 Init，Runtime 一次预览、可信宿主回传与现有可恢复接入事务。首次配置允许空 Profile，已有
+                Profile 保留；单独的 Verify 配置 Skill 以实际命令与覆盖为输入，获批只更新目标 Profile。Build
+                Check 独立持久化，在原 Run 的验证准备边界等待配置；重新观察批准的配置、精确 checkout 及只改目标
+                Profile 的提交，保留有效 Build，绑定当前 Verification Input。解除 Delivery
+                对未消费的全配置摘要耦合，保留实际策略、凭据和组合漂移校验。Windows 发布候选包验证真实宿主、同一多仓 Run
+                两次冷恢复和真实 Archive。规格不改。
+              requirementsEvidence:
+                contentHash: efc22131c4362b0b3918f0620702187c7d33e7c901653e3e23836b501070d5aa
+                ref: openspec/changes/simplify-workspace-init
+              sourceEvidence:
+                contentHash: ea4f7453ad5789c50c7215b1af29f2c32f59c006252720d01fed70973d661b9f
+                ref: openspec/changes/simplify-workspace-init
+        proposalHash: f510a1a70e405ede209717b29a4bf79200bd6a2b10aecf3ca813be2155d8a6f2
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-f510a1a70e405ede209717b29a4bf79200bd6a2b10aecf3ca813be2155d8a6f2-approved
+          choice: approved
+          proposalHash: f510a1a70e405ede209717b29a4bf79200bd6a2b10aecf3ca813be2155d8a6f2
+      - id: simplify-workspace-init:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.build.configure:
+              boundBranch: codex/simplify-workspace-init
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 62fba80f7e03711ebd901835a80dd526493842a6585df38e7e668de0ee8235cb
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 062df097-e68f-4e2d-9986-8f8569d085af
+          choice: approved
+          proposalHash: 62fba80f7e03711ebd901835a80dd526493842a6585df38e7e668de0ee8235cb
+      - id: simplify-workspace-init:45
+        stepId: full.archive.confirm
+        sequence: 45
+        status: resolved
+        proposal:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档轻量 Workspace 初始化和独立 Verify 配置。将四项规格增量合入 OpenSpec
+                主规格，保留最终候选包和三仓恢复的证据。交付目标为 origin/main，通过 PR 审查与 CI。
+              targetBranch: codex/simplify-workspace-init
+        proposalHash: 6a94a625a58aff72060b2c9bd34870d1bdaf14f6114bf011261aaf677af2f2c7
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-6a94a625a58aff72060b2c9bd34870d1bdaf14f6114bf011261aaf677af2f2c7-pr
+          choice: pr
+          proposalHash: 6a94a625a58aff72060b2c9bd34870d1bdaf14f6114bf011261aaf677af2f2c7
+    evidenceWaits:
+      - id: simplify-workspace-init:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/simplify-workspace-init
+          contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+          submissionId: 72359fa0-47cb-4fcb-8acb-b6a21a6f4487
+      - id: simplify-workspace-init:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/simplify-workspace-init/design.md
+          contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+          submissionId: 3df5a41b-1801-4135-a458-f74b7599ec34
+      - id: simplify-workspace-init:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+          submissionId: 60a71d29-4adf-4d2d-a297-cbcf3c98feb9
+      - id: simplify-workspace-init:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/35eb3d2c-9b73-49ff-aad5-44d1c02618e6.log
+          contentHash: 8674a9f1dbfc8c1660caf5e7a6dc927448f39e2901b0a8ab31031d1e15c7fe9c
+          submissionId: 8670ffc2-2f20-4497-993c-d745059cfb42
+      - id: simplify-workspace-init:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/simplify-workspace-init.md
+          contentHash: 413131714664619126ff36c5c6b35e2a500006519090c96b1e966f934f3043a3
+          submissionId: 0ecac6e0-6d32-4908-919a-131d5db4eb19
+      - id: simplify-workspace-init:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+          submissionId: b11aeb75-687b-4e2b-83bf-65b672fa0fd6
+      - id: simplify-workspace-init:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/660a75d8-ae65-442a-8ae6-5cf2f9aa51ac.log
+          contentHash: 354e4ed6c3de1769ef93498e401b695a2ad207361ecf09a42679ae54c3ef69c8
+          submissionId: d762d0f5-0781-46ff-901f-fd39ea5ef03e
+      - id: simplify-workspace-init:25
+        stepId: full.verify.report.evidence
+        sequence: 25
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/simplify-workspace-init.md
+          contentHash: 85dd2a429b1aa37788121a4768f4560a7b3b4c19ae76eb65a14e2d75254ffe32
+          submissionId: 1ebcf70a-c027-4f44-a996-f32f16b142c7
+      - id: simplify-workspace-init:28
+        stepId: full.build.plan.evidence
+        sequence: 28
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+          submissionId: d9ada29f-4fca-4a7f-8d11-ec8cf935400a
+      - id: simplify-workspace-init:31
+        stepId: full.build.check.evidence
+        sequence: 31
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/776531f5-cbd1-44a7-8360-6dcb99b3acfd.log
+          contentHash: 401a9c2258b9ce647ed682ce28a9d8e39436b937a2f7057453e655ccd76b93a8
+          submissionId: 27eb56fc-84b3-4d03-91b1-2ae8f501d379
+      - id: simplify-workspace-init:33
+        stepId: full.verify.report.evidence
+        sequence: 33
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/simplify-workspace-init.md
+          contentHash: fbac010a43eaeb0db0e2d63c0acf0fc3c0f67542453bfbee06c859c825d4d129
+          submissionId: 4b4b1778-bef9-474e-ab4f-6c4e6d738853
+      - id: simplify-workspace-init:36
+        stepId: full.build.plan.evidence
+        sequence: 36
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+          submissionId: fe65632d-28fe-497d-8394-4f6bfb7f0380
+      - id: simplify-workspace-init:39
+        stepId: full.build.check.evidence
+        sequence: 39
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/bc5ce9a2-9d6e-41b1-ab09-2722886aaba7.log
+          contentHash: 8dd2e3c6500be13d7878234e956bd04cf799bcd1a30af05ef3e2e33fc1ee3797
+          submissionId: 1e547f8d-d0cf-4253-9fd3-09acd71898cf
+      - id: simplify-workspace-init:41
+        stepId: full.verify.report.evidence
+        sequence: 41
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/simplify-workspace-init.md
+          contentHash: c21f4a5bbeec13e22d6ee5a3d5eeaad0045dfce43a5f4d586820020067de8056
+          submissionId: b93150d5-76db-40cd-a9a1-38351c86fbc1
+      - id: simplify-workspace-init:43
+        stepId: full.verify.check.evidence
+        sequence: 43
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/16fc7de7-4113-4983-8399-3c5eafcdf527.log
+          contentHash: f0ce71d50deb140de225944b687017083b1d0af6aad4e3ec9c1e3a4b7033a451
+          submissionId: 9fd7daaa-a42e-402e-8002-a097d1d4949c
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 76
+  sourceHash: 18e48b441aea7689085012e75f21f9aa7ef5e5db212079f046213a5ea46df2d2
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+              ref: openspec/changes/simplify-workspace-init
+      - contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+        ref: openspec/changes/simplify-workspace-init
+      - contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+      - choice: approved
+        proposal:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+              handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+              proposal: 单仓和同级多仓共用个人级 Init，Runtime 一次预览、可信宿主回传与现有可恢复接入事务。首次配置允许空 Profile，已有
+                Profile 保留；单独的 Verify 配置 Skill 以实际命令与覆盖为输入，获批只更新目标 Profile。Build
+                Check 独立持久化，在原 Run 的验证准备边界等待配置；重新观察批准的配置、精确 checkout 及只改目标
+                Profile 的提交，保留有效 Build，绑定当前 Verification Input。解除 Delivery
+                对未消费的全配置摘要耦合，保留实际策略、凭据和组合漂移校验。Windows 发布候选包验证真实宿主、同一多仓 Run
+                两次冷恢复和真实 Archive。规格不改。
+              requirementsEvidence:
+                contentHash: efc22131c4362b0b3918f0620702187c7d33e7c901653e3e23836b501070d5aa
+                ref: openspec/changes/simplify-workspace-init
+              sourceEvidence:
+                contentHash: ea4f7453ad5789c50c7215b1af29f2c32f59c006252720d01fed70973d661b9f
+                ref: openspec/changes/simplify-workspace-init
+      - handoffContext: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+        handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+        proposal: 单仓和同级多仓共用个人级 Init，Runtime 一次预览、可信宿主回传与现有可恢复接入事务。首次配置允许空 Profile，已有
+          Profile 保留；单独的 Verify 配置 Skill 以实际命令与覆盖为输入，获批只更新目标 Profile。Build Check
+          独立持久化，在原 Run 的验证准备边界等待配置；重新观察批准的配置、精确 checkout 及只改目标 Profile 的提交，保留有效
+          Build，绑定当前 Verification Input。解除 Delivery
+          对未消费的全配置摘要耦合，保留实际策略、凭据和组合漂移校验。Windows 发布候选包验证真实宿主、同一多仓 Run 两次冷恢复和真实
+          Archive。规格不改。
+        requirementsEvidence:
+          contentHash: efc22131c4362b0b3918f0620702187c7d33e7c901653e3e23836b501070d5aa
+          ref: openspec/changes/simplify-workspace-init
+        sourceEvidence:
+          contentHash: ea4f7453ad5789c50c7215b1af29f2c32f59c006252720d01fed70973d661b9f
+          ref: openspec/changes/simplify-workspace-init
+      - designDoc: openspec/changes/simplify-workspace-init/design.md
+      - contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+        ref: openspec/changes/simplify-workspace-init/design.md
+      - boundBranch: codex/simplify-workspace-init
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.build.configure:
+              boundBranch: codex/simplify-workspace-init
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+          ref: openspec/changes/simplify-workspace-init/design.md
+        plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+        planEvidence:
+          contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+          ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+        taskRevision: af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421
+      - contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+        ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 8674a9f1dbfc8c1660caf5e7a6dc927448f39e2901b0a8ab31031d1e15c7fe9c
+        cwd: .
+        environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+        exitCode: 0
+        inputAfter: c4dd0e86ca1dca7698bcc57afd7942cf29aff4d3d8e7905d1c46f44032d2cf41
+        inputBefore: c4dd0e86ca1dca7698bcc57afd7942cf29aff4d3d8e7905d1c46f44032d2cf41
+        manifestHash: ca910a17e10c70ffd580dedc8ad4901f55937c41023d2f49ea84f93c7a14fc91
+        manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/7d9aeab9-8e5b-4929-80a6-7354506b321c.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/35eb3d2c-9b73-49ff-aad5-44d1c02618e6.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 8674a9f1dbfc8c1660caf5e7a6dc927448f39e2901b0a8ab31031d1e15c7fe9c
+        ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/35eb3d2c-9b73-49ff-aad5-44d1c02618e6.log
+      - contentHash: 413131714664619126ff36c5c6b35e2a500006519090c96b1e966f934f3043a3
+        ref: docs/superpowers/reports/simplify-workspace-init.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/simplify-workspace-init.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 7e5831abb057f854583c3e2a334dae965b4cfeb3e08b5d5b8197ecd06704d0a3
+        cwd: .
+        deliveryInputs: {}
+        environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+        exitCode: 1
+        inputAfter: a2013648a5435fde7e709c965c8512834e3dceb8aaaf8cdd3d02373e8981cefc
+        inputBefore: a2013648a5435fde7e709c965c8512834e3dceb8aaaf8cdd3d02373e8981cefc
+        manifestHash: 711af03147470acea4f73a66296ee34d7c57a2a2d80959afb6ebc1b2715586fa
+        manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/8d27f3a9-7b6e-4b34-b473-0b71e5a3d33a.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/b0432ba4-f10e-46a5-87cd-66dda33286c6.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 354e4ed6c3de1769ef93498e401b695a2ad207361ecf09a42679ae54c3ef69c8
+        cwd: .
+        environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+        exitCode: 0
+        inputAfter: b395eaf41d6a9704827d9df8a39573a6524acec50c80aca7086cd082ebeb3ee8
+        inputBefore: b395eaf41d6a9704827d9df8a39573a6524acec50c80aca7086cd082ebeb3ee8
+        manifestHash: 72bf375b2a8046fe78996fd8ef3ab423d3c58a46416c68d0cf57c363b06810fb
+        manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/a8e51312-6a1b-4824-b1c6-221e891bde40.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/660a75d8-ae65-442a-8ae6-5cf2f9aa51ac.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 354e4ed6c3de1769ef93498e401b695a2ad207361ecf09a42679ae54c3ef69c8
+        ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/660a75d8-ae65-442a-8ae6-5cf2f9aa51ac.log
+      - contentHash: 85dd2a429b1aa37788121a4768f4560a7b3b4c19ae76eb65a14e2d75254ffe32
+        ref: docs/superpowers/reports/simplify-workspace-init.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: 9786cbda62ed022d6fb31385cc07b511b6fb106a22d28cb87d88865fa8822a51
+        cwd: .
+        deliveryInputs: {}
+        environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+        exitCode: 1
+        inputAfter: 3d8d9b089ce3b0a307887cca82dd4644a4ca2f8ab1194f6c4547e1eddeb0dd97
+        inputBefore: 3d8d9b089ce3b0a307887cca82dd4644a4ca2f8ab1194f6c4547e1eddeb0dd97
+        manifestHash: 9b4dfc2ac434d3e84bacd702645da40be09ed776c294fcdc31b52913d8ae1be4
+        manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/9d2da42c-40c4-4841-8c00-5061e685073d.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/fe4eda96-c20b-4675-bee9-c488c42f99e5.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 6
+        contentHash: 401a9c2258b9ce647ed682ce28a9d8e39436b937a2f7057453e655ccd76b93a8
+        cwd: .
+        environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+        exitCode: 0
+        inputAfter: 066bb78f098959e188253c02821296c25cc8746a835282acc0bd82188b620960
+        inputBefore: 066bb78f098959e188253c02821296c25cc8746a835282acc0bd82188b620960
+        manifestHash: 5aee1321f2c4cfe3be58b2c6f22b443c037a5920fd4909775de265f8402dbfe4
+        manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/0b200eb0-9c9f-49af-ac75-5ac3d9fa8a5c.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/776531f5-cbd1-44a7-8360-6dcb99b3acfd.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 401a9c2258b9ce647ed682ce28a9d8e39436b937a2f7057453e655ccd76b93a8
+        ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/776531f5-cbd1-44a7-8360-6dcb99b3acfd.log
+      - contentHash: fbac010a43eaeb0db0e2d63c0acf0fc3c0f67542453bfbee06c859c825d4d129
+        ref: docs/superpowers/reports/simplify-workspace-init.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 7
+        contentHash: c617a26fd619be5797756bd76a7bfe3c3a87a34e49fcb7dfdc76011fd02a1a0d
+        cwd: .
+        deliveryInputs: {}
+        environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+        exitCode: 1
+        inputAfter: 1756920476e27fffec6ecdfea59c9435b969c4cfd4f6cf1537aa077d9b3a2ea7
+        inputBefore: 1756920476e27fffec6ecdfea59c9435b969c4cfd4f6cf1537aa077d9b3a2ea7
+        manifestHash: 6882776b25238c02bc28ab80783fbe46aaecf4b34a23c58712d84221e1960c48
+        manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/f5033ef9-5e91-41c0-9667-550bea0a889c.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/a5ff61dc-c5fa-455b-8485-15ca63e968e6.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 8
+        contentHash: 8dd2e3c6500be13d7878234e956bd04cf799bcd1a30af05ef3e2e33fc1ee3797
+        cwd: .
+        environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+        exitCode: 0
+        inputAfter: 5029d7878d25ea7fd8a0eda12d99a87da2369f43da1114addb2375fd4d80b312
+        inputBefore: 5029d7878d25ea7fd8a0eda12d99a87da2369f43da1114addb2375fd4d80b312
+        manifestHash: d407acac32e48001d738ad362cb21525df3850bacdd83bcdc6060efc7057f65d
+        manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/fe08d0c0-0201-4cd4-a3e1-b869f445b7ed.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/bc5ce9a2-9d6e-41b1-ab09-2722886aaba7.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 8dd2e3c6500be13d7878234e956bd04cf799bcd1a30af05ef3e2e33fc1ee3797
+        ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/bc5ce9a2-9d6e-41b1-ab09-2722886aaba7.log
+      - contentHash: c21f4a5bbeec13e22d6ee5a3d5eeaad0045dfce43a5f4d586820020067de8056
+        ref: docs/superpowers/reports/simplify-workspace-init.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 9
+        contentHash: f0ce71d50deb140de225944b687017083b1d0af6aad4e3ec9c1e3a4b7033a451
+        cwd: .
+        deliveryInputs: {}
+        environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+        exitCode: 0
+        inputAfter: 9047a960a25528754af2f1730201f8f0220101be80f47141e3fb4cc3b0850fce
+        inputBefore: 9047a960a25528754af2f1730201f8f0220101be80f47141e3fb4cc3b0850fce
+        manifestHash: aad9a2ffa4508878dbca5607789473a00ba58e6f66b7b3a8db4954cdb9f8d0b6
+        manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/a68d0471-3e2e-45f7-a648-6bd53ddba6fd.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/16fc7de7-4113-4983-8399-3c5eafcdf527.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: f0ce71d50deb140de225944b687017083b1d0af6aad4e3ec9c1e3a4b7033a451
+        ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/16fc7de7-4113-4983-8399-3c5eafcdf527.log
+      - choice: pr
+        proposal:
+          input:
+            change: simplify-workspace-init
+            changeDir: openspec/changes/simplify-workspace-init
+            workspaceBaseline:
+              ref: 65ae959b-da43-4039-941e-b19aadd55c32
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档轻量 Workspace 初始化和独立 Verify 配置。将四项规格增量合入 OpenSpec
+                主规格，保留最终候选包和三仓恢复的证据。交付目标为 origin/main，通过 PR 审查与 CI。
+              targetBranch: codex/simplify-workspace-init
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档轻量 Workspace 初始化和独立 Verify 配置。将四项规格增量合入 OpenSpec
+          主规格，保留最终候选包和三仓恢复的证据。交付目标为 origin/main，通过 PR 审查与 CI。
+        targetBranch: codex/simplify-workspace-init
+      - baseCommit: f685a985b362681f2c224d73be72ed36e9159c17
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/simplify-workspace-init
+        verifiedBranch: codex/simplify-workspace-init
+      - archiveDirectory: openspec/changes/archive/2026-11-12-simplify-workspace-init
+      - sequence: 9
+        value:
+          boundBranch: codex/simplify-workspace-init
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: simplify-workspace-init
+              changeDir: openspec/changes/simplify-workspace-init
+              workspaceBaseline:
+                ref: 65ae959b-da43-4039-941e-b19aadd55c32
+            outputs:
+              full.build.configure:
+                boundBranch: codex/simplify-workspace-init
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: simplify-workspace-init
+              changeDir: openspec/changes/simplify-workspace-init
+              workspaceBaseline:
+                ref: 65ae959b-da43-4039-941e-b19aadd55c32
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+                handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+                proposal: 单仓和同级多仓共用个人级 Init，Runtime 一次预览、可信宿主回传与现有可恢复接入事务。首次配置允许空 Profile，已有
+                  Profile 保留；单独的 Verify 配置 Skill 以实际命令与覆盖为输入，获批只更新目标
+                  Profile。Build Check 独立持久化，在原 Run 的验证准备边界等待配置；重新观察批准的配置、精确
+                  checkout 及只改目标 Profile 的提交，保留有效 Build，绑定当前 Verification
+                  Input。解除 Delivery 对未消费的全配置摘要耦合，保留实际策略、凭据和组合漂移校验。Windows
+                  发布候选包验证真实宿主、同一多仓 Run 两次冷恢复和真实 Archive。规格不改。
+                requirementsEvidence:
+                  contentHash: efc22131c4362b0b3918f0620702187c7d33e7c901653e3e23836b501070d5aa
+                  ref: openspec/changes/simplify-workspace-init
+                sourceEvidence:
+                  contentHash: ea4f7453ad5789c50c7215b1af29f2c32f59c006252720d01fed70973d661b9f
+                  ref: openspec/changes/simplify-workspace-init
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/simplify-workspace-init/design.md
+      - sequence: 8
+        value:
+          contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+          ref: openspec/changes/simplify-workspace-init/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/simplify-workspace-init/.comet/handoff/design-context.json
+          handoffHash: 77e7eca956bd85c110c40590c79d4baf3f1befc3d1fe4d2901e11e9f21e3e4c3
+          proposal: 单仓和同级多仓共用个人级 Init，Runtime 一次预览、可信宿主回传与现有可恢复接入事务。首次配置允许空 Profile，已有
+            Profile 保留；单独的 Verify 配置 Skill 以实际命令与覆盖为输入，获批只更新目标 Profile。Build
+            Check 独立持久化，在原 Run 的验证准备边界等待配置；重新观察批准的配置、精确 checkout 及只改目标 Profile
+            的提交，保留有效 Build，绑定当前 Verification Input。解除 Delivery
+            对未消费的全配置摘要耦合，保留实际策略、凭据和组合漂移校验。Windows 发布候选包验证真实宿主、同一多仓 Run 两次冷恢复和真实
+            Archive。规格不改。
+          requirementsEvidence:
+            contentHash: efc22131c4362b0b3918f0620702187c7d33e7c901653e3e23836b501070d5aa
+            ref: openspec/changes/simplify-workspace-init
+          sourceEvidence:
+            contentHash: ea4f7453ad5789c50c7215b1af29f2c32f59c006252720d01fed70973d661b9f
+            ref: openspec/changes/simplify-workspace-init
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: simplify-workspace-init
+              changeDir: openspec/changes/simplify-workspace-init
+              workspaceBaseline:
+                ref: 65ae959b-da43-4039-941e-b19aadd55c32
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+                ref: openspec/changes/simplify-workspace-init
+      - sequence: 2
+        value:
+          contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+          ref: openspec/changes/simplify-workspace-init
+      - sequence: 4
+        value:
+          contentHash: 8a1a44450437639b5e57b9a1a4316963c8734089af4d574d47ff381f5e1df7b0
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+            ref: openspec/changes/simplify-workspace-init/design.md
+          plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          planEvidence:
+            contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+            ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          taskRevision: af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421
+      - sequence: 12
+        value:
+          contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+          ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 8674a9f1dbfc8c1660caf5e7a6dc927448f39e2901b0a8ab31031d1e15c7fe9c
+          cwd: .
+          environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+          exitCode: 0
+          inputAfter: c4dd0e86ca1dca7698bcc57afd7942cf29aff4d3d8e7905d1c46f44032d2cf41
+          inputBefore: c4dd0e86ca1dca7698bcc57afd7942cf29aff4d3d8e7905d1c46f44032d2cf41
+          manifestHash: ca910a17e10c70ffd580dedc8ad4901f55937c41023d2f49ea84f93c7a14fc91
+          manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/7d9aeab9-8e5b-4929-80a6-7354506b321c.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/35eb3d2c-9b73-49ff-aad5-44d1c02618e6.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 8674a9f1dbfc8c1660caf5e7a6dc927448f39e2901b0a8ab31031d1e15c7fe9c
+          ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/35eb3d2c-9b73-49ff-aad5-44d1c02618e6.log
+      - sequence: 17
+        value:
+          contentHash: 413131714664619126ff36c5c6b35e2a500006519090c96b1e966f934f3043a3
+          ref: docs/superpowers/reports/simplify-workspace-init.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/simplify-workspace-init.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 7e5831abb057f854583c3e2a334dae965b4cfeb3e08b5d5b8197ecd06704d0a3
+          cwd: .
+          deliveryInputs: {}
+          environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+          exitCode: 1
+          inputAfter: a2013648a5435fde7e709c965c8512834e3dceb8aaaf8cdd3d02373e8981cefc
+          inputBefore: a2013648a5435fde7e709c965c8512834e3dceb8aaaf8cdd3d02373e8981cefc
+          manifestHash: 711af03147470acea4f73a66296ee34d7c57a2a2d80959afb6ebc1b2715586fa
+          manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/8d27f3a9-7b6e-4b34-b473-0b71e5a3d33a.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/b0432ba4-f10e-46a5-87cd-66dda33286c6.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+            ref: openspec/changes/simplify-workspace-init/design.md
+          plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          planEvidence:
+            contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+            ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          taskRevision: af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421
+      - sequence: 20
+        value:
+          contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+          ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 354e4ed6c3de1769ef93498e401b695a2ad207361ecf09a42679ae54c3ef69c8
+          cwd: .
+          environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+          exitCode: 0
+          inputAfter: b395eaf41d6a9704827d9df8a39573a6524acec50c80aca7086cd082ebeb3ee8
+          inputBefore: b395eaf41d6a9704827d9df8a39573a6524acec50c80aca7086cd082ebeb3ee8
+          manifestHash: 72bf375b2a8046fe78996fd8ef3ab423d3c58a46416c68d0cf57c363b06810fb
+          manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/a8e51312-6a1b-4824-b1c6-221e891bde40.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/660a75d8-ae65-442a-8ae6-5cf2f9aa51ac.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 23
+        value:
+          contentHash: 354e4ed6c3de1769ef93498e401b695a2ad207361ecf09a42679ae54c3ef69c8
+          ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/660a75d8-ae65-442a-8ae6-5cf2f9aa51ac.log
+      - sequence: 25
+        value:
+          contentHash: 85dd2a429b1aa37788121a4768f4560a7b3b4c19ae76eb65a14e2d75254ffe32
+          ref: docs/superpowers/reports/simplify-workspace-init.md
+      - sequence: 24
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/simplify-workspace-init.md
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: 9786cbda62ed022d6fb31385cc07b511b6fb106a22d28cb87d88865fa8822a51
+          cwd: .
+          deliveryInputs: {}
+          environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+          exitCode: 1
+          inputAfter: 3d8d9b089ce3b0a307887cca82dd4644a4ca2f8ab1194f6c4547e1eddeb0dd97
+          inputBefore: 3d8d9b089ce3b0a307887cca82dd4644a4ca2f8ab1194f6c4547e1eddeb0dd97
+          manifestHash: 9b4dfc2ac434d3e84bacd702645da40be09ed776c294fcdc31b52913d8ae1be4
+          manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/9d2da42c-40c4-4841-8c00-5061e685073d.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/fe4eda96-c20b-4675-bee9-c488c42f99e5.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 27
+        value:
+          designEvidence:
+            contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+            ref: openspec/changes/simplify-workspace-init/design.md
+          plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          planEvidence:
+            contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+            ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          taskRevision: af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421
+      - sequence: 28
+        value:
+          contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+          ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+      - sequence: 29
+        value:
+          event: build-complete
+      - sequence: 30
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 6
+          contentHash: 401a9c2258b9ce647ed682ce28a9d8e39436b937a2f7057453e655ccd76b93a8
+          cwd: .
+          environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+          exitCode: 0
+          inputAfter: 066bb78f098959e188253c02821296c25cc8746a835282acc0bd82188b620960
+          inputBefore: 066bb78f098959e188253c02821296c25cc8746a835282acc0bd82188b620960
+          manifestHash: 5aee1321f2c4cfe3be58b2c6f22b443c037a5920fd4909775de265f8402dbfe4
+          manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/0b200eb0-9c9f-49af-ac75-5ac3d9fa8a5c.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/776531f5-cbd1-44a7-8360-6dcb99b3acfd.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 31
+        value:
+          contentHash: 401a9c2258b9ce647ed682ce28a9d8e39436b937a2f7057453e655ccd76b93a8
+          ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/776531f5-cbd1-44a7-8360-6dcb99b3acfd.log
+      - sequence: 33
+        value:
+          contentHash: fbac010a43eaeb0db0e2d63c0acf0fc3c0f67542453bfbee06c859c825d4d129
+          ref: docs/superpowers/reports/simplify-workspace-init.md
+      - sequence: 32
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/simplify-workspace-init.md
+      - sequence: 34
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 7
+          contentHash: c617a26fd619be5797756bd76a7bfe3c3a87a34e49fcb7dfdc76011fd02a1a0d
+          cwd: .
+          deliveryInputs: {}
+          environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+          exitCode: 1
+          inputAfter: 1756920476e27fffec6ecdfea59c9435b969c4cfd4f6cf1537aa077d9b3a2ea7
+          inputBefore: 1756920476e27fffec6ecdfea59c9435b969c4cfd4f6cf1537aa077d9b3a2ea7
+          manifestHash: 6882776b25238c02bc28ab80783fbe46aaecf4b34a23c58712d84221e1960c48
+          manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/f5033ef9-5e91-41c0-9667-550bea0a889c.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/a5ff61dc-c5fa-455b-8485-15ca63e968e6.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 35
+        value:
+          designEvidence:
+            contentHash: a87868999f24064fd3fa188635af2002300ec0979132b2d34e3ecf4b29dd57e6
+            ref: openspec/changes/simplify-workspace-init/design.md
+          plan: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          planEvidence:
+            contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+            ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+          taskRevision: af1afaf016453f7f7fc92ffa1813f48f9afabff2a256ddeddd856d0c2ac94421
+      - sequence: 36
+        value:
+          contentHash: 97394d4959843d28f6afdbeb6e0e41aa9764f19b4fc964552f8f69257d504d33
+          ref: docs/superpowers/plans/2026-11-12-simplify-workspace-init.md
+      - sequence: 37
+        value:
+          event: build-complete
+      - sequence: 38
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 8
+          contentHash: 8dd2e3c6500be13d7878234e956bd04cf799bcd1a30af05ef3e2e33fc1ee3797
+          cwd: .
+          environment: 6fb244c777c1871b15d69db73d3c44640216dd43535377acbc320d3da45d7c12
+          exitCode: 0
+          inputAfter: 5029d7878d25ea7fd8a0eda12d99a87da2369f43da1114addb2375fd4d80b312
+          inputBefore: 5029d7878d25ea7fd8a0eda12d99a87da2369f43da1114addb2375fd4d80b312
+          manifestHash: d407acac32e48001d738ad362cb21525df3850bacdd83bcdc6060efc7057f65d
+          manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/fe08d0c0-0201-4cd4-a3e1-b869f445b7ed.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/bc5ce9a2-9d6e-41b1-ab09-2722886aaba7.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 39
+        value:
+          contentHash: 8dd2e3c6500be13d7878234e956bd04cf799bcd1a30af05ef3e2e33fc1ee3797
+          ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/bc5ce9a2-9d6e-41b1-ab09-2722886aaba7.log
+      - sequence: 41
+        value:
+          contentHash: c21f4a5bbeec13e22d6ee5a3d5eeaad0045dfce43a5f4d586820020067de8056
+          ref: docs/superpowers/reports/simplify-workspace-init.md
+      - sequence: 40
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/simplify-workspace-init.md
+      - sequence: 42
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 9
+          contentHash: f0ce71d50deb140de225944b687017083b1d0af6aad4e3ec9c1e3a4b7033a451
+          cwd: .
+          deliveryInputs: {}
+          environment: d2d41753784343fd4d67bb90cd48e30a523b3c811e55b9d563cdafdb025e5057
+          exitCode: 0
+          inputAfter: 9047a960a25528754af2f1730201f8f0220101be80f47141e3fb4cc3b0850fce
+          inputBefore: 9047a960a25528754af2f1730201f8f0220101be80f47141e3fb4cc3b0850fce
+          manifestHash: aad9a2ffa4508878dbca5607789473a00ba58e6f66b7b3a8db4954cdb9f8d0b6
+          manifestRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/a68d0471-3e2e-45f7-a648-6bd53ddba6fd.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/16fc7de7-4113-4983-8399-3c5eafcdf527.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 43
+        value:
+          contentHash: f0ce71d50deb140de225944b687017083b1d0af6aad4e3ec9c1e3a4b7033a451
+          ref: .comet/runtime/classic-sdk-checks/f31445ab37a548df2482dd7ad1eaeabc9ee45141df463902a4f3b8825603e1d0/16fc7de7-4113-4983-8399-3c5eafcdf527.log
+      - sequence: 45
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: simplify-workspace-init
+              changeDir: openspec/changes/simplify-workspace-init
+              workspaceBaseline:
+                ref: 65ae959b-da43-4039-941e-b19aadd55c32
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档轻量 Workspace 初始化和独立 Verify 配置。将四项规格增量合入 OpenSpec
+                  主规格，保留最终候选包和三仓恢复的证据。交付目标为 origin/main，通过 PR 审查与 CI。
+                targetBranch: codex/simplify-workspace-init
+      - sequence: 44
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档轻量 Workspace 初始化和独立 Verify 配置。将四项规格增量合入 OpenSpec
+            主规格，保留最终候选包和三仓恢复的证据。交付目标为 origin/main，通过 PR 审查与 CI。
+          targetBranch: codex/simplify-workspace-init
+      - sequence: 46
+        value:
+          baseCommit: f685a985b362681f2c224d73be72ed36e9159c17
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/simplify-workspace-init
+          verifiedBranch: codex/simplify-workspace-init
+      - sequence: 47
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-12-simplify-workspace-init
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.verify.report.evidence
+        value: 20
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 54
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 55
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 56
+        height: 5
+      - key: full.verify.check
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 58
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 59
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 61
+        height: 5
+      - key: full.build.check
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 23
+        left: 63
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 64
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 65
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 66
+        right: 61
+        height: 5
+      - key: full.verify.report.evidence
+        value: 24
+        left: 58
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 68
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 69
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 66
+        right: 70
+        height: 5
+      - key: full.verify.check
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 24
+        left: 72
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 73
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 74
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 66
+        right: 75
+        height: 5
+      - key: full.build.check
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 27
+        left: 77
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 78
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 79
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 80
+        right: 75
+        height: 5
+      - key: full.verify.report.evidence
+        value: 28
+        left: 72
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 82
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 83
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 80
+        right: 84
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 28
+        left: 87
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 29
+        left: 86
+        right: 88
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 89
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 80
+        right: 90
+        height: 5
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 32
+        left: 92
+        right: 93
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 27
+        left: 94
+        right: 95
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 96
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 97
+        right: 90
+        height: 5
+      - key: full.archive.preflight
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: 99
+        height: 2
+      - key: full.archive.prepare
+        value: 32
+        left: 100
+        right: 93
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 95
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 27
+        left: 101
+        right: 102
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 103
+        right: 90
+        height: 5
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 34
+        left: 105
+        right: 106
+        height: 2
+      - key: full.archive.prepare
+        value: 32
+        left: 107
+        right: 93
+        height: 3
+      - key: full.build.check.evidence
+        value: 27
+        left: 108
+        right: 102
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 109
+        right: 90
+        height: 5
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 111
+        right: 112
+        height: 2
+      - key: full.design.evidence
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: 114
+        right: 115
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: null
+        right: 117
+        height: 2
+      - key: full.open.confirm
+        value: 42
+        left: 116
+        right: 118
+        height: 3
+      - key: full.design.document
+        value: 38
+        left: 113
+        right: 119
+        height: 4
+      - key: full.build.plan
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: 121
+        right: 122
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 111
+        right: 123
+        height: 3
+      - key: full.design.document
+        value: 38
+        left: 124
+        right: 119
+        height: 4
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 111
+        right: 126
+        height: 2
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: 122
+        height: 2
+      - key: full.build.plan
+        value: 45
+        left: 127
+        right: 128
+        height: 3
+      - key: full.design.document
+        value: 38
+        left: 129
+        right: 119
+        height: 4
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: 131
+        right: 132
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 133
+        right: 126
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 134
+        right: 128
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 135
+        right: 119
+        height: 5
+      - key: full.open.evidence
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: null
+        right: 138
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: 137
+        right: 139
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 116
+        right: 140
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 135
+        right: 141
+        height: 5
+      - key: full.verify.check
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 143
+        right: 138
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: 137
+        right: 144
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 116
+        right: 145
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 135
+        right: 146
+        height: 5
+      - key: full.build.plan.evidence
+        value: 54
+        left: null
+        right: 122
+        height: 2
+      - key: full.build.plan
+        value: 53
+        left: 134
+        right: 148
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 149
+        right: 146
+        height: 5
+      - key: full.build.execute
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 133
+        right: 151
+        height: 3
+      - key: full.build.plan
+        value: 53
+        left: 152
+        right: 148
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 153
+        right: 146
+        height: 5
+      - key: full.build.check
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 57
+        left: 155
+        right: 132
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 156
+        right: 151
+        height: 3
+      - key: full.build.plan
+        value: 53
+        left: 157
+        right: 148
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 158
+        right: 146
+        height: 5
+      - key: full.verify.run
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 58
+        left: 143
+        right: 160
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: 137
+        right: 161
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 116
+        right: 162
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 158
+        right: 163
+        height: 5
+      - key: full.verify.check
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 58
+        left: 165
+        right: 160
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: 137
+        right: 166
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 116
+        right: 167
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 158
+        right: 168
+        height: 5
+      - key: full.build.plan.evidence
+        value: 62
+        left: null
+        right: 122
+        height: 2
+      - key: full.build.plan
+        value: 61
+        left: 157
+        right: 170
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 171
+        right: 168
+        height: 5
+      - key: full.build.execute
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 156
+        right: 173
+        height: 3
+      - key: full.build.plan
+        value: 61
+        left: 174
+        right: 170
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 175
+        right: 168
+        height: 5
+      - key: full.build.check
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 65
+        left: 177
+        right: 132
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 178
+        right: 173
+        height: 3
+      - key: full.build.plan
+        value: 61
+        left: 179
+        right: 170
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 180
+        right: 168
+        height: 5
+      - key: full.verify.run
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 66
+        left: 165
+        right: 182
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: 137
+        right: 183
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 116
+        right: 184
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 180
+        right: 185
+        height: 5
+      - key: full.verify.check
+        value: 68
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 66
+        left: 187
+        right: 182
+        height: 2
+      - key: full.open.revalidate
+        value: 44
+        left: 137
+        right: 188
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 116
+        right: 189
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 180
+        right: 190
+        height: 5
+      - key: full.build.plan.evidence
+        value: 70
+        left: null
+        right: 122
+        height: 2
+      - key: full.build.plan
+        value: 69
+        left: 179
+        right: 192
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 193
+        right: 190
+        height: 5
+      - key: full.build.execute
+        value: 71
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 178
+        right: 195
+        height: 3
+      - key: full.build.plan
+        value: 69
+        left: 196
+        right: 192
+        height: 4
+      - key: full.design.document
+        value: 38
+        left: 197
+        right: 190
+        height: 5
+      - key: full.open
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 42
+        left: 199
+        right: 200
+        height: 2
+      - key: full.build.check
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 73
+        left: 202
+        right: 203
+        height: 2
+      - key: full.build.execute
+        value: 71
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 204
+        right: 205
+        height: 3
+      - key: full.build.plan.evidence
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 39
+        left: 208
+        right: 209
+        height: 2
+      - key: full.design.confirm
+        value: 37
+        left: 207
+        right: 210
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: 212
+        right: 213
+        height: 2
+      - key: full.verify.run
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 66
+        left: null
+        right: 215
+        height: 2
+      - key: full.verify.check
+        value: 68
+        left: 214
+        right: 216
+        height: 3
+      - key: full.open
+        value: 41
+        left: 211
+        right: 217
+        height: 4
+      - key: full.build.plan
+        value: 69
+        left: 206
+        right: 218
+        height: 5
+      - key: full.verify.run
+        value: 75
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 74
+        left: null
+        right: 220
+        height: 2
+      - key: full.verify.check
+        value: 68
+        left: 214
+        right: 221
+        height: 3
+      - key: full.open
+        value: 41
+        left: 211
+        right: 222
+        height: 4
+      - key: full.build.plan
+        value: 69
+        left: 206
+        right: 223
+        height: 5
+      - key: full.verify.check.evidence
+        value: 77
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 74
+        left: 225
+        right: 220
+        height: 2
+      - key: full.verify.check
+        value: 76
+        left: 214
+        right: 226
+        height: 3
+      - key: full.open
+        value: 41
+        left: 211
+        right: 227
+        height: 4
+      - key: full.build.plan
+        value: 69
+        left: 206
+        right: 228
+        height: 5
+      - key: full.archive.confirm
+        value: 78
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 79
+        left: 230
+        right: 231
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 203
+        right: 205
+        height: 2
+      - key: full.build.check.evidence
+        value: 73
+        left: 232
+        right: 233
+        height: 3
+      - key: full.build.plan
+        value: 69
+        left: 234
+        right: 228
+        height: 5
+      - key: full.archive.preflight
+        value: 80
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 78
+        left: null
+        right: 236
+        height: 2
+      - key: full.archive.prepare
+        value: 79
+        left: 237
+        right: 231
+        height: 3
+      - key: full.build.check.evidence
+        value: 73
+        left: 238
+        right: 233
+        height: 4
+      - key: full.build.plan
+        value: 69
+        left: 239
+        right: 228
+        height: 5
+      - key: full.archive.confirm
+        value: 78
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 80
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 81
+        left: 241
+        right: 242
+        height: 2
+      - key: full.archive.prepare
+        value: 79
+        left: 243
+        right: 231
+        height: 3
+      - key: full.build.check.evidence
+        value: 73
+        left: 244
+        right: 233
+        height: 4
+      - key: full.build.plan
+        value: 69
+        left: 245
+        right: 228
+        height: 5
+      - key: full.open
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: null
+        right: 248
+        height: 2
+      - key: full.open.confirm
+        value: 42
+        left: 247
+        right: 249
+        height: 3
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: 251
+        right: 252
+        height: 2
+      - key: full.open.confirm
+        value: 42
+        left: 253
+        right: 249
+        height: 3
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 38
+        left: 255
+        right: 256
+        height: 2
+      - key: full.design.handoff
+        value: 40
+        left: 257
+        right: 252
+        height: 3
+      - key: full.open.confirm
+        value: 42
+        left: 258
+        right: 249
+        height: 4
+      - key: full.open.evidence
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 41
+        left: null
+        right: 260
+        height: 2
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: 263
+        right: 264
+        height: 2
+      - key: full.open
+        value: 41
+        left: 262
+        right: 265
+        height: 3
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 39
+        left: 268
+        right: 269
+        height: 2
+      - key: full.design.confirm
+        value: 37
+        left: 267
+        right: 270
+        height: 3
+      - key: full.open
+        value: 41
+        left: 271
+        right: 265
+        height: 4
+      - key: full.archive.prepare
+        value: 79
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 73
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 72
+        left: 273
+        right: 274
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 69
+        left: null
+        right: 277
+        height: 2
+      - key: full.build.execute
+        value: 71
+        left: 276
+        right: 278
+        height: 3
+      - key: full.build.configure
+        value: 35
+        left: 275
+        right: 279
+        height: 4
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: 263
+        right: 281
+        height: 2
+      - key: full.verify.check.evidence
+        value: 77
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 75
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 74
+        left: 283
+        right: 284
+        height: 2
+      - key: full.verify.check
+        value: 76
+        left: 282
+        right: 285
+        height: 3
+      - key: full.open
+        value: 41
+        left: 270
+        right: 286
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 280
+        right: 287
+        height: 5
+      - key: full.open
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 38
+        left: 290
+        right: 291
+        height: 2
+      - key: full.open.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: 293
+        right: 294
+        height: 2
+      - key: full.open
+        value: 41
+        left: 292
+        right: 295
+        height: 3
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 36
+        left: 297
+        right: 298
+        height: 2
+      - key: full.design.document
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 39
+        left: 300
+        right: 301
+        height: 2
+      - key: full.design.confirm
+        value: 37
+        left: 299
+        right: 302
+        height: 3
+      - key: full.open
+        value: 41
+        left: 303
+        right: 295
+        height: 4
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 35
+        left: 305
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: 307
+        right: 308
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 306
+        right: 309
+        height: 3
+      - key: full.open
+        value: 41
+        left: 302
+        right: 295
+        height: 3
+      - key: full.design.confirm
+        value: 37
+        left: 310
+        right: 311
+        height: 4
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: 313
+        right: 314
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 315
+        right: 309
+        height: 3
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: 317
+        height: 2
+      - key: full.open.evidence
+        value: 43
+        left: 293
+        right: 318
+        height: 3
+      - key: full.open
+        value: 41
+        left: 302
+        right: 319
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 316
+        right: 320
+        height: 5
+      - key: full.build.plan
+        value: 53
+        left: 307
+        right: 308
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 315
+        right: 322
+        height: 3
+      - key: full.open.revalidate
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 43
+        left: 293
+        right: 324
+        height: 2
+      - key: full.verify.report.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: 326
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 325
+        right: 327
+        height: 3
+      - key: full.open
+        value: 41
+        left: 302
+        right: 328
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 323
+        right: 329
+        height: 5
+      - key: full.build.check
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: 331
+        right: 314
+        height: 2
+      - key: full.build.execute
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 53
+        left: 333
+        right: 334
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 332
+        right: 335
+        height: 3
+      - key: full.design.confirm
+        value: 37
+        left: 336
+        right: 329
+        height: 5
+      - key: full.build.check.evidence
+        value: 57
+        left: 331
+        right: 314
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 338
+        right: 335
+        height: 3
+      - key: full.verify.run
+        value: 59
+        left: 326
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 325
+        right: 340
+        height: 3
+      - key: full.open
+        value: 41
+        left: 302
+        right: 341
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 339
+        right: 342
+        height: 5
+      - key: full.build.plan
+        value: 61
+        left: 333
+        right: 334
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 338
+        right: 344
+        height: 3
+      - key: full.verify.report.evidence
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 59
+        left: 346
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 60
+        left: 325
+        right: 347
+        height: 3
+      - key: full.open
+        value: 41
+        left: 302
+        right: 348
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 345
+        right: 349
+        height: 5
+      - key: full.build.check
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 57
+        left: 351
+        right: 314
+        height: 2
+      - key: full.build.execute
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 61
+        left: 353
+        right: 354
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 352
+        right: 355
+        height: 3
+      - key: full.design.confirm
+        value: 37
+        left: 356
+        right: 349
+        height: 5
+      - key: full.build.check.evidence
+        value: 65
+        left: 351
+        right: 314
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 358
+        right: 355
+        height: 3
+      - key: full.verify.run
+        value: 67
+        left: 346
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 60
+        left: 325
+        right: 360
+        height: 3
+      - key: full.open
+        value: 41
+        left: 302
+        right: 361
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 359
+        right: 362
+        height: 5
+      - key: full.build.plan
+        value: 69
+        left: 353
+        right: 354
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 358
+        right: 364
+        height: 3
+      - key: full.verify.report.evidence
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 67
+        left: 366
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 68
+        left: 325
+        right: 367
+        height: 3
+      - key: full.open
+        value: 41
+        left: 302
+        right: 368
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 365
+        right: 369
+        height: 5
+      - key: full.build.check
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 65
+        left: 371
+        right: 314
+        height: 2
+      - key: full.build.execute
+        value: 71
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 69
+        left: 373
+        right: 374
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 372
+        right: 375
+        height: 3
+      - key: full.design.confirm
+        value: 37
+        left: 376
+        right: 369
+        height: 5
+      - key: full.build.check.evidence
+        value: 73
+        left: 371
+        right: 314
+        height: 2
+      - key: full.build.confirm
+        value: 36
+        left: 378
+        right: 375
+        height: 3
+      - key: full.verify.run
+        value: 75
+        left: 366
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 68
+        left: 325
+        right: 380
+        height: 3
+      - key: full.open
+        value: 41
+        left: 302
+        right: 381
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 379
+        right: 382
+        height: 5
+      - key: full.verify.report.evidence
+        value: 74
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 75
+        left: 384
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 76
+        left: 325
+        right: 385
+        height: 3
+      - key: full.open
+        value: 41
+        left: 302
+        right: 386
+        height: 4
+      - key: full.design.confirm
+        value: 37
+        left: 379
+        right: 387
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 57
+      - 62
+      - 67
+      - 71
+      - 76
+      - 81
+      - 85
+      - 91
+      - 98
+      - 104
+      - 110
+      - 120
+      - 125
+      - 130
+      - 136
+      - 142
+      - 147
+      - 150
+      - 154
+      - 159
+      - 164
+      - 169
+      - 172
+      - 176
+      - 181
+      - 186
+      - 191
+      - 194
+      - 198
+      - 201
+      - 219
+      - 224
+      - 229
+      - 235
+      - 240
+      - 246
+      - 250
+      - 254
+      - 259
+      - 261
+      - 266
+      - 272
+      - 288
+      - 289
+      - 296
+      - 304
+      - 312
+      - 321
+      - 330
+      - 337
+      - 343
+      - 350
+      - 357
+      - 363
+      - 370
+      - 377
+      - 383
+      - 388
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "21"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "22"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "23"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actions
+          - "24"
+          - input
+          - outputs
+        map: 18
+      - path:
+          - actions
+          - "25"
+          - input
+          - outputs
+        map: 19
+      - path:
+          - actions
+          - "26"
+          - input
+          - outputs
+        map: 20
+      - path:
+          - actions
+          - "27"
+          - input
+          - outputs
+        map: 21
+      - path:
+          - actions
+          - "28"
+          - input
+          - outputs
+        map: 22
+      - path:
+          - actionContexts
+          - simplify-workspace-init:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - simplify-workspace-init:11
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - simplify-workspace-init:13
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - simplify-workspace-init:14
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - simplify-workspace-init:16
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - simplify-workspace-init:18
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - simplify-workspace-init:19
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - simplify-workspace-init:21
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - simplify-workspace-init:22
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - simplify-workspace-init:24
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - simplify-workspace-init:26
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - simplify-workspace-init:27
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - simplify-workspace-init:29
+          - results
+        map: 34
+      - path:
+          - actionContexts
+          - simplify-workspace-init:30
+          - results
+        map: 35
+      - path:
+          - actionContexts
+          - simplify-workspace-init:32
+          - results
+        map: 36
+      - path:
+          - actionContexts
+          - simplify-workspace-init:34
+          - results
+        map: 37
+      - path:
+          - actionContexts
+          - simplify-workspace-init:35
+          - results
+        map: 38
+      - path:
+          - actionContexts
+          - simplify-workspace-init:37
+          - results
+        map: 39
+      - path:
+          - actionContexts
+          - simplify-workspace-init:38
+          - results
+        map: 40
+      - path:
+          - actionContexts
+          - simplify-workspace-init:4
+          - results
+        map: 41
+      - path:
+          - actionContexts
+          - simplify-workspace-init:40
+          - results
+        map: 42
+      - path:
+          - actionContexts
+          - simplify-workspace-init:42
+          - results
+        map: 43
+      - path:
+          - actionContexts
+          - simplify-workspace-init:44
+          - results
+        map: 44
+      - path:
+          - actionContexts
+          - simplify-workspace-init:46
+          - results
+        map: 45
+      - path:
+          - actionContexts
+          - simplify-workspace-init:47
+          - results
+        map: 46
+      - path:
+          - actionContexts
+          - simplify-workspace-init:48
+          - results
+        map: 47
+      - path:
+          - actionContexts
+          - simplify-workspace-init:5
+          - results
+        map: 48
+      - path:
+          - actionContexts
+          - simplify-workspace-init:7
+          - results
+        map: 49
+      - path:
+          - actionContexts
+          - simplify-workspace-init:9
+          - results
+        map: 50
+      - path:
+          - outputs
+        map: 47
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 51
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 52
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 53
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 54
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 55
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 56
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 57
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 58
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 59
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 60
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 61
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 62
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 63
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 64
+      - path:
+          - evidenceWaits
+          - "10"
+          - results
+        map: 65
+      - path:
+          - evidenceWaits
+          - "11"
+          - results
+        map: 66
+      - path:
+          - evidenceWaits
+          - "12"
+          - results
+        map: 67
+      - path:
+          - evidenceWaits
+          - "13"
+          - results
+        map: 68
+      - path:
+          - evidenceWaits
+          - "14"
+          - results
+        map: 69
+  storageHash: 5fe2927230513d9f7e9ab748ca9d90b6bb1e1cd1de67910c0d9009d52940efca
+check_epoch: 12

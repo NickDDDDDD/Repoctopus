@@ -9,8 +9,10 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import path from 'node:path';
+import { parse } from 'yaml';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { parseSharedProjectConfig } from '../../domains/project-configuration/config.js';
 import type { ProjectDetectionDraft } from '../../domains/project-configuration/detection.js';
 import type { ProjectConfigurationDecisionRequest } from '../../domains/project-configuration/onboarding.js';
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
@@ -33,6 +35,184 @@ const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 describe('documented project onboarding flow', () => {
+  it('installs only the explicitly selected personal Init entry and previews Verify setup for the Workspace', async () => {
+    const root = await temporaryDirectory('repoctopus personal init ');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    const home = path.join(root, 'host-home');
+    await mkdir(home);
+    const environment = {
+      HOME: home,
+      USERPROFILE: home,
+      CODEX_HOME: path.join(home, '.codex'),
+      XDG_DATA_HOME: path.join(root, 'xdg-data'),
+      XDG_CONFIG_HOME: path.join(home, '.config'),
+      OPENSPEC_TELEMETRY: '0',
+      OPENSPEC_NO_UPDATE_CHECK: '1',
+      OPENSPEC_NO_AUTO_CONFIG: '1',
+    };
+    const invoke = <T>(...args: string[]) =>
+      runCli<T>({ packageRoot, cwd: workspace, args, environment });
+    await invoke('skill', 'install-init', '--entry-hosts', 'codex');
+    const personal = path.join(home, '.codex/skills/repoctopus-init/SKILL.md');
+    expect(await readFile(personal, 'utf8')).toContain('name: repoctopus-init');
+    await expect(
+      access(path.join(home, '.config/opencode/skills/repoctopus-init/SKILL.md')),
+    ).rejects.toMatchObject({ code: 'ENOENT' });
+    const prepared = await invoke<{ file: string; request: ProjectConfigurationDecisionRequest }>(
+      'project',
+      'init',
+      '--layout',
+      'single',
+      '--entry-hosts',
+      'codex',
+      '--store',
+      'install-entry-test',
+    );
+    const { request, file } = prepared.result!;
+    const relative = '.agents/skills/repoctopus-configure-verify/SKILL.md';
+    expect(request.entrySkills?.map(({ path }) => path)).toContain(relative);
+    await expect(access(path.join(workspace, relative))).rejects.toMatchObject({ code: 'ENOENT' });
+    const responseFile = path.join(root, 'accept.json');
+    await writeFile(
+      responseFile,
+      JSON.stringify({
+        apiVersion: request.apiVersion,
+        kind: 'HumanDecisionResponse',
+        requestId: request.requestId,
+        snapshotDigest: request.snapshotDigest,
+        decision: 'approve',
+      }),
+    );
+    await invoke('project', 'review', '--request', file, '--response-file', responseFile);
+    expect(await readFile(path.join(workspace, relative), 'utf8')).toContain(
+      'name: repoctopus-configure-verify',
+    );
+    expect(await readFile(path.join(workspace, 'repoctopus.yaml'), 'utf8')).toContain(
+      'profiles: []',
+    );
+
+    const profileFile = path.join(root, 'verify-profile.json');
+    const candidate = {
+      id: 'verify',
+      nodes: [
+        {
+          id: 'runtime-version',
+          type: 'command',
+          repository: 'workspace',
+          required: true,
+          covers: ['*'],
+          dependsOn: [],
+          executable: 'node',
+          args: ['--version'],
+          cwd: '.',
+          timeoutMs: 5000,
+          cache: false,
+        },
+      ],
+    };
+    await writeFile(profileFile, JSON.stringify(candidate));
+    const configured = await invoke<{ file: string; request: ProjectConfigurationDecisionRequest }>(
+      'project',
+      'configure-verify',
+      '--candidate',
+      profileFile,
+    );
+    const configFile = path.join(workspace, 'repoctopus.yaml');
+    const before = parseSharedProjectConfig(parse(await readFile(configFile, 'utf8')));
+    expect(before.profiles).toEqual([]);
+    expect(configured.result?.request.candidateConfig).toEqual({
+      ...before,
+      profiles: [candidate],
+    });
+    const profileRequest = configured.result!.request;
+    await writeFile(
+      responseFile,
+      JSON.stringify({
+        apiVersion: profileRequest.apiVersion,
+        kind: 'HumanDecisionResponse',
+        requestId: profileRequest.requestId,
+        snapshotDigest: profileRequest.snapshotDigest,
+        decision: 'approve',
+      }),
+    );
+    await invoke(
+      'project',
+      'review',
+      '--request',
+      configured.result!.file,
+      '--response-file',
+      responseFile,
+    );
+    expect(parseSharedProjectConfig(parse(await readFile(configFile, 'utf8')))).toEqual({
+      ...before,
+      profiles: [candidate],
+    });
+  });
+  it('prepares and rejects the same minimal Init request through the public Host CLI', async () => {
+    const root = await temporaryDirectory('repoctopus init host ');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    await createGitRepository(root, 'unrelated');
+    const environment = {
+      XDG_DATA_HOME: path.join(root, 'xdg-data'),
+      XDG_CONFIG_HOME: path.join(root, 'xdg-config'),
+      OPENSPEC_TELEMETRY: '0',
+      OPENSPEC_NO_UPDATE_CHECK: '1',
+      OPENSPEC_NO_AUTO_CONFIG: '1',
+    };
+    const invoke = <T>(...args: string[]) =>
+      runCli<T>({ packageRoot, cwd: workspace, args, environment });
+    const prepared = await invoke<{ file: string; request: ProjectConfigurationDecisionRequest }>(
+      'project',
+      'init',
+      '--layout',
+      'single',
+      '--store',
+      'init-host-test',
+    );
+    expect(prepared.result?.request.candidateConfig).toMatchObject({
+      profiles: [],
+      repositories: [{ id: 'workspace', path: '.' }],
+    });
+    const { file, request } = prepared.result!;
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    const observed = await invoke<ProjectConfigurationDecisionRequest>(
+      'project',
+      'decision',
+      '--request',
+      file,
+    );
+    expect(observed.result?.snapshotDigest).toBe(request.snapshotDigest);
+    const response = path.join(root, 'response.json');
+    await writeFile(
+      response,
+      JSON.stringify({
+        apiVersion: request.apiVersion,
+        kind: 'HumanDecisionResponse',
+        requestId: request.requestId,
+        snapshotDigest: request.snapshotDigest,
+        decision: 'reject',
+      }),
+    );
+    const result = await invoke(
+      'project',
+      'review',
+      '--request',
+      file,
+      '--response-file',
+      response,
+    );
+    expect(result.result).toMatchObject({ status: 'rejected' });
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    await expect(access(path.join(workspace, 'openspec'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+  });
   it('runs detect, Agent completion, trusted confirmation and first Evidence', async () => {
     const root = await temporaryDirectory('repoctopus-onboarding-flow-');
     cleanup.push(root);
