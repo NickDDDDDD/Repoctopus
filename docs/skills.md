@@ -108,7 +108,7 @@ Execution mode 是 Repoctopus action input，不是另一个 Skill。`subagent-d
 
 Runtime 在 change 开始时冻结并绑定有效组合身份，但只把当前 Work 的层装入上下文。资源随对应 Skill 层交付，在领取提交前完成校验并冻结。固定顺序为 Runtime contract → action Skill → Provider protocol → 内置 augmentation / replacement → team guidance → Method Profile → change inputs。Host 必须明确回报当前 packet 中真正读取的 Skill layer digest；Runtime 拒绝缺失、未知或旧层，只据此记录 `skill.consumed`。`consumed` 是有界回执，不证明 Agent 遵循了方法内容。
 
-能核对实际文件的宿主可以在 `run work-claim` 显式传 `--runner` 和 `--skill-reference-host <host>`。成功领取时，符合条件的内置层只返回路径和摘要。用同一 Run、Runner、invocation、Host 和 packet 摘要调用 `run work-content --layer-index <index> --skill-reference-host <host>`，按顺序装填它返回的正文和资源。缺失、替换或修改的本地文件自动回退到冻结内容。没有使用该选项的宿主仍收到完整包。动态 OpenSpec Provider 指令和团队绑定按原组合交付。
+能核对实际文件的宿主可以在 `run work-claim` 显式传 `--runner` 和 `--skill-reference-host <host>`。成功领取时，符合条件的内置层返回项目路径、原 packet 层摘要，以及读取时对应的已安装文件字节摘要 `installedDigest`。如果宿主能同时回报实际路径和这些字节摘要，可直接使用原生装填。文本的 LF 与 CRLF 视为同一内容。用同一 Run、Runner、invocation、Host 和 packet 摘要调用 `run work-content --layer-index <index> --skill-reference-host <host>`，按顺序装填它返回的正文和资源。缺失、替换或修改的本地文件自动回退到冻结内容。没有使用该选项的宿主仍收到完整包。动态 OpenSpec Provider 指令和团队绑定按原组合交付。
 
 内置 Method Profile Registry 以 `id + version + digest` 固定已审核规则；每条规则同时绑定上游 source digest、适用 phase、官方 artifact kind，以及 `context`、`deterministic-validator`、`review-rubric` 或 `human-decision` enforcement。上下文装配只输出这些 Repoctopus-owned 规则，不读取或注入原始 `to-spec`/`to-tickets` 正文。即使项目或用户目录定义同名 Skill，lifecycle definition validation 也会在 Work 创建前拒绝它。
 

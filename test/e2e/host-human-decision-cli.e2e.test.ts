@@ -216,7 +216,9 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
       .join(','),
   ]);
   await cli(['run', 'next', '--run', runId]);
-  await expect(cli(contentArgv)).rejects.toThrow(/active Run Work|active external invocation|no authoritative Work claim/i);
+  await expect(cli(contentArgv)).rejects.toThrow(
+    /active Run Work|active external invocation|no authoritative Work claim/i,
+  );
   const status = await cli<RunStatusView>(['run', 'status', '--run', runId]);
   expect(status.result!.state.status).toBe('waiting');
   expect(status.result!.state.changeLifecycle!.phase).toBe('open');
@@ -322,13 +324,50 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
       'manual',
       '--runner',
       'test:host-decision',
+      '--skill-reference-host',
+      'codex',
       '--host-capabilities',
       'repository.read,repository.write,specification.read,specification.write',
     ])
   ).result!;
-  const designReference = designClaim.packet.context.layers
-    .find(({ source }) => source === 'codebase-design')
-    ?.resources?.find(({ path }) => path === 'DESIGN-IT-TWICE.md');
+  const designLayerIndex = designClaim.packet.context.layers.findIndex(
+    ({ source }) => source === 'codebase-design',
+  );
+  expect(designClaim.packet.context.layers[designLayerIndex]).toMatchObject({
+    reference: {
+      resources: expect.arrayContaining([
+        expect.objectContaining({
+          path: 'DESIGN-IT-TWICE.md',
+          installedDigest: expect.stringMatching(/^sha256:/u),
+        }),
+      ]),
+    },
+  });
+  const designContent = await cli<{
+    source: string;
+    layer: WorkExecutionPacket['context']['layers'][number];
+  }>([
+    'run',
+    'work-content',
+    '--run',
+    runId,
+    '--runner',
+    'test:host-decision',
+    '--invocation-id',
+    designClaim.invocation.invocationId,
+    '--host-id',
+    designClaim.invocation.host.id,
+    '--packet-digest',
+    designClaim.packet.identity.packetDigest,
+    '--skill-reference-host',
+    'codex',
+    '--layer-index',
+    String(designLayerIndex),
+  ]);
+  expect(designContent.result?.source).toBe('workspace');
+  const designReference = designContent.result?.layer.resources?.find(
+    ({ path }) => path === 'DESIGN-IT-TWICE.md',
+  );
   expect(designReference?.encoding).toBe('utf8');
   expect(designReference?.content).toContain('design');
   await write(

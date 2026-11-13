@@ -51,7 +51,15 @@ export async function readWorkspaceWorkSkill(
   packet: WorkExecutionPacket,
   layer: WorkContextLayer,
   host: WorkspaceEntryHost,
-): Promise<{ path: string; layer: WorkContextLayer } | undefined> {
+): Promise<
+  | {
+      path: string;
+      installedDigest: `sha256:${string}`;
+      installedResources: Array<{ path: string; installedDigest: `sha256:${string}` }>;
+      layer: WorkContextLayer;
+    }
+  | undefined
+> {
   const relative = referencePath(packet, layer, host);
   if (!relative) return undefined;
   try {
@@ -89,13 +97,15 @@ export async function readWorkspaceWorkSkill(
         ) {
           throw new Error('Installed Skill resource identity changed');
         }
-        return {
-          ...resource,
-          content: bytes.equals(frozen) ? bytes.toString(resource.encoding) : resource.content,
-        };
+        return { path: resource.path, installedDigest: digest(bytes) };
       }),
     );
-    return { path: relative, layer: { ...layer, resources } };
+    return {
+      path: relative,
+      installedDigest: digest(markdown),
+      installedResources: resources,
+      layer,
+    };
   } catch {
     return undefined;
   }
@@ -116,7 +126,11 @@ export async function workPacketReferenceView(
         ...metadata,
         reference: {
           path: reference.path,
-          resources: resources.map(({ path, digest }) => ({ path, digest })),
+          installedDigest: reference.installedDigest,
+          resources: reference.installedResources.map((installed, index) => ({
+            ...installed,
+            digest: resources[index]!.digest,
+          })),
         },
       };
     }),

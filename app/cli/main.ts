@@ -1400,6 +1400,9 @@ async function runWorkClaim(parsed: ParsedArguments): Promise<CliEnvelope<unknow
     .map((capability) => capability.trim())
     .filter(Boolean);
   const referenceHost = skillReferenceHost(parsed);
+  const runnerId = referenceHost
+    ? stringFlag(parsed, 'runner', { required: true })!
+    : stringFlag(parsed, 'runner', { fallback: `cli:${process.pid}` })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute<unknown, ExternalWorkClaimResult>(
@@ -1412,7 +1415,7 @@ async function runWorkClaim(parsed: ParsedArguments): Promise<CliEnvelope<unknow
         ...(referenceHost ? { skillReferenceHost: referenceHost } : {}),
         executor: {
           actorId: userInfo().username,
-          runnerId: stringFlag(parsed, 'runner', { fallback: `cli:${process.pid}` })!,
+          runnerId,
           source: 'cli',
           authenticated: true,
         },
