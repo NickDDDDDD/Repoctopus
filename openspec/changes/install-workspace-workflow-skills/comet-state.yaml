@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 5674eddd76d0a43250462c396e6d46e2318124ec6e59bfbccc67b151d0f3efc0
+  hash: 3e8f6fbf16987581bc7afbc0e4aa0175bbcb0135e8b3746a79dd2752e505c078
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -981,6 +981,14 @@ run_checkpoint:
         stepId: full.build.execute
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-ea82f9419bd0cb48f8b0466e50ceab7b63dcf307c9c4de50e167a4061b4aac6f
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
         id: install-workspace-workflow-skills:18
         input:
           input:
@@ -1093,13 +1101,14 @@ run_checkpoint:
                 ref: openspec/changes/install-workspace-workflow-skills
         inputHash: a8bd0ae8772fdf175e567b11a3edbbcd1a048113d3557ca7fe6551c856f60776
         protocolVersion: 1
+        reason: Portable recovery requires reconciliation of external execution
         receipts: []
         reconciliations: []
         ref: classic-check
         requiredCapabilities: []
         retry: manual
         runId: install-workspace-workflow-skills
-        status: pending
+        status: unknown
         stepId: full.build.check
         type: call_tool
     commands:
@@ -2373,6 +2382,6 @@ run_checkpoint:
           contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
     children: []
     lineage: []
-  sourceRevision: 28
-  sourceHash: 50b1c37764df35f3cc9ce87a9d6cf3da28d5cd4bf89e1421ae1c833e53c987f9
+  sourceRevision: 29
+  sourceHash: c67ee19695ad5088703383fe3925c8b36e2bd333020b82bc98536567b100cdd0
 check_epoch: 2
