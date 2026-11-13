@@ -1,5 +1,7 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, readdir, realpath, symlink, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { lstat, mkdir, readFile, readdir, realpath, symlink, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -160,6 +162,29 @@ describe('published package', () => {
       root,
     );
 
+    const installedPackage = path.join(installation, 'node_modules', 'repoctopus');
+    const resolveDependency = createRequire(path.join(installedPackage, 'package.json')).resolve;
+    const cordisProvenance = JSON.parse(
+      await readFile(path.join(installedPackage, 'third_party', 'cordis-upstream.json'), 'utf8'),
+    ) as { packages: Array<{ name: string; version: string }> };
+    for (const { name, version } of cordisProvenance.packages) {
+      const directories = resolveDependency.paths(name) ?? [];
+      const dependency = directories
+        .map((directory) => path.join(directory, name))
+        .find(existsSync);
+      if (!dependency) throw new Error(`Installed CLI cannot resolve ${name}`);
+      expect(
+        (await lstat(dependency)).isDirectory(),
+        `${name} must install as a regular directory`,
+      ).toBe(true);
+      const metadata = JSON.parse(
+        await readFile(resolveDependency(`${name}/package.json`), 'utf8'),
+      ) as {
+        version: string;
+      };
+      expect(metadata.version).toBe(version);
+    }
+
     const project = path.join(root, 'project');
     const workspace = path.join(project, 'workspace');
     await createGitRepository(project, 'service');
@@ -197,7 +222,6 @@ describe('published package', () => {
         },
       }),
     );
-    const installedPackage = path.join(installation, 'node_modules', 'repoctopus');
     const installedMetadata = JSON.parse(
       await readFile(path.join(installedPackage, 'package.json'), 'utf8'),
     ) as { version: string };
