@@ -18,3 +18,5 @@
 ## Comet 检查中断
 
 首个 Build Check 在测试断言 lint 校验中失败，已修复并复跑单项检查。随后手动中断第二个 Build Check，以补齐打包报告。Comet 保留了已部分执行的原 Action。检查进程已停止且没有完整收据。通过公开 Runtime 接口将该 Action 标记为结果未知。Comet 0.5.1 要求原检查收据才能接受回填，公开重试仅适用于未执行的尝试。另行运行的项目完整检查与这个 Runtime Action 分开记录。
+
+Windows 完整项目检查 npm run verify 退出码 0。207 个测试文件通过、1 个跳过，1235 项测试通过、4 项跳过。构建、生成物、架构、来源、20 项严格 OpenSpec 校验及候选包内容摘要检查均通过。该结果属于独立项目检查，原 Comet Build Check 继续保留结果未知状态。
