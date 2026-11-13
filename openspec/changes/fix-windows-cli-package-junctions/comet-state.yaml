@@ -2,7 +2,7 @@
 change_id: 6cc68ac2-c4fa-49a1-a1cc-c9c2baaaf122
 workflow: full
 language: zh-CN
-phase: open
+phase: build
 context_compression: off
 build_mode: null
 build_pause: null
@@ -13,7 +13,7 @@ isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: 3d756bea681a4ed9b63de0ef7846080ebf0f2153
-design_doc: null
+design_doc: openspec/changes/fix-windows-cli-package-junctions/design.md
 plan: null
 verify_result: pending
 verify_failures: 0
@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/fix-windows-cli-package-junctions
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+handoff_hash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 86e26a5dab899e40a2d67170e531434b03271139a4eb9febfa5c52bd7458ac88
+  hash: e738c75dadd19db37b56e2a722836e91ab9cca64c214b110a84970afb08e9759
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,17 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-13
-      designDoc: null
+      designDoc: openspec/changes/fix-windows-cli-package-junctions/design.md
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+      handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
       isolation: worktree
       language: zh-CN
-      phase: open
+      phase: build
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -80,9 +81,17 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 1
+    sequence: 9
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-c763fab473f7597666c650852444bad1913b209b90ed8dd80822deb61404b927
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: fix-windows-cli-package-junctions:1
         input:
           input:
@@ -92,25 +101,823 @@ run_checkpoint:
               ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
           outputs: {}
         inputHash: 3427ce8cd079e1a2c7b1443a44228202e0099c77da76bc8d896281e7ef12e322
+        outcome:
+          actionId: fix-windows-cli-package-junctions:1
+          attempt: 1
+          claimToken: portable-c763fab473f7597666c650852444bad1913b209b90ed8dd80822deb61404b927
+          inputHash: 3427ce8cd079e1a2c7b1443a44228202e0099c77da76bc8d896281e7ef12e322
+          outcomeId: bc378a35-392c-44f4-9a43-a64b166eed58
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: cf8b39aab057a90ffbf16d57b6cc7d72cee88cb3a8e9bbaec667f639403d02e6
+            outcomeId: bc378a35-392c-44f4-9a43-a64b166eed58
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: fix-windows-cli-package-junctions
-        status: pending
+        status: succeeded
         stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-e9b527b5d34219a166c6aeee26c25054d7aee4386fddde5e68457b136eedff6f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:4
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                    ref: openspec/changes/fix-windows-cli-package-junctions
+            full.open.evidence:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+        inputHash: f3a86679af9a9036165b4c8e2df8dee876f547252d90d31424b2a811805b9822
+        outcome:
+          actionId: fix-windows-cli-package-junctions:4
+          attempt: 1
+          claimToken: portable-e9b527b5d34219a166c6aeee26c25054d7aee4386fddde5e68457b136eedff6f
+          inputHash: f3a86679af9a9036165b4c8e2df8dee876f547252d90d31424b2a811805b9822
+          outcomeId: fix-windows-cli-package-junctions:4:1:executor-result
+          output:
+            contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6c19b6133e9f69eafc8966c6ef39fe7b37aa0ef689b7d002c0c01c5bc4abb27b
+            outcomeId: fix-windows-cli-package-junctions:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-8a1042093289fa56ea44ab6aae07e163cc7bc7c111611a69b17c5f82c76d7941
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:5
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                    ref: openspec/changes/fix-windows-cli-package-junctions
+            full.open.evidence:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+            full.open.revalidate:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+        inputHash: f4586824f0685a7c42671acc21b99a3be39ab51fe974e37f2ca12aa5237c864c
+        outcome:
+          actionId: fix-windows-cli-package-junctions:5
+          attempt: 1
+          claimToken: portable-8a1042093289fa56ea44ab6aae07e163cc7bc7c111611a69b17c5f82c76d7941
+          inputHash: f4586824f0685a7c42671acc21b99a3be39ab51fe974e37f2ca12aa5237c864c
+          outcomeId: 77cd2230-40e7-441b-802a-055849985232
+          output:
+            handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+            handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+            proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+              版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+              验证直接安装。方案与前述验证一致，规格无需补丁。
+            requirementsEvidence:
+              contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+              ref: openspec/changes/fix-windows-cli-package-junctions
+            sourceEvidence:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: cacc801cb342f3fd652c6057c5bc1a558a2f2bacce2feb271f7d61c64dd7bb4e
+            outcomeId: 77cd2230-40e7-441b-802a-055849985232
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e2dd2a40097d08a6d8182a0766be31f9876e22e706e0afe40912bcb61c6f49a6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:7
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+                    handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+                    proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                      版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实
+                      CodeBuddy 验证直接安装。方案与前述验证一致，规格无需补丁。
+                    requirementsEvidence:
+                      contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                      ref: openspec/changes/fix-windows-cli-package-junctions
+                    sourceEvidence:
+                      contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                      ref: openspec/changes/fix-windows-cli-package-junctions
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+              handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+              proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+                验证直接安装。方案与前述验证一致，规格无需补丁。
+              requirementsEvidence:
+                contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                ref: openspec/changes/fix-windows-cli-package-junctions
+              sourceEvidence:
+                contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                ref: openspec/changes/fix-windows-cli-package-junctions
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                    ref: openspec/changes/fix-windows-cli-package-junctions
+            full.open.evidence:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+            full.open.revalidate:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+        inputHash: a1728f236f88b128e7a812a7e45712db746365be9aa6c5c98540cfb9db7155c9
+        outcome:
+          actionId: fix-windows-cli-package-junctions:7
+          attempt: 1
+          claimToken: portable-e2dd2a40097d08a6d8182a0766be31f9876e22e706e0afe40912bcb61c6f49a6
+          inputHash: a1728f236f88b128e7a812a7e45712db746365be9aa6c5c98540cfb9db7155c9
+          outcomeId: 779ed087-73d1-477c-ba55-15d402ba023c
+          output:
+            designDoc: openspec/changes/fix-windows-cli-package-junctions/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5826a4fc1af6e67f369c816f8eb1cd4797dcc3094fb1a3b8db0eae6caca5f483
+            outcomeId: 779ed087-73d1-477c-ba55-15d402ba023c
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        id: fix-windows-cli-package-junctions:9
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+                    handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+                    proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                      版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实
+                      CodeBuddy 验证直接安装。方案与前述验证一致，规格无需补丁。
+                    requirementsEvidence:
+                      contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                      ref: openspec/changes/fix-windows-cli-package-junctions
+                    sourceEvidence:
+                      contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                      ref: openspec/changes/fix-windows-cli-package-junctions
+            full.design.document:
+              designDoc: openspec/changes/fix-windows-cli-package-junctions/design.md
+            full.design.evidence:
+              contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+              ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+              handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+              proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+                验证直接安装。方案与前述验证一致，规格无需补丁。
+              requirementsEvidence:
+                contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                ref: openspec/changes/fix-windows-cli-package-junctions
+              sourceEvidence:
+                contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                ref: openspec/changes/fix-windows-cli-package-junctions
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                    ref: openspec/changes/fix-windows-cli-package-junctions
+            full.open.evidence:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+            full.open.revalidate:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+        inputHash: be4440309105eddf8775d32e16d310d2144e5395b000dd096e8fdb79156e1090
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: pending
+        stepId: full.build.configure
         type: invoke_skill
     actionContexts:
       fix-windows-cli-package-junctions:1:
         results: {}
         sequence: 1
-    waits: []
+      fix-windows-cli-package-junctions:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                    ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+        sequence: 4
+      fix-windows-cli-package-junctions:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                    ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+        sequence: 5
+      fix-windows-cli-package-junctions:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+                    handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+                    proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                      版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实
+                      CodeBuddy 验证直接安装。方案与前述验证一致，规格无需补丁。
+                    requirementsEvidence:
+                      contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                      ref: openspec/changes/fix-windows-cli-package-junctions
+                    sourceEvidence:
+                      contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                      ref: openspec/changes/fix-windows-cli-package-junctions
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+              handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+              proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+                验证直接安装。方案与前述验证一致，规格无需补丁。
+              requirementsEvidence:
+                contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                ref: openspec/changes/fix-windows-cli-package-junctions
+              sourceEvidence:
+                contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                    ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+        sequence: 7
+      fix-windows-cli-package-junctions:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+                    handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+                    proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                      版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实
+                      CodeBuddy 验证直接安装。方案与前述验证一致，规格无需补丁。
+                    requirementsEvidence:
+                      contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                      ref: openspec/changes/fix-windows-cli-package-junctions
+                    sourceEvidence:
+                      contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                      ref: openspec/changes/fix-windows-cli-package-junctions
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/fix-windows-cli-package-junctions/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+              ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+              handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+              proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+                验证直接安装。方案与前述验证一致，规格无需补丁。
+              requirementsEvidence:
+                contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                ref: openspec/changes/fix-windows-cli-package-junctions
+              sourceEvidence:
+                contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                    ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+        sequence: 9
+    waits:
+      - id: fix-windows-cli-package-junctions:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+        proposalHash: e75f36e3a43b6026f41c2059d077a78e38a1fde4bfb2dc402a25d307e6c6a5a6
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+        decision:
+          id: classic-open-4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+          choice: approved
+          proposalHash: e75f36e3a43b6026f41c2059d077a78e38a1fde4bfb2dc402a25d307e6c6a5a6
+      - id: fix-windows-cli-package-junctions:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+              handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+              proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+                验证直接安装。方案与前述验证一致，规格无需补丁。
+              requirementsEvidence:
+                contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                ref: openspec/changes/fix-windows-cli-package-junctions
+              sourceEvidence:
+                contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                ref: openspec/changes/fix-windows-cli-package-junctions
+        proposalHash: 77c7b2001c7167c0319861e6daa5dbc903a718f5f72e16e6bbdd967c2bd674b8
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+              handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+              proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+                验证直接安装。方案与前述验证一致，规格无需补丁。
+              requirementsEvidence:
+                contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                ref: openspec/changes/fix-windows-cli-package-junctions
+              sourceEvidence:
+                contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                    ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+        decision:
+          id: classic-design-77c7b2001c7167c0319861e6daa5dbc903a718f5f72e16e6bbdd967c2bd674b8-approved
+          choice: approved
+          proposalHash: 77c7b2001c7167c0319861e6daa5dbc903a718f5f72e16e6bbdd967c2bd674b8
+    evidenceWaits:
+      - id: fix-windows-cli-package-junctions:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/fix-windows-cli-package-junctions
+          contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+          submissionId: 234b70a8-ae03-4817-b16e-deb7780b5678
+      - id: fix-windows-cli-package-junctions:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+                    handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+                    proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                      版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实
+                      CodeBuddy 验证直接安装。方案与前述验证一致，规格无需补丁。
+                    requirementsEvidence:
+                      contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                      ref: openspec/changes/fix-windows-cli-package-junctions
+                    sourceEvidence:
+                      contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                      ref: openspec/changes/fix-windows-cli-package-junctions
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/fix-windows-cli-package-junctions/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+              handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+              proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+                验证直接安装。方案与前述验证一致，规格无需补丁。
+              requirementsEvidence:
+                contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                ref: openspec/changes/fix-windows-cli-package-junctions
+              sourceEvidence:
+                contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fix-windows-cli-package-junctions
+                  changeDir: openspec/changes/fix-windows-cli-package-junctions
+                  workspaceBaseline:
+                    ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                    ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+        receipt:
+          ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+          contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+          submissionId: 98320bb8-807a-4efd-a4c0-df4f20a40d32
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-windows-cli-package-junctions
+              changeDir: openspec/changes/fix-windows-cli-package-junctions
+              workspaceBaseline:
+                ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+                handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+                proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                  版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实
+                  CodeBuddy 验证直接安装。方案与前述验证一致，规格无需补丁。
+                requirementsEvidence:
+                  contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                  ref: openspec/changes/fix-windows-cli-package-junctions
+                sourceEvidence:
+                  contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                  ref: openspec/changes/fix-windows-cli-package-junctions
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/fix-windows-cli-package-junctions/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+          ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+          handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+          proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+            版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+            验证直接安装。方案与前述验证一致，规格无需补丁。
+          requirementsEvidence:
+            contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+            ref: openspec/changes/fix-windows-cli-package-junctions
+          sourceEvidence:
+            contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+            ref: openspec/changes/fix-windows-cli-package-junctions
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-windows-cli-package-junctions
+              changeDir: openspec/changes/fix-windows-cli-package-junctions
+              workspaceBaseline:
+                ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                ref: openspec/changes/fix-windows-cli-package-junctions
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+          ref: openspec/changes/fix-windows-cli-package-junctions
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: 0b68b45bdf825dcd85c6a728ede33b8053f4e4d82e0e87c235baa09bb73718a8
+  sourceRevision: 13
+  sourceHash: bec411530509d54b7bf5da2b583f5d87ba72ba6ca990b007666646b336221c8e
+check_epoch: 2

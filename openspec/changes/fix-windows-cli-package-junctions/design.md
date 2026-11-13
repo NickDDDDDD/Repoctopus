@@ -1,3 +1,9 @@
+---
+comet_change: fix-windows-cli-package-junctions
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
