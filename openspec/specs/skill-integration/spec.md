@@ -346,6 +346,26 @@ Repoctopus MUST 随可安装 CLI 分发宿主可显式调用的 Init 和 Verify 
 - **WHEN** 用户在已接入 Workspace 明确调用 Verify 配置 Skill
 - **THEN** 宿主使用独立公开接口配置 Profile，并沿 Runtime 指引恢复原 Run（如有）
 
+### Requirement: CodeBuddy、CodeArts 码道和 TRAE 能原生调用 Repoctopus Skill
+
+Repoctopus MUST 为 CodeBuddy、CodeArts 码道和 TRAE 提供原生发现与显式调用的入口资产，覆盖首次接入、Workspace 新建或恢复 Change 以及单独配置 Verify。各宿主 MUST 使用同一公共 Runtime 协议，并准确报告其实际可用能力。
+
+#### Scenario: 未接入项目的宿主调用 Init
+
+- **WHEN** 用户为相应宿主安装个人级入口，并在未接入项目的新会话显式调用 Init
+- **THEN** 宿主实际装填入口 Skill，并向 Runtime 发起接入请求
+
+#### Scenario: 已接入 Workspace 调用入口
+
+- **WHEN** 用户在三种宿主之一打开已接入 Workspace 并调用相应 Skill
+- **THEN** 宿主原生发现并加载目标入口，通过公开接口启动或恢复 Run，或启动独立 Verify 配置
+- **AND** 当前阶段与 Action 仍以 Runtime continuation 为准
+
+#### Scenario: Skill 被停用或被同名入口覆盖
+
+- **WHEN** 支持宿主中目标 Skill 未实际启用或选中
+- **THEN** 验收明确记录发现与调用受限及恢复方式，不将仅写入文件视为成功调用
+
 ### Requirement: 已安装的方法 Skill 遵守工作流权威
 
 安装的 Repoctopus Action 与 Matt 方法 Skill MUST 服从当前 Runtime Work、能力与写入约束。OpenSpec 静态 Skill 的宿主可发现性 MUST NOT 替代运行时 Provider 工件协议。仅作为方法参考的 `to-spec`、`to-tickets` 不得以工作流执行 Skill 形式安装。

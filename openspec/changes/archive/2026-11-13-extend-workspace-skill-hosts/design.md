@@ -2,6 +2,8 @@
 comet_change: extend-workspace-skill-hosts
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-13-extend-workspace-skill-hosts
+status: final
 ---
 
 # Design

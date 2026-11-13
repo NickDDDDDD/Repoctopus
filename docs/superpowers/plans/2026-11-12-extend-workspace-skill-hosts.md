@@ -2,6 +2,7 @@
 change: extend-workspace-skill-hosts
 design-doc: openspec/changes/extend-workspace-skill-hosts/design.md
 base-ref: 3d756bea681a4ed9b63de0ef7846080ebf0f2153
+archived-with: 2026-11-13-extend-workspace-skill-hosts
 ---
 
 # 扩展 Workspace 入口宿主实施计划
