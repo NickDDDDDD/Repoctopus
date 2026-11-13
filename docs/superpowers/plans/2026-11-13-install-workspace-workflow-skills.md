@@ -2,6 +2,7 @@
 change: install-workspace-workflow-skills
 design-doc: openspec/changes/install-workspace-workflow-skills/design.md
 base-ref: fe87b0d919a4f9b8202d22523279a578badbdc96
+archived-with: 2026-11-13-install-workspace-workflow-skills
 ---
 
 # Workspace Skill 安装与引用

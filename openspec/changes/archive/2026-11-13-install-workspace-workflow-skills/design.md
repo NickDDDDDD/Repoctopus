@@ -2,6 +2,8 @@
 comet_change: install-workspace-workflow-skills
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-13-install-workspace-workflow-skills
+status: final
 ---
 
 ## Context
