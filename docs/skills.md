@@ -17,6 +17,8 @@ Repoctopus 使用 DSH Skill Registry 解析 Skill，并通过 Cordis Provider �
 
 个人安装支持预览。CodeBuddy Code 使用 `CODEBUDDY_CONFIG_DIR` 时，个人目录跟随该设置，仍须位于用户目录内。首次接入默认预览 Codex 和 OpenCode 的 Workspace 入口。用 `--entry-hosts` 选择实际需要的宿主。
 
+获批的 Workspace 初始化与补装还会安装八个阶段 Action、Matt 的 `grilling`、`codebase-design`、`tdd`、`code-review`、`diagnosing-bugs`、`pr`，以及使用 OpenSpec 时的只读 `openspec-explore`。每个 Skill 的正文和资源位于所选宿主的 `skills/<name>/`。把接入或补装产生的 Skill 目录与同级的 `.repoctopus-workflow-skills/` 管理记录一起提交并推送，再开始 Change。其他成员拉取后即可使用同一套 Skill，也可通过补装增加团队尚未提交的宿主。升级走同一个补装命令，预览会报告被修改或占用的文件。
+
 ```powershell
 repoctopus.cmd skill install-init --entry-hosts codebuddy --preview
 repoctopus.cmd skill install-init --entry-hosts codebuddy
@@ -105,6 +107,8 @@ lifecycle:
 Execution mode 是 Repoctopus action input，不是另一个 Skill。`subagent-driven-development` 要求 Host 具有 `subagent.dispatch.attested`，并为当前 package 返回结构化 delegation receipts；`autonomous` 禁止未声明的子调用。两种模式使用相同的 Runtime、Validator 和 Verify 边界，不依赖 Superpowers。
 
 Runtime 在 change 开始时冻结并绑定有效组合身份，但只把当前 Work 的层装入上下文。资源随对应 Skill 层交付，在领取提交前完成校验并冻结。固定顺序为 Runtime contract → action Skill → Provider protocol → 内置 augmentation / replacement → team guidance → Method Profile → change inputs。Host 必须明确回报当前 packet 中真正读取的 Skill layer digest；Runtime 拒绝缺失、未知或旧层，只据此记录 `skill.consumed`。`consumed` 是有界回执，不证明 Agent 遵循了方法内容。
+
+可验证本地装填的 CLI 宿主可在 `run work-claim` 加 `--skill-reference-host <host>`。成功领取时，符合条件的内置层只返回路径和摘要。用同一 Run、Runner、invocation、Host 和 packet 摘要调用 `run work-content --layer-index <index> --skill-reference-host <host>`，按顺序装填它返回的正文和资源。缺失、替换或修改的本地文件自动回退到冻结内容。没有使用该选项的宿主仍收到完整包。动态 OpenSpec Provider 指令和团队绑定按原组合交付。
 
 内置 Method Profile Registry 以 `id + version + digest` 固定已审核规则；每条规则同时绑定上游 source digest、适用 phase、官方 artifact kind，以及 `context`、`deterministic-validator`、`review-rubric` 或 `human-decision` enforcement。上下文装配只输出这些 Repoctopus-owned 规则，不读取或注入原始 `to-spec`/`to-tickets` 正文。即使项目或用户目录定义同名 Skill，lifecycle definition validation 也会在 Work 创建前拒绝它。
 

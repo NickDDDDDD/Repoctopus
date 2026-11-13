@@ -12,7 +12,7 @@ export type WorkspaceEntryHost = (typeof WORKSPACE_ENTRY_HOSTS)[number];
 
 const ownershipMarker = /\n<!-- repoctopus-entry:v1 SKILL\.md ([a-f0-9]{64}) -->\n$/u;
 
-export function workspaceEntryDigest(text: string): string {
+export function workspaceEntryDigest(text: string | Uint8Array): string {
   return createHash('sha256').update(text).digest('hex');
 }
 
@@ -33,4 +33,13 @@ export interface WorkspaceEntrySkillPlan {
   beforeDigest: string | null;
   contentDigest: string;
   diagnostic?: string;
+  files?: Array<{ path: string; beforeDigest: string | null; contentDigest: string | null }>;
 }
+
+/** Separate ownership metadata from the native Skill and its resources. */
+export function workspaceWorkflowSkillManifestPath(skillFile: string): string {
+  const [hostDirectory, , name] = skillFile.split('/');
+  return `${hostDirectory}/.repoctopus-workflow-skills/${name}.json`;
+}
+
+export const WORKSPACE_WORKFLOW_SKILL_MARKER = 'repoctopus-workflow-install: true';

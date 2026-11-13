@@ -446,6 +446,8 @@ export async function prepareProjectConfigurationDecision(input: {
   const entrySkills = await planWorkspaceEntrySkills(
     workspace,
     draft.entrySkills?.map(({ host }) => host),
+    (draft.candidateConfig?.specificationProvider?.id ?? 'specification-openspec') ===
+      'specification-openspec',
   );
   const request = createProjectConfigurationDecision({
     draft: { ...draft, entrySkills },
@@ -484,7 +486,11 @@ export async function prepareWorkspaceEntryInstallDecision(input: {
     throw new Error('Workspace entry installation requires the Workspace Git root');
   }
   const { shared } = await loadProjectConfig(workspace);
-  const entrySkills = await planWorkspaceEntrySkills(workspace, input.entryHosts);
+  const entrySkills = await planWorkspaceEntrySkills(
+    workspace,
+    input.entryHosts,
+    (shared.specificationProvider?.id ?? 'specification-openspec') === 'specification-openspec',
+  );
   return persistConfigurationDecision(
     workspace,
     createWorkspaceEntryInstallDecision({ workspaceRoot: workspace, current: shared, entrySkills }),
@@ -657,6 +663,8 @@ export async function applyProjectConfigurationDecision(
           state.request.requestId,
           (file) => input.hooks?.afterEntryWrite?.(file),
           checkScope,
+          (state.request.candidateConfig.specificationProvider?.id ?? 'specification-openspec') ===
+            'specification-openspec',
         );
         await atomicWriteJson(
           stateFile,
@@ -754,6 +762,9 @@ export async function applyProjectConfigurationDecision(
         state.status === 'applying',
         state.request.requestId,
         (file) => input.hooks?.afterEntryWrite?.(file),
+        undefined,
+        (state.request.candidateConfig.specificationProvider?.id ?? 'specification-openspec') ===
+          'specification-openspec',
       );
       await atomicWriteJson(
         stateFile,

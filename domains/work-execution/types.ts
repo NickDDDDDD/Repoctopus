@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
-import type { ActionIntent, ClaimedActionOutcome } from '../action/types.js';
+import type { WorkspaceEntryHost } from '../project-configuration/entry-skills.js';
+import type { ActionIntent, ClaimedActionOutcome, WorkExecutorIdentity } from '../action/types.js';
 import type { WorkExecutionContext, WorkSkillResource } from '../change-lifecycle/work-context.js';
 import type { WorkDescriptor } from '../change-lifecycle/transition.js';
 import type { WorkPackageCandidate } from '../change-lifecycle/build-protocol.js';
@@ -145,6 +146,8 @@ export interface WorkExecutionHostInvocation {
   host: WorkExecutionHostIdentity;
   packet: WorkExecutionPacketIdentity;
   startedAt: string;
+  executor?: WorkExecutorIdentity;
+  skillReferenceHost?: WorkspaceEntryHost;
 }
 
 export interface WorkExecutionHostOutcome {

@@ -604,6 +604,8 @@ export class ManagedWorkExecutor extends Service {
       host,
       packet: structuredClone(claim.packet.identity),
       startedAt: new Date().toISOString(),
+      executor: structuredClone(request.executor),
+      ...(request.skillReferenceHost ? { skillReferenceHost: request.skillReferenceHost } : {}),
     };
     const acquisition = await this.ctx.workExecutionAuthority.markHostStarted(
       claim.intent,
@@ -618,6 +620,42 @@ export class ManagedWorkExecutor extends Service {
       };
     }
     return { ...claim, executionAcquired: true, invocation };
+  }
+
+  async readExternalWorkContent(input: {
+    runId: string;
+    invocationId: string;
+    hostId: string;
+    packetDigest: string;
+    executor: WorkExecutorIdentity;
+    skillReferenceHost?: WorkClaimRequest['skillReferenceHost'];
+  }): Promise<WorkExecutionPacket> {
+    const { intent, packet } = await this.ctx.workExecutionAuthority.loadAuthoritativePacket(
+      input.runId,
+    );
+    const { workExecution } = await this.ctx.runStore.loadRun(input.runId);
+    const invocation = workExecution?.hostInvocation;
+    const original = invocation?.executor ?? intent.executor;
+    if (
+      !invocation ||
+      !workExecution ||
+      !['invoking', 'unknown'].includes(workExecution.status) ||
+      invocation.invocationId !== input.invocationId ||
+      (input.skillReferenceHost !== undefined &&
+        invocation.skillReferenceHost !== input.skillReferenceHost) ||
+      invocation.host.id !== input.hostId ||
+      invocation.host.id !== `external:${input.executor.source}:${input.executor.runnerId}` ||
+      invocation.packet.packetDigest !== input.packetDigest ||
+      packet.identity.packetDigest !== input.packetDigest ||
+      !input.executor.authenticated ||
+      !original?.authenticated ||
+      original.actorId !== input.executor.actorId ||
+      original.runnerId !== input.executor.runnerId ||
+      original.source !== input.executor.source
+    ) {
+      throw new Error('Work content request does not match the active external invocation');
+    }
+    return packet;
   }
 
   async acceptExternalOutcome(

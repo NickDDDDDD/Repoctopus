@@ -180,7 +180,7 @@
       "sourceSha256": "4be3a8f4142b27e07093cff1757876a80a344dd6f664a38775069244b89f4ec4",
       "disposition": "source-modified",
       "target": "plugins/skill/file-skill-provider.ts",
-      "targetSha256": "bfdcdaa46a34f14ff7023f5c8da97952d2bd37c31df536de5c43e439fb3f7841"
+      "targetSha256": "6ae5ba40e0c3609ec5fd0a6e51ecfb36db1e70354c7fafcddb00b02dc7cbbcc8"
     },
     {
       "id": "webhook-runtime",

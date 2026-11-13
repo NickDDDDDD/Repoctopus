@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
-import { access, mkdir, readFile, stat, symlink, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, rename, stat, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { parse } from 'yaml';
@@ -258,25 +258,58 @@ describe('project configuration onboarding', () => {
   it('previews the managed Workspace entry and installs it only on approval', async () => {
     const { workspace, prepared, input } = await guideDecisionFixture();
     const entry = path.join(workspace, '.agents/skills/repoctopus/SKILL.md');
-    expect(prepared.request).toMatchObject({
-      entrySkills: [
-        { host: 'codex', path: '.agents/skills/repoctopus/SKILL.md', status: 'create' },
-        {
-          host: 'codex',
-          path: '.agents/skills/repoctopus-configure-verify/SKILL.md',
-          status: 'create',
-        },
-        { host: 'opencode', path: '.opencode/skills/repoctopus/SKILL.md', status: 'create' },
-        {
-          host: 'opencode',
-          path: '.opencode/skills/repoctopus-configure-verify/SKILL.md',
-          status: 'create',
-        },
-      ],
-    });
+    expect(prepared.request.entrySkills?.filter(({ files }) => !files)).toMatchObject([
+      { host: 'codex', path: '.agents/skills/repoctopus/SKILL.md', status: 'create' },
+      {
+        host: 'codex',
+        path: '.agents/skills/repoctopus-configure-verify/SKILL.md',
+        status: 'create',
+      },
+      { host: 'opencode', path: '.opencode/skills/repoctopus/SKILL.md', status: 'create' },
+      {
+        host: 'opencode',
+        path: '.opencode/skills/repoctopus-configure-verify/SKILL.md',
+        status: 'create',
+      },
+    ]);
+    const projected = path.join(workspace, '.agents/skills/tdd/SKILL.md');
+    expect(prepared.request.entrySkills).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: '.agents/skills/tdd/SKILL.md', status: 'create' }),
+        expect.objectContaining({ path: '.opencode/skills/openspec-explore/SKILL.md' }),
+      ]),
+    );
+    await expect(access(projected)).rejects.toMatchObject({ code: 'ENOENT' });
     await expect(access(entry)).rejects.toMatchObject({ code: 'ENOENT' });
     await expect(applyDecision(input)).resolves.toMatchObject({ status: 'confirmed' });
     expect(await readFile(entry, 'utf8')).toContain('name: repoctopus');
+    expect(await readFile(projected, 'utf8')).toContain('name: tdd');
+    await expect(access(path.join(path.dirname(projected), 'tests.md'))).resolves.toBeUndefined();
+  });
+
+  it('resumes a partially installed method Skill and preserves an extra local resource', async () => {
+    const { workspace, input } = await guideDecisionFixture();
+    const skill = path.join(workspace, '.agents/skills/tdd');
+    const body = path.join(skill, 'SKILL.md');
+    await expect(
+      applyDecision({
+        ...input,
+        hooks: {
+          afterEntryWrite: (file) => {
+            if (file === '.agents/skills/tdd/SKILL.md') throw new Error('method Skill interrupted');
+          },
+        },
+      }),
+    ).rejects.toThrow('method Skill interrupted');
+    const before = await stat(body);
+    const extra = path.join(skill, 'team-notes.md');
+    await writeFile(extra, 'local notes');
+    await expect(applyDecision(input)).rejects.toThrow(/unmanaged file/u);
+    expect(await readFile(extra, 'utf8')).toBe('local notes');
+    await rename(extra, path.join(workspace, 'team-notes.md'));
+    await expect(applyDecision(input)).resolves.toMatchObject({ status: 'confirmed' });
+    expect((await stat(body)).mtimeMs).toBe(before.mtimeMs);
+    await expect(access(path.join(skill, 'tests.md'))).resolves.toBeUndefined();
   });
 
   it('keeps an unmanaged or edited entry and binds the approved paths to the snapshot', async () => {
@@ -356,13 +389,10 @@ describe('project configuration onboarding', () => {
       scanRoot: path.dirname(workspace),
       specificationAuthority: registration,
     });
-    expect(detected.draft.entrySkills?.map(({ status }) => status)).toEqual([
-      'conflict',
-      'keep',
-      'keep',
-      'keep',
-    ]);
-    expect(prepared.request.entrySkills).toHaveLength(4);
+    expect(
+      detected.draft.entrySkills?.filter(({ files }) => !files).map(({ status }) => status),
+    ).toEqual(['conflict', 'keep', 'keep', 'keep']);
+    expect(prepared.request.entrySkills?.filter(({ files }) => !files)).toHaveLength(4);
   });
 
   it('installs only the chosen host in a single-repository Workspace', async () => {
@@ -379,7 +409,9 @@ describe('project configuration onboarding', () => {
       entryHosts: ['opencode'],
       specificationAuthority: registration,
     });
-    expect(detected.draft.entrySkills?.map(({ host }) => host)).toEqual(['opencode', 'opencode']);
+    expect(new Set(detected.draft.entrySkills?.map(({ host }) => host))).toEqual(
+      new Set(['opencode']),
+    );
     const prepared = await prepareProjectConfigurationDecision({
       workspace,
       draftFile: detected.file,
@@ -402,12 +434,9 @@ describe('project configuration onboarding', () => {
       scanRoot: root,
       specificationAuthority: registration,
     });
-    expect(upgrade.draft.entrySkills?.map(({ status }) => status)).toEqual([
-      'create',
-      'create',
-      'keep',
-      'keep',
-    ]);
+    expect(
+      upgrade.draft.entrySkills?.filter(({ files }) => !files).map(({ status }) => status),
+    ).toEqual(['create', 'create', 'keep', 'keep']);
     const upgradeRequest = await prepareProjectConfigurationDecision({
       workspace,
       draftFile: upgrade.file,

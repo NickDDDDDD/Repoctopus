@@ -10,6 +10,7 @@ import {
 import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 import { sameSkillUsageSnapshot } from '../domains/skill/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
+import { BUILTIN_DIAGNOSTIC_SKILL } from '../domains/skill/builtin-workflow-skills.js';
 import { captureWorkSkill } from '../platform/skill/snapshot.js';
 
 const RUNTIME_CONTRACT = `Repoctopus Runtime owns lifecycle state, claims, capabilities, write scopes, output contracts and validation. Follow the fixed Work binding. Do not create another specification, tracker, task authority or lifecycle transition. Report an Outcome; only Runtime validators and Evidence may advance the Change.`;
@@ -94,7 +95,7 @@ export class WorkContextAssembler extends Service {
         input.work.augmentationSkills.map((skill) => this.resolveSkill(skill.name, input.signal)),
       ),
       ...(input.diagnostic
-        ? { diagnosticSkill: await this.resolveSkill('diagnosing-bugs', input.signal) }
+        ? { diagnosticSkill: await this.resolveSkill(BUILTIN_DIAGNOSTIC_SKILL, input.signal) }
         : {}),
       changeInputs: input.changeInputs,
     });

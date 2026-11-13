@@ -74,6 +74,34 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
   await git(['push', '-u', 'origin', 'change/host-decision']);
   const cli = <T = unknown>(args: string[]) =>
     runCli<T>({ packageRoot, cwd: workspace, environment, args });
+  const install = (
+    await cli<{
+      file: string;
+      request: { apiVersion: string; requestId: string; snapshotDigest: string };
+    }>(['project', 'install-entry-skills', '--entry-hosts', 'codex'])
+  ).result!;
+  const installationAnswer = path.join(root, 'install.json');
+  await writeFile(
+    installationAnswer,
+    JSON.stringify({
+      apiVersion: install.request.apiVersion,
+      kind: 'HumanDecisionResponse',
+      requestId: install.request.requestId,
+      snapshotDigest: install.request.snapshotDigest,
+      decision: 'approve',
+    }),
+  );
+  await cli([
+    'project',
+    'review',
+    '--request',
+    install.file,
+    '--response-file',
+    installationAnswer,
+  ]);
+  await git(['add', '.agents']);
+  await git(['commit', '-m', 'test: publish approved Workspace Skills']);
+  await git(['push']);
   const started = await cli([
     'run',
     'start',
@@ -97,10 +125,48 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
     'manual',
     '--runner',
     'test:host-decision',
+    '--skill-reference-host',
+    'codex',
     '--host-capabilities',
     'repository.read,repository.write,specification.read,specification.write',
   ]);
   const { packet, invocation } = claimed.result!;
+  const local = packet.context.layers.find(({ source }) => source === 'repoctopus-open-change');
+  expect(local).toMatchObject({
+    reference: { path: '.agents/skills/repoctopus-open-change/SKILL.md' },
+  });
+  expect(local).not.toHaveProperty('content');
+  const contentArgv = [
+    'run',
+    'work-content',
+    '--run',
+    runId,
+    '--runner',
+    'test:host-decision',
+    '--invocation-id',
+    invocation.invocationId,
+    '--host-id',
+    invocation.host.id,
+    '--packet-digest',
+    packet.identity.packetDigest,
+    '--skill-reference-host',
+    'codex',
+    '--layer-index',
+    String(packet.context.layers.indexOf(local!)),
+  ];
+  const loaded = await cli<{ source: string; layer: { content: string; digest: string } }>(
+    contentArgv,
+  );
+  expect(loaded.result).toMatchObject({ source: 'workspace', layer: { digest: local!.digest } });
+  const installedAction = '.agents/skills/repoctopus-open-change/SKILL.md';
+  const originalAction = await readFile(path.join(workspace, installedAction), 'utf8');
+  await write(installedAction, 'local replacement');
+  const fallback = await cli<typeof loaded.result>(contentArgv);
+  expect(fallback.result).toMatchObject({ source: 'packet', layer: loaded.result!.layer });
+  await expect(
+    cli(contentArgv.map((arg) => (arg === 'test:host-decision' ? 'other-runner' : arg))),
+  ).rejects.toThrow(/invocation/i);
+  await write(installedAction, originalAction);
   const change = 'openspec/changes/host-decision';
   await write(
     `${change}/proposal.md`,

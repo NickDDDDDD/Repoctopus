@@ -43,7 +43,7 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份。团队共用同一个
 repoctopus.cmd skill install-init --entry-hosts codex
 ```
 
-从 Workspace Git 根调用 Init Skill，并告诉 Agent 是单仓还是多仓。预览列出工作区、所选仓、Store、业务仓 pointer 和入口路径。批准后，Runtime 初始化或复用 OpenSpec Store，写入最小配置与 Workspace 入口。单仓布局只处理当前仓。多仓布局可选择扫描目录内的部分仓库。
+从 Workspace Git 根调用 Init Skill，并告诉 Agent 是单仓还是多仓。预览列出工作区、所选仓、Store、业务仓 pointer 和入口路径。批准后，Runtime 初始化或复用 OpenSpec Store，写入最小配置、Workspace 入口和所选宿主的阶段 Skill。先把接入产物提交并推送到团队仓库，再启动第一个 Change。单仓布局只处理当前仓。多仓布局可选择扫描目录内的部分仓库。
 
 终端可完成同一流程。以下是同级多仓示例，在 Workspace 根执行。单仓使用 `--layout single` 并省略 `--scan-root`。
 

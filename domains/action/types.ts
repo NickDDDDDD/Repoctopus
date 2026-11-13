@@ -1,3 +1,4 @@
+import type { WorkspaceEntryHost } from '../project-configuration/entry-skills.js';
 import type { ActionOutcome, EngineAction } from '../engine/types.js';
 import type { CompositionIdentitySnapshot } from '../composition/types.js';
 
@@ -80,6 +81,7 @@ export interface WorkClaimRequest {
   adapter: string;
   attempt?: number;
   hostCapabilities?: readonly string[];
+  skillReferenceHost?: WorkspaceEntryHost;
   executor: WorkExecutorIdentity;
 }
 

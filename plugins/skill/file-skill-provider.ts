@@ -15,7 +15,11 @@ import type {
 import chokidar, { type FSWatcher } from 'chokidar';
 import { parse } from 'yaml';
 
-import { isOwnedWorkspaceEntrySkill } from '../../domains/project-configuration/entry-skills.js';
+import {
+  isOwnedWorkspaceEntrySkill,
+  workspaceWorkflowSkillManifestPath,
+  WORKSPACE_WORKFLOW_SKILL_MARKER,
+} from '../../domains/project-configuration/entry-skills.js';
 
 export interface SkillDirectoryRoot {
   readonly path: string;
@@ -190,6 +194,19 @@ export class FileSkillProvider implements SkillProvider {
           : undefined;
       if (!file) continue;
       if (entry.isDirectory() && (await isManagedProjection(path.dirname(file)))) continue;
+      if (root.source === 'project-agents' && entry.isDirectory()) {
+        const workspace = path.resolve(root.path, '..', '..');
+        const manifest = workspaceWorkflowSkillManifestPath(
+          path.relative(workspace, file).replaceAll('\\', '/'),
+        );
+        if (
+          await access(path.join(workspace, manifest)).then(
+            () => true,
+            () => false,
+          )
+        )
+          continue;
+      }
       const parsed = await parseSkillFile(file, signal);
       if (!parsed) continue;
       const directory = entry.isDirectory() ? path.dirname(file) : undefined;
@@ -234,7 +251,12 @@ async function parseSkillFile(
     return undefined;
   }
   const frontmatter = parseFrontmatter(raw);
-  if (!frontmatter) return undefined;
+  if (
+    !frontmatter ||
+    raw.replace(/^\uFEFF/u, '').split(/\r?\n/u, 3)[1] === WORKSPACE_WORKFLOW_SKILL_MARKER
+  ) {
+    return undefined;
+  }
   const name = textField(frontmatter.data, 'name');
   const description = textField(frontmatter.data, 'description');
   if (!name || !description || !SKILL_NAME.test(name)) return undefined;
