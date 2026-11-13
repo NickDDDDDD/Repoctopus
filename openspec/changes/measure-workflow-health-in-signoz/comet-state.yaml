@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: e54e0ba4-509c-474d-bf13-dfb257ecd58d
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 38bf326a9de5021dc1afcdffcb25a843d6750a12
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-13
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/measure-workflow-health-in-signoz
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: aed321dee10fdffe926c18ebd83d20e7c7005b372dadad92e1894247ac75201f
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: measure-workflow-health-in-signoz
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: caa74eda88b2ef16e4f9ab202fa7a1253c1ee5edec8c4c8e422b2da9e2030f52
+    input:
+      change: measure-workflow-health-in-signoz
+      changeDir: openspec/changes/measure-workflow-health-in-signoz
+      workspaceBaseline:
+        ref: f1697684-a525-480b-892e-5775f9ba2ac1
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 38bf326a9de5021dc1afcdffcb25a843d6750a12
+      boundBranch: codex/measure-workflow-health-in-signoz
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-13
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: measure-workflow-health-in-signoz:1
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 3be132cf2bbb906b4c1df0c930f4ab0c4a82938c7771fcb3983575f9a56fc4f5
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      measure-workflow-health-in-signoz:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 6ca3116a9f8df466b14de6deb397478866d9b83955e1a01db0fdaf38b7daa6e6
