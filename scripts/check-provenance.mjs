@@ -441,6 +441,17 @@ for (const packageEntry of cordisManifest.packages ?? []) {
     continue;
   }
   const packageRoot = path.join(root, packageEntry.target);
+  const locked = packageLock.packages?.[`node_modules/${packageEntry.name}`];
+  if (
+    packageJson.dependencies?.[packageEntry.name] !== packageEntry.version ||
+    locked?.link ||
+    locked?.version !== packageEntry.version ||
+    locked?.integrity !== packageEntry.npmIntegrity
+  ) {
+    findings.push(
+      `Cordis npm dependency does not match its fixed provenance: ${packageEntry.name}`,
+    );
+  }
   const expectedFiles = packageEntry.files.map((entry) => entry.path).sort();
   const actualFiles = await listFiles(packageRoot);
   if (JSON.stringify(actualFiles) !== JSON.stringify(expectedFiles)) {
@@ -463,8 +474,13 @@ for (const packageEntry of cordisManifest.packages ?? []) {
       findings.push(`Cordis snapshot digest mismatch: ${packageEntry.target}/${entry.path}`);
     }
   }
-  const packageJson = JSON.parse(await readFile(path.join(packageRoot, 'package.json'), 'utf8'));
-  if (packageJson.name !== packageEntry.name || packageJson.version !== packageEntry.version) {
+  const snapshotPackage = JSON.parse(
+    await readFile(path.join(packageRoot, 'package.json'), 'utf8'),
+  );
+  if (
+    snapshotPackage.name !== packageEntry.name ||
+    snapshotPackage.version !== packageEntry.version
+  ) {
     findings.push(`Cordis package identity mismatch: ${packageEntry.name}@${packageEntry.version}`);
   }
   cordisFiles += packageEntry.files.length;

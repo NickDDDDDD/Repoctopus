@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
@@ -16,7 +16,9 @@ const { version: expectedVersion } = JSON.parse(
 );
 const root = await mkdtemp(path.join(tmpdir(), 'repoctopus-release-npx-'));
 try {
-  const options = { cwd: root, timeout: 120_000, windowsHide: true };
+  const workspace = path.join(root, 'workspace');
+  await mkdir(workspace);
+  const options = { cwd: workspace, timeout: 120_000, windowsHide: true };
   await execute('git', ['init', '--initial-branch=main'], options);
   await execute(
     'git',
@@ -53,7 +55,7 @@ try {
   if (!/^Usage: repoctopus /mu.test(help.stdout)) throw new Error('npx did not run Repoctopus');
   const detected = await execute(
     process.execPath,
-    [...args, 'project', 'detect', '--workspace', '.', '--scan-root', '.', '--json'],
+    [...args, 'project', 'detect', '--workspace', '.', '--scan-root', root, '--json'],
     options,
   );
   const result = JSON.parse(detected.stdout);
