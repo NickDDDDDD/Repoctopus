@@ -1,0 +1,16 @@
+{
+  "change": "measure-workflow-health-in-signoz",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf",
+  "files": [
+    { "path": "openspec/changes/measure-workflow-health-in-signoz/proposal.md", "sha256": "3d7f2faee23c57a3de58e7b3dc5200f3788b56f5f5ff3509549638c89968e64e" },
+    { "path": "openspec/changes/measure-workflow-health-in-signoz/design.md", "sha256": "448a770eb4b6b39ef9ce721fef183dca6af907ccc8201727842ea8be7b352965" },
+    { "path": "openspec/changes/measure-workflow-health-in-signoz/tasks.md", "sha256": "0fbea0491273a2709ee0cf3e141855dd4f1fdf3a9c9758afb67f336dc3e740ec" },
+    { "path": "openspec/changes/measure-workflow-health-in-signoz/.openspec.yaml", "sha256": "2e91af4681be83038a92e715cfb64d8067b4c8399c2b25074da27a778869f3aa" },
+    { "path": "openspec/changes/measure-workflow-health-in-signoz/specs/development-telemetry/spec.md", "sha256": "42dce3eafaf3dd6c6a34ede0d07d5289d4877ee9f15c6613196668d2af784a15" }
+  ]
+}
