@@ -2,7 +2,7 @@
 change_id: b4bd40a0-7962-4bc2-b845-db5258b0fd14
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/install-workspace-workflow-skills
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+handoff_hash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: d6e552b91fef05160dc8330971e72c240470fe0d235dd8abcf27edc1fd5c5d38
+  hash: 92fe40dad6a3915eaa3b414bbe364904aa361e49867090959597103631db3a3f
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -40,9 +40,9 @@ run_checkpoint:
     workflow:
       id: comet-classic-full
       version: "1"
-      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+      hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
     definitionHashes:
-      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+      '["comet-classic-full","1"]': 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
     initialStateHash: f0f5eefaca11bc2aad23e0374d4bcab3b734ee26c9e917c40d2de1e3c2d50e96
     input:
       change: install-workspace-workflow-skills
@@ -58,17 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 1
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-13
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+      handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
       isolation: worktree
       language: zh-CN
-      phase: open
+      phase: design
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -79,10 +80,18 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 1
+    status: waiting
+    sequence: 8
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-2e2a2ca9d1da0414accb81f86b1aefce4856b48305938a1ad273c8bdf9839c52
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: install-workspace-workflow-skills:1
         input:
           input:
@@ -92,25 +101,498 @@ run_checkpoint:
               ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
           outputs: {}
         inputHash: e262f210d601cf785f444c2d4049f8148e8ca76efbb5e6d159361d1c6277565d
+        outcome:
+          actionId: install-workspace-workflow-skills:1
+          attempt: 1
+          claimToken: portable-2e2a2ca9d1da0414accb81f86b1aefce4856b48305938a1ad273c8bdf9839c52
+          inputHash: e262f210d601cf785f444c2d4049f8148e8ca76efbb5e6d159361d1c6277565d
+          outcomeId: 57bf71dd-2ede-4790-90d8-2a2857a3c462
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: aa3d4177c846dec5175133db6c585d8b654e0c0d67daac8d266c0a624c80ad0f
+            outcomeId: 57bf71dd-2ede-4790-90d8-2a2857a3c462
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: install-workspace-workflow-skills
-        status: pending
+        status: succeeded
         stepId: full.open
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-15f12c3d4d60df840bbac5bc53c92e4a7351ce5798bcbda68aaab5a2100b4a35
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-workflow-skills:4
+        input:
+          input:
+            change: install-workspace-workflow-skills
+            changeDir: openspec/changes/install-workspace-workflow-skills
+            workspaceBaseline:
+              ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: install-workspace-workflow-skills
+                  changeDir: openspec/changes/install-workspace-workflow-skills
+                  workspaceBaseline:
+                    ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+                    ref: openspec/changes/install-workspace-workflow-skills
+            full.open.evidence:
+              contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+              ref: openspec/changes/install-workspace-workflow-skills
+        inputHash: 201b5134c85f6995d13f1abf2b31e7fec4ec8c03e9a473095305b6ac1af016cf
+        outcome:
+          actionId: install-workspace-workflow-skills:4
+          attempt: 1
+          claimToken: portable-15f12c3d4d60df840bbac5bc53c92e4a7351ce5798bcbda68aaab5a2100b4a35
+          inputHash: 201b5134c85f6995d13f1abf2b31e7fec4ec8c03e9a473095305b6ac1af016cf
+          outcomeId: install-workspace-workflow-skills:4:1:executor-result
+          output:
+            contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 139ee62a7f4fc8d3c2230cd39e585991a61ad4ebdf3c1466558e7e27c306c6ae
+            outcomeId: install-workspace-workflow-skills:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-workflow-skills
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-63ffe737f5fddceb205b4ab9ab9e7f06845a5678cb2a39aef844de705ea45e78
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-workflow-skills:5
+        input:
+          input:
+            change: install-workspace-workflow-skills
+            changeDir: openspec/changes/install-workspace-workflow-skills
+            workspaceBaseline:
+              ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: install-workspace-workflow-skills
+                  changeDir: openspec/changes/install-workspace-workflow-skills
+                  workspaceBaseline:
+                    ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+                    ref: openspec/changes/install-workspace-workflow-skills
+            full.open.evidence:
+              contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+              ref: openspec/changes/install-workspace-workflow-skills
+            full.open.revalidate:
+              contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+        inputHash: 6a295ca75d667a46047185bf7bf6620d5b93fc89201719d9335e4f91469fa151
+        outcome:
+          actionId: install-workspace-workflow-skills:5
+          attempt: 1
+          claimToken: portable-63ffe737f5fddceb205b4ab9ab9e7f06845a5678cb2a39aef844de705ea45e78
+          inputHash: 6a295ca75d667a46047185bf7bf6620d5b93fc89201719d9335e4f91469fa151
+          outcomeId: 9da2e019-bf55-4cff-a1ed-3ddf6dfa3e05
+          output:
+            handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+            handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
+            proposal: 初始化与补装复用现有获批宿主事务，安装 Repoctopus Action、已采用 Matt Skill 及固定版本 OpenSpec
+              探索入口；运行期协商仅在来源和完整内容可核对时投递本地引用，回退从同一 invocation 只读取原冻结包，动态 Provider
+              层、团队绑定和真实消费回执沿用。验收覆盖真实安装包、Windows 宿主、漂移与跨进程恢复。
+            requirementsEvidence:
+              contentHash: e4123f0df14be949a32b3227f954a9811244d8b5f00742f27439fd83a478f1eb
+              ref: openspec/changes/install-workspace-workflow-skills
+            sourceEvidence:
+              contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
+              ref: openspec/changes/install-workspace-workflow-skills
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 926208d3eb043efd978c9b7bfdb1e75315f4cef5cebfabb0c5e7547f447eaa2b
+            outcomeId: 9da2e019-bf55-4cff-a1ed-3ddf6dfa3e05
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-workflow-skills
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-cb91db892431e5ad5f02d518769e5f7089d59895b9f718b3dba5e730202278dc
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: install-workspace-workflow-skills:7
+        input:
+          activation:
+            expectedRevision: 9
+            fromPhase: design
+          input:
+            change: install-workspace-workflow-skills
+            changeDir: openspec/changes/install-workspace-workflow-skills
+            workspaceBaseline:
+              ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+          outputs: {}
+        inputHash: f69f3cd8c60d3fb041c616f9a78fdcc4b3bd54d16475bb8fd72460bda1185d88
+        outcome:
+          actionId: install-workspace-workflow-skills:7
+          attempt: 1
+          claimToken: portable-cb91db892431e5ad5f02d518769e5f7089d59895b9f718b3dba5e730202278dc
+          inputHash: f69f3cd8c60d3fb041c616f9a78fdcc4b3bd54d16475bb8fd72460bda1185d88
+          outcomeId: 16aaee11-ccc4-4a7c-ba63-667abb70c313
+          output:
+            handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+            handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
+            proposal: 复用获批安装事务，逐文件绑定 Action、当前 Matt 增强及只读 OpenSpec
+              Explore；管理记录位于资源集合外。交付协议独立于 Build
+              能力绑定，仅支持精确来源和完整内容核对的宿主使用引用，其他宿主使用内联；回退由同一活动外部 invocation 的原 actor
+              与 Runner 只读获取冻结包，保持动态 Provider 与原消费身份。验证真实安装包、Windows
+              宿主、路径及资源漂移与跨进程恢复。
+            requirementsEvidence:
+              contentHash: e4123f0df14be949a32b3227f954a9811244d8b5f00742f27439fd83a478f1eb
+              ref: openspec/changes/install-workspace-workflow-skills
+            sourceEvidence:
+              contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
+              ref: openspec/changes/install-workspace-workflow-skills
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5e5b0d51b897c95f2c4bf23367033f35a2297598e61b944f0b73cb37198ad27a
+            outcomeId: 16aaee11-ccc4-4a7c-ba63-667abb70c313
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-workflow-skills
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+    commands:
+      - id: f643ff0f04522306c193810bc118fc1b5a661b16f42659e401781c2a6d53203e
+        name: revise-design
+        inputHash: c3b91935be5cf817dafb5e13ded49b476e69f3c4767d873003c7f4a031d1d22d
+        actionId: install-workspace-workflow-skills:7
     actionContexts:
       install-workspace-workflow-skills:1:
         results: {}
         sequence: 1
-    waits: []
+      install-workspace-workflow-skills:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: install-workspace-workflow-skills
+                  changeDir: openspec/changes/install-workspace-workflow-skills
+                  workspaceBaseline:
+                    ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+                    ref: openspec/changes/install-workspace-workflow-skills
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+              ref: openspec/changes/install-workspace-workflow-skills
+        sequence: 4
+      install-workspace-workflow-skills:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: install-workspace-workflow-skills
+                  changeDir: openspec/changes/install-workspace-workflow-skills
+                  workspaceBaseline:
+                    ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+                    ref: openspec/changes/install-workspace-workflow-skills
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+              ref: openspec/changes/install-workspace-workflow-skills
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+        sequence: 5
+      install-workspace-workflow-skills:7:
+        results: {}
+        sequence: 7
+    waits:
+      - id: install-workspace-workflow-skills:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: install-workspace-workflow-skills
+            changeDir: openspec/changes/install-workspace-workflow-skills
+            workspaceBaseline:
+              ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+              ref: openspec/changes/install-workspace-workflow-skills
+        proposalHash: 5063243f2cd7f582ba815b3a5b0f12976ff54c1e51580f4ae30e5d0fb49013bf
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+              ref: openspec/changes/install-workspace-workflow-skills
+        decision:
+          id: classic-open-d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+          choice: approved
+          proposalHash: 5063243f2cd7f582ba815b3a5b0f12976ff54c1e51580f4ae30e5d0fb49013bf
+      - id: install-workspace-workflow-skills:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: cancelled
+        proposal:
+          input:
+            change: install-workspace-workflow-skills
+            changeDir: openspec/changes/install-workspace-workflow-skills
+            workspaceBaseline:
+              ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+              handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
+              proposal: 初始化与补装复用现有获批宿主事务，安装 Repoctopus Action、已采用 Matt Skill 及固定版本 OpenSpec
+                探索入口；运行期协商仅在来源和完整内容可核对时投递本地引用，回退从同一 invocation 只读取原冻结包，动态
+                Provider 层、团队绑定和真实消费回执沿用。验收覆盖真实安装包、Windows 宿主、漂移与跨进程恢复。
+              requirementsEvidence:
+                contentHash: e4123f0df14be949a32b3227f954a9811244d8b5f00742f27439fd83a478f1eb
+                ref: openspec/changes/install-workspace-workflow-skills
+              sourceEvidence:
+                contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
+                ref: openspec/changes/install-workspace-workflow-skills
+        proposalHash: c04cae48efcfe3f8413bb76611812140335fad1abf02612371a944ce6233de89
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+              handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
+              proposal: 初始化与补装复用现有获批宿主事务，安装 Repoctopus Action、已采用 Matt Skill 及固定版本 OpenSpec
+                探索入口；运行期协商仅在来源和完整内容可核对时投递本地引用，回退从同一 invocation 只读取原冻结包，动态
+                Provider 层、团队绑定和真实消费回执沿用。验收覆盖真实安装包、Windows 宿主、漂移与跨进程恢复。
+              requirementsEvidence:
+                contentHash: e4123f0df14be949a32b3227f954a9811244d8b5f00742f27439fd83a478f1eb
+                ref: openspec/changes/install-workspace-workflow-skills
+              sourceEvidence:
+                contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
+                ref: openspec/changes/install-workspace-workflow-skills
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: install-workspace-workflow-skills
+                  changeDir: openspec/changes/install-workspace-workflow-skills
+                  workspaceBaseline:
+                    ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+                    ref: openspec/changes/install-workspace-workflow-skills
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+              ref: openspec/changes/install-workspace-workflow-skills
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+      - id: install-workspace-workflow-skills:8
+        stepId: full.design.confirm
+        sequence: 8
+        status: pending
+        proposal:
+          input:
+            change: install-workspace-workflow-skills
+            changeDir: openspec/changes/install-workspace-workflow-skills
+            workspaceBaseline:
+              ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+              handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
+              proposal: 复用获批安装事务，逐文件绑定 Action、当前 Matt 增强及只读 OpenSpec
+                Explore；管理记录位于资源集合外。交付协议独立于 Build
+                能力绑定，仅支持精确来源和完整内容核对的宿主使用引用，其他宿主使用内联；回退由同一活动外部 invocation 的原
+                actor 与 Runner 只读获取冻结包，保持动态 Provider 与原消费身份。验证真实安装包、Windows
+                宿主、路径及资源漂移与跨进程恢复。
+              requirementsEvidence:
+                contentHash: e4123f0df14be949a32b3227f954a9811244d8b5f00742f27439fd83a478f1eb
+                ref: openspec/changes/install-workspace-workflow-skills
+              sourceEvidence:
+                contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
+                ref: openspec/changes/install-workspace-workflow-skills
+        proposalHash: 791be97d7cc7e6cae1c32dce0aad0beed8d9ec6447d33e096b14029885676567
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+              handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
+              proposal: 复用获批安装事务，逐文件绑定 Action、当前 Matt 增强及只读 OpenSpec
+                Explore；管理记录位于资源集合外。交付协议独立于 Build
+                能力绑定，仅支持精确来源和完整内容核对的宿主使用引用，其他宿主使用内联；回退由同一活动外部 invocation 的原
+                actor 与 Runner 只读获取冻结包，保持动态 Provider 与原消费身份。验证真实安装包、Windows
+                宿主、路径及资源漂移与跨进程恢复。
+              requirementsEvidence:
+                contentHash: e4123f0df14be949a32b3227f954a9811244d8b5f00742f27439fd83a478f1eb
+                ref: openspec/changes/install-workspace-workflow-skills
+              sourceEvidence:
+                contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
+                ref: openspec/changes/install-workspace-workflow-skills
+    evidenceWaits:
+      - id: install-workspace-workflow-skills:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/install-workspace-workflow-skills
+          contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+          submissionId: fe8cb974-c641-4917-a114-8f761f6893f3
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.design.handoff:
+        sequence: 7
+        value:
+          handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+          handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
+          proposal: 复用获批安装事务，逐文件绑定 Action、当前 Matt 增强及只读 OpenSpec
+            Explore；管理记录位于资源集合外。交付协议独立于 Build
+            能力绑定，仅支持精确来源和完整内容核对的宿主使用引用，其他宿主使用内联；回退由同一活动外部 invocation 的原 actor 与
+            Runner 只读获取冻结包，保持动态 Provider 与原消费身份。验证真实安装包、Windows
+            宿主、路径及资源漂移与跨进程恢复。
+          requirementsEvidence:
+            contentHash: e4123f0df14be949a32b3227f954a9811244d8b5f00742f27439fd83a478f1eb
+            ref: openspec/changes/install-workspace-workflow-skills
+          sourceEvidence:
+            contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
+            ref: openspec/changes/install-workspace-workflow-skills
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: install-workspace-workflow-skills
+              changeDir: openspec/changes/install-workspace-workflow-skills
+              workspaceBaseline:
+                ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+                ref: openspec/changes/install-workspace-workflow-skills
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
+          ref: openspec/changes/install-workspace-workflow-skills
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: b9c6db8115dda6f4a0d48a196aa7aedd413d3c9d7754a333fd78267038926646
+  sourceRevision: 12
+  sourceHash: 313ccb9fd5a81e775b3ade6ceead65c511e283f20c840448b3beca85806c651d
+check_epoch: 1

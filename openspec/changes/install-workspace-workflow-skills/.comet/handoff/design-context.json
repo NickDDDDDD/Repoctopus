@@ -1,0 +1,17 @@
+{
+  "change": "install-workspace-workflow-skills",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3",
+  "files": [
+    { "path": "openspec/changes/install-workspace-workflow-skills/proposal.md", "sha256": "b1333618295f1d133c74392c2c66abd08c7655a476e9f22533931a58f8fdcce0" },
+    { "path": "openspec/changes/install-workspace-workflow-skills/design.md", "sha256": "58cd5a82f38e820c53dbbe61a31b0fae90d3a79cbe39ec6343372b77dd31b9e5" },
+    { "path": "openspec/changes/install-workspace-workflow-skills/tasks.md", "sha256": "b5638e7f58b0b5d47d8e17e73fd36050f34c55d0a1d02fa45715d378ce90accb" },
+    { "path": "openspec/changes/install-workspace-workflow-skills/.openspec.yaml", "sha256": "3ea192d12c1ad3d96d8e6cfd6fddb23c8be77d85611385996b685b4736c117c0" },
+    { "path": "openspec/changes/install-workspace-workflow-skills/specs/project-configuration/spec.md", "sha256": "6dd12070b14055e62d068604bd9768e79ea15f1fcb79bf3af6112b1545335158" },
+    { "path": "openspec/changes/install-workspace-workflow-skills/specs/skill-integration/spec.md", "sha256": "9fe4d33e6e865dd9495be548990edead7d4aae24fa9fbecf9be4fd5ab996bba3" }
+  ]
+}
