@@ -2,6 +2,7 @@
 change: fix-windows-cli-package-junctions
 design-doc: openspec/changes/fix-windows-cli-package-junctions/design.md
 base-ref: 3d756bea681a4ed9b63de0ef7846080ebf0f2153
+archived-with: 2026-11-13-fix-windows-cli-package-junctions
 ---
 
 # 修复 Windows 安装包中的 Cordis 链接

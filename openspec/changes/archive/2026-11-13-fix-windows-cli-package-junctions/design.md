@@ -2,6 +2,8 @@
 comet_change: fix-windows-cli-package-junctions
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-13-fix-windows-cli-package-junctions
+status: final
 ---
 
 # Design
