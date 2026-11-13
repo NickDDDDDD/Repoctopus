@@ -27,6 +27,15 @@ import type {
 import { parseWorkflowPackage } from '../../domains/workflow-contract/package.js';
 import { loadDeliveryPolicy } from '../../platform/delivery/config.js';
 import { loadProjectConfig } from '../../platform/project-configuration/file-config.js';
+import {
+  WORKSPACE_ENTRY_HOSTS,
+  type WorkspaceEntryHost,
+} from '../../domains/project-configuration/entry-skills.js';
+import {
+  readWorkspaceWorkSkill,
+  workPacketReferenceView,
+} from '../../platform/skill/work-packet-reference.js';
+import type { ExternalWorkClaimResult } from '../../services/managed-work-executor.js';
 import { installPersonalInitSkills } from '../../platform/project-configuration/workspace-entry-skills.js';
 import { execute } from '../../platform/process/execute.js';
 import type { ProvenanceCheck } from '../../platform/provenance/check.js';
@@ -43,6 +52,7 @@ import type { EvidenceCoordinator } from '../../services/evidence-coordinator.js
 import type { BrowserMaintenance } from '../../services/browser-maintenance.js';
 import type {
   WorkExecutionFinding,
+  WorkExecutionPacket,
   WorkExecutionResult,
 } from '../../domains/work-execution/types.js';
 import { bootBootstrapComposition, bootProjectComposition } from '../boot/bootstrap.js';
@@ -76,7 +86,7 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <init|detect|prepare|install-entry-skills|configure-verify|decision|review> | skill <list|get|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <init|detect|prepare|install-entry-skills|configure-verify|decision|review> | skill <list|get|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-content|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const COMMANDS = new Set([
   'project init',
   'project detect',
@@ -107,6 +117,7 @@ const COMMANDS = new Set([
   'run archive-prepare',
   'run archive-publish',
   'run work-claim',
+  'run work-content',
   'run work-outcome',
   'run work-reconcile',
   'run decide',
@@ -163,6 +174,8 @@ const CLI_FLAGS = new Set([
   'packet-digest',
   'consumed-layers',
   'host-capabilities',
+  'skill-reference-host',
+  'layer-index',
   'result-file',
   'response-file',
   'request-id',
@@ -1326,6 +1339,57 @@ async function runArchivePublish(parsed: ParsedArguments): Promise<CliEnvelope<u
   }
 }
 
+function skillReferenceHost(parsed: ParsedArguments): WorkspaceEntryHost | undefined {
+  const value = stringFlag(parsed, 'skill-reference-host');
+  const host = WORKSPACE_ENTRY_HOSTS.find((candidate) => candidate === value);
+  if (value && !host) throw new Error(`Unsupported Skill reference host: ${value}`);
+  return host;
+}
+
+async function runWorkContent(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const host = skillReferenceHost(parsed);
+  const layerIndex = integerFlag(parsed, 'layer-index', { minimum: 0 });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const packet = await app.context.commandRouter.execute<unknown, WorkExecutionPacket>(
+      'run.work.content',
+      {
+        runId,
+        invocationId: stringFlag(parsed, 'invocation-id', { required: true })!,
+        hostId: stringFlag(parsed, 'host-id', { required: true })!,
+        packetDigest: stringFlag(parsed, 'packet-digest', { required: true })!,
+        ...(host ? { skillReferenceHost: host } : {}),
+        executor: {
+          actorId: userInfo().username,
+          runnerId: stringFlag(parsed, 'runner', { required: true })!,
+          source: 'cli',
+          authenticated: true,
+        },
+      },
+    );
+    if (layerIndex === undefined) {
+      return successEnvelope({ command: 'run work-content', runId, result: { packet } });
+    }
+    const layer = packet.context.layers[layerIndex];
+    if (!layer) throw new Error(`Unknown Work content layer index: ${layerIndex}`);
+    const local = host && (await readWorkspaceWorkSkill(workspace, packet, layer, host));
+    return successEnvelope({
+      command: 'run work-content',
+      runId,
+      result: {
+        source: local ? 'workspace' : 'packet',
+        ...(local ? { path: local.path } : {}),
+        layerIndex,
+        layer: local ? local.layer : layer,
+      },
+    });
+  } finally {
+    await app.close();
+  }
+}
+
 async function runWorkClaim(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const runId = stringFlag(parsed, 'run', { required: true })!;
@@ -1335,21 +1399,36 @@ async function runWorkClaim(parsed: ParsedArguments): Promise<CliEnvelope<unknow
     ?.split(',')
     .map((capability) => capability.trim())
     .filter(Boolean);
+  const referenceHost = skillReferenceHost(parsed);
+  const runnerId = referenceHost
+    ? stringFlag(parsed, 'runner', { required: true })!
+    : stringFlag(parsed, 'runner', { fallback: `cli:${process.pid}` })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const result = await app.context.commandRouter.execute('run.work.claim', {
-      runId,
-      adapter,
-      attempt,
-      ...(hostCapabilities?.length ? { hostCapabilities } : {}),
-      executor: {
-        actorId: userInfo().username,
-        runnerId: stringFlag(parsed, 'runner', { fallback: `cli:${process.pid}` })!,
-        source: 'cli',
-        authenticated: true,
+    const result = await app.context.commandRouter.execute<unknown, ExternalWorkClaimResult>(
+      'run.work.claim',
+      {
+        runId,
+        adapter,
+        attempt,
+        ...(hostCapabilities?.length ? { hostCapabilities } : {}),
+        ...(referenceHost ? { skillReferenceHost: referenceHost } : {}),
+        executor: {
+          actorId: userInfo().username,
+          runnerId,
+          source: 'cli',
+          authenticated: true,
+        },
       },
-    });
-    return successEnvelope({ command: 'run work-claim', runId, result });
+    );
+    const delivery =
+      referenceHost && result.executionAcquired
+        ? {
+            ...result,
+            packet: await workPacketReferenceView(workspace, result.packet, referenceHost),
+          }
+        : result;
+    return successEnvelope({ command: 'run work-claim', runId, result: delivery });
   } finally {
     await app.close();
   }
@@ -1813,6 +1892,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run archive-prepare') return runArchivePrepare(parsed);
   if (command === 'run archive-publish') return runArchivePublish(parsed);
   if (command === 'run work-claim') return runWorkClaim(parsed);
+  if (command === 'run work-content') return runWorkContent(parsed);
   if (command === 'run work-outcome') return runWorkOutcome(parsed);
   if (command === 'run work-reconcile') return runWorkReconcile(parsed);
   if (command === 'run decide') return runDecide(parsed);

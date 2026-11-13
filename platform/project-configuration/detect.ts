@@ -609,7 +609,12 @@ export async function detectProjectConfiguration(input: {
     root,
     repositories: repositories.map((repository) => structuredClone(repository.openSpec)),
   };
-  const entrySkills = await planWorkspaceEntrySkills(workspace, input.entryHosts);
+  const entrySkills = await planWorkspaceEntrySkills(
+    workspace,
+    input.entryHosts,
+    (candidateConfig?.specificationProvider?.id ?? 'specification-openspec') ===
+      'specification-openspec',
+  );
   const content = {
     entrySkills,
     repositories,

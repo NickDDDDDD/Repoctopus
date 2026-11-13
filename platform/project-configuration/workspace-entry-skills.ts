@@ -12,6 +12,13 @@ import {
 } from '../../domains/project-configuration/entry-skills.js';
 import { atomicWriteText, prepareContainedFileCleanup } from '../filesystem/atomic-write.js';
 
+import {
+  planWorkflowSkill,
+  prepareWorkflowSkill,
+  workflowSkillTargets,
+  type WorkflowSkillTarget,
+} from './workspace-workflow-skills.js';
+
 const productRoot = path.resolve(
   import.meta.dirname,
   ...(path.basename(import.meta.dirname) === 'dist' ? ['..'] : ['..', '..']),
@@ -37,6 +44,17 @@ function workspaceTargets(): EntryTarget[] {
       path: `${directory}/skills/${skill}/SKILL.md`,
     }));
   });
+}
+
+export function workspaceSkillPath(host: WorkspaceEntryHost, name: string): string {
+  return `${HOST_DIRECTORIES[host].workspace}/skills/${name}/SKILL.md`;
+}
+
+function workflowTargets(hosts: readonly WorkspaceEntryHost[], openSpec: boolean) {
+  const targets = hosts.flatMap((host) =>
+    workflowSkillTargets(productRoot, host, HOST_DIRECTORIES[host].workspace, openSpec),
+  );
+  return uniqueEntryTargets(targets);
 }
 
 function selectedHosts(hosts: readonly string[]): readonly WorkspaceEntryHost[] {
@@ -123,20 +141,29 @@ async function observe(
 export async function planWorkspaceEntrySkills(
   workspace: string,
   hosts: readonly string[] = DEFAULT_WORKSPACE_ENTRY_HOSTS,
+  openSpec = true,
 ): Promise<WorkspaceEntrySkillPlan[]> {
   const chosen = selectedHosts(hosts);
-  return planEntryTargets(
-    workspace,
-    uniqueEntryTargets(workspaceTargets().filter(({ host }) => chosen.includes(host))),
-  );
+  const [entries, workflow] = await Promise.all([
+    planEntryTargets(
+      workspace,
+      uniqueEntryTargets(workspaceTargets().filter(({ host }) => chosen.includes(host))),
+    ),
+    Promise.all(
+      workflowTargets(chosen, openSpec).map((target) => planWorkflowSkill(workspace, target)),
+    ),
+  ]);
+  return [...entries, ...workflow];
 }
 
 function entryPathKey(file: string): string {
   return process.platform === 'win32' ? file.toLowerCase() : file;
 }
 
-function uniqueEntryTargets(targets: readonly EntryTarget[]): EntryTarget[] {
-  const unique = new Map<string, EntryTarget>();
+function uniqueEntryTargets<T extends EntryTarget | WorkflowSkillTarget>(
+  targets: readonly T[],
+): T[] {
+  const unique = new Map<string, T>();
   for (const target of targets) {
     const key = entryPathKey(target.path);
     if (!unique.has(key)) unique.set(key, target);
@@ -184,16 +211,49 @@ export async function prepareWorkspaceEntryWrites(
   requestId: string,
   afterWrite?: (file: string) => Promise<void> | void,
   checkScope?: () => Promise<void>,
+  openSpec = true,
 ): Promise<{ install(): Promise<void>; verify(): Promise<void> }> {
-  return prepareEntryWrites(
+  if (new Set(plans.map(({ path: file }) => entryPathKey(file))).size !== plans.length) {
+    throw new Error('Workspace Skill plan contains duplicate target paths');
+  }
+  const entries = await prepareEntryWrites(
     workspace,
     workspaceTargets(),
-    plans,
+    plans.filter(({ files }) => files === undefined),
     resuming,
     requestId,
     afterWrite,
     checkScope,
   );
+  const available = WORKSPACE_ENTRY_HOSTS.flatMap((host) => workflowTargets([host], openSpec));
+  const workflow = await Promise.all(
+    plans
+      .filter(({ files }) => files !== undefined)
+      .map((plan) => {
+        const target = available.find(
+          ({ host, path: file }) => host === plan.host && file === plan.path,
+        );
+        if (!target) throw new Error(`Unknown Workspace Skill target: ${plan.path}`);
+        return prepareWorkflowSkill(
+          workspace,
+          target,
+          plan,
+          resuming,
+          digest(requestId).slice(0, 24),
+          checkScope,
+        );
+      }),
+  );
+  return {
+    async install() {
+      await entries.install();
+      for (const entry of workflow) await entry.install(afterWrite);
+    },
+    async verify() {
+      for (const entry of workflow) await entry.verify();
+      await entries.verify();
+    },
+  };
 }
 
 async function prepareEntryWrites(

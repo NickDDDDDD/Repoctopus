@@ -83,7 +83,9 @@ describe('documented project onboarding flow', () => {
       environment,
       args: ['project', 'init', '--layout', 'single', '--entry-hosts', hosts],
     });
-    expect(init.result?.request.entrySkills?.map(({ path }) => path)).toEqual(
+    expect(
+      init.result?.request.entrySkills?.filter(({ files }) => !files).map(({ path }) => path),
+    ).toEqual(
       ['.codebuddy', '.codeartsdoer', '.trae'].flatMap((directory) =>
         ['repoctopus', 'repoctopus-configure-verify'].map(
           (skill) => `${directory}/skills/${skill}/SKILL.md`,
@@ -130,7 +132,7 @@ describe('documented project onboarding flow', () => {
       const request = result!.request;
       expect(request.storeBinding).toBeNull();
       expect(request.baseConfigDigest).toBe(request.candidateConfigDigest);
-      expect(request.entrySkills?.map(({ host }) => host)).toEqual(['codearts', 'codearts']);
+      expect(new Set(request.entrySkills?.map(({ host }) => host))).toEqual(new Set(['codearts']));
       await expect(access(file)).rejects.toMatchObject({ code: 'ENOENT' });
       await writeFile(
         responseFile,

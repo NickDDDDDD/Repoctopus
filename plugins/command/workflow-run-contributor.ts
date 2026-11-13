@@ -39,6 +39,13 @@ const plugin = ((context: Context) => {
           context.managedWorkExecutor.claimExternal(input as WorkClaimRequest),
       }),
       context.commandRouter.register({
+        name: 'run.work.content',
+        execute: ({ input }) =>
+          context.managedWorkExecutor.readExternalWorkContent(
+            input as Parameters<typeof context.managedWorkExecutor.readExternalWorkContent>[0],
+          ),
+      }),
+      context.commandRouter.register({
         name: 'run.work.outcome',
         execute: ({ input }) =>
           context.managedWorkExecutor.acceptExternalOutcome(input as ExternalWorkExecutionOutcome),

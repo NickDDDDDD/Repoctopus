@@ -74,6 +74,34 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
   await git(['push', '-u', 'origin', 'change/host-decision']);
   const cli = <T = unknown>(args: string[]) =>
     runCli<T>({ packageRoot, cwd: workspace, environment, args });
+  const install = (
+    await cli<{
+      file: string;
+      request: { apiVersion: string; requestId: string; snapshotDigest: string };
+    }>(['project', 'install-entry-skills', '--entry-hosts', 'codex'])
+  ).result!;
+  const installationAnswer = path.join(root, 'install.json');
+  await writeFile(
+    installationAnswer,
+    JSON.stringify({
+      apiVersion: install.request.apiVersion,
+      kind: 'HumanDecisionResponse',
+      requestId: install.request.requestId,
+      snapshotDigest: install.request.snapshotDigest,
+      decision: 'approve',
+    }),
+  );
+  await cli([
+    'project',
+    'review',
+    '--request',
+    install.file,
+    '--response-file',
+    installationAnswer,
+  ]);
+  await git(['add', '.agents']);
+  await git(['commit', '-m', 'test: publish approved Workspace Skills']);
+  await git(['push']);
   const started = await cli([
     'run',
     'start',
@@ -97,10 +125,53 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
     'manual',
     '--runner',
     'test:host-decision',
+    '--skill-reference-host',
+    'codex',
     '--host-capabilities',
     'repository.read,repository.write,specification.read,specification.write',
   ]);
   const { packet, invocation } = claimed.result!;
+  const local = packet.context.layers.find(({ source }) => source === 'repoctopus-open-change');
+  expect(local).toMatchObject({
+    reference: { path: '.agents/skills/repoctopus-open-change/SKILL.md' },
+  });
+  expect(local).not.toHaveProperty('content');
+  const contentArgv = [
+    'run',
+    'work-content',
+    '--run',
+    runId,
+    '--runner',
+    'test:host-decision',
+    '--invocation-id',
+    invocation.invocationId,
+    '--host-id',
+    invocation.host.id,
+    '--packet-digest',
+    packet.identity.packetDigest,
+    '--skill-reference-host',
+    'codex',
+    '--layer-index',
+    String(packet.context.layers.indexOf(local!)),
+  ];
+  const loaded = await cli<{ source: string; layer: { content: string; digest: string } }>(
+    contentArgv,
+  );
+  expect(loaded.result).toMatchObject({ source: 'workspace', layer: { digest: local!.digest } });
+  const installedAction = '.agents/skills/repoctopus-open-change/SKILL.md';
+  const originalAction = await readFile(path.join(workspace, installedAction), 'utf8');
+  await write(installedAction, 'local replacement');
+  const fallback = await cli<typeof loaded.result>(contentArgv);
+  expect(fallback.result).toMatchObject({ source: 'packet', layer: loaded.result!.layer });
+  await expect(
+    cli(contentArgv.map((arg) => (arg === 'test:host-decision' ? 'other-runner' : arg))),
+  ).rejects.toThrow(/invocation/i);
+  await write(installedAction, originalAction.replaceAll('\r\n', '\n').replaceAll('\n', '\r\n'));
+  expect((await cli<typeof loaded.result>(contentArgv)).result).toEqual(loaded.result);
+  await write(installedAction, originalAction);
+  await expect(cli(contentArgv.map((arg) => (arg === 'codex' ? 'opencode' : arg)))).rejects.toThrow(
+    /invocation/i,
+  );
   const change = 'openspec/changes/host-decision';
   await write(
     `${change}/proposal.md`,
@@ -145,6 +216,9 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
       .join(','),
   ]);
   await cli(['run', 'next', '--run', runId]);
+  await expect(cli(contentArgv)).rejects.toThrow(
+    /active Run Work|active external invocation|no authoritative Work claim/i,
+  );
   const status = await cli<RunStatusView>(['run', 'status', '--run', runId]);
   expect(status.result!.state.status).toBe('waiting');
   expect(status.result!.state.changeLifecycle!.phase).toBe('open');
@@ -250,13 +324,47 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
       'manual',
       '--runner',
       'test:host-decision',
+      '--skill-reference-host',
+      'codex',
       '--host-capabilities',
       'repository.read,repository.write,specification.read,specification.write',
     ])
   ).result!;
-  const designReference = designClaim.packet.context.layers
-    .find(({ source }) => source === 'codebase-design')
-    ?.resources?.find(({ path }) => path === 'DESIGN-IT-TWICE.md');
+  const designLayerIndex = designClaim.packet.context.layers.findIndex(
+    ({ source }) => source === 'codebase-design',
+  );
+  const referenceLayer = designClaim.packet.context.layers[designLayerIndex] as
+    | { reference?: { resources: Array<{ path: string; installedDigest: string }> } }
+    | undefined;
+  const installedDesignResource = referenceLayer?.reference?.resources.find(
+    ({ path }) => path === 'DESIGN-IT-TWICE.md',
+  );
+  expect(installedDesignResource?.installedDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+  const designContent = await cli<{
+    source: string;
+    layer: WorkExecutionPacket['context']['layers'][number];
+  }>([
+    'run',
+    'work-content',
+    '--run',
+    runId,
+    '--runner',
+    'test:host-decision',
+    '--invocation-id',
+    designClaim.invocation.invocationId,
+    '--host-id',
+    designClaim.invocation.host.id,
+    '--packet-digest',
+    designClaim.packet.identity.packetDigest,
+    '--skill-reference-host',
+    'codex',
+    '--layer-index',
+    String(designLayerIndex),
+  ]);
+  expect(designContent.result?.source).toBe('workspace');
+  const designReference = designContent.result?.layer.resources?.find(
+    ({ path }) => path === 'DESIGN-IT-TWICE.md',
+  );
   expect(designReference?.encoding).toBe('utf8');
   expect(designReference?.content).toContain('design');
   await write(

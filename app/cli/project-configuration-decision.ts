@@ -62,7 +62,7 @@ export async function reviewProjectConfigurationDecision(options: {
       ? `Workspace guides: ${WORKSPACE_GUIDE_FILES.join(', ')}\nOnly Repoctopus managed blocks are installed or updated; team content is preserved.\n`
       : '';
     options.output.write(
-      `\nProject configuration approval\nDraft: ${options.request.draftId}\nSnapshot: ${options.request.snapshotDigest}\nCandidate: ${options.request.candidateConfigDigest}\nUnresolved findings: ${options.request.unresolved.length}\nReconcile changed: ${options.request.reconcile?.changed ?? false}\n${guides}Workspace entry Skills:\n${entrySkills.join('\n') || '  (none)'}\n\n1) Approve\n2) Request changes\n3) Reject\n`,
+      `\nProject configuration approval\nDraft: ${options.request.draftId}\nSnapshot: ${options.request.snapshotDigest}\nCandidate: ${options.request.candidateConfigDigest}\nUnresolved findings: ${options.request.unresolved.length}\nReconcile changed: ${options.request.reconcile?.changed ?? false}\n${guides}Workspace Skills:\n${entrySkills.join('\n') || '  (none)'}\n\n1) Approve\n2) Request changes\n3) Reject\n`,
     );
     const answer = (await terminal.question('Decision [1-3]: ')).trim();
     const decision: ProjectConfigurationDecision =

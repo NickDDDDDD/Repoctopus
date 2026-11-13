@@ -276,6 +276,9 @@ const definitions: readonly BuiltinDefinition[] = [
       'platform/project-configuration/gitignore.ts',
       'platform/project-configuration/workspace-guides.ts',
       'platform/project-configuration/workspace-entry-skills.ts',
+      'platform/project-configuration/workspace-workflow-skills.ts',
+      'domains/skill/builtin-workflow-skills.ts',
+      'skills/specification/openspec-explore/SKILL.md',
       'domains/project-configuration/entry-skills.ts',
       'domains/project-configuration/workspace-guides.ts',
     ],
@@ -835,6 +838,7 @@ const definitions: readonly BuiltinDefinition[] = [
       'platform/filesystem/race-safe-read.ts',
       'platform/skill/snapshot.ts',
       'services/work-context-assembler.ts',
+      'domains/skill/builtin-workflow-skills.ts',
     ],
   },
   {
