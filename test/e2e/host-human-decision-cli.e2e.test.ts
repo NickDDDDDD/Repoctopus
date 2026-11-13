@@ -333,16 +333,13 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
   const designLayerIndex = designClaim.packet.context.layers.findIndex(
     ({ source }) => source === 'codebase-design',
   );
-  expect(designClaim.packet.context.layers[designLayerIndex]).toMatchObject({
-    reference: {
-      resources: expect.arrayContaining([
-        expect.objectContaining({
-          path: 'DESIGN-IT-TWICE.md',
-          installedDigest: expect.stringMatching(/^sha256:/u),
-        }),
-      ]),
-    },
-  });
+  const referenceLayer = designClaim.packet.context.layers[designLayerIndex] as
+    | { reference?: { resources: Array<{ path: string; installedDigest: string }> } }
+    | undefined;
+  const installedDesignResource = referenceLayer?.reference?.resources.find(
+    ({ path }) => path === 'DESIGN-IT-TWICE.md',
+  );
+  expect(installedDesignResource?.installedDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
   const designContent = await cli<{
     source: string;
     layer: WorkExecutionPacket['context']['layers'][number];
