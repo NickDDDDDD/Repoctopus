@@ -1,0 +1,17 @@
+{
+  "change": "extend-workspace-skill-hosts",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "e978df27ce80b69a01e8656c792a70cf4dca0efd4596b6a7611b449ce4157116",
+  "files": [
+    { "path": "openspec/changes/extend-workspace-skill-hosts/proposal.md", "sha256": "0093a723e42a6f7bf2ac5d689baf1d210650bcc9f9e973e3a6868e4eba831bc2" },
+    { "path": "openspec/changes/extend-workspace-skill-hosts/design.md", "sha256": "1bb6a7381673b0fa03cc49f406924db6fa9b87157bb51ffdc315666cb9bc71e4" },
+    { "path": "openspec/changes/extend-workspace-skill-hosts/tasks.md", "sha256": "99b18a68a1dd4fce878bd5c5ff4431a0e38cf794d141a762b305a947a786dd99" },
+    { "path": "openspec/changes/extend-workspace-skill-hosts/.openspec.yaml", "sha256": "81efc95b309487579cc63ceff200744cbd9fab2401597cbbdcf38d0cb54bace8" },
+    { "path": "openspec/changes/extend-workspace-skill-hosts/specs/project-configuration/spec.md", "sha256": "4d3fad8a963117367cea692a95167960b8046d897358ce9cc2353755ddcf4652" },
+    { "path": "openspec/changes/extend-workspace-skill-hosts/specs/skill-integration/spec.md", "sha256": "e2f2c12c4b9ed31401e279ae1d3e991be51dc992f3e2b0632bb7759b4034298a" }
+  ]
+}

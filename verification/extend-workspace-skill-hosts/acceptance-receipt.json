@@ -1,0 +1,222 @@
+{
+  "schema": "repoctopus.workspace-skill-hosts.acceptance.v1",
+  "platform": "Windows",
+  "package": {
+    "testedImplementationCommit": "081a1aa4e453f1c7f1732f4ad7c4894d022f54ee",
+    "contentSha256": "6d70e30e5e789d40af800820e6c159eedd00ae3ff51195cd9dc6695c448bb096",
+    "files": 481,
+    "contentBytes": 6271603,
+    "archiveSha256": "9ccdf5ea39137c7787b8e053888dc32c9fda1ecdd422b2ce68bfd3de0f84f700"
+  },
+  "codeBuddy": {
+    "version": "2.183.0",
+    "nativeSkillLoad": true,
+    "packagedCliExecution": true,
+    "model": "deterministic local fixture",
+    "initRequest": "4f0f2f1c-eb8f-46de-8efb-4a7e3da17416",
+    "verifyRequest": "0e928458-298f-4136-9de2-5d382d07c591",
+    "runId": "change-buddy-workspace-host-entry-5f814938f2441c21"
+  },
+  "supplement": {
+    "requestId": "26321e96-9c11-4555-bca0-b48508b531a1",
+    "runId": "change-buddy-workspace-host-entry-5f814938f2441c21",
+    "phase": "open",
+    "work": "change.intake",
+    "unchangedFiles": 8,
+    "writtenFiles": 4
+  },
+  "nativeRegression": [
+    {
+      "host": "codex",
+      "loaded": true
+    },
+    {
+      "host": "opencode",
+      "loaded": true
+    }
+  ],
+  "pending": [],
+  "workspaceScope": [
+    {
+      "host": "codebuddy",
+      "requestId": "39df8f52-3bef-4742-97b0-84595f16ce02",
+      "paths": [
+        ".codebuddy/skills/repoctopus/SKILL.md",
+        ".codebuddy/skills/repoctopus-configure-verify/SKILL.md"
+      ]
+    },
+    {
+      "host": "codearts",
+      "requestId": "eb7dc543-b840-4caf-adcb-aa38dca02809",
+      "paths": [
+        ".codeartsdoer/skills/repoctopus/SKILL.md",
+        ".codeartsdoer/skills/repoctopus-configure-verify/SKILL.md"
+      ]
+    },
+    {
+      "host": "trae",
+      "requestId": "7bbc9391-225d-4b12-9cc7-38eb4688fc51",
+      "paths": [
+        ".trae/skills/repoctopus/SKILL.md",
+        ".trae/skills/repoctopus-configure-verify/SKILL.md"
+      ]
+    },
+    {
+      "host": "trae-cn",
+      "requestId": "ff9ddf87-583b-401a-a65f-14342c1aaf55",
+      "paths": [
+        ".trae/skills/repoctopus/SKILL.md",
+        ".trae/skills/repoctopus-configure-verify/SKILL.md"
+      ]
+    }
+  ],
+  "nativeIde": [
+    {
+      "host": "codebuddy-ide",
+      "version": "4.12.4",
+      "nativeLoader": "UseSkill",
+      "menuOnlyReadProbe": "loaded",
+      "trustedWorkspace": true,
+      "discoveredSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "loadedSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "packagedCliExecutedByIde": true
+    },
+    {
+      "host": "codearts",
+      "version": "26.11.100",
+      "nativeLoader": "SkillTool",
+      "menuOnlyReadProbe": "reported not loaded",
+      "trustedWorkspace": true,
+      "discoveredSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "loadedSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "packagedCliExecutedByIde": true
+    },
+    {
+      "host": "trae-cn",
+      "version": "3.4.18",
+      "nativeLoader": "three native Skill calls in the Agent activity",
+      "menuOnlyReadProbe": "reported not loaded",
+      "trustedWorkspace": true,
+      "discoveredSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "loadedSkills": [
+        "repoctopus",
+        "repoctopus-init",
+        "repoctopus-configure-verify"
+      ],
+      "packagedCliExecutedByIde": true
+    }
+  ],
+  "nativeIdeExcerpts": {
+    "repoctopus": "Report missing or unavailable content before executing.",
+    "repoctopus-init": "If you cannot identify the user's host or edition, ask them to select it.",
+    "repoctopus-configure-verify": "Preserve unrelated configuration."
+  },
+  "workspaceVerifyScope": [
+    {
+      "host": "codebuddy",
+      "requestId": "f2a3e679-1f26-4ed3-811a-9e1f77a5da56",
+      "unchangedBeforeApproval": true
+    },
+    {
+      "host": "codearts",
+      "requestId": "aad35b31-065b-44c6-baaf-435f708d48c6",
+      "unchangedBeforeApproval": true
+    },
+    {
+      "host": "trae",
+      "requestId": "55814aaa-7dd1-4edd-8439-43ca485054ff",
+      "unchangedBeforeApproval": true
+    },
+    {
+      "host": "trae-cn",
+      "requestId": "f6bb125e-d6da-40f5-89d0-6a5727d116bf",
+      "unchangedBeforeApproval": true
+    }
+  ],
+  "nativeEndToEnd": [
+    {
+      "host": "codebuddy-ide",
+      "initRequestId": "8d1fc670-1f27-4bde-8dc1-b849e90ea667",
+      "verifyRequestId": "0b4ba954-4b3d-4c9a-a0a1-442728094f11",
+      "requestStatus": "awaiting_confirmation",
+      "runId": "change-buddy-workspace-host-entry-5f814938f2441c21",
+      "phase": "open",
+      "work": "change.intake",
+      "workId": "change-buddy-workspace-host-entry-5f814938f2441c21:change.intake:2a1d1114c78b685a",
+      "continuation": "execute",
+      "diagnosticCodes": [
+        "runtime.project-content-changed"
+      ]
+    },
+    {
+      "host": "codearts",
+      "initRequestId": "3384794c-869d-4a70-9714-46c02878d3cf",
+      "verifyRequestId": "fee30233-4848-40b1-966a-ee3f8cb8e487",
+      "requestStatus": "awaiting_confirmation",
+      "runId": "change-buddy-workspace-host-entry-5f814938f2441c21",
+      "phase": "open",
+      "work": "change.intake",
+      "workId": "change-buddy-workspace-host-entry-5f814938f2441c21:change.intake:2a1d1114c78b685a",
+      "continuation": "execute",
+      "diagnosticCodes": [
+        "runtime.project-content-changed"
+      ]
+    },
+    {
+      "host": "trae-cn",
+      "initRequestId": "d41d78c4-7573-486d-be11-978356aecaa5",
+      "verifyRequestId": "c0ab8c43-6067-4742-9b21-5ba8d38d5074",
+      "requestStatus": "awaiting_confirmation",
+      "runId": "change-buddy-workspace-host-entry-5f814938f2441c21",
+      "phase": "open",
+      "work": "change.intake",
+      "workId": "change-buddy-workspace-host-entry-5f814938f2441c21:change.intake:2a1d1114c78b685a",
+      "continuation": "execute",
+      "diagnosticCodes": [
+        "runtime.project-content-changed"
+      ]
+    }
+  ],
+  "nativeAcceptanceScope": {
+    "decision": "User narrowed the TRAE native acceptance to the China edition",
+    "included": [
+      "codebuddy-ide",
+      "codearts",
+      "trae-cn"
+    ],
+    "excluded": [
+      "trae"
+    ]
+  },
+  "codeBuddyIdeInstallation": {
+    "defaultArchiveInstall": "CLI did not start under the IDE shell with npm dependency junctions",
+    "directArchiveInstallLinks": "npm returned ENOENT resolving a bundled file dependency",
+    "retry": "Extract the exact candidate archive and npm install the extracted directory with --install-links in the trusted lab Workspace",
+    "verifiedIdenticalFiles": [
+      "package.json",
+      "bin/repoctopus.js",
+      "dist/repoctopus.mjs"
+    ],
+    "actualRuntimeCallsPassed": true
+  }
+}

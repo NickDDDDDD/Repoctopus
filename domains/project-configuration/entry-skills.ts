@@ -1,6 +1,13 @@
 import { createHash } from 'node:crypto';
 
-export const WORKSPACE_ENTRY_HOSTS = ['codex', 'opencode'] as const;
+export const WORKSPACE_ENTRY_HOSTS = [
+  'codex',
+  'opencode',
+  'codebuddy',
+  'codearts',
+  'trae',
+  'trae-cn',
+] as const;
 export type WorkspaceEntryHost = (typeof WORKSPACE_ENTRY_HOSTS)[number];
 
 const ownershipMarker = /\n<!-- repoctopus-entry:v1 SKILL\.md ([a-f0-9]{64}) -->\n$/u;

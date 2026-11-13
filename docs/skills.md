@@ -4,9 +4,36 @@ Repoctopus 使用 DSH Skill Registry 解析 Skill，并通过 Cordis Provider �
 
 ## 在宿主中调用 Repoctopus
 
-Workspace 接入获批后，会安装 `repoctopus` 入口 Skill。默认预览 Codex 的 `.agents/skills/repoctopus/` 和 OpenCode 的 `.opencode/skills/repoctopus/`，也可在 `project detect` 加 `--entry-hosts codex` 或 `--entry-hosts opencode`。接入审批展示将安装的路径；已接入项目可重新探测、准备和批准以补齐入口。把生成的入口随 Workspace 一起提交，团队成员打开该 Workspace 的新会话即可使用。
+第一次接入时，先安装当前宿主的个人级 `repoctopus-init`。在已接入的 Workspace，使用审批过的 `repoctopus` 启动或续跑 Change，使用 `repoctopus-configure-verify` 单独配置验证。
 
-在 Codex 的 Skill 选择中调用 `repoctopus`，或在 OpenCode 请求 Agent 使用 `repoctopus` Skill。启动时提供 Change ID 和目标分支，续跑时提供 Run ID。Runtime 为每个 Action 返回当前执行包，Host 领取执行权后读取正文和匹配的资源。人工批准和恢复仍沿同一 Run 处理。
+| 宿主              | `--entry-hosts` | Workspace 目录         | 个人 Init 默认目录          |
+| ----------------- | --------------- | ---------------------- | --------------------------- |
+| Codex             | `codex`         | `.agents/skills`       | `~/.codex/skills`           |
+| OpenCode          | `opencode`      | `.opencode/skills`     | `~/.config/opencode/skills` |
+| CodeBuddy Code    | `codebuddy`     | `.codebuddy/skills`    | `~/.codebuddy/skills`       |
+| CodeArts 码道 IDE | `codearts`      | `.codeartsdoer/skills` | `~/.codeartsdoer/skills`    |
+| TRAE 国际版       | `trae`          | `.trae/skills`         | `~/.trae/skills`            |
+| TRAE 中国版       | `trae-cn`       | `.trae/skills`         | `~/.trae-cn/skills`         |
+
+个人安装支持预览。CodeBuddy Code 使用 `CODEBUDDY_CONFIG_DIR` 时，个人目录跟随该设置，仍须位于用户目录内。首次接入默认预览 Codex 和 OpenCode 的 Workspace 入口。用 `--entry-hosts` 选择实际需要的宿主。
+
+```powershell
+repoctopus.cmd skill install-init --entry-hosts codebuddy --preview
+repoctopus.cmd skill install-init --entry-hosts codebuddy
+```
+
+已有 Workspace 可以单独补装入口。下面以 CodeArts 码道为例，在 Workspace 根目录运行：
+
+```powershell
+$prepared = repoctopus.cmd project install-entry-skills --entry-hosts codearts --json | ConvertFrom-Json
+repoctopus.cmd project review --request $prepared.result.file
+```
+
+审批只写入所选宿主的 Workspace Skill。按团队流程提交生成的入口，并在宿主里打开 Workspace 的新会话。CodeArts 码道使用智能体模式，在「技能与规则」核对目标 Skill 的启用状态。TRAE 可在「技能与命令」检查项目与全局技能。CodeBuddy Code 可用 `/skills` 核对发现情况。遇到同名 Skill 时，在宿主确认实际来源。
+
+[CodeBuddy Code](https://www.codebuddy.cn/docs/cli/skills) · [CodeArts 码道](https://support.huaweicloud.com/usermanual-codeartsagent/codeartsagent_ug_0024.html) · [TRAE 中国版](https://docs.trae.cn/ide_skills?lang=zh)
+
+通过宿主显式调用 `repoctopus`。启动时提供 Change ID 和目标分支，续跑时提供 Run ID。Runtime 为每个 Action 返回当前执行包，Host 领取执行权后读取正文和匹配的资源。人工批准和恢复沿同一 Run 处理。
 
 ## 查看有效 Skill
 

@@ -32,6 +32,7 @@ export interface ProjectConfigurationDecisionRequest {
   storeBinding: OpenSpecStoreBindingProposal | null;
   entrySkills?: WorkspaceEntrySkillPlan[];
   profileUpdate?: { workspaceRoot: string; profileId: string };
+  entryInstall?: { workspaceRoot: string };
   options: ProjectConfigurationDecision[];
 }
 
@@ -72,6 +73,7 @@ function projectConfigurationSnapshotDigest(input: {
   storeBinding: OpenSpecStoreBindingProposal | null;
   entrySkills?: WorkspaceEntrySkillPlan[];
   profileUpdate?: { workspaceRoot: string; profileId: string };
+  entryInstall?: { workspaceRoot: string };
 }): string {
   return `sha256:${createHash('sha256').update(canonicalJson(input)).digest('hex')}`;
 }
@@ -162,6 +164,27 @@ function configurationRequest(
   };
 }
 
+export function createWorkspaceEntryInstallDecision(input: {
+  workspaceRoot: string;
+  current: SharedProjectConfig;
+  entrySkills: WorkspaceEntrySkillPlan[];
+}): ProjectConfigurationDecisionRequest {
+  if (!input.entrySkills.length) throw new Error('Select at least one Workspace entry host');
+  const configDigest = hashProjectConfig(input.current);
+  const requestId = randomUUID();
+  return configurationRequest(requestId, {
+    draftId: requestId,
+    baseConfigDigest: configDigest,
+    candidateConfigDigest: configDigest,
+    candidateConfig: input.current,
+    reconcile: null,
+    unresolved: [],
+    storeBinding: null,
+    entrySkills: input.entrySkills,
+    entryInstall: { workspaceRoot: input.workspaceRoot },
+  });
+}
+
 export function createVerifyProfileDecision(input: {
   workspaceRoot: string;
   current: EffectiveProjectConfig;
@@ -203,6 +226,13 @@ export function recordProjectConfigurationDecision(input: {
   timestamp: string;
 }): ProjectConfigurationDecisionRecord {
   if (!input.actor.authenticated) throw new Error('Project configuration decision is not trusted');
+  const { entryInstall, entrySkills, profileUpdate, storeBinding } = input.request;
+  if (
+    (entryInstall && (profileUpdate || storeBinding || !entrySkills?.length)) ||
+    (profileUpdate && (storeBinding || entrySkills?.length))
+  ) {
+    throw new Error('Project configuration request combines incompatible approval scopes');
+  }
   const candidateConfig = parseSharedProjectConfig(input.request.candidateConfig);
   const candidateConfigDigest = hashProjectConfig(candidateConfig);
   const snapshotDigest = projectConfigurationSnapshotDigest({
@@ -214,7 +244,8 @@ export function recordProjectConfigurationDecision(input: {
     unresolved: input.request.unresolved,
     storeBinding: input.request.storeBinding,
     ...(input.request.entrySkills ? { entrySkills: input.request.entrySkills } : {}),
-    ...(input.request.profileUpdate ? { profileUpdate: input.request.profileUpdate } : {}),
+    ...(profileUpdate ? { profileUpdate } : {}),
+    ...(entryInstall ? { entryInstall } : {}),
   });
   if (
     candidateConfigDigest !== input.request.candidateConfigDigest ||

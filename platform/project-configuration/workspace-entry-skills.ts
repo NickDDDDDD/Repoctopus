@@ -18,10 +18,19 @@ const productRoot = path.resolve(
 );
 type EntrySkill = 'repoctopus' | 'repoctopus-init' | 'repoctopus-configure-verify';
 type EntryTarget = { host: WorkspaceEntryHost; path: string; skill: EntrySkill };
+const DEFAULT_WORKSPACE_ENTRY_HOSTS = ['codex', 'opencode'] as const;
+const HOST_DIRECTORIES: Record<WorkspaceEntryHost, { workspace: string; personal: string }> = {
+  codex: { workspace: '.agents', personal: '.codex' },
+  opencode: { workspace: '.opencode', personal: '.config/opencode' },
+  codebuddy: { workspace: '.codebuddy', personal: '.codebuddy' },
+  codearts: { workspace: '.codeartsdoer', personal: '.codeartsdoer' },
+  trae: { workspace: '.trae', personal: '.trae' },
+  'trae-cn': { workspace: '.trae', personal: '.trae-cn' },
+};
 
 function workspaceTargets(): EntryTarget[] {
   return WORKSPACE_ENTRY_HOSTS.flatMap((host) => {
-    const directory = host === 'codex' ? '.agents' : '.opencode';
+    const directory = HOST_DIRECTORIES[host].workspace;
     return (['repoctopus', 'repoctopus-configure-verify'] as const).map((skill) => ({
       host,
       skill,
@@ -35,7 +44,7 @@ function selectedHosts(hosts: readonly string[]): readonly WorkspaceEntryHost[] 
     !hosts.length ||
     hosts.some((host) => !WORKSPACE_ENTRY_HOSTS.some((known) => known === host))
   ) {
-    throw new Error('Entry hosts must be codex or opencode');
+    throw new Error(`Entry hosts must be one or more of: ${WORKSPACE_ENTRY_HOSTS.join(', ')}`);
   }
   return WORKSPACE_ENTRY_HOSTS.filter((host) => hosts.includes(host));
 }
@@ -113,13 +122,26 @@ async function observe(
 
 export async function planWorkspaceEntrySkills(
   workspace: string,
-  hosts: readonly string[] = WORKSPACE_ENTRY_HOSTS,
+  hosts: readonly string[] = DEFAULT_WORKSPACE_ENTRY_HOSTS,
 ): Promise<WorkspaceEntrySkillPlan[]> {
   const chosen = selectedHosts(hosts);
   return planEntryTargets(
     workspace,
-    workspaceTargets().filter(({ host }) => chosen.includes(host)),
+    uniqueEntryTargets(workspaceTargets().filter(({ host }) => chosen.includes(host))),
   );
+}
+
+function entryPathKey(file: string): string {
+  return process.platform === 'win32' ? file.toLowerCase() : file;
+}
+
+function uniqueEntryTargets(targets: readonly EntryTarget[]): EntryTarget[] {
+  const unique = new Map<string, EntryTarget>();
+  for (const target of targets) {
+    const key = entryPathKey(target.path);
+    if (!unique.has(key)) unique.set(key, target);
+  }
+  return [...unique.values()];
 }
 
 async function planEntryTargets(
@@ -161,8 +183,17 @@ export async function prepareWorkspaceEntryWrites(
   resuming: boolean,
   requestId: string,
   afterWrite?: (file: string) => Promise<void> | void,
+  checkScope?: () => Promise<void>,
 ): Promise<{ install(): Promise<void>; verify(): Promise<void> }> {
-  return prepareEntryWrites(workspace, workspaceTargets(), plans, resuming, requestId, afterWrite);
+  return prepareEntryWrites(
+    workspace,
+    workspaceTargets(),
+    plans,
+    resuming,
+    requestId,
+    afterWrite,
+    checkScope,
+  );
 }
 
 async function prepareEntryWrites(
@@ -172,7 +203,11 @@ async function prepareEntryWrites(
   resuming: boolean,
   requestId: string,
   afterWrite?: (file: string) => Promise<void> | void,
+  checkScope?: () => Promise<void>,
 ) {
+  if (new Set(plans.map(({ path }) => entryPathKey(path))).size !== plans.length) {
+    throw new Error('Entry Skill plan contains duplicate target paths');
+  }
   const stagingTag = digest(requestId).slice(0, 24);
   const writes = await Promise.all(
     plans.map(async (plan) => {
@@ -221,6 +256,7 @@ async function prepareEntryWrites(
             exclusive: current === null,
             temporaryTag: stagingTag,
             beforeCommit: async () => {
+              await checkScope?.();
               const latest = await observe(workspace, plan.path, stagingTag);
               if (latest?.text !== current?.text || latest?.identity !== current?.identity) {
                 throw new Error(`Workspace entry changed before write: ${plan.path}`);
@@ -244,29 +280,36 @@ async function prepareEntryWrites(
 
 export async function installPersonalInitSkills(hosts: readonly string[], preview: boolean) {
   const root = await realpath(homedir());
-  const targets = selectedHosts(hosts).map((host): EntryTarget => {
-    const directory =
-      host === 'codex'
-        ? process.env.CODEX_HOME || path.join(root, '.codex')
-        : path.join(process.env.XDG_CONFIG_HOME || path.join(root, '.config'), 'opencode');
-    const relative = path.relative(root, path.resolve(directory));
-    if (
-      !relative ||
-      relative === '..' ||
-      relative.startsWith(`..${path.sep}`) ||
-      path.isAbsolute(relative)
-    ) {
-      throw new Error(
-        `Personal ${host} Skill directory must be inside the user's home: ${directory}`,
-      );
-    }
-    const skill = 'repoctopus-init';
-    return {
-      host,
-      skill,
-      path: path.join(relative, 'skills', skill, 'SKILL.md').replaceAll('\\', '/'),
-    };
-  });
+  const targets = uniqueEntryTargets(
+    selectedHosts(hosts).map((host): EntryTarget => {
+      const defaultDirectory = path.join(root, HOST_DIRECTORIES[host].personal);
+      const directory =
+        host === 'codex' && process.env.CODEX_HOME
+          ? process.env.CODEX_HOME
+          : host === 'opencode' && process.env.XDG_CONFIG_HOME
+            ? path.join(process.env.XDG_CONFIG_HOME, 'opencode')
+            : host === 'codebuddy' && process.env.CODEBUDDY_CONFIG_DIR
+              ? process.env.CODEBUDDY_CONFIG_DIR
+              : defaultDirectory;
+      const relative = path.relative(root, path.resolve(directory));
+      if (
+        !relative ||
+        relative === '..' ||
+        relative.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relative)
+      ) {
+        throw new Error(
+          `Personal ${host} Skill directory must be inside the user's home: ${directory}`,
+        );
+      }
+      const skill = 'repoctopus-init';
+      return {
+        host,
+        skill,
+        path: path.join(relative, 'skills', skill, 'SKILL.md').replaceAll('\\', '/'),
+      };
+    }),
+  );
   const plans = await planEntryTargets(root, targets);
   if (!preview) {
     const writes = await prepareEntryWrites(root, targets, plans, false, 'personal-init');

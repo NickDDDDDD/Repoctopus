@@ -143,7 +143,7 @@ export function renderWorkspaceGuides(config: SharedProjectConfig): WorkspaceGui
     'repoctopus.cmd run resume --workspace . --run $runId --json',
     fence,
     '',
-    '也可在宿主中直接调用 `repoctopus` Skill，并提供原 Run ID。已有 Workspace 可重新执行项目探测、准备与批准，补齐缺失的入口。探测默认预览 Codex 和 OpenCode，可用 `--entry-hosts codex` 或 `--entry-hosts opencode` 选择其中一个。',
+    '也可在宿主中直接调用 `repoctopus` Skill，并提供原 Run ID。已有 Workspace 可运行 `repoctopus.cmd project install-entry-skills --entry-hosts <host> --json`，再审批所选入口。选择值包括 `codex`、`opencode`、`codebuddy`、`codearts`、`trae`（国际版）、`trae-cn`（中国版）。',
     '',
     '把返回结果交给 Agent。同一 Run 的当前 Work、Skill、检查结果和待决定项由 Runtime 恢复；遇到未知结果或 reconciliation 先按提示核对。不要手改 `.repoctopus/runs/`，也不要因进程退出就重做已确认的操作。',
     '',

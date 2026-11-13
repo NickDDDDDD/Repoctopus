@@ -25,6 +25,13 @@ const plugin = ((context: Context) => {
           ),
       }),
       context.commandRouter.register({
+        name: 'project.install-entry-skills',
+        execute: ({ input }) =>
+          context.projectOnboarding.installEntrySkills(
+            input as { workspace: string; entryHosts: readonly string[] },
+          ),
+      }),
+      context.commandRouter.register({
         name: 'project.configure-verify',
         execute: ({ input }) =>
           context.projectOnboarding.configureVerify(

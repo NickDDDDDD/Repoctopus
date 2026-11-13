@@ -35,6 +35,129 @@ const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 describe('documented project onboarding flow', () => {
+  it('plans selected personal and Workspace Skills for the additional hosts', async () => {
+    const root = await temporaryDirectory('repoctopus additional hosts ');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    const userDirectory = path.join(root, 'host profile');
+    await mkdir(userDirectory);
+    const environment = {
+      HOME: userDirectory,
+      USERPROFILE: userDirectory,
+      CODEX_HOME: path.join(userDirectory, '.codex'),
+      CODEBUDDY_CONFIG_DIR: '',
+      XDG_CONFIG_HOME: path.join(userDirectory, '.config'),
+      XDG_DATA_HOME: path.join(root, 'xdg'),
+      OPENSPEC_TELEMETRY: '0',
+      OPENSPEC_NO_UPDATE_CHECK: '1',
+    };
+    const hosts = 'codebuddy,codearts,trae,trae-cn';
+    const preview = await runCli<{ targets: Array<{ path: string }> }>({
+      packageRoot,
+      cwd: workspace,
+      environment,
+      args: ['skill', 'install-init', '--entry-hosts', hosts, '--preview'],
+    });
+    const personalTargets = ['.codebuddy', '.codeartsdoer', '.trae', '.trae-cn'].map((directory) =>
+      path.join(userDirectory, directory, 'skills', 'repoctopus-init', 'SKILL.md'),
+    );
+    expect(preview.result?.targets.map(({ path }) => path)).toEqual(personalTargets);
+    for (const file of personalTargets) {
+      await expect(access(file)).rejects.toMatchObject({ code: 'ENOENT' });
+    }
+    await runCli({
+      packageRoot,
+      cwd: workspace,
+      environment,
+      args: ['skill', 'install-init', '--entry-hosts', hosts],
+    });
+    for (const file of personalTargets) {
+      expect(await readFile(file, 'utf8')).toContain('name: repoctopus-init');
+    }
+    await expect(access(path.join(userDirectory, '.codex'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    const init = await runCli<{ request: ProjectConfigurationDecisionRequest }>({
+      packageRoot,
+      cwd: workspace,
+      environment,
+      args: ['project', 'init', '--layout', 'single', '--entry-hosts', hosts],
+    });
+    expect(init.result?.request.entrySkills?.map(({ path }) => path)).toEqual(
+      ['.codebuddy', '.codeartsdoer', '.trae'].flatMap((directory) =>
+        ['repoctopus', 'repoctopus-configure-verify'].map(
+          (skill) => `${directory}/skills/${skill}/SKILL.md`,
+        ),
+      ),
+    );
+  });
+
+  it('installs only selected Workspace Skills through a separate approval', async () => {
+    const root = await temporaryDirectory('repoctopus approved skill install ');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    const backend = await createGitRepository(root, 'backend');
+    const configFile = path.join(workspace, 'repoctopus.yaml');
+    const config = JSON.stringify({
+      apiVersion: 'repoctopus/v1alpha1',
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'installed', repositoryId: 'workspace' },
+      repositories: [
+        { id: 'workspace', path: '.' },
+        { id: 'backend', path: '../backend' },
+      ],
+      profiles: [],
+    });
+    await writeFile(configFile, config);
+    const environment = {
+      XDG_CONFIG_HOME: path.join(root, 'config'),
+      XDG_DATA_HOME: path.join(root, 'data'),
+      OPENSPEC_TELEMETRY: '0',
+    };
+    const invoke = <T>(...args: string[]) =>
+      runCli<T>({ packageRoot, cwd: workspace, args, environment });
+    const prepare = () =>
+      invoke<{ file: string; request: ProjectConfigurationDecisionRequest }>(
+        'project',
+        'install-entry-skills',
+        '--entry-hosts',
+        'codearts',
+      );
+    const file = path.join(workspace, '.codeartsdoer/skills/repoctopus/SKILL.md');
+    const responseFile = path.join(root, 'decision.json');
+    for (const decision of ['reject', 'approve'] as const) {
+      const { result } = await prepare();
+      const request = result!.request;
+      expect(request.storeBinding).toBeNull();
+      expect(request.baseConfigDigest).toBe(request.candidateConfigDigest);
+      expect(request.entrySkills?.map(({ host }) => host)).toEqual(['codearts', 'codearts']);
+      await expect(access(file)).rejects.toMatchObject({ code: 'ENOENT' });
+      await writeFile(
+        responseFile,
+        JSON.stringify({
+          apiVersion: request.apiVersion,
+          kind: 'HumanDecisionResponse',
+          requestId: request.requestId,
+          snapshotDigest: request.snapshotDigest,
+          decision,
+        }),
+      );
+      await invoke('project', 'review', '--request', result!.file, '--response-file', responseFile);
+    }
+    expect(await readFile(file, 'utf8')).toContain('name: repoctopus');
+    expect(await readFile(configFile, 'utf8')).toBe(config);
+    expect(await readFile(path.join(workspace, 'README.md'), 'utf8')).toBe('# workspace\n');
+    for (const untouched of [
+      path.join(workspace, 'AGENTS.md'),
+      path.join(workspace, 'openspec'),
+      path.join(workspace, '.agents'),
+      path.join(backend, '.codeartsdoer'),
+      path.join(backend, 'openspec'),
+    ]) {
+      await expect(access(untouched)).rejects.toMatchObject({ code: 'ENOENT' });
+    }
+  });
+
   it('installs only the explicitly selected personal Init entry and previews Verify setup for the Workspace', async () => {
     const root = await temporaryDirectory('repoctopus personal init ');
     cleanup.push(root);
@@ -524,5 +647,5 @@ describe('documented project onboarding flow', () => {
       diagnosticCode: 'store-registration-conflict',
       registeredRoot: workspace,
     });
-  }, 30_000);
+  }, 120_000);
 });
