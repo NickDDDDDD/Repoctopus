@@ -166,7 +166,12 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
   await expect(
     cli(contentArgv.map((arg) => (arg === 'test:host-decision' ? 'other-runner' : arg))),
   ).rejects.toThrow(/invocation/i);
+  await write(installedAction, originalAction.replaceAll('\r\n', '\n').replaceAll('\n', '\r\n'));
+  expect((await cli<typeof loaded.result>(contentArgv)).result).toEqual(loaded.result);
   await write(installedAction, originalAction);
+  await expect(cli(contentArgv.map((arg) => (arg === 'codex' ? 'opencode' : arg)))).rejects.toThrow(
+    /invocation/i,
+  );
   const change = 'openspec/changes/host-decision';
   await write(
     `${change}/proposal.md`,
@@ -211,6 +216,7 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
       .join(','),
   ]);
   await cli(['run', 'next', '--run', runId]);
+  await expect(cli(contentArgv)).rejects.toThrow(/active Run Work|active external invocation|no authoritative Work claim/i);
   const status = await cli<RunStatusView>(['run', 'status', '--run', runId]);
   expect(status.result!.state.status).toBe('waiting');
   expect(status.result!.state.changeLifecycle!.phase).toBe('open');
