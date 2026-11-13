@@ -1,0 +1,16 @@
+{
+  "change": "fix-windows-cli-package-junctions",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236",
+  "files": [
+    { "path": "openspec/changes/fix-windows-cli-package-junctions/proposal.md", "sha256": "16552d235630720277c22a76a2247bacf4b888d1e192cd69f9f4e857ab2905ca" },
+    { "path": "openspec/changes/fix-windows-cli-package-junctions/design.md", "sha256": "5e5b83d51bfd1a646a4610e2fd66e5408fbb4ced291dbaddfa41bf30d7f91b38" },
+    { "path": "openspec/changes/fix-windows-cli-package-junctions/tasks.md", "sha256": "26aa08e18255a6c09b8434eb89b8dca9b10d40e15ca701d2601bda6bc5174c88" },
+    { "path": "openspec/changes/fix-windows-cli-package-junctions/.openspec.yaml", "sha256": "3ea192d12c1ad3d96d8e6cfd6fddb23c8be77d85611385996b685b4736c117c0" },
+    { "path": "openspec/changes/fix-windows-cli-package-junctions/specs/product-distribution/spec.md", "sha256": "9e63cca0141b38a4bd9456850385916c72c231b065a4ce5a512f40ace3d54a0c" }
+  ]
+}

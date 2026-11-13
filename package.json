@@ -7,10 +7,6 @@
   "private": true,
   "description": "Deterministic multi-repository delivery orchestration for team agents",
   "type": "module",
-  "workspaces": [
-    "third_party/cordis",
-    "third_party/cordis-plugin-loader"
-  ],
   "bin": {
     "repoctopus": "bin/repoctopus.js"
   },
@@ -80,8 +76,8 @@
     "verify": "npm run typecheck && npm run typecheck:desktop && npm run lint && npm run build && npm test && npm run check:generated && npm run check:brand && npm run check:architecture && npm run check:provenance && npm run check:dashboard-salvage && npm run spec:validate && npm run check:managed-execution-report"
   },
   "dependencies": {
-    "@deepseek-ai/cordis": "file:third_party/cordis",
-    "@deepseek-ai/cordis-plugin-loader": "file:third_party/cordis-plugin-loader",
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/cordis-plugin-loader": "1.0.6",
     "@deepseek-ai/cosmokit": "1.8.6",
     "@deepseek-ai/dsh-brand": "0.2.1-rc.5",
     "@deepseek-ai/dsh-llm": "0.2.1-rc.5",
