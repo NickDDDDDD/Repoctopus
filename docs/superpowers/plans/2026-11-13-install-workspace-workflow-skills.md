@@ -1,0 +1,19 @@
+---
+change: install-workspace-workflow-skills
+design-doc: openspec/changes/install-workspace-workflow-skills/design.md
+base-ref: fe87b0d919a4f9b8202d22523279a578badbdc96
+---
+
+# Workspace Skill 安装与引用
+
+<!-- comet-task-authority: openspec/changes/install-workspace-workflow-skills/tasks.md -->
+
+- 1.1 建立可安装资产清单并复用宿主路径映射，核对每项来源和资源。验收：已采用的方法可发现，参考方法未进入执行目录。 <!-- comet-task-ref:b30fee67-c8f6-4767-b1c7-2ec15ea6bade -->
+- 1.2 将文件纳入初始化和既有 Workspace 补装预览，绑定批准、冲突检测与中断恢复。验收：所选宿主正确写入，团队文件和业务仓原状保留。 <!-- comet-task-ref:c72c192a-19f0-44d7-bf15-5164c4dbdba9 -->
+- 2.1 为支持来源校验的宿主交付当前 Action 的有序 Skill 引用。验收：匹配正文和资源时，交付视图省去相应静态内容，保持原 Work 身份。 <!-- comet-task-ref:0364c4a2-92fb-4e5c-ba62-5564dc2c1184 -->
+- 2.2 实现入口加载与同一 claim 的内容回退。验收：本地缺失、篡改、重名、无法证明来源和换进程恢复时，使用原冻结内容或给出明确阻断。 <!-- comet-task-ref:d0614843-4391-4202-8077-917c24f8429d -->
+- 2.3 核对 OpenSpec Provider、团队绑定和消费遥测。验收：动态工件协议完整，未消费的层不会因安装、调用成功或 Work 成功被记录为已消费。 <!-- comet-task-ref:2be001be-36ee-41e1-84ff-e39fa4bafcf9 -->
+- 3.1 更新接入和 Skill 文档，说明安装位置、升级与回退。验收：初次接入与已接入团队有可执行步骤。 <!-- comet-task-ref:bbc7801a-fd74-436d-9351-8b522b2c6605 -->
+- 3.2 用实际安装包验证多仓接入、原生宿主发现/调用、完整冻结回退及进程恢复。验收：逐宿主记录能否验证来源、采用的交付方式和证据。 <!-- comet-task-ref:7df9035b-3223-4029-a5bb-f7e571189e5f -->
+
+先冻结安装文件与资源，再串联领取与只读回退，最后验证原生宿主。测试先复现，再完成实现。回退保持 invocation 与 packet 身份。
