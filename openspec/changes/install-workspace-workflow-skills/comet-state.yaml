@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: e3907c93db18a005ec23ad356cbc6813b2a35796d74bce34417038c130943bbe
+  hash: 4998f60dfb9ba608367befee1b9ffb44d3f759cb6041ace2de0f77a506f788f0
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 15
+    sequence: 16
     actions:
       - attempt: 1
         claim:
@@ -581,6 +581,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-install-workspace-workflow-skills
+          token: portable-e006e36659285bae7e4ee53e9cdb00bcbb033fb1a1bbf6af7e54c7eb07215d67
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
         id: install-workspace-workflow-skills:15
         input:
           input:
@@ -669,16 +678,128 @@ run_checkpoint:
                 contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
                 ref: openspec/changes/install-workspace-workflow-skills
         inputHash: 386f1c451867bb1155412b71e2843a29e9e2a927dab69defb9111060f45f6f38
+        outcome:
+          actionId: install-workspace-workflow-skills:15
+          attempt: 1
+          claimToken: portable-e006e36659285bae7e4ee53e9cdb00bcbb033fb1a1bbf6af7e54c7eb07215d67
+          inputHash: 386f1c451867bb1155412b71e2843a29e9e2a927dab69defb9111060f45f6f38
+          outcomeId: 89e9b275-50ce-465e-aa81-2b0675d612df
+          output:
+            event: build-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 3ba5498aa83b5b377a92a7343a8845ba6a21b5f22bdb42a3e84ce42fe289496f
+            outcomeId: 89e9b275-50ce-465e-aa81-2b0675d612df
         reconciliations: []
         ref: comet-build
         requiredCapabilities: []
         retry: manual
         runId: install-workspace-workflow-skills
-        status: pending
+        status: succeeded
         stepId: full.build.execute
         type: invoke_skill
+      - attempt: 1
+        id: install-workspace-workflow-skills:16
+        input:
+          input:
+            change: install-workspace-workflow-skills
+            changeDir: openspec/changes/install-workspace-workflow-skills
+            workspaceBaseline:
+              ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+          outputs:
+            full.build.configure:
+              boundBranch: codex/install-workspace-workflow-skills
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: install-workspace-workflow-skills
+                  changeDir: openspec/changes/install-workspace-workflow-skills
+                  workspaceBaseline:
+                    ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/install-workspace-workflow-skills
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: 498820e792ff7feff09eb5e1814081cf5fa14a81e21d8b5b1cec45638b978a90
+                ref: openspec/changes/install-workspace-workflow-skills/design.md
+              plan: docs/superpowers/plans/2026-11-13-install-workspace-workflow-skills.md
+              planEvidence:
+                contentHash: 083182aa00026d61da647cd67faffe16682f14f7276eaa01a15b5cc29f71df3b
+                ref: docs/superpowers/plans/2026-11-13-install-workspace-workflow-skills.md
+              taskRevision: b5638e7f58b0b5d47d8e17e73fd36050f34c55d0a1d02fa45715d378ce90accb
+            full.build.plan.evidence:
+              contentHash: 083182aa00026d61da647cd67faffe16682f14f7276eaa01a15b5cc29f71df3b
+              ref: docs/superpowers/plans/2026-11-13-install-workspace-workflow-skills.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: install-workspace-workflow-skills
+                  changeDir: openspec/changes/install-workspace-workflow-skills
+                  workspaceBaseline:
+                    ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+                    handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
+                    proposal: 复用获批安装事务，逐文件绑定 Action、当前 Matt 增强及只读 OpenSpec
+                      Explore；管理记录位于资源集合外。交付协议独立于 Build
+                      能力绑定，仅支持精确来源和完整内容核对的宿主使用引用，其他宿主使用内联；回退由同一活动外部 invocation
+                      的原 actor 与 Runner 只读获取冻结包，保持动态 Provider
+                      与原消费身份。验证真实安装包、Windows 宿主、路径及资源漂移与跨进程恢复。
+                    requirementsEvidence:
+                      contentHash: e4123f0df14be949a32b3227f954a9811244d8b5f00742f27439fd83a478f1eb
+                      ref: openspec/changes/install-workspace-workflow-skills
+                    sourceEvidence:
+                      contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
+                      ref: openspec/changes/install-workspace-workflow-skills
+            full.design.document:
+              designDoc: openspec/changes/install-workspace-workflow-skills/design.md
+            full.design.evidence:
+              contentHash: 498820e792ff7feff09eb5e1814081cf5fa14a81e21d8b5b1cec45638b978a90
+              ref: openspec/changes/install-workspace-workflow-skills/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+              handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
+              proposal: 复用获批安装事务，逐文件绑定 Action、当前 Matt 增强及只读 OpenSpec
+                Explore；管理记录位于资源集合外。交付协议独立于 Build
+                能力绑定，仅支持精确来源和完整内容核对的宿主使用引用，其他宿主使用内联；回退由同一活动外部 invocation 的原
+                actor 与 Runner 只读获取冻结包，保持动态 Provider 与原消费身份。验证真实安装包、Windows
+                宿主、路径及资源漂移与跨进程恢复。
+              requirementsEvidence:
+                contentHash: e4123f0df14be949a32b3227f954a9811244d8b5f00742f27439fd83a478f1eb
+                ref: openspec/changes/install-workspace-workflow-skills
+              sourceEvidence:
+                contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
+                ref: openspec/changes/install-workspace-workflow-skills
+        inputHash: da1845091d0b5870a0f785eae762102b90b8213de206381e76518bec91117d2a
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: install-workspace-workflow-skills
+        status: pending
+        stepId: full.build.check
+        type: call_tool
     commands:
       - id: f643ff0f04522306c193810bc118fc1b5a661b16f42659e401781c2a6d53203e
         name: revise-design
@@ -921,6 +1042,108 @@ run_checkpoint:
                 contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
                 ref: openspec/changes/install-workspace-workflow-skills
         sequence: 15
+      install-workspace-workflow-skills:16:
+        results:
+          full.build.configure:
+            sequence: 11
+            value:
+              boundBranch: codex/install-workspace-workflow-skills
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 12
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: install-workspace-workflow-skills
+                  changeDir: openspec/changes/install-workspace-workflow-skills
+                  workspaceBaseline:
+                    ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/install-workspace-workflow-skills
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 15
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 13
+            value:
+              designEvidence:
+                contentHash: 498820e792ff7feff09eb5e1814081cf5fa14a81e21d8b5b1cec45638b978a90
+                ref: openspec/changes/install-workspace-workflow-skills/design.md
+              plan: docs/superpowers/plans/2026-11-13-install-workspace-workflow-skills.md
+              planEvidence:
+                contentHash: 083182aa00026d61da647cd67faffe16682f14f7276eaa01a15b5cc29f71df3b
+                ref: docs/superpowers/plans/2026-11-13-install-workspace-workflow-skills.md
+              taskRevision: b5638e7f58b0b5d47d8e17e73fd36050f34c55d0a1d02fa45715d378ce90accb
+          full.build.plan.evidence:
+            sequence: 14
+            value:
+              contentHash: 083182aa00026d61da647cd67faffe16682f14f7276eaa01a15b5cc29f71df3b
+              ref: docs/superpowers/plans/2026-11-13-install-workspace-workflow-skills.md
+          full.design.confirm:
+            sequence: 8
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: install-workspace-workflow-skills
+                  changeDir: openspec/changes/install-workspace-workflow-skills
+                  workspaceBaseline:
+                    ref: 9bf6bcf1-fb7a-4b67-8e3a-2275dd15bfd7
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+                    handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
+                    proposal: 复用获批安装事务，逐文件绑定 Action、当前 Matt 增强及只读 OpenSpec
+                      Explore；管理记录位于资源集合外。交付协议独立于 Build
+                      能力绑定，仅支持精确来源和完整内容核对的宿主使用引用，其他宿主使用内联；回退由同一活动外部 invocation
+                      的原 actor 与 Runner 只读获取冻结包，保持动态 Provider
+                      与原消费身份。验证真实安装包、Windows 宿主、路径及资源漂移与跨进程恢复。
+                    requirementsEvidence:
+                      contentHash: e4123f0df14be949a32b3227f954a9811244d8b5f00742f27439fd83a478f1eb
+                      ref: openspec/changes/install-workspace-workflow-skills
+                    sourceEvidence:
+                      contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
+                      ref: openspec/changes/install-workspace-workflow-skills
+          full.design.document:
+            sequence: 9
+            value:
+              designDoc: openspec/changes/install-workspace-workflow-skills/design.md
+          full.design.evidence:
+            sequence: 10
+            value:
+              contentHash: 498820e792ff7feff09eb5e1814081cf5fa14a81e21d8b5b1cec45638b978a90
+              ref: openspec/changes/install-workspace-workflow-skills/design.md
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/install-workspace-workflow-skills/.comet/handoff/design-context.json
+              handoffHash: a5bcc438bbd607a309a6ab72e7daa8886648fa78bfe9a98c879f4b52287210a3
+              proposal: 复用获批安装事务，逐文件绑定 Action、当前 Matt 增强及只读 OpenSpec
+                Explore；管理记录位于资源集合外。交付协议独立于 Build
+                能力绑定，仅支持精确来源和完整内容核对的宿主使用引用，其他宿主使用内联；回退由同一活动外部 invocation 的原
+                actor 与 Runner 只读获取冻结包，保持动态 Provider 与原消费身份。验证真实安装包、Windows
+                宿主、路径及资源漂移与跨进程恢复。
+              requirementsEvidence:
+                contentHash: e4123f0df14be949a32b3227f954a9811244d8b5f00742f27439fd83a478f1eb
+                ref: openspec/changes/install-workspace-workflow-skills
+              sourceEvidence:
+                contentHash: 8a2fd6383d973f35dee4fc09b2a9ec09f9ca3165f46dd941433b59b121a06ce1
+                ref: openspec/changes/install-workspace-workflow-skills
+        sequence: 16
       install-workspace-workflow-skills:4:
         results:
           full.open:
@@ -1474,6 +1697,10 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
+      full.build.execute:
+        sequence: 15
+        value:
+          event: build-complete
       full.build.plan:
         sequence: 13
         value:
@@ -1571,6 +1798,6 @@ run_checkpoint:
           contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
     children: []
     lineage: []
-  sourceRevision: 22
-  sourceHash: 0a1a24dbfb00c69e9fd4c480a938c1708ec3643ef6416a06ce2228f36b96df2b
+  sourceRevision: 24
+  sourceHash: fa5dea67e0fe9859613cce4e42c2d1cc8b12931eabff43be6be77ede3da29b9f
 check_epoch: 2
