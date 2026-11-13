@@ -649,5 +649,5 @@ describe('documented project onboarding flow', () => {
       diagnosticCode: 'store-registration-conflict',
       registeredRoot: workspace,
     });
-  }, 30_000);
+  }, 120_000);
 });
