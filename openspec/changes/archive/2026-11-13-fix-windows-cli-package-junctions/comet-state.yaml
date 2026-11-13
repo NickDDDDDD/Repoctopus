@@ -1,0 +1,3353 @@
+# comet-execution: managed-run
+change_id: 6cc68ac2-c4fa-49a1-a1cc-c9c2baaaf122
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 3d756bea681a4ed9b63de0ef7846080ebf0f2153
+design_doc: openspec/changes/archive/2026-11-13-fix-windows-cli-package-junctions/design.md
+plan: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+branch_status: pending
+created_at: 2026-11-13
+verified_at: 2026-11-13
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/fix-windows-cli-package-junctions
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-13-fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+handoff_hash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: c3088a8029f2012022562bce7660ef32b2d5f261de3db751a98fb1e3ad323096
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: fix-windows-cli-package-junctions
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: a3c7b2b27ea66f6d6f284fd7967d77b27499a778d35828b0e22cd19d5691c9b9
+    input:
+      change: fix-windows-cli-package-junctions
+      changeDir: openspec/changes/fix-windows-cli-package-junctions
+      workspaceBaseline:
+        ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 3d756bea681a4ed9b63de0ef7846080ebf0f2153
+      boundBranch: codex/fix-windows-cli-package-junctions
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 8
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-13
+      designDoc: openspec/changes/archive/2026-11-13-fix-windows-cli-package-junctions/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-13-fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+      handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+      verifiedAt: 2026-11-13
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 32
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-c763fab473f7597666c650852444bad1913b209b90ed8dd80822deb61404b927
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:1
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: 3427ce8cd079e1a2c7b1443a44228202e0099c77da76bc8d896281e7ef12e322
+        outcome:
+          actionId: fix-windows-cli-package-junctions:1
+          attempt: 1
+          claimToken: portable-c763fab473f7597666c650852444bad1913b209b90ed8dd80822deb61404b927
+          inputHash: 3427ce8cd079e1a2c7b1443a44228202e0099c77da76bc8d896281e7ef12e322
+          outcomeId: bc378a35-392c-44f4-9a43-a64b166eed58
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: cf8b39aab057a90ffbf16d57b6cc7d72cee88cb3a8e9bbaec667f639403d02e6
+            outcomeId: bc378a35-392c-44f4-9a43-a64b166eed58
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-e9b527b5d34219a166c6aeee26c25054d7aee4386fddde5e68457b136eedff6f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:4
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: f3a86679af9a9036165b4c8e2df8dee876f547252d90d31424b2a811805b9822
+        outcome:
+          actionId: fix-windows-cli-package-junctions:4
+          attempt: 1
+          claimToken: portable-e9b527b5d34219a166c6aeee26c25054d7aee4386fddde5e68457b136eedff6f
+          inputHash: f3a86679af9a9036165b4c8e2df8dee876f547252d90d31424b2a811805b9822
+          outcomeId: fix-windows-cli-package-junctions:4:1:executor-result
+          output:
+            contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6c19b6133e9f69eafc8966c6ef39fe7b37aa0ef689b7d002c0c01c5bc4abb27b
+            outcomeId: fix-windows-cli-package-junctions:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-8a1042093289fa56ea44ab6aae07e163cc7bc7c111611a69b17c5f82c76d7941
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:5
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: f4586824f0685a7c42671acc21b99a3be39ab51fe974e37f2ca12aa5237c864c
+        outcome:
+          actionId: fix-windows-cli-package-junctions:5
+          attempt: 1
+          claimToken: portable-8a1042093289fa56ea44ab6aae07e163cc7bc7c111611a69b17c5f82c76d7941
+          inputHash: f4586824f0685a7c42671acc21b99a3be39ab51fe974e37f2ca12aa5237c864c
+          outcomeId: 77cd2230-40e7-441b-802a-055849985232
+          output:
+            handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+            handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+            proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+              版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+              验证直接安装。方案与前述验证一致，规格无需补丁。
+            requirementsEvidence:
+              contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+              ref: openspec/changes/fix-windows-cli-package-junctions
+            sourceEvidence:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: cacc801cb342f3fd652c6057c5bc1a558a2f2bacce2feb271f7d61c64dd7bb4e
+            outcomeId: 77cd2230-40e7-441b-802a-055849985232
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e2dd2a40097d08a6d8182a0766be31f9876e22e706e0afe40912bcb61c6f49a6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:7
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: a1728f236f88b128e7a812a7e45712db746365be9aa6c5c98540cfb9db7155c9
+        outcome:
+          actionId: fix-windows-cli-package-junctions:7
+          attempt: 1
+          claimToken: portable-e2dd2a40097d08a6d8182a0766be31f9876e22e706e0afe40912bcb61c6f49a6
+          inputHash: a1728f236f88b128e7a812a7e45712db746365be9aa6c5c98540cfb9db7155c9
+          outcomeId: 779ed087-73d1-477c-ba55-15d402ba023c
+          output:
+            designDoc: openspec/changes/fix-windows-cli-package-junctions/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5826a4fc1af6e67f369c816f8eb1cd4797dcc3094fb1a3b8db0eae6caca5f483
+            outcomeId: 779ed087-73d1-477c-ba55-15d402ba023c
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-766f41385f9aa85d146481305b1544e39617000d066995c011df3b8ec36bc0ba
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:9
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: be4440309105eddf8775d32e16d310d2144e5395b000dd096e8fdb79156e1090
+        outcome:
+          actionId: fix-windows-cli-package-junctions:9
+          attempt: 1
+          claimToken: portable-766f41385f9aa85d146481305b1544e39617000d066995c011df3b8ec36bc0ba
+          inputHash: be4440309105eddf8775d32e16d310d2144e5395b000dd096e8fdb79156e1090
+          outcomeId: 37e23201-103b-4395-bed0-5f8cba45c403
+          output:
+            boundBranch: codex/fix-windows-cli-package-junctions
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 97e8ad9c02f1b9d4c48ff117aa3380f0f714a1f747154a109b537387234052f7
+            outcomeId: 37e23201-103b-4395-bed0-5f8cba45c403
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e5c530a9d1d04a682ca49adc388055533325af412a9616903eaa8c3f1f846636
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:11
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: 4d4f2f2d7fafad0f5b3def745cbeb05a9849f90d391beaaa8fc04094d63c73c0
+        outcome:
+          actionId: fix-windows-cli-package-junctions:11
+          attempt: 1
+          claimToken: portable-e5c530a9d1d04a682ca49adc388055533325af412a9616903eaa8c3f1f846636
+          inputHash: 4d4f2f2d7fafad0f5b3def745cbeb05a9849f90d391beaaa8fc04094d63c73c0
+          outcomeId: 8f7cd4c5-306d-4f03-8997-430b25e2b72d
+          output:
+            designEvidence:
+              contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+              ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+            plan: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+            planEvidence:
+              contentHash: 483d019e1fc332a4d87f31039bc257f9991bcd1012e4c241e160c1f876d9e7b5
+              ref: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+            taskRevision: 26aa08e18255a6c09b8434eb89b8dca9b10d40e15ca701d2601bda6bc5174c88
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 937cc585f75720da7bc0068f56351de3fc3b0f9e0f8e8ee0f4e845abd380e65b
+            outcomeId: 8f7cd4c5-306d-4f03-8997-430b25e2b72d
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-cordis-package-20261113
+          token: portable-1aca47546379390979b7f949c6dc50197048beef4e139b63c11d924d70decdfa
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:13
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: 104f51ed5e5ae58ea9dd7db59a5a49de30e157e51bc4d56bf3bd018b9b35251b
+        outcome:
+          actionId: fix-windows-cli-package-junctions:13
+          attempt: 1
+          claimToken: portable-1aca47546379390979b7f949c6dc50197048beef4e139b63c11d924d70decdfa
+          inputHash: 104f51ed5e5ae58ea9dd7db59a5a49de30e157e51bc4d56bf3bd018b9b35251b
+          outcomeId: f6644116-4605-4894-ac6d-6db741a7fbaf
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: aee623ed630e9f0b0f7385d1cd138d4cdff67f59bd6f5356fe830552eaa48e22
+            outcomeId: f6644116-4605-4894-ac6d-6db741a7fbaf
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-90900bd3de3a1421c58ce6604c96535ba387496129a351c0e20683aacac2cdbb
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:14
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: b4d86357a592da46836037a6b5a80e459d03b1fea6bffe0d7ce0e0936ecaaac6
+        outcome:
+          actionId: fix-windows-cli-package-junctions:14
+          attempt: 1
+          claimToken: portable-90900bd3de3a1421c58ce6604c96535ba387496129a351c0e20683aacac2cdbb
+          inputHash: b4d86357a592da46836037a6b5a80e459d03b1fea6bffe0d7ce0e0936ecaaac6
+          outcomeId: 70459165-af9f-453f-a306-c25d159ff314
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 69ffb2e63724630883d157fd4744e202ddcb495202247f60efb39261fd9da57d
+            cwd: .
+            environment: 696c5d123841d5b786590ea6f3e9a78e1c36ea51a614abaa4d52e819de9257c5
+            exitCode: 0
+            inputAfter: b0275741e223901bf0771629c931c3aff57418ea898a795cd6e45581f4caae0a
+            inputBefore: b0275741e223901bf0771629c931c3aff57418ea898a795cd6e45581f4caae0a
+            manifestHash: 0de21b86d42a0a2d5af9316c261cc125ca618980c05e509255686c3857a7102e
+            manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/1e368bee-6b64-4065-8d17-c70c14dbfa7f.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/bfd07407-31cf-41dc-83cd-2f434063b5ec.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d7c018d6ffab894d32f560c86511b32fda35b596e1d427ead1382c498388b9ab
+            outcomeId: 70459165-af9f-453f-a306-c25d159ff314
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-efd79553012a4b83f2415f43d09500992f0e1a7251cb857c45d4835cc4d03948
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:16
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: 26c74ccf18de9d126945bb3f1004fcde1af39d12bed856330b66cb7890853b05
+        outcome:
+          actionId: fix-windows-cli-package-junctions:16
+          attempt: 1
+          claimToken: portable-efd79553012a4b83f2415f43d09500992f0e1a7251cb857c45d4835cc4d03948
+          inputHash: 26c74ccf18de9d126945bb3f1004fcde1af39d12bed856330b66cb7890853b05
+          outcomeId: b83f8b99-1804-4fb7-a0f1-c8ae3516f521
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ea8eb97570d9125b0289f5da3906c77fdc03c2ad4d6e2d27c5bd1efc0f5485b2
+            outcomeId: b83f8b99-1804-4fb7-a0f1-c8ae3516f521
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-45331e7a8a4eb0a51e0508d80b89041bf0d00222d59a362c9a052828ac94fecb
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:18
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: ab43e9c82c70841d43b8316ae4e955333a751a01e19defdbb9ee59de57610e3f
+        outcome:
+          actionId: fix-windows-cli-package-junctions:18
+          attempt: 1
+          claimToken: portable-45331e7a8a4eb0a51e0508d80b89041bf0d00222d59a362c9a052828ac94fecb
+          inputHash: ab43e9c82c70841d43b8316ae4e955333a751a01e19defdbb9ee59de57610e3f
+          outcomeId: 17634878-4690-44a9-bcb8-dca47af05841
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: cb05b37955f38481f11958288d03f04a91b8f93cc07e1a6ee9346b94cab0afbf
+            cwd: .
+            deliveryInputs: {}
+            environment: 9325e0ef06102ebdbc2b526fd9e9cf76decb4c5e5a94ad02462bae66d638184c
+            exitCode: 1
+            inputAfter: f742bc8d85406fc6f4ce2c41c87c25b795daae9936c97756cb5fcb0f4e742550
+            inputBefore: f742bc8d85406fc6f4ce2c41c87c25b795daae9936c97756cb5fcb0f4e742550
+            manifestHash: 9cfca0035de54073e2f95ffaad25822896afa7eb0bbcab6027266b49b357905e
+            manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/41479b28-315c-40c0-be64-378b5faa1b66.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/449ffb45-9aa4-4e2a-bd78-bc0ce7b90041.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 991e42c90fe1683b7f047f3b3c432185f5337019b015f4fd1786f56b889af650
+            outcomeId: 17634878-4690-44a9-bcb8-dca47af05841
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-2f19fd6d2cfbabe4d6c465fe0cf88cdb57882c1c1c4655ec2081fba9df5f9e50
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:19
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: 4003f70b383aa51e1640f83633d07d2bfa65ed7fdad32b66eef0179fc3028fa0
+        outcome:
+          actionId: fix-windows-cli-package-junctions:19
+          attempt: 1
+          claimToken: portable-2f19fd6d2cfbabe4d6c465fe0cf88cdb57882c1c1c4655ec2081fba9df5f9e50
+          inputHash: 4003f70b383aa51e1640f83633d07d2bfa65ed7fdad32b66eef0179fc3028fa0
+          outcomeId: bf6ec005-dbae-4520-ab1f-3fa1b0da04cc
+          output:
+            designEvidence:
+              contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+              ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+            plan: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+            planEvidence:
+              contentHash: 483d019e1fc332a4d87f31039bc257f9991bcd1012e4c241e160c1f876d9e7b5
+              ref: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+            taskRevision: 26aa08e18255a6c09b8434eb89b8dca9b10d40e15ca701d2601bda6bc5174c88
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8c3c3b339f79b411175f306a461b9444b4b6a575f3d72f8417c9fab569850824
+            outcomeId: bf6ec005-dbae-4520-ab1f-3fa1b0da04cc
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-cordis-package-20261113
+          token: portable-126ecfd9f8beeba4bd89aaa797ad2e2d04b3f1d35ce4e8bc062c2d03b6510313
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:21
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: 4003f70b383aa51e1640f83633d07d2bfa65ed7fdad32b66eef0179fc3028fa0
+        outcome:
+          actionId: fix-windows-cli-package-junctions:21
+          attempt: 1
+          claimToken: portable-126ecfd9f8beeba4bd89aaa797ad2e2d04b3f1d35ce4e8bc062c2d03b6510313
+          inputHash: 4003f70b383aa51e1640f83633d07d2bfa65ed7fdad32b66eef0179fc3028fa0
+          outcomeId: 3d99a196-ae36-4622-bb65-8c2f31718d30
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: dd9415295d40f69ef08e275f7b1a86dfcb137babe2e33fe50efb6d4539836e0a
+            outcomeId: 3d99a196-ae36-4622-bb65-8c2f31718d30
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-67943bec9b3cc69774812c6e88075b34531fa4009f26433b66140d37e819397b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:22
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: 4003f70b383aa51e1640f83633d07d2bfa65ed7fdad32b66eef0179fc3028fa0
+        outcome:
+          actionId: fix-windows-cli-package-junctions:22
+          attempt: 1
+          claimToken: portable-67943bec9b3cc69774812c6e88075b34531fa4009f26433b66140d37e819397b
+          inputHash: 4003f70b383aa51e1640f83633d07d2bfa65ed7fdad32b66eef0179fc3028fa0
+          outcomeId: 5e88d18b-d4b7-4456-9e05-9b102231bb3f
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 3a4a1ed9e92cf5d48233153f3e09d808c8e33493373366f140202942508b947e
+            cwd: .
+            environment: 696c5d123841d5b786590ea6f3e9a78e1c36ea51a614abaa4d52e819de9257c5
+            exitCode: 0
+            inputAfter: 1ec7815e8b2f052006e8adf150097f1418a1efe138fb08edbc7c3b88283ebe78
+            inputBefore: 1ec7815e8b2f052006e8adf150097f1418a1efe138fb08edbc7c3b88283ebe78
+            manifestHash: 7aae7c60074aa964b6aa337e66995c05cc166588fe72934c0476d89726bfddd5
+            manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/e5ca77f7-6b8b-4a0b-9cd0-9c76cb35f3b2.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/78356abe-0f75-4037-aee4-f7a16ecd1bc3.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: df9a8c941b37c9e6f7edeb28c1606d9cc77765af35f4db65f7fe76af1b330f32
+            outcomeId: 5e88d18b-d4b7-4456-9e05-9b102231bb3f
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-29bf9092526c4632f1497ec54e445e2ba9326023eac42fc8db4d98bc2737aed5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:24
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: 1ee9ca38dc2686537c1cb4314134f1f836db1eecaa4382a98c9686e77d1dd1b3
+        outcome:
+          actionId: fix-windows-cli-package-junctions:24
+          attempt: 1
+          claimToken: portable-29bf9092526c4632f1497ec54e445e2ba9326023eac42fc8db4d98bc2737aed5
+          inputHash: 1ee9ca38dc2686537c1cb4314134f1f836db1eecaa4382a98c9686e77d1dd1b3
+          outcomeId: 91a6af81-4d10-4cfb-9588-8190b5cad2b0
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7c2b79b218b4ea0397634d66a4af091876ea38415dce8e0c7d7ec94792fd0e7c
+            outcomeId: 91a6af81-4d10-4cfb-9588-8190b5cad2b0
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-39c1a2531dc68de40e3b5afaad70150d151f20aebfc762d0f5e4ec82b1746118
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:26
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: a4cae03bda5a89101ff932ca1942ee20401f4f20d430f09cff8202734ea5d888
+        outcome:
+          actionId: fix-windows-cli-package-junctions:26
+          attempt: 1
+          claimToken: portable-39c1a2531dc68de40e3b5afaad70150d151f20aebfc762d0f5e4ec82b1746118
+          inputHash: a4cae03bda5a89101ff932ca1942ee20401f4f20d430f09cff8202734ea5d888
+          outcomeId: 16b6e1f1-a624-4b6d-8673-aba1ade43943
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: 988389a5f0f31729578662c53702a273f5fecdd13e70f649ae5345f30b868c20
+            cwd: .
+            deliveryInputs: {}
+            environment: 9325e0ef06102ebdbc2b526fd9e9cf76decb4c5e5a94ad02462bae66d638184c
+            exitCode: 0
+            inputAfter: 047380e8e1d4964e0a721dc42a9535d127acff9a9f254c13e35d680fdccbf3d1
+            inputBefore: 047380e8e1d4964e0a721dc42a9535d127acff9a9f254c13e35d680fdccbf3d1
+            manifestHash: 47adb36fe2abdb9bddfe9ad97c7690caacd3787d0a1eef178200e83575781017
+            manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/a5938e83-62e3-4627-bd5b-fe294dcde430.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/8dafc394-ed2f-422c-87d0-528ead4f84e6.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 29e21285ba4c1dbe0cd202894b58f4f56715885b01ebdaeb3ccf917ebba9e11a
+            outcomeId: 16b6e1f1-a624-4b6d-8673-aba1ade43943
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e61602ecadb2867a6207d483387793530c9ef1d5f0a869785bdf1fe8dc9340a7
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:28
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: 5e359c2c66b4d9fa216432cd0ffd43b6fb0ded6f4c30317bc93f4d7d877a5488
+        outcome:
+          actionId: fix-windows-cli-package-junctions:28
+          attempt: 1
+          claimToken: portable-e61602ecadb2867a6207d483387793530c9ef1d5f0a869785bdf1fe8dc9340a7
+          inputHash: 5e359c2c66b4d9fa216432cd0ffd43b6fb0ded6f4c30317bc93f4d7d877a5488
+          outcomeId: 2ba59dc5-9de8-4035-bd18-8b1d8d5a0db9
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档 Windows CLI Cordis 目录链接修复，推送并创建到 origin/main 的 PR。完整 Verify 和
+              CodeBuddy 候选包验收已通过。用户已授权 CI 通过后合入。
+            targetBranch: codex/fix-windows-cli-package-junctions
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ff58ab8b17cfa729261109c5c7e03d7f2fa28596d82c404a74c0815cddbc6290
+            outcomeId: 2ba59dc5-9de8-4035-bd18-8b1d8d5a0db9
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-2c137172cf942a150df1710690d340eb6a8ed57e998961675613bd563c639870
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:30
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: 07498d16d79436403ab403c22adfb11099af1cee939f5b9f1f03f911e29a4fc6
+        outcome:
+          actionId: fix-windows-cli-package-junctions:30
+          attempt: 1
+          claimToken: portable-2c137172cf942a150df1710690d340eb6a8ed57e998961675613bd563c639870
+          inputHash: 07498d16d79436403ab403c22adfb11099af1cee939f5b9f1f03f911e29a4fc6
+          outcomeId: e167b309-2e49-4e47-a7c4-338424b62f4b
+          output:
+            baseCommit: 2d8bdd40f8e9d8045e46388db2b49d45fa6c0a71
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/fix-windows-cli-package-junctions
+            verifiedBranch: codex/fix-windows-cli-package-junctions
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 06dc3e895168f0b8e97932e779eee58807e0d7ff42efa170f5beb63670d36c97
+            outcomeId: e167b309-2e49-4e47-a7c4-338424b62f4b
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-30847b7828bca81e691d858ad4403dd008d6fbb376b8152344335bd21a60aa85
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fix-windows-cli-package-junctions:31
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: fd4cdc42a4fa003766c9bcc8692fe395961326f1c32fe6dce5e93fc12a44d5b3
+        outcome:
+          actionId: fix-windows-cli-package-junctions:31
+          artifacts:
+            - sha256: d497fa66bededfbc05255a7be58a7b04fd2ad0ddb728d65bca4653516c33f715
+              uri: openspec/changes/archive/2026-11-13-fix-windows-cli-package-junctions/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-30847b7828bca81e691d858ad4403dd008d6fbb376b8152344335bd21a60aa85
+          inputHash: fd4cdc42a4fa003766c9bcc8692fe395961326f1c32fe6dce5e93fc12a44d5b3
+          outcomeId: eb6d5f9d-5a42-4c10-b93c-78e418b312a4
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-13-fix-windows-cli-package-junctions
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b0300654bbc9d30d2b4198a8061d10614448f41fbd0204d0d4e201fbc82a1a5a
+            outcomeId: eb6d5f9d-5a42-4c10-b93c-78e418b312a4
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: fix-windows-cli-package-junctions:32
+        input:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs: {}
+        inputHash: 3b67bd3f859e4036cf16b5df7a55d10afa42e79005c8a24e9fb4a78a6e699315
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-cli-package-junctions
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      fix-windows-cli-package-junctions:1:
+        results: {}
+        sequence: 1
+      fix-windows-cli-package-junctions:11:
+        results: {}
+        sequence: 11
+      fix-windows-cli-package-junctions:13:
+        results: {}
+        sequence: 13
+      fix-windows-cli-package-junctions:14:
+        results: {}
+        sequence: 14
+      fix-windows-cli-package-junctions:16:
+        results: {}
+        sequence: 16
+      fix-windows-cli-package-junctions:18:
+        results: {}
+        sequence: 18
+      fix-windows-cli-package-junctions:19:
+        results: {}
+        sequence: 19
+      fix-windows-cli-package-junctions:21:
+        results: {}
+        sequence: 21
+      fix-windows-cli-package-junctions:22:
+        results: {}
+        sequence: 22
+      fix-windows-cli-package-junctions:24:
+        results: {}
+        sequence: 24
+      fix-windows-cli-package-junctions:26:
+        results: {}
+        sequence: 26
+      fix-windows-cli-package-junctions:28:
+        results: {}
+        sequence: 28
+      fix-windows-cli-package-junctions:30:
+        results: {}
+        sequence: 30
+      fix-windows-cli-package-junctions:31:
+        results: {}
+        sequence: 31
+      fix-windows-cli-package-junctions:32:
+        results: {}
+        sequence: 32
+      fix-windows-cli-package-junctions:4:
+        results: {}
+        sequence: 4
+      fix-windows-cli-package-junctions:5:
+        results: {}
+        sequence: 5
+      fix-windows-cli-package-junctions:7:
+        results: {}
+        sequence: 7
+      fix-windows-cli-package-junctions:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: fix-windows-cli-package-junctions:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+        proposalHash: e75f36e3a43b6026f41c2059d077a78e38a1fde4bfb2dc402a25d307e6c6a5a6
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+          choice: approved
+          proposalHash: e75f36e3a43b6026f41c2059d077a78e38a1fde4bfb2dc402a25d307e6c6a5a6
+      - id: fix-windows-cli-package-junctions:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+              handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+              proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+                验证直接安装。方案与前述验证一致，规格无需补丁。
+              requirementsEvidence:
+                contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                ref: openspec/changes/fix-windows-cli-package-junctions
+              sourceEvidence:
+                contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                ref: openspec/changes/fix-windows-cli-package-junctions
+        proposalHash: 77c7b2001c7167c0319861e6daa5dbc903a718f5f72e16e6bbdd967c2bd674b8
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-77c7b2001c7167c0319861e6daa5dbc903a718f5f72e16e6bbdd967c2bd674b8-approved
+          choice: approved
+          proposalHash: 77c7b2001c7167c0319861e6daa5dbc903a718f5f72e16e6bbdd967c2bd674b8
+      - id: fix-windows-cli-package-junctions:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.build.configure:
+              boundBranch: codex/fix-windows-cli-package-junctions
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 2f6e08aa92f002dbf38ae03fabcc1c639ff2fd35e366dfdf455949dbf0339ddf
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: d5fa10f4-aa05-40e3-af6c-e948ceae4226
+          choice: approved
+          proposalHash: 2f6e08aa92f002dbf38ae03fabcc1c639ff2fd35e366dfdf455949dbf0339ddf
+      - id: fix-windows-cli-package-junctions:29
+        stepId: full.archive.confirm
+        sequence: 29
+        status: resolved
+        proposal:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Windows CLI Cordis 目录链接修复，推送并创建到 origin/main 的 PR。完整 Verify 和
+                CodeBuddy 候选包验收已通过。用户已授权 CI 通过后合入。
+              targetBranch: codex/fix-windows-cli-package-junctions
+        proposalHash: 1b4908ffee74012d9a2f22fe24cc4633fb633e600a264bf341fa6a0870dead2b
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-1b4908ffee74012d9a2f22fe24cc4633fb633e600a264bf341fa6a0870dead2b-pr
+          choice: pr
+          proposalHash: 1b4908ffee74012d9a2f22fe24cc4633fb633e600a264bf341fa6a0870dead2b
+    evidenceWaits:
+      - id: fix-windows-cli-package-junctions:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/fix-windows-cli-package-junctions
+          contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+          submissionId: 234b70a8-ae03-4817-b16e-deb7780b5678
+      - id: fix-windows-cli-package-junctions:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+          contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+          submissionId: 98320bb8-807a-4efd-a4c0-df4f20a40d32
+      - id: fix-windows-cli-package-junctions:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+          contentHash: 483d019e1fc332a4d87f31039bc257f9991bcd1012e4c241e160c1f876d9e7b5
+          submissionId: 476b1011-6a7f-4dd2-b9b6-a8ccc806e52d
+      - id: fix-windows-cli-package-junctions:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/bfd07407-31cf-41dc-83cd-2f434063b5ec.log
+          contentHash: 69ffb2e63724630883d157fd4744e202ddcb495202247f60efb39261fd9da57d
+          submissionId: 023a5fe3-e33b-49b8-9180-a051b17261c2
+      - id: fix-windows-cli-package-junctions:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+          contentHash: bf79a16126703cb57fb13234328fce38a6553e1da28287ac5ffcba723b0a7332
+          submissionId: 43e174ed-3b1d-44b5-a317-9b01cdbbfe63
+      - id: fix-windows-cli-package-junctions:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+          contentHash: 483d019e1fc332a4d87f31039bc257f9991bcd1012e4c241e160c1f876d9e7b5
+          submissionId: 1fee3536-d79c-484e-a7a7-ae34069848bf
+      - id: fix-windows-cli-package-junctions:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/78356abe-0f75-4037-aee4-f7a16ecd1bc3.log
+          contentHash: 3a4a1ed9e92cf5d48233153f3e09d808c8e33493373366f140202942508b947e
+          submissionId: 17484310-cdc5-4733-8e50-795f0caf8cbe
+      - id: fix-windows-cli-package-junctions:25
+        stepId: full.verify.report.evidence
+        sequence: 25
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+          contentHash: 96d805cca7635a36d333f79170bee7e4aa716b0465862859cbc1be3ee19ef9c0
+          submissionId: 6514f9a7-3d45-4991-972d-0181a73ee556
+      - id: fix-windows-cli-package-junctions:27
+        stepId: full.verify.check.evidence
+        sequence: 27
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/8dafc394-ed2f-422c-87d0-528ead4f84e6.log
+          contentHash: 988389a5f0f31729578662c53702a273f5fecdd13e70f649ae5345f30b868c20
+          submissionId: b2360a56-0c37-4974-8dd8-38f67f806c7f
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 50
+  sourceHash: da428b2731f830a6ac927a27c4562456b07bf64e5d7de76c8afe7c1313ab7c35
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+              ref: openspec/changes/fix-windows-cli-package-junctions
+      - contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+        ref: openspec/changes/fix-windows-cli-package-junctions
+      - contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+      - choice: approved
+        proposal:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+              handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+              proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+                验证直接安装。方案与前述验证一致，规格无需补丁。
+              requirementsEvidence:
+                contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                ref: openspec/changes/fix-windows-cli-package-junctions
+              sourceEvidence:
+                contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                ref: openspec/changes/fix-windows-cli-package-junctions
+      - handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+        handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+        proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+          版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+          验证直接安装。方案与前述验证一致，规格无需补丁。
+        requirementsEvidence:
+          contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+          ref: openspec/changes/fix-windows-cli-package-junctions
+        sourceEvidence:
+          contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+          ref: openspec/changes/fix-windows-cli-package-junctions
+      - designDoc: openspec/changes/fix-windows-cli-package-junctions/design.md
+      - contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+        ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+      - boundBranch: codex/fix-windows-cli-package-junctions
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.build.configure:
+              boundBranch: codex/fix-windows-cli-package-junctions
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+          ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+        plan: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+        planEvidence:
+          contentHash: 483d019e1fc332a4d87f31039bc257f9991bcd1012e4c241e160c1f876d9e7b5
+          ref: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+        taskRevision: 26aa08e18255a6c09b8434eb89b8dca9b10d40e15ca701d2601bda6bc5174c88
+      - contentHash: 483d019e1fc332a4d87f31039bc257f9991bcd1012e4c241e160c1f876d9e7b5
+        ref: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 69ffb2e63724630883d157fd4744e202ddcb495202247f60efb39261fd9da57d
+        cwd: .
+        environment: 696c5d123841d5b786590ea6f3e9a78e1c36ea51a614abaa4d52e819de9257c5
+        exitCode: 0
+        inputAfter: b0275741e223901bf0771629c931c3aff57418ea898a795cd6e45581f4caae0a
+        inputBefore: b0275741e223901bf0771629c931c3aff57418ea898a795cd6e45581f4caae0a
+        manifestHash: 0de21b86d42a0a2d5af9316c261cc125ca618980c05e509255686c3857a7102e
+        manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/1e368bee-6b64-4065-8d17-c70c14dbfa7f.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/bfd07407-31cf-41dc-83cd-2f434063b5ec.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 69ffb2e63724630883d157fd4744e202ddcb495202247f60efb39261fd9da57d
+        ref: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/bfd07407-31cf-41dc-83cd-2f434063b5ec.log
+      - contentHash: bf79a16126703cb57fb13234328fce38a6553e1da28287ac5ffcba723b0a7332
+        ref: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: cb05b37955f38481f11958288d03f04a91b8f93cc07e1a6ee9346b94cab0afbf
+        cwd: .
+        deliveryInputs: {}
+        environment: 9325e0ef06102ebdbc2b526fd9e9cf76decb4c5e5a94ad02462bae66d638184c
+        exitCode: 1
+        inputAfter: f742bc8d85406fc6f4ce2c41c87c25b795daae9936c97756cb5fcb0f4e742550
+        inputBefore: f742bc8d85406fc6f4ce2c41c87c25b795daae9936c97756cb5fcb0f4e742550
+        manifestHash: 9cfca0035de54073e2f95ffaad25822896afa7eb0bbcab6027266b49b357905e
+        manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/41479b28-315c-40c0-be64-378b5faa1b66.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/449ffb45-9aa4-4e2a-bd78-bc0ce7b90041.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 3a4a1ed9e92cf5d48233153f3e09d808c8e33493373366f140202942508b947e
+        cwd: .
+        environment: 696c5d123841d5b786590ea6f3e9a78e1c36ea51a614abaa4d52e819de9257c5
+        exitCode: 0
+        inputAfter: 1ec7815e8b2f052006e8adf150097f1418a1efe138fb08edbc7c3b88283ebe78
+        inputBefore: 1ec7815e8b2f052006e8adf150097f1418a1efe138fb08edbc7c3b88283ebe78
+        manifestHash: 7aae7c60074aa964b6aa337e66995c05cc166588fe72934c0476d89726bfddd5
+        manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/e5ca77f7-6b8b-4a0b-9cd0-9c76cb35f3b2.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/78356abe-0f75-4037-aee4-f7a16ecd1bc3.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 3a4a1ed9e92cf5d48233153f3e09d808c8e33493373366f140202942508b947e
+        ref: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/78356abe-0f75-4037-aee4-f7a16ecd1bc3.log
+      - contentHash: 96d805cca7635a36d333f79170bee7e4aa716b0465862859cbc1be3ee19ef9c0
+        ref: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: 988389a5f0f31729578662c53702a273f5fecdd13e70f649ae5345f30b868c20
+        cwd: .
+        deliveryInputs: {}
+        environment: 9325e0ef06102ebdbc2b526fd9e9cf76decb4c5e5a94ad02462bae66d638184c
+        exitCode: 0
+        inputAfter: 047380e8e1d4964e0a721dc42a9535d127acff9a9f254c13e35d680fdccbf3d1
+        inputBefore: 047380e8e1d4964e0a721dc42a9535d127acff9a9f254c13e35d680fdccbf3d1
+        manifestHash: 47adb36fe2abdb9bddfe9ad97c7690caacd3787d0a1eef178200e83575781017
+        manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/a5938e83-62e3-4627-bd5b-fe294dcde430.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/8dafc394-ed2f-422c-87d0-528ead4f84e6.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 988389a5f0f31729578662c53702a273f5fecdd13e70f649ae5345f30b868c20
+        ref: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/8dafc394-ed2f-422c-87d0-528ead4f84e6.log
+      - choice: pr
+        proposal:
+          input:
+            change: fix-windows-cli-package-junctions
+            changeDir: openspec/changes/fix-windows-cli-package-junctions
+            workspaceBaseline:
+              ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Windows CLI Cordis 目录链接修复，推送并创建到 origin/main 的 PR。完整 Verify 和
+                CodeBuddy 候选包验收已通过。用户已授权 CI 通过后合入。
+              targetBranch: codex/fix-windows-cli-package-junctions
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档 Windows CLI Cordis 目录链接修复，推送并创建到 origin/main 的 PR。完整 Verify 和
+          CodeBuddy 候选包验收已通过。用户已授权 CI 通过后合入。
+        targetBranch: codex/fix-windows-cli-package-junctions
+      - baseCommit: 2d8bdd40f8e9d8045e46388db2b49d45fa6c0a71
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/fix-windows-cli-package-junctions
+        verifiedBranch: codex/fix-windows-cli-package-junctions
+      - archiveDirectory: openspec/changes/archive/2026-11-13-fix-windows-cli-package-junctions
+      - sequence: 9
+        value:
+          boundBranch: codex/fix-windows-cli-package-junctions
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-windows-cli-package-junctions
+              changeDir: openspec/changes/fix-windows-cli-package-junctions
+              workspaceBaseline:
+                ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+            outputs:
+              full.build.configure:
+                boundBranch: codex/fix-windows-cli-package-junctions
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-windows-cli-package-junctions
+              changeDir: openspec/changes/fix-windows-cli-package-junctions
+              workspaceBaseline:
+                ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+                handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+                proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+                  版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实
+                  CodeBuddy 验证直接安装。方案与前述验证一致，规格无需补丁。
+                requirementsEvidence:
+                  contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+                  ref: openspec/changes/fix-windows-cli-package-junctions
+                sourceEvidence:
+                  contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                  ref: openspec/changes/fix-windows-cli-package-junctions
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/fix-windows-cli-package-junctions/design.md
+      - sequence: 8
+        value:
+          contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+          ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/fix-windows-cli-package-junctions/.comet/handoff/design-context.json
+          handoffHash: bfa3c10ad615dc3431b104df87a16ff386e11a8b0ed626f0e2d81ed02eebc236
+          proposal: 按用户对已验证修复方案的“修复吧”授权，使用官方 Cordis Core 4.0.5 和 Loader 1.0.6 的精确 npm
+            版本及已核对完整性，保留来源快照；移除本地依赖链接，增加安装目录类型回归，修正 npx 扫描夹具，并使用真实 CodeBuddy
+            验证直接安装。方案与前述验证一致，规格无需补丁。
+          requirementsEvidence:
+            contentHash: 040d58fd19f954ac13ed30ea5c50df1797045fe9c3fbb90414962436998ac002
+            ref: openspec/changes/fix-windows-cli-package-junctions
+          sourceEvidence:
+            contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+            ref: openspec/changes/fix-windows-cli-package-junctions
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fix-windows-cli-package-junctions
+              changeDir: openspec/changes/fix-windows-cli-package-junctions
+              workspaceBaseline:
+                ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+                ref: openspec/changes/fix-windows-cli-package-junctions
+      - sequence: 2
+        value:
+          contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+          ref: openspec/changes/fix-windows-cli-package-junctions
+      - sequence: 4
+        value:
+          contentHash: 4e925c71fafa21b60a85031c3fdc889d79e208e41fe26ad6547eae021fad2a90
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+            ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+          plan: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+          planEvidence:
+            contentHash: 483d019e1fc332a4d87f31039bc257f9991bcd1012e4c241e160c1f876d9e7b5
+            ref: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+          taskRevision: 26aa08e18255a6c09b8434eb89b8dca9b10d40e15ca701d2601bda6bc5174c88
+      - sequence: 12
+        value:
+          contentHash: 483d019e1fc332a4d87f31039bc257f9991bcd1012e4c241e160c1f876d9e7b5
+          ref: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 69ffb2e63724630883d157fd4744e202ddcb495202247f60efb39261fd9da57d
+          cwd: .
+          environment: 696c5d123841d5b786590ea6f3e9a78e1c36ea51a614abaa4d52e819de9257c5
+          exitCode: 0
+          inputAfter: b0275741e223901bf0771629c931c3aff57418ea898a795cd6e45581f4caae0a
+          inputBefore: b0275741e223901bf0771629c931c3aff57418ea898a795cd6e45581f4caae0a
+          manifestHash: 0de21b86d42a0a2d5af9316c261cc125ca618980c05e509255686c3857a7102e
+          manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/1e368bee-6b64-4065-8d17-c70c14dbfa7f.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/bfd07407-31cf-41dc-83cd-2f434063b5ec.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 69ffb2e63724630883d157fd4744e202ddcb495202247f60efb39261fd9da57d
+          ref: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/bfd07407-31cf-41dc-83cd-2f434063b5ec.log
+      - sequence: 17
+        value:
+          contentHash: bf79a16126703cb57fb13234328fce38a6553e1da28287ac5ffcba723b0a7332
+          ref: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: cb05b37955f38481f11958288d03f04a91b8f93cc07e1a6ee9346b94cab0afbf
+          cwd: .
+          deliveryInputs: {}
+          environment: 9325e0ef06102ebdbc2b526fd9e9cf76decb4c5e5a94ad02462bae66d638184c
+          exitCode: 1
+          inputAfter: f742bc8d85406fc6f4ce2c41c87c25b795daae9936c97756cb5fcb0f4e742550
+          inputBefore: f742bc8d85406fc6f4ce2c41c87c25b795daae9936c97756cb5fcb0f4e742550
+          manifestHash: 9cfca0035de54073e2f95ffaad25822896afa7eb0bbcab6027266b49b357905e
+          manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/41479b28-315c-40c0-be64-378b5faa1b66.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/449ffb45-9aa4-4e2a-bd78-bc0ce7b90041.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: 06091b741b13f58e394e205dccfdcc5763577e5da563dd04d1ff9cd1990f164f
+            ref: openspec/changes/fix-windows-cli-package-junctions/design.md
+          plan: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+          planEvidence:
+            contentHash: 483d019e1fc332a4d87f31039bc257f9991bcd1012e4c241e160c1f876d9e7b5
+            ref: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+          taskRevision: 26aa08e18255a6c09b8434eb89b8dca9b10d40e15ca701d2601bda6bc5174c88
+      - sequence: 20
+        value:
+          contentHash: 483d019e1fc332a4d87f31039bc257f9991bcd1012e4c241e160c1f876d9e7b5
+          ref: docs/superpowers/plans/2026-11-13-fix-windows-cli-package-junctions.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 3a4a1ed9e92cf5d48233153f3e09d808c8e33493373366f140202942508b947e
+          cwd: .
+          environment: 696c5d123841d5b786590ea6f3e9a78e1c36ea51a614abaa4d52e819de9257c5
+          exitCode: 0
+          inputAfter: 1ec7815e8b2f052006e8adf150097f1418a1efe138fb08edbc7c3b88283ebe78
+          inputBefore: 1ec7815e8b2f052006e8adf150097f1418a1efe138fb08edbc7c3b88283ebe78
+          manifestHash: 7aae7c60074aa964b6aa337e66995c05cc166588fe72934c0476d89726bfddd5
+          manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/e5ca77f7-6b8b-4a0b-9cd0-9c76cb35f3b2.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/78356abe-0f75-4037-aee4-f7a16ecd1bc3.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 23
+        value:
+          contentHash: 3a4a1ed9e92cf5d48233153f3e09d808c8e33493373366f140202942508b947e
+          ref: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/78356abe-0f75-4037-aee4-f7a16ecd1bc3.log
+      - sequence: 25
+        value:
+          contentHash: 96d805cca7635a36d333f79170bee7e4aa716b0465862859cbc1be3ee19ef9c0
+          ref: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+      - sequence: 24
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/fix-windows-cli-package-junctions.md
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: 988389a5f0f31729578662c53702a273f5fecdd13e70f649ae5345f30b868c20
+          cwd: .
+          deliveryInputs: {}
+          environment: 9325e0ef06102ebdbc2b526fd9e9cf76decb4c5e5a94ad02462bae66d638184c
+          exitCode: 0
+          inputAfter: 047380e8e1d4964e0a721dc42a9535d127acff9a9f254c13e35d680fdccbf3d1
+          inputBefore: 047380e8e1d4964e0a721dc42a9535d127acff9a9f254c13e35d680fdccbf3d1
+          manifestHash: 47adb36fe2abdb9bddfe9ad97c7690caacd3787d0a1eef178200e83575781017
+          manifestRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/a5938e83-62e3-4627-bd5b-fe294dcde430.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/8dafc394-ed2f-422c-87d0-528ead4f84e6.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 27
+        value:
+          contentHash: 988389a5f0f31729578662c53702a273f5fecdd13e70f649ae5345f30b868c20
+          ref: .comet/runtime/classic-sdk-checks/a0b0ccc6b9a05511de974f873bad63fab28bc76db8be356b903d7eac09860d2d/8dafc394-ed2f-422c-87d0-528ead4f84e6.log
+      - sequence: 29
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: fix-windows-cli-package-junctions
+              changeDir: openspec/changes/fix-windows-cli-package-junctions
+              workspaceBaseline:
+                ref: d00b355f-5f19-47f8-b827-1e7c9dae4c01
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档 Windows CLI Cordis 目录链接修复，推送并创建到 origin/main 的 PR。完整 Verify 和
+                  CodeBuddy 候选包验收已通过。用户已授权 CI 通过后合入。
+                targetBranch: codex/fix-windows-cli-package-junctions
+      - sequence: 28
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档 Windows CLI Cordis 目录链接修复，推送并创建到 origin/main 的 PR。完整 Verify 和
+            CodeBuddy 候选包验收已通过。用户已授权 CI 通过后合入。
+          targetBranch: codex/fix-windows-cli-package-junctions
+      - sequence: 30
+        value:
+          baseCommit: 2d8bdd40f8e9d8045e46388db2b49d45fa6c0a71
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/fix-windows-cli-package-junctions
+          verifiedBranch: codex/fix-windows-cli-package-junctions
+      - sequence: 31
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-13-fix-windows-cli-package-junctions
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.verify.report.evidence
+        value: 20
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 54
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 55
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 56
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 59
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 21
+        left: 58
+        right: 60
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 61
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 62
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 24
+        left: 64
+        right: 65
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 19
+        left: 66
+        right: 67
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 68
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 69
+        right: 62
+        height: 5
+      - key: full.archive.preflight
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: 71
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 72
+        right: 65
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 67
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 73
+        right: 74
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 75
+        right: 62
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 26
+        left: 77
+        right: 78
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 79
+        right: 65
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 80
+        right: 74
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 81
+        right: 62
+        height: 5
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 84
+        height: 2
+      - key: full.design.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 86
+        right: 87
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: 89
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 90
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 85
+        right: 91
+        height: 4
+      - key: full.build.plan
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 38
+        left: 93
+        right: 94
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 95
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 96
+        right: 91
+        height: 4
+      - key: full.build.execute
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 98
+        height: 2
+      - key: full.build.plan.evidence
+        value: 38
+        left: null
+        right: 94
+        height: 2
+      - key: full.build.plan
+        value: 37
+        left: 99
+        right: 100
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 101
+        right: 91
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 103
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 105
+        right: 98
+        height: 3
+      - key: full.build.plan
+        value: 37
+        left: 106
+        right: 100
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 91
+        height: 5
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 42
+        left: null
+        right: 110
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 111
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 112
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 113
+        height: 5
+      - key: full.verify.check
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 42
+        left: 115
+        right: 110
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 116
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 118
+        height: 5
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: 94
+        height: 2
+      - key: full.build.plan
+        value: 45
+        left: 106
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 121
+        right: 118
+        height: 5
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 105
+        right: 123
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 124
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 125
+        right: 118
+        height: 5
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: 127
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 128
+        right: 123
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 129
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 118
+        height: 5
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 115
+        right: 132
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 134
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 135
+        height: 5
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 138
+        right: 132
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 137
+        right: 139
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 140
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 141
+        height: 5
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 55
+        left: 143
+        right: 144
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 104
+        right: 123
+        height: 2
+      - key: full.build.check.evidence
+        value: 49
+        left: 145
+        right: 146
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 147
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 148
+        right: 141
+        height: 5
+      - key: full.archive.preflight
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: 150
+        height: 2
+      - key: full.archive.prepare
+        value: 55
+        left: 151
+        right: 144
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 146
+        right: 120
+        height: 3
+      - key: full.build.check.evidence
+        value: 49
+        left: 152
+        right: 153
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 154
+        right: 141
+        height: 5
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 57
+        left: 156
+        right: 157
+        height: 2
+      - key: full.archive.prepare
+        value: 55
+        left: 158
+        right: 144
+        height: 3
+      - key: full.build.check.evidence
+        value: 49
+        left: 159
+        right: 153
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 160
+        right: 141
+        height: 5
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 34
+        left: 162
+        right: 163
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: 165
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 162
+        right: 166
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 168
+        right: 169
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 170
+        right: 166
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: 172
+        right: 173
+        height: 2
+      - key: full.design.handoff
+        value: 32
+        left: 174
+        right: 169
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 175
+        right: 166
+        height: 4
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: 177
+        height: 2
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 180
+        right: 181
+        height: 2
+      - key: full.open
+        value: 33
+        left: 179
+        right: 182
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: 185
+        right: 186
+        height: 2
+      - key: full.design.confirm
+        value: 29
+        left: 184
+        right: 187
+        height: 3
+      - key: full.open
+        value: 33
+        left: 188
+        right: 182
+        height: 4
+      - key: full.archive.prepare
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 48
+        left: 190
+        right: 191
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: null
+        right: 194
+        height: 2
+      - key: full.build.execute
+        value: 47
+        left: 193
+        right: 195
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: 192
+        right: 196
+        height: 4
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 180
+        right: 198
+        height: 2
+      - key: full.verify.check.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 200
+        right: 201
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 199
+        right: 202
+        height: 3
+      - key: full.open
+        value: 33
+        left: 187
+        right: 203
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 197
+        right: 204
+        height: 5
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: 207
+        right: 208
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 211
+        height: 2
+      - key: full.open
+        value: 33
+        left: 209
+        right: 212
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 214
+        right: 215
+        height: 2
+      - key: full.design.document
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: 217
+        right: 218
+        height: 2
+      - key: full.design.confirm
+        value: 29
+        left: 216
+        right: 219
+        height: 3
+      - key: full.open
+        value: 33
+        left: 220
+        right: 212
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: 222
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 37
+        left: 224
+        right: 225
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 223
+        right: 226
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 212
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: 227
+        right: 228
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 230
+        right: 231
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 232
+        right: 226
+        height: 3
+      - key: full.verify.run
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: 234
+        height: 2
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 235
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 236
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 233
+        right: 237
+        height: 5
+      - key: full.build.plan
+        value: 45
+        left: 224
+        right: 225
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 232
+        right: 239
+        height: 3
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 241
+        height: 2
+      - key: full.verify.report.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 43
+        left: 243
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 44
+        left: 242
+        right: 244
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 245
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 240
+        right: 246
+        height: 5
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 248
+        right: 231
+        height: 2
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: 250
+        right: 251
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 249
+        right: 252
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: 253
+        right: 246
+        height: 5
+      - key: full.build.check.evidence
+        value: 49
+        left: 248
+        right: 231
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 255
+        right: 252
+        height: 3
+      - key: full.verify.run
+        value: 51
+        left: 243
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 44
+        left: 242
+        right: 257
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 258
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 256
+        right: 259
+        height: 5
+      - key: full.verify.report.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: 261
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 242
+        right: 262
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 263
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 256
+        right: 264
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 57
+      - 63
+      - 70
+      - 76
+      - 82
+      - 92
+      - 97
+      - 102
+      - 108
+      - 114
+      - 119
+      - 122
+      - 126
+      - 131
+      - 136
+      - 142
+      - 149
+      - 155
+      - 161
+      - 164
+      - 167
+      - 171
+      - 176
+      - 178
+      - 183
+      - 189
+      - 205
+      - 206
+      - 213
+      - 221
+      - 229
+      - 238
+      - 247
+      - 254
+      - 260
+      - 265
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:11
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:13
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:14
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:16
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:18
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:19
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:21
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:22
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:24
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:26
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:28
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:30
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:31
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:32
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:4
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:5
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:7
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - fix-windows-cli-package-junctions:9
+          - results
+        map: 34
+      - path:
+          - outputs
+        map: 30
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 35
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 36
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 37
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 38
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 39
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 40
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 41
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 42
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 43
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 44
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 45
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 46
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 47
+  storageHash: 0bd124582c03aa4aa9fe0a0c48ad087a46209d0bb231c9444c4bf1beed7e0bb2
+check_epoch: 8
