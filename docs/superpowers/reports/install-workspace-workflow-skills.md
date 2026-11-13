@@ -13,3 +13,7 @@
 - Design 的 codebase-design 层引用包含真实 Matt 资源的已安装摘要。读取返回相同冻结层和 DESIGN-IT-TWICE.md。接入与恢复测试也覆盖了资源写入中断、保留团队额外文件并继续同一请求。
 - 独立 Build 审查发现行尾、部分安装期间 Provider 判定、恢复 Runner、管理目录和临时文件问题。均已修正。复核无 P0/P1；随后补齐已安装字节摘要、稳定 Runner 和资源级 CLI 验证。
 - 初次本地全量检查发现独立 worktree 缺少 Electron 二进制。使用 desktop:prepare 补齐，桌面激活和同批 Host CLI 测试复跑通过。Comet Build 和 Verify 的最终结果以对应检查收据为准。
+
+## Comet 检查中断
+
+首个 Build Check 在测试断言 lint 校验中失败，已修复并复跑单项检查。随后手动中断第二个 Build Check，以补齐打包报告。Comet 保留了已部分执行的原 Action。检查进程已停止且没有完整收据。通过公开 Runtime 接口将该 Action 标记为结果未知。Comet 0.5.1 要求原检查收据才能接受回填，公开重试仅适用于未执行的尝试。另行运行的项目完整检查与这个 Runtime Action 分开记录。

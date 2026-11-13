@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 3e8f6fbf16987581bc7afbc0e4aa0175bbcb0135e8b3746a79dd2752e505c078
+  hash: fdfa093371d68f099b0cbbef44be1f426092363de0107c682a3adb931f6afe93
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -1101,7 +1101,9 @@ run_checkpoint:
                 ref: openspec/changes/install-workspace-workflow-skills
         inputHash: a8bd0ae8772fdf175e567b11a3edbbcd1a048113d3557ca7fe6551c856f60776
         protocolVersion: 1
-        reason: Portable recovery requires reconciliation of external execution
+        reason: Owner interrupted the npm verify process while it was executing.
+          Original process tree has stopped, and the original Runtime receipt
+          was not written. The attempt executed in part.
         receipts: []
         reconciliations: []
         ref: classic-check
@@ -2382,6 +2384,6 @@ run_checkpoint:
           contentHash: d9b504e6997f9b0548f81d0844044b106eea47217e599afa1bd583b6a5762fb9
     children: []
     lineage: []
-  sourceRevision: 29
-  sourceHash: c67ee19695ad5088703383fe3925c8b36e2bd333020b82bc98536567b100cdd0
+  sourceRevision: 30
+  sourceHash: 30dbc1ff33939cad2416b076ad6ae20167215fd80cefa80c4494220389e17823
 check_epoch: 2
