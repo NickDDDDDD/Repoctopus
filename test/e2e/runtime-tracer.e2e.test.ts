@@ -69,6 +69,7 @@ describe('multi-process runtime and OTLP delivery', () => {
       ...process.env,
       OTEL_EXPORTER_OTLP_ENDPOINT: `http://127.0.0.1:${address.port}`,
       REPOCTOPUS_ENVIRONMENT: 'e2e',
+      REPOCTOPUS_OTLP_DIAGNOSTICS: 'full',
     };
 
     try {
