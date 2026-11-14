@@ -2,6 +2,8 @@
 comet_change: align-workspace-onboarding-guides
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-15-align-workspace-onboarding-guides
+status: final
 ---
 
 # Workspace 初始化引导对齐设计

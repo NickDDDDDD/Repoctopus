@@ -2,6 +2,7 @@
 change: align-workspace-onboarding-guides
 design-doc: openspec/changes/align-workspace-onboarding-guides/design.md
 base-ref: b356cd0
+archived-with: 2026-11-15-align-workspace-onboarding-guides
 ---
 
 # 对齐 Workspace 初始化引导实施计划
