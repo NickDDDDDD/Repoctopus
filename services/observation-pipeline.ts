@@ -1,10 +1,13 @@
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import {
   isObservationEnvelope,
   type ObservationEnvelope,
 } from '../domains/trajectory/observation.js';
+import { atomicWriteText } from '../platform/filesystem/atomic-write.js';
+import { withRecoverableFileLock } from '../platform/runtime/recoverable-file-lock.js';
 
 export type ObservationDestinationMode = 'enabled' | 'paused' | 'removed';
 
@@ -20,6 +23,34 @@ interface ObservationDestinationState {
   cursorPosition: number;
   gap: { droppedEnvelopes: number; firstRetainedSequence: number | null } | null;
   lastAttempt: ObservationDestinationAttempt | null;
+  activeSignals?: readonly ObservationSignal[];
+  signals?: Partial<Record<ObservationSignal, SignalCursor>>;
+}
+
+export type ObservationSignal = 'trace' | 'log' | 'metric';
+type SignalCursor = Pick<
+  ObservationDestinationState,
+  'cursor' | 'cursorPosition' | 'lastAttempt'
+> & {
+  rejectedRecords: number;
+};
+
+export interface PendingObservation {
+  envelope: ObservationEnvelope;
+  position: number;
+}
+
+function destinationCursor(destination: ObservationDestinationState) {
+  const cursors = destination.activeSignals?.map(
+    (signal) => destination.signals?.[signal] ?? destination,
+  );
+  return (
+    cursors?.sort((left, right) => left.cursorPosition - right.cursorPosition)[0] ?? destination
+  );
+}
+
+function newDestination(): ObservationDestinationState {
+  return { mode: 'enabled', cursor: null, cursorPosition: -1, gap: null, lastAttempt: null };
 }
 
 interface ObservationStoreState {
@@ -114,17 +145,15 @@ function parseState(value: unknown): ObservationStoreState {
   };
 }
 
-/** Durable immutable-envelope store with one acknowledgement cursor per destination. */
+/** Durable immutable envelopes with acknowledgements per destination and signal. */
 export class ObservationPipeline {
   private readonly file: string;
-  private state: ObservationStoreState;
-  private transition = Promise.resolve();
-  private readonly capacity: number;
 
-  private constructor(directory: string, state: ObservationStoreState, capacity: number) {
+  private constructor(
+    directory: string,
+    private readonly capacity: number,
+  ) {
     this.file = path.join(directory, STORE_FILE);
-    this.state = state;
-    this.capacity = capacity;
   }
 
   static async open(
@@ -132,22 +161,18 @@ export class ObservationPipeline {
     options: { capacity?: number } = {},
   ): Promise<ObservationPipeline> {
     await mkdir(directory, { recursive: true });
-    const file = path.join(directory, STORE_FILE);
-    let state = emptyState();
-    try {
-      state = parseState(JSON.parse(await readFile(file, 'utf8')) as unknown);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-    }
     const capacity = options.capacity ?? 10_000;
     if (!Number.isSafeInteger(capacity) || capacity < 1) {
       throw new Error('Observation retention capacity must be a positive integer');
     }
-    return new ObservationPipeline(directory, state, capacity);
+    const pipeline = new ObservationPipeline(directory, capacity);
+    await pipeline.readState();
+    return pipeline;
   }
 
   append(envelopes: readonly ObservationEnvelope[]): Promise<void> {
     return this.mutate((state) => {
+      const previousPosition = state.nextPosition;
       const known = new Set(state.envelopes.map((envelope) => envelope.envelopeId));
       for (const envelope of envelopes) {
         if (!isObservationEnvelope(envelope)) throw new Error('Cannot append an invalid envelope');
@@ -158,14 +183,15 @@ export class ObservationPipeline {
         state.nextPosition += 1;
       }
       const overflow = Math.max(0, state.envelopes.length - this.capacity);
-      if (overflow === 0) return;
+      if (overflow === 0) return state.nextPosition !== previousPosition;
       const dropped = state.envelopes.splice(0, overflow);
       state.droppedEnvelopes += dropped.length;
       const firstRetainedSequence = state.envelopes[0]?.identity.sequence ?? null;
       for (const destination of Object.values(state.destinations)) {
         if (destination.mode === 'removed') continue;
         const missed = dropped.filter(
-          (envelope) => state.positions[envelope.envelopeId]! > destination.cursorPosition,
+          (envelope) =>
+            state.positions[envelope.envelopeId]! > destinationCursor(destination).cursorPosition,
         ).length;
         if (missed === 0) continue;
         destination.gap = {
@@ -181,6 +207,7 @@ export class ObservationPipeline {
     return this.mutate((state) => {
       const destination = this.destinationId(destinationId);
       const current = state.destinations[destination];
+      if (current?.mode === mode) return false;
       state.destinations[destination] = current
         ? { ...current, mode }
         : {
@@ -200,17 +227,67 @@ export class ObservationPipeline {
   }
 
   async pending(destinationId: string, limit = 256): Promise<readonly ObservationEnvelope[]> {
-    await this.transition;
-    const destination = destinationId.trim();
-    if (!destination) throw new Error('Observation destination id is required');
-    const current = this.state.destinations[destination];
-    if (current?.mode === 'paused' || current?.mode === 'removed') return [];
-    const cursorPosition = current?.cursorPosition ?? -1;
-    return structuredClone(
-      this.state.envelopes
-        .filter((envelope) => this.state.positions[envelope.envelopeId]! > cursorPosition)
-        .slice(0, limit),
+    return (await this.pendingSignal(destinationId, undefined, limit)).map(
+      ({ envelope }) => envelope,
     );
+  }
+
+  async pendingSignal(
+    destinationId: string,
+    signal?: ObservationSignal,
+    limit = 256,
+  ): Promise<readonly PendingObservation[]> {
+    const state = await this.readState();
+    const current = state.destinations[this.destinationId(destinationId)] ?? newDestination();
+    if (current.mode !== 'enabled') return [];
+    const cursor = signal ? (current.signals?.[signal] ?? current) : destinationCursor(current);
+    return state.envelopes
+      .map((envelope) => ({ envelope, position: state.positions[envelope.envelopeId]! }))
+      .filter(({ position }) => position > cursor.cursorPosition)
+      .slice(0, limit);
+  }
+
+  withReplayLock<T>(destinationId: string, action: () => Promise<T>): Promise<T> {
+    const key = createHash('sha256')
+      .update(this.destinationId(destinationId))
+      .digest('hex')
+      .slice(0, 16);
+    return withRecoverableFileLock(`${this.file}.${key}.lock`, action);
+  }
+
+  setActiveSignals(destinationId: string, signals: readonly ObservationSignal[]): Promise<void> {
+    return this.mutate((state) => {
+      const id = this.destinationId(destinationId);
+      const current = state.destinations[id] ?? newDestination();
+      if (current.activeSignals?.join(',') === signals.join(',')) return false;
+      state.destinations[id] = { ...current, activeSignals: signals };
+    });
+  }
+
+  recordSignalAttempt(
+    destinationId: string,
+    signal: ObservationSignal,
+    attempt: ObservationDestinationAttempt,
+    confirmed?: PendingObservation,
+    rejectedRecords = 0,
+  ): Promise<void> {
+    return this.mutate((state) => {
+      const id = this.destinationId(destinationId);
+      const current = state.destinations[id] ?? newDestination();
+      const previous = current.signals?.[signal] ?? current;
+      state.destinations[id] = {
+        ...current,
+        signals: {
+          ...current.signals,
+          [signal]: {
+            cursor: confirmed?.envelope.envelopeId ?? previous.cursor,
+            cursorPosition: confirmed?.position ?? previous.cursorPosition,
+            lastAttempt: attempt,
+            rejectedRecords: (current.signals?.[signal]?.rejectedRecords ?? 0) + rejectedRecords,
+          },
+        },
+      };
+    });
   }
 
   acknowledge(destinationId: string, envelopeId: string): Promise<void> {
@@ -251,26 +328,23 @@ export class ObservationPipeline {
   }
 
   async status(destinationId: string): Promise<ObservationDestinationStatus> {
-    await this.transition;
+    const state = await this.readState();
     const destination = this.destinationId(destinationId);
-    const current = this.state.destinations[destination] ?? {
-      mode: 'enabled' as const,
-      cursor: null,
-      cursorPosition: -1,
-      gap: null,
-      lastAttempt: null,
-    };
+    const current = state.destinations[destination] ?? newDestination();
+    const { cursor, cursorPosition } = destinationCursor(current);
     const backlog =
       current.mode === 'removed'
         ? 0
-        : this.state.envelopes.filter(
-            (envelope) => this.state.positions[envelope.envelopeId]! > current.cursorPosition,
+        : state.envelopes.filter(
+            (envelope) => state.positions[envelope.envelopeId]! > cursorPosition,
           ).length;
     return structuredClone({
       destinationId: destination,
       ...current,
+      cursor,
+      cursorPosition,
       backlog,
-      retained: this.state.envelopes.length,
+      retained: state.envelopes.length,
     });
   }
 
@@ -280,30 +354,20 @@ export class ObservationPipeline {
     return destination;
   }
 
-  private mutate(operation: (state: ObservationStoreState) => void | Promise<void>): Promise<void> {
-    let resolveResult!: () => void;
-    let rejectResult!: (reason: unknown) => void;
-    const result = new Promise<void>((resolve, reject) => {
-      resolveResult = resolve;
-      rejectResult = reject;
+  private mutate(operation: (state: ObservationStoreState) => void | boolean): Promise<void> {
+    return withRecoverableFileLock(`${this.file}.lock`, async () => {
+      const state = await this.readState();
+      if (operation(state) === false) return;
+      await atomicWriteText(this.file, `${JSON.stringify(state)}\n`);
     });
-    this.transition = this.transition.then(async () => {
-      try {
-        const next = structuredClone(this.state);
-        await operation(next);
-        await this.persist(next);
-        this.state = next;
-        resolveResult();
-      } catch (error) {
-        rejectResult(error);
-      }
-    });
-    return result;
   }
 
-  private async persist(state: ObservationStoreState): Promise<void> {
-    const temporary = `${this.file}.${process.pid}.${Date.now()}.tmp`;
-    await writeFile(temporary, `${JSON.stringify(state)}\n`, { encoding: 'utf8', flag: 'wx' });
-    await rename(temporary, this.file);
+  private async readState(): Promise<ObservationStoreState> {
+    try {
+      return parseState(JSON.parse(await readFile(this.file, 'utf8')) as unknown);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return emptyState();
+      throw error;
+    }
   }
 }
