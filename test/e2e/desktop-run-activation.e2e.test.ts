@@ -350,6 +350,7 @@ describe('public Change Run Desktop activation', () => {
         ...storeEnvironment,
         APPDATA: profile,
         LOCALAPPDATA: profile,
+        REPOCTOPUS_OTLP_DIAGNOSTICS: 'full',
         OTEL_EXPORTER_OTLP_ENDPOINT: `http://127.0.0.1:${address.port}`,
         REPOCTOPUS_ENVIRONMENT: 'desktop-e2e',
       };
@@ -498,8 +499,8 @@ describe('public Change Run Desktop activation', () => {
           args: ['run', 'next', '--workspace', workspace, '--run', started.runId!],
         });
         expect(next.result?.state.status).toBe('running');
-        expect(paths).toHaveLength(beforeClose);
-        expect(new Set(paths)).toEqual(new Set(['/v1/logs']));
+        await waitFor(() => Promise.resolve(paths.length > beforeClose ? paths.length : null));
+        expect(new Set(paths)).toEqual(new Set(['/v1/traces', '/v1/logs', '/v1/metrics']));
       } finally {
         if (shell) {
           await terminateProcessTree(shell.processId).catch(() => undefined);
