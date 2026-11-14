@@ -182,8 +182,9 @@ export class ObservationDelivery extends Service {
           : {}),
       });
     let body = selected.length ? encode() : '';
-    if (deadline !== undefined) {
-      while (pending.length > 1 && Buffer.byteLength(body) > 2 * 1024 * 1024) {
+    const wireLimit = destination.id === 'desktop' ? 1024 * 1024 : 2 * 1024 * 1024;
+    if (destination.id === 'desktop' || deadline !== undefined) {
+      while (pending.length > 1 && Buffer.byteLength(body) > wireLimit) {
         pending = pending.slice(0, Math.ceil(pending.length / 2));
         selected = select();
         body = selected.length ? encode() : '';
@@ -195,7 +196,7 @@ export class ObservationDelivery extends Service {
       if (body && deadline !== undefined && Date.now() >= deadline) {
         return { delivered: 0, warning: 'budget-exhausted' };
       }
-      if (body && deadline !== undefined && Buffer.byteLength(body) > 2 * 1024 * 1024) {
+      if (body && deadline !== undefined && Buffer.byteLength(body) > wireLimit) {
         warning = 'record-too-large';
         rejectedRecords = 1;
       } else if (body) {
@@ -214,7 +215,7 @@ export class ObservationDelivery extends Service {
           ),
         });
         if (!response.ok) {
-          if (RETRYABLE_HTTP_STATUS.has(response.status)) {
+          if (destination.id === 'desktop' || RETRYABLE_HTTP_STATUS.has(response.status)) {
             warning = 'rejected';
           } else {
             warning = 'permanent-rejection';

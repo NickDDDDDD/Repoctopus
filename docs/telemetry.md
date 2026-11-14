@@ -74,6 +74,8 @@ Remove-Item Env:REPOCTOPUS_OTLP_DIAGNOSTICS
 
 短时排查时，在启动 Agent 或 CLI 的环境设置 `REPOCTOPUS_OTLP_DIAGNOSTICS=full`。细粒度模式使用 Trace、Log、Metric 三种信号。单独设置某个信号的完整端点，也会显式启用该信号的细粒度记录。
 
+打开细粒度模式后，Log 从现有确认位置继续，之前过滤掉的 Log 不会补发。首次启用的 Trace 或 Metric 可以发送 outbox 中仍保留的历史。CLI 关闭时的请求超时取信号配置与剩余两秒预算中的较小值。
+
 | 想看什么       | Metric                               | 聚合与分组                                        |
 | -------------- | ------------------------------------ | ------------------------------------------------- |
 | 工作流事件数量 | `repoctopus.workflow.events`         | Increase / Sum，按 `repoctopus.event.type` 分组   |
