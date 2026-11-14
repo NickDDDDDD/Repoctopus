@@ -62,7 +62,7 @@ repoctopus.cmd project review --request "$($prepared.result.file)"
 
 ## 终端排查与底层命令
 
-下面的 `detect`、`prepare`、`review` 命令适用于排查和需要查看中间产物的终端操作。v0.1.1 用户可查阅[对应版本说明](https://github.com/NickDDDDDD/Repoctopus/blob/v0.1.1/docs/project-onboarding.md)。
+下面的 `detect`、`prepare`、`review` 命令适用于排查和需要查看中间产物的终端操作。
 
 ### 1. 生成探测草稿
 
@@ -186,7 +186,7 @@ repoctopus.cmd project review --workspace . --request $prepared.result.file
 
 ## 启动第一个 Change
 
-在已接入的 Workspace 中，从团队目标分支创建并公开一个 Change 分支。下面以 `main` 为目标，`fix-settings-save-message` 为 Change ID。也可以让 Agent 在收到需求后执行这些命令。
+在已接入的 Workspace 中，从团队目标分支创建并推送一个 Change 分支。下面以 `main` 为目标，`fix-settings-save-message` 为 Change ID。推送后可以在宿主直接调用 Workspace 的 `repoctopus` Skill，提供需求、Change ID 和目标分支。需要在终端显式启动时，使用以下完整示例。
 
 ```powershell
 git switch main
@@ -199,4 +199,6 @@ $runId = $started.runId
 repoctopus run status --workspace . --run $runId --json
 ```
 
-在 Agent 对话中同时说明需求、`changeId` 和 `runId`，让它从同一个 Run 继续。Agent 用 `run next` 请求 Runtime 派发下一步，按返回的 continuation 领取 Work、使用执行包里的 Skill 并提交 Outcome。遇到人工决定时，由你在 Runtime 给出的可信交互入口确认。多仓任务在 Build 为需要写入的业务仓准备并推送各自的工作分支。运行中断后，先查原 Run 状态，再按[恢复指南](self-hosting.md#3-运行与恢复)操作。
+如果由终端启动，把需求、`changeId` 和 `runId` 交给 Agent，调用 `repoctopus` 续跑。Agent 用 `run next` 请求 Runtime 派发下一步，按返回的 continuation 领取 Work、装填当前 Action 对应的 Skill 并提交 Outcome。Open 和 Design 各有一次独立审批。宿主可展示原生选项并回传你的选择，也可以通过交互式终端完成。[审批方式](human-decision.md#可信通道)
+
+多仓任务在 Build 为需要写入的业务仓准备并推送各自的工作分支。运行中断后，用同一个 Run ID 恢复。[恢复指南](self-hosting.md#3-运行与恢复)

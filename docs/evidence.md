@@ -62,6 +62,8 @@ repository 必须是已登记仓库。省略 repositories 时保守绑定全部�
 
 只有 cache: true 且 passed、verified、未过 TTL 的确定性命令可复用。候选来自实际已提交 Receipt 及节点完成 Journal；只有 Receipt、没有 completion 的执行保持 unknown。新 Attempt 为复用生成新 Receipt，并用 sourceReceiptId 指向原证据，不覆盖历史或延长有效期。
 
+如果同批并行检查中某个节点记录结果时抛错，Runtime 等当前批次收尾后才释放 Attempt 租约。下一次恢复只采纳 Journal 中已记录完成的检查，并保留结果未知的检查供后续判断。
+
 每个节点单独绑定源输入；A 改变时只使 A 和依赖它的后继失效，独立 B 保留。producer 声明 outputs 后，产物不污染源输入。producer 完成时先保存内容寻址 manifest，再提交节点 completion；consumer 绑定真实产物字节和当前 producer Receipt。缓存 producer 仅在输出仍存在且匹配时复用；缺失时重新采集，Runtime 不从 Artifact Store 自动回写文件。重采 producer 得到同字节产物时，consumer 仍可复用并重新绑定证明引用。未知执行、失败、外部服务、浏览器和视觉反馈不按这条规则自动重放。
 
 当前持久协议：Receipt/Attempt schema 1，Bundle/Gate schema 3，Verification Input schema 4，Plan Evidence/Build Check schema 2。各对象必须有 canonical EvidenceDependencyRecord，绑定实现内容、规划语义、执行控制及显式 Git 依赖；发布来源单独记录，不自动成为验证依赖。读取时核对记录、对象身份、上下游引用及 manifest，旧格式或损坏记录拒绝执行。
