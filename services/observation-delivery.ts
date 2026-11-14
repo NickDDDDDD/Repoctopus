@@ -222,10 +222,25 @@ export class ObservationDelivery extends Service {
           }
         } else {
           const content = await response.text();
-          const acknowledgement = content ? JSON.parse(content) : {};
-          rejectedRecords = Number(
-            acknowledgement?.partialSuccess?.[REJECTED_RECORDS[signal]] ?? 0,
-          );
+          const acknowledgement: unknown = content ? JSON.parse(content) : {};
+          if (
+            typeof acknowledgement !== 'object' ||
+            !acknowledgement ||
+            Array.isArray(acknowledgement)
+          ) {
+            throw new Error('Invalid OTLP acknowledgement');
+          }
+          const partial = (acknowledgement as Record<string, unknown>).partialSuccess;
+          if (partial !== undefined) {
+            if (typeof partial !== 'object' || !partial || Array.isArray(partial)) {
+              throw new Error('Invalid OTLP partial success');
+            }
+            const count = (partial as Record<string, unknown>)[REJECTED_RECORDS[signal]];
+            if (count !== undefined && typeof count !== 'string' && typeof count !== 'number') {
+              throw new Error('Invalid OTLP partial success count');
+            }
+            rejectedRecords = Number(count ?? 0);
+          }
           if (!Number.isSafeInteger(rejectedRecords) || rejectedRecords < 0) {
             throw new Error('Invalid OTLP partial success count');
           }
