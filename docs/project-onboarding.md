@@ -43,13 +43,16 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份。团队共用同一个
 repoctopus.cmd skill install-init --entry-hosts codex
 ```
 
-从 Workspace Git 根调用 Init Skill，并告诉 Agent 是单仓还是多仓。预览列出工作区、所选仓、Store、业务仓 pointer 和入口路径。批准后，Runtime 初始化或复用 OpenSpec Store，写入最小配置、Workspace 入口和所选宿主的阶段 Skill。先把接入产物提交并推送到团队仓库，再启动第一个 Change。单仓布局只处理当前仓。多仓布局可选择扫描目录内的部分仓库。
+从 Workspace Git 根调用 Init Skill，告诉 Agent 是单仓还是多仓。预览列出 Workspace、所选仓、Store、业务仓指向和入口路径。批准后，Runtime 初始化或复用 OpenSpec Store，写入最小配置、所选宿主的 Skill 和三份本地引导。先把接入产物提交并推送到团队仓库，再启动第一个 Change。单仓只处理当前仓。多仓可选择扫描目录内的部分仓库。
 
-终端可完成同一流程。以下是同级多仓示例，在 Workspace 根执行。单仓使用 `--layout single` 并省略 `--scan-root`。
+终端可完成同一流程。在 Workspace 根按布局执行一条 Init 命令，再审查该请求。多仓示例选择 `web` 和 `backend`。需要查询实际仓库 ID 时，先运行 `repoctopus.cmd project detect --layout multi --scan-root .. --json`。
 
 ```powershell
-$prepared = repoctopus.cmd project init --layout multi --scan-root .. --entry-hosts codex --json | ConvertFrom-Json
-repoctopus.cmd project review --request "$($prepared.result.file)"
+# 单仓
+$prepared = repoctopus.cmd project init --layout single --entry-hosts codex --json | ConvertFrom-Json
+# 多仓
+$prepared = repoctopus.cmd project init --layout multi --scan-root .. --repositories web,backend --entry-hosts codex --json | ConvertFrom-Json
+repoctopus.cmd project review --request $prepared.result.file
 ```
 
 检查目录时运行 `git rev-parse --show-toplevel`。如果显示父级业务仓，当前目录是普通子目录。单仓从业务仓根接入，多仓使用独立 Workspace Git 根。重跑 Init 会为新的配置或选仓形成当前请求。
@@ -66,7 +69,7 @@ repoctopus.cmd project review --request "$($prepared.result.file)"
 
 ### 1. 生成探测草稿
 
-在选定的 Workspace Git 仓库根目录运行。CLI 只扫描 `--scan-root` 的直接子 Git 仓库，所以单仓和同级多仓布局都用 `--scan-root ..`。Workspace 必须位于扫描目录下一级。使用只包含本项目仓库的父目录。若扫描结果包含无关仓库，把要接入的仓库放到专用父目录，再从 Workspace 重新探测。
+以下例子演示省略 `--layout` 的旧式扩展探测。它扫描 `--scan-root` 的直接子 Git 仓库，也探测验证命令。Workspace 必须位于扫描目录下一级。首次接入使用上面的轻量 Init。刷新引导时显式指定布局，见[补齐或更新 Workspace 引导](#补齐或更新-workspace-引导)。
 
 ```powershell
 $detected = repoctopus project detect --scan-root .. --workspace . --store team-platform --json | ConvertFrom-Json
@@ -123,7 +126,7 @@ Repoctopus 会再次解析完整候选，计算候选摘要，并把当前正式
 repoctopus project review --workspace . --request $request
 ```
 
-`project review` 只接受交互式终端。IDE Adapter 可以展示同一版本化请求，但必须提供经过认证且绑定当前 `snapshotDigest` 的响应。选择批准后，Runtime 才原子写入 `repoctopus.yaml`；请求修改或拒绝不会写入正式配置。
+手工运行 `project review` 时，在真实交互终端审阅。宿主从真实用户取得决定后，可用 `project review --response-file` 提交绑定当前请求和 `snapshotDigest` 的响应。批准后，Runtime 才原子写入 `repoctopus.yaml`。
 
 审批摘要同时绑定完整 Store binding proposal，不能在等待期间替换 Store ID、Workspace 根、固定 Provider、Root disposition、仓库选择或 pointer diff。批准后的 apply 严格按以下顺序执行：
 
@@ -166,21 +169,34 @@ repoctopus evidence inspect --workspace . --attempt $run.runId --json
      backend: 'D:/team-platform/backend'
    ```
 
-3. 在本机登记团队已批准的 Store ID。沿用第 1 至 4 步，以现有 `repoctopus.yaml` 为候选，核对审批预览只包含预期登记或 pointer。工作区配置已被审批且根健康时，仍需完成本机登记。详见 [OpenSpec Store](specification.md#workspacestore-与实现仓)。
-4. 从启动 Agent 或 CLI 的环境注入团队要求的发布凭据和 Collector Header。用 `repoctopus evidence plan --workspace . --profile verify --json` 检查仓库和 Profile 能否解析。
+3. 在 Workspace 根登记团队的 OpenSpec Store。以下适用于已提交完整规格与 Store metadata、且本机尚未登记的 Workspace。使用 CLI 固定的 OpenSpec 版本和共享配置中的 Store ID。若已登记，先用 context 核对路径。
+
+   ```powershell
+   $storeId = Read-Host 'repoctopus.yaml 中的团队 Store ID'
+   npx.cmd --yes --package=@fission-ai/openspec@1.14.3 openspec store register . --id $storeId --json
+   npx.cmd --yes --package=@fission-ai/openspec@1.14.3 openspec context --store $storeId --json
+   ```
+
+   确认 context 返回当前 Workspace 路径和团队 Store ID。登记只写本机 registry。出现冲突时请团队核对 ID 和 checkout。[OpenSpec Store](specification.md#workspacestore-与实现仓)
+
+4. 用宿主打开 Workspace，调用团队已提交的 `repoctopus` Skill。缺少所用的宿主入口时可[单独补装](skills.md#在宿主中调用-repoctopus)。从启动 Agent 或 CLI 的进程环境注入所需凭据。团队配置了 Verify Profile 时，可用 `repoctopus.cmd evidence plan --workspace . --profile verify --json` 预览。
 
 ## 补齐或更新 Workspace 引导
 
-旧版 `v0.1.0` 不生成 README 和 Agent 引导。先安装团队指定、包含此功能的新版本 CLI；已经接入的项目无需删除配置、规格或历史 Run。在 Workspace 根目录运行 `project detect`，使用团队原 Store ID；若父目录还有无关仓库，先调整扫描范围。保留现有共享配置作为候选：
+先安装团队指定的新版 CLI。在 Workspace 根按布局执行一条探测命令，再使用现有共享配置作为候选准备新请求。多仓刷新要求 Workspace 和各登记仓都是扫描根的直接子目录。使用符合该布局的 checkout，再核对探测结果。
 
 ```powershell
 $storeId = Read-Host 'repoctopus.yaml 中的团队 Store ID'
-$detected = repoctopus.cmd project detect --workspace . --scan-root .. --store $storeId --json | ConvertFrom-Json
+$entryHosts = Read-Host '本次使用的 Host ID，多个值用逗号分隔'
+# 单仓
+$detected = repoctopus.cmd project detect --layout single --scan-root . --entry-hosts $entryHosts --store $storeId --json | ConvertFrom-Json
+# 多仓
+$detected = repoctopus.cmd project detect --layout multi --scan-root .. --entry-hosts $entryHosts --store $storeId --json | ConvertFrom-Json
 $prepared = repoctopus.cmd project prepare --workspace . --draft $detected.result.file --candidate repoctopus.yaml --json | ConvertFrom-Json
 repoctopus.cmd project review --workspace . --request $prepared.result.file
 ```
 
-核对本机登记、业务仓 pointer 和受管文件范围后批准。流程复用健康规格根，只创建缺失文件或更新自己的区块；团队原有内容和换行保留。将 README、AGENTS 和本地教程的变更按团队 Git 流程提交。业务仓原有 README 和 Agent 文件不在本次安装范围。
+核对共享配置、本机登记、业务仓指向、所选宿主和受管引导文件后批准。引导只更新 Workspace 的三个受管区块，保留团队原文和换行。按预览将获批产物提交到所属 Git 仓。
 
 团队自己的说明和 Agent 规则写在受管区块外。残缺或重复标记、目录占位、符号链接以及文件并发变化会返回明确冲突，不会直接覆盖。接入中断时重试原未完成请求，可以补齐剩余文件；已完成请求只返回原结果，升级后要更新引导则重新准备并批准一个请求。
 

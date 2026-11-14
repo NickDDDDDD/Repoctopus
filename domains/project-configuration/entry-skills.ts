@@ -10,6 +10,18 @@ export const WORKSPACE_ENTRY_HOSTS = [
 ] as const;
 export type WorkspaceEntryHost = (typeof WORKSPACE_ENTRY_HOSTS)[number];
 
+export const WORKSPACE_ENTRY_DIRECTORIES: Record<
+  WorkspaceEntryHost,
+  { workspace: string; personal: string; label: string }
+> = {
+  codex: { label: 'Codex', workspace: '.agents', personal: '.codex' },
+  opencode: { label: 'OpenCode', workspace: '.opencode', personal: '.config/opencode' },
+  codebuddy: { label: 'CodeBuddy Code', workspace: '.codebuddy', personal: '.codebuddy' },
+  codearts: { label: 'CodeArts 码道', workspace: '.codeartsdoer', personal: '.codeartsdoer' },
+  trae: { label: 'TRAE 国际版', workspace: '.trae', personal: '.trae' },
+  'trae-cn': { label: 'TRAE 中国版', workspace: '.trae', personal: '.trae-cn' },
+};
+
 const ownershipMarker = /\n<!-- repoctopus-entry:v1 SKILL\.md ([a-f0-9]{64}) -->\n$/u;
 
 export function workspaceEntryDigest(text: string | Uint8Array): string {
