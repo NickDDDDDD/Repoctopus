@@ -759,7 +759,9 @@ export class EvidenceService {
           throw new Error(`Evidence graph stalled: ${[...pending].join(', ')}`);
         }
         for (const nodeId of ready) pending.delete(nodeId);
-        const layer = await Promise.all(
+        // A rejected node must not release the attempt while its siblings are
+        // still running or committing their Journal entries.
+        const layer = await Promise.allSettled(
           ready.map(async (nodeId) => {
             const snapshot = options.nodeInputs?.find((entry) => entry.nodeId === nodeId);
             const derivedInputs = snapshot?.derivedFrom.length
@@ -794,12 +796,18 @@ export class EvidenceService {
             });
           }),
         );
-        for (const [index, execution] of layer.entries()) {
+        for (const [index, outcome] of layer.entries()) {
+          if (outcome.status === 'fulfilled' && outcome.value.managedSession) {
+            sessions.set(ready[index]!, outcome.value.managedSession);
+          }
+        }
+        for (const [index, outcome] of layer.entries()) {
+          if (outcome.status === 'rejected') throw outcome.reason;
+          const execution = outcome.value;
           const nodeId = ready[index]!;
           const node = nodes.get(nodeId)!;
           const receipt = execution.receipt;
           byNode.set(nodeId, receipt);
-          if (execution.managedSession) sessions.set(nodeId, execution.managedSession);
           findings.push(...receipt.findings);
           decisionRequests.push(...(execution.decisionRequests ?? []));
           checks.set(nodeId, {

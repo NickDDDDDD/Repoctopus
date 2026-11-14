@@ -111,8 +111,14 @@ Repoctopus MUST 为每次采集创建独立 Attempt，使用 Journal 和原子�
 
 #### Scenario: Runtime 在节点完成后退出
 
-- **WHEN** Receipt 已持久化但 Bundle 尚未更新
+- **WHEN** Receipt 和对应节点的完成 Journal 已持久化但 Bundle 尚未更新
 - **THEN** 恢复流程重放 Journal 并引用同一 Receipt，不重复执行已经确认的副作用
+
+#### Scenario: 并行节点写入完成记录时发生错误
+
+- **WHEN** 同一 Attempt 中的一个并行节点写入完成 Journal 时抛出错误
+- **THEN** Runtime 等待当前批次已派发的节点收尾后才结束该调用并释放执行租约
+- **AND** 恢复时只接受已提交的完成记录，将结果未知的节点标为未完成，且不重放其命令
 
 #### Scenario: 测试失败后重新运行
 

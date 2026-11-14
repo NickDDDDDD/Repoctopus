@@ -10,24 +10,24 @@ Repoctopus 按团队配置推进需求确认、设计、实现、验证和归档
 
 ### 获取 CLI
 
-准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。下面以 `v0.1.1` 为例，在 PowerShell 中任选一种方式安装。
+准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。下面的接入步骤适用于 `v0.1.2`。先在 GitHub Releases 确认该版本的安装包已公开，再任选一种方式安装。使用旧版时请查阅对应 Tag 的 README。[GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases)
 
 **方式一：直接从发布地址安装**
 
 在任意目录打开 PowerShell，运行下面的命令。
 
 ```powershell
-npm.cmd install --global --ignore-scripts --legacy-peer-deps https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.1/repoctopus-0.1.1.tgz
+npm.cmd install --global --ignore-scripts --legacy-peer-deps https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.2/repoctopus-0.1.2.tgz
 ```
 
 **方式二：手动下载 `.tgz` 后安装**
 
-在发布页的 **Assets** 下载 `repoctopus-0.1.1.tgz`，也可以使用团队发给你的同版本文件。[v0.1.1 发布页](https://github.com/NickDDDDDD/Repoctopus/releases/tag/v0.1.1)
+在发布页的 **Assets** 下载 `repoctopus-0.1.2.tgz`，也可以使用团队发给你的同版本文件。
 
 在 `.tgz` 文件所在的目录打开 PowerShell，运行下面的命令。
 
 ```powershell
-npm.cmd install --global --ignore-scripts --legacy-peer-deps .\repoctopus-0.1.1.tgz
+npm.cmd install --global --ignore-scripts --legacy-peer-deps .\repoctopus-0.1.2.tgz
 ```
 
 **检查安装**
@@ -41,13 +41,13 @@ repoctopus.cmd --version
 
 ### 安装宿主入口
 
-包含轻量接入功能的 CLI 可为当前用户安装 Init Skill。以下用 Codex 举例。宿主选择值、安装路径和已有 Workspace 的补装步骤见 [Skills 接入](docs/skills.md#在宿主中调用-repoctopus)。
+先为你使用的宿主安装个人 Init Skill。以下用 Codex 举例，也支持 OpenCode、CodeBuddy、CodeArts 码道和 TRAE。其他宿主的选项和安装目录见 [Skills 接入](docs/skills.md#在宿主中调用-repoctopus)。
 
 ```powershell
 repoctopus.cmd skill install-init --entry-hosts codex
 ```
 
-在宿主中打开下面对应的 Git 根目录，然后在新会话调用 `repoctopus-init`。使用 v0.1.1 时，按[该版本的快速开始](https://github.com/NickDDDDDD/Repoctopus/blob/v0.1.1/README.md#快速开始)接入。
+在宿主中打开下面对应的 Git 根目录，然后在新会话调用 `repoctopus-init`。
 
 ### 接入多仓项目
 
@@ -68,7 +68,7 @@ team-platform/
 
 ### 提交接入结果
 
-把生成的共享配置、规格和受管入口按团队 Git 流程提交。多仓接入如获批生成业务仓的 `openspec/config.yaml`，把文件提交到它所属的仓。
+把生成的共享配置、规格、所选宿主的 Skill 目录及其管理记录提交并推送。多仓接入如获批生成业务仓的 `openspec/config.yaml`，把文件提交到它所属的仓。
 
 初始化完成后即可开发。到需要正式验证时，在 Workspace 调用 `repoctopus-configure-verify`，按项目实际命令配置 Verify，再恢复原 Run。团队已经配置好 Profile 时可直接执行 Verify。 [接入和配置详情](docs/project-onboarding.md)
 
@@ -81,10 +81,9 @@ git switch main
 git pull --ff-only origin main
 git switch -c change/fix-settings-save-message
 git push -u origin HEAD
-repoctopus.cmd run start --workspace . --change fix-settings-save-message --target main --json
 ```
 
-把输出的 `runId`、任务描述和团队使用的 CLI 版本交给 Agent。让它按 Repoctopus 派发的 Work 继续，在需要人工确认时停下来。Open 产物准备好后，在 Workspace 审核 OpenSpec 提案和涉及的仓库。多仓 Change 的实现分别提交到对应的业务仓。[启动与恢复指南](docs/project-onboarding.md#启动第一个-change)
+在宿主的新会话中调用 Workspace 的 `repoctopus` Skill，提供需求、Change ID `fix-settings-save-message` 和目标分支 `main`。保留返回的 Run ID，中断后用同一个 ID 续跑。Agent 会在 Open 和 Design 分别展示审批，多仓实现提交到各自的业务仓。[终端启动与恢复](docs/project-onboarding.md#启动第一个-change)
 
 ## 接入已有团队项目
 
@@ -99,5 +98,5 @@ repoctopus.cmd run start --workspace . --change fix-settings-save-message --targ
 ## 配置与观测
 
 - 团队在根目录的 `repoctopus.yaml` 共享验证、交付和 Skill 配置。本机仓库路径和端口写在 `.repoctopus/local.yaml`，凭据由进程环境提供。[项目配置](docs/project-onboarding.md#配置放在哪里)
-- 在共享配置填 `telemetry.endpoint`，连接团队 SigNoz 的 OTLP/HTTP Collector。指南包含信号验证、看板查询和完整字段清单。[SigNoz 指南](docs/telemetry.md) · [遥测字段参考](docs/telemetry-reference.md)
+- 在共享配置填 `telemetry.endpoint`，连接团队 SigNoz 的 OTLP/HTTP Collector。导入工作流健康看板后，可以查看 Run 数与 Build 配置分布、终态失败率、未结束 Run 所在阶段及完成 Run 的平均回退。[SigNoz 指南](docs/telemetry.md) · [遥测字段参考](docs/telemetry-reference.md)
 - 安装可选的 Windows x64 Desktop Dashboard，可查看当前 Change 的实时阶段和进度。[桌面安装与激活](docs/desktop-activation.md)

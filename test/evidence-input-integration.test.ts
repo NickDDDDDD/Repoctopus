@@ -2,6 +2,7 @@ import { readFile, writeFile, unlink, symlink } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import path from 'node:path';
+import { setImmediate } from 'node:timers/promises';
 import { Context } from '@deepseek-ai/cordis';
 import { afterEach, expect, it, vi } from 'vitest';
 import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
@@ -30,6 +31,14 @@ import {
 const cleanup: string[] = [];
 const contexts: Context[] = [];
 const git = promisify(execFile);
+function deferred() {
+  let resolve!: () => void;
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
 afterEach(async () => {
   vi.restoreAllMocks();
   await Promise.all(contexts.splice(0).map((ctx) => ctx.fiber.dispose()));
@@ -252,21 +261,55 @@ it('does not replay an unknown producer or reuse a Receipt without its completio
   const original = FileEvidenceJournal.prototype.recordCompletion.bind(
     new FileEvidenceJournal(workspace),
   );
+  const siblingReady = deferred();
+  const interruptProducer = deferred();
+  const completeSibling = deferred();
+  const order: string[] = [];
   const fault = vi
     .spyOn(FileEvidenceJournal.prototype, 'recordCompletion')
     .mockImplementation(async (attempt, node, ...args) => {
-      if (attempt === 'interrupted' && node === 'a')
+      if (attempt === 'interrupted' && node === 'a') {
+        await siblingReady.promise;
+        interruptProducer.resolve();
         throw new Error('interrupted between Receipt and Journal commit');
-      return original(attempt, node, ...args);
+      }
+      if (attempt === 'interrupted' && node === 'b') {
+        siblingReady.resolve();
+        await completeSibling.promise;
+        await original(attempt, node, ...args);
+        order.push('sibling committed');
+      } else {
+        await original(attempt, node, ...args);
+      }
     });
-  await expect(evidence.run('verify', 'interrupted')).rejects.toThrow(
-    'interrupted between Receipt and Journal commit',
-  );
+  const interrupted = evidence.run('verify', 'interrupted').catch((error: unknown) => {
+    order.push('attempt rejected');
+    return error;
+  });
+  await Promise.race([interruptProducer.promise, interrupted]);
+  try {
+    await setImmediate();
+    const journal = new FileEvidenceJournal(workspace);
+    expect((await journal.load('interrupted')).map(({ type }) => type)).toEqual([
+      'node.intent',
+      'node.intent',
+    ]);
+    expect(order).toEqual([]);
+  } finally {
+    completeSibling.resolve();
+    await interrupted;
+  }
+  expect(await interrupted).toEqual(new Error('interrupted between Receipt and Journal commit'));
+  expect(order).toEqual(['sibling committed', 'attempt rejected']);
   fault.mockRestore();
-  const before = (await counts()).length;
   const resumed = await (await boot(workspace)).resume('interrupted');
   expect(resumed.bundle?.outcome).toBe('incomplete');
-  expect(await counts()).toHaveLength(before);
+  expect(resumed.bundle?.checks).toEqual([
+    expect.objectContaining({ nodeId: 'a', status: 'incomplete' }),
+    expect.objectContaining({ nodeId: 'b', status: 'passed' }),
+    expect.objectContaining({ nodeId: 'c', status: 'blocked' }),
+  ]);
+  expect((await counts()).sort()).toEqual(['a', 'b']);
   const fresh = await (await boot(workspace)).run('verify', 'fresh');
   expect(fresh.bundle.outcome).toBe('passed');
   expect(fresh.receipts.find((r) => r.nodeId === 'a')!.freshness).toBe('fresh');
