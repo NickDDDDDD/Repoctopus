@@ -264,8 +264,25 @@ describe('published package', () => {
       environment,
     });
     expect(validatedSpecification.result).toMatchObject({ valid: true, strict: true });
+    // A Windows npm installation may be reached through a DOS short path,
+    // including when the runner's TEMP directory already uses one.
+    const packagePathForOnboarding =
+      process.platform === 'win32'
+        ? (
+            await execFileAsync(
+              'cmd.exe',
+              ['/d', '/c', 'for %I in ("%REPOCTOPUS_TEST_PACKAGE_ROOT%") do @echo %~sI'],
+              {
+                cwd: root,
+                env: { ...process.env, REPOCTOPUS_TEST_PACKAGE_ROOT: installedPackage },
+                windowsVerbatimArguments: true,
+              },
+            )
+          ).stdout.trim()
+        : installedPackage;
+    expect(await realpath(packagePathForOnboarding)).toBe(await realpath(installedPackage));
     const envelope = await runCli({
-      packageRoot: installedPackage,
+      packageRoot: packagePathForOnboarding,
       cwd: workspace,
       args: ['project', 'detect', '--scan-root', project, '--workspace', workspace],
     });
@@ -445,7 +462,7 @@ describe('published package', () => {
     );
     const originalReadme = await readFile(path.join(newWorkspace, 'README.md'));
     const detected = await runCli<{ draft: ProjectDetectionDraft; file: string }>({
-      packageRoot: installedPackage,
+      packageRoot: packagePathForOnboarding,
       cwd: newWorkspace,
       environment,
       args: [
@@ -462,7 +479,7 @@ describe('published package', () => {
     const candidateFile = path.join(newWorkspace, '.repoctopus/drafts/guide-candidate.json');
     await writeFile(candidateFile, JSON.stringify(detected.result!.draft.candidateConfig));
     const prepared = await runCli<{ file: string }>({
-      packageRoot: installedPackage,
+      packageRoot: packagePathForOnboarding,
       cwd: newWorkspace,
       environment,
       args: [
