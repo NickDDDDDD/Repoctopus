@@ -1,3 +1,9 @@
+---
+comet_change: align-workspace-onboarding-guides
+role: technical-design
+canonical_spec: openspec
+---
+
 # Workspace 初始化引导对齐设计
 
 ## Context
