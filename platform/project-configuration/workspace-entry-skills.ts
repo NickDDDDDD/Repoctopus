@@ -50,9 +50,9 @@ export function workspaceSkillPath(host: WorkspaceEntryHost, name: string): stri
   return `${HOST_DIRECTORIES[host].workspace}/skills/${name}/SKILL.md`;
 }
 
-function workflowTargets(hosts: readonly WorkspaceEntryHost[], openSpec: boolean) {
+function workflowTargets(root: string, hosts: readonly WorkspaceEntryHost[], openSpec: boolean) {
   const targets = hosts.flatMap((host) =>
-    workflowSkillTargets(productRoot, host, HOST_DIRECTORIES[host].workspace, openSpec),
+    workflowSkillTargets(root, host, HOST_DIRECTORIES[host].workspace, openSpec),
   );
   return uniqueEntryTargets(targets);
 }
@@ -144,13 +144,16 @@ export async function planWorkspaceEntrySkills(
   openSpec = true,
 ): Promise<WorkspaceEntrySkillPlan[]> {
   const chosen = selectedHosts(hosts);
+  // Windows can load the package through a DOS short path. Resolve the package
+  // root before checking that paths below it do not redirect.
+  const root = await realpath(productRoot);
   const [entries, workflow] = await Promise.all([
     planEntryTargets(
       workspace,
       uniqueEntryTargets(workspaceTargets().filter(({ host }) => chosen.includes(host))),
     ),
     Promise.all(
-      workflowTargets(chosen, openSpec).map((target) => planWorkflowSkill(workspace, target)),
+      workflowTargets(root, chosen, openSpec).map((target) => planWorkflowSkill(workspace, target)),
     ),
   ]);
   return [...entries, ...workflow];
@@ -225,7 +228,10 @@ export async function prepareWorkspaceEntryWrites(
     afterWrite,
     checkScope,
   );
-  const available = WORKSPACE_ENTRY_HOSTS.flatMap((host) => workflowTargets([host], openSpec));
+  const root = await realpath(productRoot);
+  const available = WORKSPACE_ENTRY_HOSTS.flatMap((host) =>
+    workflowTargets(root, [host], openSpec),
+  );
   const workflow = await Promise.all(
     plans
       .filter(({ files }) => files !== undefined)

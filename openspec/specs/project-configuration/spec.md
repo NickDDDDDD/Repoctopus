@@ -356,3 +356,9 @@ Repoctopus MUST 在初始化和已接入 Workspace 的补装预览中列明所�
 
 - **WHEN** 团队批准对现有 Workspace 补装所选宿主的 Skill
 - **THEN** 安装只物化所选受管文件，已有 Store、团队绑定与 Run 继续使用原有身份
+
+#### Scenario: Windows 通过短路径运行安装包
+
+- **WHEN** Windows 使用 DOS 短路径启动已安装的 CLI，并预览或应用获批的 Workspace Skill 安装
+- **THEN** Repoctopus 按实际包根目录读取随包提供的静态 Skill
+- **AND** 包根以下的 Skill 路径仍须通过原有的目录和文件检查
