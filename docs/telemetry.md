@@ -1,6 +1,6 @@
 # 接入团队 SigNoz
 
-在 Workspace 的 `repoctopus.yaml` 配置 Collector 地址后，Repoctopus 会将工作流的 Trace、Log 和 Metric 发到团队的 SigNoz。Windows Desktop 可同时显示当前 Change，两者消费同一套 OTLP 事件。完整字段、信号、单位和指标公式见[遥测 schema v1 参考](telemetry-reference.md)。
+在 Workspace 的 `repoctopus.yaml` 配置 Collector 地址后，Repoctopus 默认将工作流健康事实和必要诊断作为 OTLP Logs 发到团队的 SigNoz。Windows Desktop 可同时显示当前 Change，两者消费同一套 OTLP 事件。完整字段、信号、单位和指标公式见[遥测 schema v1 参考](telemetry-reference.md)。
 
 ## 配置
 
@@ -17,7 +17,7 @@ telemetry:
   endpoint: https://signoz-collector.example.internal/otlp
 ```
 
-Runtime 会追加 `/v1/traces`、`/v1/logs` 和 `/v1/metrics`。YAML 使用 HTTP(S) URL，省略 URL 内的凭据、查询参数和片段。凭据通过进程环境提供。
+默认使用 `/v1/logs`。开启细粒度诊断时，Runtime 也会使用 `/v1/traces` 和 `/v1/metrics`。YAML 使用 HTTP(S) URL，省略 URL 内的凭据、查询参数和片段。凭据通过进程环境提供。
 
 ### 3. 按需注入认证与部署属性
 
@@ -41,30 +41,46 @@ Runtime 会追加 `/v1/traces`、`/v1/logs` 和 `/v1/metrics`。YAML 使用 HTTP
 
 ## 确认 SigNoz 已收到数据
 
-在已接入的 Workspace 运行一次真实 Change，或执行团队已有的 `verify` Profile。后者会实际执行 Profile 的检查命令。
+在已接入的 Workspace 启动一次真实 Change。也可以打开细粒度诊断后执行团队已有的 `verify` Profile，验证三种信号的接收链路。该命令实际执行 Profile 的检查。
 
 ```powershell
+$env:REPOCTOPUS_OTLP_DIAGNOSTICS = 'full'
 repoctopus evidence run --workspace . --profile verify --json
+Remove-Item Env:REPOCTOPUS_OTLP_DIAGNOSTICS
 ```
 
 1. 在 SigNoz 选中覆盖这次执行的时间范围。在 **Logs Explorer** 搜索 `service.name = 'repoctopus-runtime'`。如果团队设置了 `OTEL_SERVICE_NAME`，改用实际服务名。
 2. 如果同一服务名下有多种数据，加入 `repoctopus.product.name = 'repoctopus'`。将 `repoctopus.event.type` 加到结果列，检查是否出现此次操作的事件。使用 Change Run 时，可以用 `repoctopus.run.id` 查单次运行，并按 `repoctopus.event.sequence` 读取事件顺序。
-3. 在 **Traces Explorer** 用同样的服务名确认 Span，在 **Metrics Explorer** 查找 `repoctopus.observation`。Evidence 冒烟能验证接收链路。Build、Skill 使用、归档等数据在执行对应工作流步骤后出现。
+3. 开启细粒度诊断后，在 **Traces Explorer** 用同样的服务名确认 Span，在 **Metrics Explorer** 查找 `repoctopus.observation`。Evidence 冒烟能验证接收链路。Build、Skill 使用、归档等数据在执行对应工作流步骤后出现。
 
 如果三个信号都缺失，核对命令运行的 Workspace、Agent 环境里的 OTLP 地址覆盖，以及开发机到 Collector 的 DNS、TLS 和网关认证。只有一种信号缺失时，优先检查该信号的环境覆盖、`/v1/...` 路由与 Collector pipeline。网关返回 `404` 时核对地址和前缀，`401/403` 时核对认证，`415` 时核对 JSON 请求支持。CLI 工作结果成功并不代表远端投递成功。
 
-## 创建团队看板
+## 导入工作流健康看板
 
-在 SigNoz 的 Dashboards 新建看板，用 Query Builder 添加 Metric 面板。每个面板先用实际的 `service.name` 限定 Repoctopus 数据。以下字段可以直接在面板使用。
+在 SigNoz v0.135.0 或更新版本打开 **Dashboards → New dashboard → Import JSON**，上传 [workflow-health.json](../deploy/signoz/workflow-health.json)。看板使用 Repoctopus 的规范 OTLP Logs 和 SigNoz 的 ClickHouse 查询，无需为字段改名。团队可用 [SigNoz 导入指南](https://signoz.io/docs/dashboards/import-dashboard/)核对界面步骤。
 
-| 想看什么               | Metric                               | 聚合与分组                                                                                                             |
-| ---------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| 各类工作流事件的数量   | `repoctopus.workflow.events`         | 时间聚合选 Increase，空间聚合选 Sum，按 `repoctopus.event.type` 分组。                                                 |
-| 哪个阶段的 Work 耗时长 | `repoctopus.work.execution.duration` | 时间聚合选 Max，空间聚合选 Max，按 `repoctopus.execution.phase` 和 `repoctopus.execution.work.kind` 分组。单位为毫秒。 |
-| Skill 回执与结果的分布 | `repoctopus.skill.usage`             | 时间聚合选 Increase，空间聚合选 Sum，按 `repoctopus.skill.category`、`repoctopus.skill.result` 分组。                  |
-| 各交付状态的事件数量   | `repoctopus.delivery.events`         | 时间聚合选 Increase，空间聚合选 Sum，按 `repoctopus.delivery.state` 分组。                                             |
+| 指标                    | 样本与计算                                                                                                                                                                         |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 启动 Run 总数和配置分布 | 窗口内启动的唯一 Workspace + Run。按截止时有效的执行、测试及隔离方式分组。两种执行方式、两种测试方式、三种隔离方式共 12 种组合。尚未批准和历史数据未知各自单列。                   |
+| 终态失败率              | 窗口内进入 `failed` 的唯一 Run 数除以同期进入 `failed` 或 `completed` 的唯一 Run 数。内置 Change 当前可到达 `completed`，Verify 失败会重试或返工，阻塞和需迁移归入未进入统计终态。 |
+| 未进入终态占比          | 窗口内启动且到截止时没有上述两种终态的唯一 Run 数除以同期启动数。分组显示最后观测到的 phase、status、原因，明细显示阶段和状态停留分钟数。                                          |
+| 完成 Run 平均回退次数   | 以窗口内完成的 Run 为同一分母，显示总平均、按目标阶段平均和六条来源 → 目标路径平均。计入完成前窗口之外的回退和零回退样本。同阶段重试不计。                                         |
 
-看板用低基数字段观察团队趋势。排查具体 Change 时，在 Logs Explorer 或 Traces Explorer 用 `repoctopus.run.id`、`repoctopus.change.id` 和面板的时间范围定位执行。按阶段、等待、Work 或 Evidence 逐步缩小范围。指标公式与可用维度见[遥测字段参考](telemetry-reference.md)，界面操作见 [SigNoz Query Builder](https://signoz.io/docs/userguide/query-builder-v5/)和[指标聚合](https://signoz.io/docs/metrics-management/types-and-aggregation/)。
+统计窗口包含起点，排除终点。终态面板可计入窗口前启动的 Run。回退汇总随完成事件一起发送，避免日志保留期影响该 Run 的历史回退次数。历史完成事件缺少回退汇总时，覆盖面板会显示缺口，平均值显示无样本。分母为零时，比率显示无样本。
+
+以 `repoctopus.observation.correlation.workspace_id` 和 `repoctopus.run.id` 在 Logs Explorer 下钻。按 `repoctopus.event.sequence` 排序，使用 `repoctopus.event.id` 识别重放。状态字段为 `repoctopus.observation.attribute.health_status`、`health_reason` 和 `health_fact` 共用此前缀，配置字段为 `health_configuration`、`execution_mode`、`tdd_mode`、`isolation`，完成事件使用 `rollback_total` 和 `rollback_*`。表格使用已入库的观测数据。Collector 不可达、超出保留期、拒收或旧版本覆盖不足可能产生未知或缺口。完整名称与类型见 [遥测字段参考](telemetry-reference.md)。
+
+### 看细粒度诊断
+
+短时排查时，在启动 Agent 或 CLI 的环境设置 `REPOCTOPUS_OTLP_DIAGNOSTICS=full`。细粒度模式使用 Trace、Log、Metric 三种信号。单独设置某个信号的完整端点，也会显式启用该信号的细粒度记录。
+
+打开细粒度模式后，Log 从现有确认位置继续，之前过滤掉的 Log 不会补发。首次启用的 Trace 或 Metric 可以发送 outbox 中仍保留的历史。CLI 关闭时的请求超时取信号配置与剩余两秒预算中的较小值。
+
+| 想看什么       | Metric                               | 聚合与分组                                        |
+| -------------- | ------------------------------------ | ------------------------------------------------- |
+| 工作流事件数量 | `repoctopus.workflow.events`         | Increase / Sum，按 `repoctopus.event.type` 分组   |
+| Work 耗时      | `repoctopus.work.execution.duration` | Max / Max，按 phase 和 Work kind 分组，单位为毫秒 |
+| Skill 回执     | `repoctopus.skill.usage`             | Increase / Sum，按 Skill category 和 result 分组  |
 
 ## Windows Desktop
 
@@ -79,11 +95,11 @@ $env:REPOCTOPUS_DESKTOP_OTLP_TOKEN = '<session-token>'
 
 ## 先落盘，再导出
 
-Trajectory、Attempt、Receipt、Artifact、Bundle、Gate 和轻量 Archive 事实先持久化。之后 Runtime 把允许列表 envelope 原子写入 `.repoctopus/telemetry/observation-envelopes.json`，每个目的地分别推进 cursor。后端失败时：
+Trajectory、Attempt、Receipt、Artifact、Bundle、Gate 和轻量 Archive 事实先持久化。之后 Runtime 把允许列表 envelope 原子写入 `.repoctopus/telemetry/observation-envelopes.json`，每个目的地按信号分别推进 cursor。远端在 CLI 关闭时合批，每个请求最多 256 个 envelope、2 MiB，每次关闭最多四批，网络和锁等待共用两秒预算。后端失败时：
 
 - Evidence Run 的结果保持有效；
-- 只有失败目的地的 cursor 不前进，其他目的地继续发送；
-- 后续 Runtime 恢复可以按目的地重放；
+- 只有仍待确认的目的地和信号重试，其他信号继续发送；
+- 后续 CLI 启动会继续投递待确认批次。部分拒收和不可重试拒收记录缺口，旧版单游标之前的逐信号覆盖标为未知；
 - 稳定 envelope ID 令重复投递在投影端收敛，但系统不宣称跨目的地 exactly-once。
 
 目的地具有 `enabled`、`paused`、`removed` 三种保留状态。暂停会保留有界积压；移除会停止该目的地积压增长，且不会重置远端 cursor。超过容量时系统保留明确 gap（丢失数量与首个保留序号）和积压健康信息，而不是伪造连续历史。恢复 Desktop 后先追平其独立 cursor，再进入实时接收。

@@ -306,8 +306,7 @@ describe('public Change Run Desktop activation', () => {
         );
         const runFile = path.join(workspace, '.repoctopus', 'runs', started.runId!, 'run.json');
         await expect(readFile(runFile, 'utf8')).resolves.toContain(started.runId!);
-        await waitFor(() => Promise.resolve(paths.length >= 3 ? new Set(paths) : null));
-        expect(new Set(paths)).toEqual(new Set(['/v1/traces', '/v1/logs', '/v1/metrics']));
+        expect(paths).toEqual(['/v1/logs']);
       } finally {
         try {
           await restoreRegistry();
@@ -351,6 +350,7 @@ describe('public Change Run Desktop activation', () => {
         ...storeEnvironment,
         APPDATA: profile,
         LOCALAPPDATA: profile,
+        REPOCTOPUS_OTLP_DIAGNOSTICS: 'full',
         OTEL_EXPORTER_OTLP_ENDPOINT: `http://127.0.0.1:${address.port}`,
         REPOCTOPUS_ENVIRONMENT: 'desktop-e2e',
       };

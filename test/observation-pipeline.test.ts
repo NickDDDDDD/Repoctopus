@@ -98,3 +98,20 @@ describe('ObservationPipeline', () => {
     }
   });
 });
+
+describe('observation outbox shared by independent CLI instances', () => {
+  it('retains both writers and confirmation state across reopened stores', async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-outbox-multiple-'));
+    try {
+      const first = await ObservationPipeline.open(directory);
+      const second = await ObservationPipeline.open(directory);
+      await Promise.all([first.append([envelope(1)]), second.append([envelope(2)])]);
+      const pending = await first.pending('remote');
+      expect(pending.map(({ identity }) => identity.sequence).sort()).toEqual([1, 2]);
+      await second.acknowledge('remote', pending[1]!.envelopeId);
+      expect(await first.pending('remote')).toEqual([]);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+});

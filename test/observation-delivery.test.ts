@@ -10,6 +10,7 @@ import { decodeObservationOtlpJson } from '../app/desktop/host/otlp-envelope-cod
 import type { ObservationEnvelope } from '../domains/trajectory/observation.js';
 import { DesktopLauncher } from '../services/desktop-launcher.js';
 import { ObservationDelivery } from '../services/observation-delivery.js';
+import { observationDestinationsFromEnvironment } from '../services/observation-telemetry.js';
 
 function envelope(): ObservationEnvelope {
   return {
@@ -141,4 +142,173 @@ describe('desktop observation delivery slice', () => {
       await rm(directory, { recursive: true, force: true });
     }
   });
+});
+
+it('coalesces remote health logs until close and continues immediate desktop delivery', async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-remote-batch-'));
+  const remoteRecords: ObservationEnvelope[] = [];
+  const desktopRecords: ObservationEnvelope[] = [];
+  const remote = await receiver(remoteRecords);
+  const desktop = await receiver(desktopRecords);
+  const context = new Context();
+  try {
+    const delivery = new ObservationDelivery(context, { workspaceRoot: directory });
+    delivery.deferRemoteUntilClose();
+    const destinations = observationDestinationsFromEnvironment({
+      OTEL_EXPORTER_OTLP_ENDPOINT: remote.endpoint,
+      REPOCTOPUS_DESKTOP_OTLP_ENDPOINT: desktop.endpoint,
+    });
+    const start = envelope();
+    const diagnostic: ObservationEnvelope = {
+      ...start,
+      identity: { ...start.identity, sequence: 2, eventId: 'event-2' },
+      envelopeId: `sha256:${'a'.repeat(64)}`,
+      eventType: 'skill.delivered',
+    };
+    const phase: ObservationEnvelope = {
+      ...start,
+      identity: { ...start.identity, sequence: 3, eventId: 'event-3' },
+      envelopeId: `sha256:${'b'.repeat(64)}`,
+      eventType: 'change.lifecycle.transitioned',
+      attributes: { healthFact: 'state' },
+    };
+    const legacyCompletion: ObservationEnvelope = {
+      ...phase,
+      identity: { ...phase.identity, sequence: 4, eventId: 'event-4' },
+      envelopeId: `sha256:${'c'.repeat(64)}`,
+      correlation: { ...phase.correlation, phase: 'archive' },
+      attributes: {
+        fromPhase: 'archive',
+        fromStatus: 'running',
+        toStatus: 'completed',
+        workflowRunResult: 'completed',
+      },
+    };
+    for (const record of [start, diagnostic, phase, legacyCompletion]) {
+      await delivery.append([record]);
+      await delivery.deliver(destinations);
+    }
+    expect(desktopRecords).toEqual([start, diagnostic, phase, legacyCompletion]);
+    expect(remote.paths).toEqual([]);
+    await delivery.flushRemote();
+    expect(remote.paths).toEqual(['/v1/logs']);
+    expect(remoteRecords).toEqual([start, phase, legacyCompletion]);
+  } finally {
+    await Promise.all([remote.close(), desktop.close()]);
+    await context.fiber.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+it('retries only the failed signal after reopening the outbox', async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-signal-replay-'));
+  const paths: string[] = [];
+  let metricUnavailable = true;
+  const server = createServer((request, response) => {
+    paths.push(request.url ?? '');
+    request.resume();
+    request.on('end', () =>
+      response.writeHead(request.url === '/v1/metrics' && metricUnavailable ? 503 : 200).end(),
+    );
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address();
+  if (!address || typeof address === 'string') throw new Error('Receiver failed to start');
+  const destination = { id: 'remote', endpoint: `http://127.0.0.1:${address.port}` };
+  const context = new Context();
+  const recoveredContext = new Context();
+  try {
+    const delivery = new ObservationDelivery(context, { workspaceRoot: directory });
+    await delivery.append([envelope()]);
+    expect((await delivery.replay(destination)).warning).toBeTruthy();
+    metricUnavailable = false;
+    const recovered = new ObservationDelivery(recoveredContext, { workspaceRoot: directory });
+    await recovered.replay(destination);
+    expect(paths.filter((entry) => entry === '/v1/logs')).toHaveLength(1);
+    expect(paths.filter((entry) => entry === '/v1/traces')).toHaveLength(1);
+    expect(paths.filter((entry) => entry === '/v1/metrics')).toHaveLength(2);
+    expect(await recovered.health('remote')).toMatchObject({ backlog: 0 });
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    await context.fiber.dispose();
+    await recoveredContext.fiber.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+it('reports a persistent partial rejection without replaying an accepted batch', async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-partial-'));
+  let requests = 0;
+  const server = createServer((request, response) => {
+    requests += 1;
+    request.resume();
+    request.on('end', () =>
+      response
+        .writeHead(200, { 'content-type': 'application/json' })
+        .end(JSON.stringify({ partialSuccess: { rejectedLogRecords: '1' } })),
+    );
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address();
+  if (!address || typeof address === 'string') throw new Error('Receiver failed to start');
+  const destination = {
+    id: 'remote',
+    signalEndpoints: { log: `http://127.0.0.1:${address.port}` },
+  };
+  const context = new Context();
+  try {
+    const delivery = new ObservationDelivery(context, { workspaceRoot: directory });
+    await delivery.append([envelope()]);
+    expect((await delivery.replay(destination)).warning).toContain('partial-rejection');
+    await delivery.replay(destination);
+    expect(requests).toBe(1);
+    expect(await delivery.health('remote')).toMatchObject({
+      backlog: 0,
+      signals: {
+        log: { rejectedRecords: 1, lastAttempt: { warningCode: 'partial-rejection' } },
+      },
+    });
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    await context.fiber.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+it('splits an HTTP 413 batch before advancing the affected signal cursor', async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-gateway-limit-'));
+  const received: number[] = [];
+  const server = createServer((request, response) => {
+    const chunks: Buffer[] = [];
+    request.on('data', (chunk: Buffer) => chunks.push(chunk));
+    request.on('end', () => {
+      const count = decodeObservationOtlpJson(Buffer.concat(chunks)).length;
+      received.push(count);
+      response.writeHead(count === 1 ? 200 : 413).end();
+    });
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address();
+  if (!address || typeof address === 'string') throw new Error('Receiver failed to start');
+  const destination = {
+    id: 'remote',
+    signalEndpoints: { log: `http://127.0.0.1:${address.port}` },
+  };
+  const context = new Context();
+  try {
+    const delivery = new ObservationDelivery(context, { workspaceRoot: directory });
+    const first = envelope();
+    await delivery.append([first, { ...first, envelopeId: `sha256:${'9'.repeat(64)}` }]);
+    expect(await delivery.replay(destination)).toMatchObject({ delivered: 1 });
+    expect(await delivery.replay(destination)).toMatchObject({ delivered: 1 });
+    expect(received).toEqual([2, 1, 1]);
+    expect(await delivery.health('remote')).toMatchObject({
+      backlog: 0,
+      signals: { log: { rejectedRecords: 0 } },
+    });
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    await context.fiber.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
 });

@@ -1,0 +1,381 @@
+{
+  "name": "repoctopus-workflow-health",
+  "schemaVersion": "v6",
+  "tags": [
+    {
+      "key": "product",
+      "value": "repoctopus"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Repoctopus 工作流健康度",
+      "description": "团队 Change Run 的配置、完成状态、停留和返工。开始与终态统计使用各自的选入时间，面板时间范围左闭右开。"
+    },
+    "variables": [],
+    "links": [],
+    "panels": {
+      "started-runs": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "启动 Run 总数",
+            "description": "窗口内启动的唯一 Workspace + Run。以开始时间选取样本。"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/ClickHouseSQL",
+                  "spec": {
+                    "name": "A",
+                    "query": "WITH\n  toUInt64({{.start_timestamp_ms}}) * 1000000 AS window_start,\n  toUInt64({{.end_timestamp_ms}}) * 1000000 AS window_end,\n  facts AS (\n    SELECT\n      attributes_string['repoctopus.observation.correlation.workspace_id'] AS workspace, attributes_string['repoctopus.run.id'] AS run_id,\n      attributes_string['repoctopus.observation.correlation.change_id'] AS change_id, attributes_string['repoctopus.event.id'] AS event_id,\n      attributes_number['repoctopus.event.sequence'] AS seq,\n      attributes_string['repoctopus.event.type'] AS event_type,\n      timestamp AS observed_at, attributes_string['repoctopus.observation.correlation.phase'] AS phase, attributes_string['repoctopus.observation.attribute.from_status'] AS from_status, attributes_string['repoctopus.observation.attribute.from_phase'] AS from_phase,\n      attributes_string['repoctopus.observation.attribute.health_fact'] AS fact_kind, attributes_string['repoctopus.observation.attribute.health_status'] AS new_health_status, coalesce(nullIf(new_health_status, ''), nullIf(attributes_string['repoctopus.observation.attribute.to_status'], ''), '') AS health_status,\n      attributes_string['repoctopus.observation.attribute.health_reason'] AS reason, attributes_string['repoctopus.observation.attribute.health_configuration'] AS config,\n      attributes_string['repoctopus.observation.attribute.execution_mode'] AS mode, attributes_string['repoctopus.observation.attribute.tdd_mode'] AS testing, attributes_string['repoctopus.observation.attribute.isolation'] AS isolation,\n      attributes_string['repoctopus.observation.attribute.workflow_run_result'] AS run_result,\n      mapContains(attributes_number, 'repoctopus.observation.attribute.rollback_total') AS has_rollbacks,\n      attributes_number['repoctopus.observation.attribute.rollback_total'] AS rb_total,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_open'] AS rb_build_to_open,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_design'] AS rb_build_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_design'] AS rb_verify_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_build'] AS rb_verify_to_build,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_design'] AS rb_archive_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_verify'] AS rb_archive_to_verify\n    FROM signoz_logs.distributed_logs_v2\n    WHERE timestamp >= window_start AND timestamp < window_end\n      AND ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      AND resource_fingerprint GLOBAL IN (\n        SELECT fingerprint FROM signoz_logs.distributed_logs_v2_resource\n        WHERE simpleJSONExtractString(labels, 'repoctopus.product.name') = 'repoctopus'\n          AND seen_at_ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      )\n      AND scope_name = 'repoctopus-runtime' AND workspace != '' AND run_id != '' AND change_id != '' AND event_id != ''\n      AND (event_type IN ('run.started', 'change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'))\n  ),\n  runs AS (\n    SELECT workspace, run_id, any(change_id) AS change_id,\n      countIf(event_type = 'run.started') > 0 AS started,\n      argMaxIf(phase, (seq, event_id, fact_kind != ''), phase != '') AS latest_phase,\n      argMaxIf(coalesce(nullIf(health_status, ''), if(event_type = 'run.started', 'running', nullIf(run_result, '')), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_status,\n      argMaxIf(coalesce(nullIf(reason, ''), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_reason,\n      argMaxIf(observed_at, (seq, event_id), fact_kind = 'state' OR event_type = 'run.started' OR (fact_kind = '' AND health_status != '' AND from_status != health_status)) AS status_since,\n      argMaxIf(observed_at, (seq, event_id), event_type = 'run.started' OR (from_phase != '' AND from_phase != phase)) AS phase_since,\n      argMaxIf(tuple(config, mode, testing, isolation), (seq, event_id), config != '') AS latest_config,\n      argMaxIf(run_result, (seq, event_id), run_result IN ('completed', 'failed')) AS terminal_result,\n      argMaxIf(tuple(has_rollbacks, rb_total, rb_build_to_open, rb_build_to_design, rb_verify_to_design, rb_verify_to_build, rb_archive_to_design, rb_archive_to_verify), (seq, event_id, has_rollbacks),\n        run_result = 'completed') AS rollback_counts\n    FROM facts\n    GROUP BY workspace, run_id\n  )\nSELECT toFloat64(countIf(started)) AS runs FROM runs"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "terminal-failure": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "终态失败率",
+            "description": "窗口内进入失败终态的 Run / 同期完成或失败的 Run。终态为零时无样本。"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "1"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/ClickHouseSQL",
+                  "spec": {
+                    "name": "A",
+                    "query": "WITH\n  toUInt64({{.start_timestamp_ms}}) * 1000000 AS window_start,\n  toUInt64({{.end_timestamp_ms}}) * 1000000 AS window_end,\n  facts AS (\n    SELECT\n      attributes_string['repoctopus.observation.correlation.workspace_id'] AS workspace, attributes_string['repoctopus.run.id'] AS run_id,\n      attributes_string['repoctopus.observation.correlation.change_id'] AS change_id, attributes_string['repoctopus.event.id'] AS event_id,\n      attributes_number['repoctopus.event.sequence'] AS seq,\n      attributes_string['repoctopus.event.type'] AS event_type,\n      timestamp AS observed_at, attributes_string['repoctopus.observation.correlation.phase'] AS phase, attributes_string['repoctopus.observation.attribute.from_status'] AS from_status, attributes_string['repoctopus.observation.attribute.from_phase'] AS from_phase,\n      attributes_string['repoctopus.observation.attribute.health_fact'] AS fact_kind, attributes_string['repoctopus.observation.attribute.health_status'] AS new_health_status, coalesce(nullIf(new_health_status, ''), nullIf(attributes_string['repoctopus.observation.attribute.to_status'], ''), '') AS health_status,\n      attributes_string['repoctopus.observation.attribute.health_reason'] AS reason, attributes_string['repoctopus.observation.attribute.health_configuration'] AS config,\n      attributes_string['repoctopus.observation.attribute.execution_mode'] AS mode, attributes_string['repoctopus.observation.attribute.tdd_mode'] AS testing, attributes_string['repoctopus.observation.attribute.isolation'] AS isolation,\n      attributes_string['repoctopus.observation.attribute.workflow_run_result'] AS run_result,\n      mapContains(attributes_number, 'repoctopus.observation.attribute.rollback_total') AS has_rollbacks,\n      attributes_number['repoctopus.observation.attribute.rollback_total'] AS rb_total,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_open'] AS rb_build_to_open,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_design'] AS rb_build_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_design'] AS rb_verify_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_build'] AS rb_verify_to_build,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_design'] AS rb_archive_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_verify'] AS rb_archive_to_verify\n    FROM signoz_logs.distributed_logs_v2\n    WHERE timestamp >= window_start AND timestamp < window_end\n      AND ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      AND resource_fingerprint GLOBAL IN (\n        SELECT fingerprint FROM signoz_logs.distributed_logs_v2_resource\n        WHERE simpleJSONExtractString(labels, 'repoctopus.product.name') = 'repoctopus'\n          AND seen_at_ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      )\n      AND scope_name = 'repoctopus-runtime' AND workspace != '' AND run_id != '' AND change_id != '' AND event_id != ''\n      AND (event_type IN ('run.started', 'change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'))\n  ),\n  runs AS (\n    SELECT workspace, run_id, any(change_id) AS change_id,\n      countIf(event_type = 'run.started') > 0 AS started,\n      argMaxIf(phase, (seq, event_id, fact_kind != ''), phase != '') AS latest_phase,\n      argMaxIf(coalesce(nullIf(health_status, ''), if(event_type = 'run.started', 'running', nullIf(run_result, '')), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_status,\n      argMaxIf(coalesce(nullIf(reason, ''), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_reason,\n      argMaxIf(observed_at, (seq, event_id), fact_kind = 'state' OR event_type = 'run.started' OR (fact_kind = '' AND health_status != '' AND from_status != health_status)) AS status_since,\n      argMaxIf(observed_at, (seq, event_id), event_type = 'run.started' OR (from_phase != '' AND from_phase != phase)) AS phase_since,\n      argMaxIf(tuple(config, mode, testing, isolation), (seq, event_id), config != '') AS latest_config,\n      argMaxIf(run_result, (seq, event_id), run_result IN ('completed', 'failed')) AS terminal_result,\n      argMaxIf(tuple(has_rollbacks, rb_total, rb_build_to_open, rb_build_to_design, rb_verify_to_design, rb_verify_to_build, rb_archive_to_design, rb_archive_to_verify), (seq, event_id, has_rollbacks),\n        run_result = 'completed') AS rollback_counts\n    FROM facts\n    GROUP BY workspace, run_id\n  )\nSELECT 1.0 * countIf(terminal_result = 'failed') / nullIf(countIf(terminal_result != ''), 0) AS failure_pct FROM runs"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "unfinished-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "未进入终态占比",
+            "description": "窗口内启动、到窗口末仍无终态的 Run / 同期启动数。"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "1"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/ClickHouseSQL",
+                  "spec": {
+                    "name": "A",
+                    "query": "WITH\n  toUInt64({{.start_timestamp_ms}}) * 1000000 AS window_start,\n  toUInt64({{.end_timestamp_ms}}) * 1000000 AS window_end,\n  facts AS (\n    SELECT\n      attributes_string['repoctopus.observation.correlation.workspace_id'] AS workspace, attributes_string['repoctopus.run.id'] AS run_id,\n      attributes_string['repoctopus.observation.correlation.change_id'] AS change_id, attributes_string['repoctopus.event.id'] AS event_id,\n      attributes_number['repoctopus.event.sequence'] AS seq,\n      attributes_string['repoctopus.event.type'] AS event_type,\n      timestamp AS observed_at, attributes_string['repoctopus.observation.correlation.phase'] AS phase, attributes_string['repoctopus.observation.attribute.from_status'] AS from_status, attributes_string['repoctopus.observation.attribute.from_phase'] AS from_phase,\n      attributes_string['repoctopus.observation.attribute.health_fact'] AS fact_kind, attributes_string['repoctopus.observation.attribute.health_status'] AS new_health_status, coalesce(nullIf(new_health_status, ''), nullIf(attributes_string['repoctopus.observation.attribute.to_status'], ''), '') AS health_status,\n      attributes_string['repoctopus.observation.attribute.health_reason'] AS reason, attributes_string['repoctopus.observation.attribute.health_configuration'] AS config,\n      attributes_string['repoctopus.observation.attribute.execution_mode'] AS mode, attributes_string['repoctopus.observation.attribute.tdd_mode'] AS testing, attributes_string['repoctopus.observation.attribute.isolation'] AS isolation,\n      attributes_string['repoctopus.observation.attribute.workflow_run_result'] AS run_result,\n      mapContains(attributes_number, 'repoctopus.observation.attribute.rollback_total') AS has_rollbacks,\n      attributes_number['repoctopus.observation.attribute.rollback_total'] AS rb_total,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_open'] AS rb_build_to_open,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_design'] AS rb_build_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_design'] AS rb_verify_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_build'] AS rb_verify_to_build,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_design'] AS rb_archive_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_verify'] AS rb_archive_to_verify\n    FROM signoz_logs.distributed_logs_v2\n    WHERE timestamp >= window_start AND timestamp < window_end\n      AND ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      AND resource_fingerprint GLOBAL IN (\n        SELECT fingerprint FROM signoz_logs.distributed_logs_v2_resource\n        WHERE simpleJSONExtractString(labels, 'repoctopus.product.name') = 'repoctopus'\n          AND seen_at_ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      )\n      AND scope_name = 'repoctopus-runtime' AND workspace != '' AND run_id != '' AND change_id != '' AND event_id != ''\n      AND (event_type IN ('run.started', 'change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'))\n  ),\n  runs AS (\n    SELECT workspace, run_id, any(change_id) AS change_id,\n      countIf(event_type = 'run.started') > 0 AS started,\n      argMaxIf(phase, (seq, event_id, fact_kind != ''), phase != '') AS latest_phase,\n      argMaxIf(coalesce(nullIf(health_status, ''), if(event_type = 'run.started', 'running', nullIf(run_result, '')), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_status,\n      argMaxIf(coalesce(nullIf(reason, ''), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_reason,\n      argMaxIf(observed_at, (seq, event_id), fact_kind = 'state' OR event_type = 'run.started' OR (fact_kind = '' AND health_status != '' AND from_status != health_status)) AS status_since,\n      argMaxIf(observed_at, (seq, event_id), event_type = 'run.started' OR (from_phase != '' AND from_phase != phase)) AS phase_since,\n      argMaxIf(tuple(config, mode, testing, isolation), (seq, event_id), config != '') AS latest_config,\n      argMaxIf(run_result, (seq, event_id), run_result IN ('completed', 'failed')) AS terminal_result,\n      argMaxIf(tuple(has_rollbacks, rb_total, rb_build_to_open, rb_build_to_design, rb_verify_to_design, rb_verify_to_build, rb_archive_to_design, rb_archive_to_verify), (seq, event_id, has_rollbacks),\n        run_result = 'completed') AS rollback_counts\n    FROM facts\n    GROUP BY workspace, run_id\n  )\nSELECT 1.0 * countIf(started AND terminal_result = '') / nullIf(countIf(started), 0) AS unfinished_pct FROM runs"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "average-rollbacks": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "每个完成 Run 的平均回退",
+            "description": "按完成时间选取样本，包含零回退。历史汇总缺失时显示无样本，请查看覆盖表。"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/ClickHouseSQL",
+                  "spec": {
+                    "name": "A",
+                    "query": "WITH\n  toUInt64({{.start_timestamp_ms}}) * 1000000 AS window_start,\n  toUInt64({{.end_timestamp_ms}}) * 1000000 AS window_end,\n  facts AS (\n    SELECT\n      attributes_string['repoctopus.observation.correlation.workspace_id'] AS workspace, attributes_string['repoctopus.run.id'] AS run_id,\n      attributes_string['repoctopus.observation.correlation.change_id'] AS change_id, attributes_string['repoctopus.event.id'] AS event_id,\n      attributes_number['repoctopus.event.sequence'] AS seq,\n      attributes_string['repoctopus.event.type'] AS event_type,\n      timestamp AS observed_at, attributes_string['repoctopus.observation.correlation.phase'] AS phase, attributes_string['repoctopus.observation.attribute.from_status'] AS from_status, attributes_string['repoctopus.observation.attribute.from_phase'] AS from_phase,\n      attributes_string['repoctopus.observation.attribute.health_fact'] AS fact_kind, attributes_string['repoctopus.observation.attribute.health_status'] AS new_health_status, coalesce(nullIf(new_health_status, ''), nullIf(attributes_string['repoctopus.observation.attribute.to_status'], ''), '') AS health_status,\n      attributes_string['repoctopus.observation.attribute.health_reason'] AS reason, attributes_string['repoctopus.observation.attribute.health_configuration'] AS config,\n      attributes_string['repoctopus.observation.attribute.execution_mode'] AS mode, attributes_string['repoctopus.observation.attribute.tdd_mode'] AS testing, attributes_string['repoctopus.observation.attribute.isolation'] AS isolation,\n      attributes_string['repoctopus.observation.attribute.workflow_run_result'] AS run_result,\n      mapContains(attributes_number, 'repoctopus.observation.attribute.rollback_total') AS has_rollbacks,\n      attributes_number['repoctopus.observation.attribute.rollback_total'] AS rb_total,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_open'] AS rb_build_to_open,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_design'] AS rb_build_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_design'] AS rb_verify_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_build'] AS rb_verify_to_build,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_design'] AS rb_archive_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_verify'] AS rb_archive_to_verify\n    FROM signoz_logs.distributed_logs_v2\n    WHERE timestamp >= window_start AND timestamp < window_end\n      AND ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      AND resource_fingerprint GLOBAL IN (\n        SELECT fingerprint FROM signoz_logs.distributed_logs_v2_resource\n        WHERE simpleJSONExtractString(labels, 'repoctopus.product.name') = 'repoctopus'\n          AND seen_at_ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      )\n      AND scope_name = 'repoctopus-runtime' AND workspace != '' AND run_id != '' AND change_id != '' AND event_id != ''\n      AND (event_type IN ('run.started', 'change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'))\n  ),\n  runs AS (\n    SELECT workspace, run_id, any(change_id) AS change_id,\n      countIf(event_type = 'run.started') > 0 AS started,\n      argMaxIf(phase, (seq, event_id, fact_kind != ''), phase != '') AS latest_phase,\n      argMaxIf(coalesce(nullIf(health_status, ''), if(event_type = 'run.started', 'running', nullIf(run_result, '')), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_status,\n      argMaxIf(coalesce(nullIf(reason, ''), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_reason,\n      argMaxIf(observed_at, (seq, event_id), fact_kind = 'state' OR event_type = 'run.started' OR (fact_kind = '' AND health_status != '' AND from_status != health_status)) AS status_since,\n      argMaxIf(observed_at, (seq, event_id), event_type = 'run.started' OR (from_phase != '' AND from_phase != phase)) AS phase_since,\n      argMaxIf(tuple(config, mode, testing, isolation), (seq, event_id), config != '') AS latest_config,\n      argMaxIf(run_result, (seq, event_id), run_result IN ('completed', 'failed')) AS terminal_result,\n      argMaxIf(tuple(has_rollbacks, rb_total, rb_build_to_open, rb_build_to_design, rb_verify_to_design, rb_verify_to_build, rb_archive_to_design, rb_archive_to_verify), (seq, event_id, has_rollbacks),\n        run_result = 'completed') AS rollback_counts\n    FROM facts\n    GROUP BY workspace, run_id\n  )\nSELECT sumIf(tupleElement(rollback_counts, 2), tupleElement(rollback_counts, 1)) / nullIf(countIf(terminal_result = 'completed'), 0) * if(countIf(terminal_result = 'completed' AND NOT tupleElement(rollback_counts, 1)) > 0, NULL, 1) AS mean_rollbacks FROM runs"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "configuration": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Build 配置分布",
+            "description": "每个同期启动的 Run 取截止时最后一份有效配置。单列尚未批准和未知。当前共 12 种组合。"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/ClickHouseSQL",
+                  "spec": {
+                    "name": "A",
+                    "query": "WITH\n  toUInt64({{.start_timestamp_ms}}) * 1000000 AS window_start,\n  toUInt64({{.end_timestamp_ms}}) * 1000000 AS window_end,\n  facts AS (\n    SELECT\n      attributes_string['repoctopus.observation.correlation.workspace_id'] AS workspace, attributes_string['repoctopus.run.id'] AS run_id,\n      attributes_string['repoctopus.observation.correlation.change_id'] AS change_id, attributes_string['repoctopus.event.id'] AS event_id,\n      attributes_number['repoctopus.event.sequence'] AS seq,\n      attributes_string['repoctopus.event.type'] AS event_type,\n      timestamp AS observed_at, attributes_string['repoctopus.observation.correlation.phase'] AS phase, attributes_string['repoctopus.observation.attribute.from_status'] AS from_status, attributes_string['repoctopus.observation.attribute.from_phase'] AS from_phase,\n      attributes_string['repoctopus.observation.attribute.health_fact'] AS fact_kind, attributes_string['repoctopus.observation.attribute.health_status'] AS new_health_status, coalesce(nullIf(new_health_status, ''), nullIf(attributes_string['repoctopus.observation.attribute.to_status'], ''), '') AS health_status,\n      attributes_string['repoctopus.observation.attribute.health_reason'] AS reason, attributes_string['repoctopus.observation.attribute.health_configuration'] AS config,\n      attributes_string['repoctopus.observation.attribute.execution_mode'] AS mode, attributes_string['repoctopus.observation.attribute.tdd_mode'] AS testing, attributes_string['repoctopus.observation.attribute.isolation'] AS isolation,\n      attributes_string['repoctopus.observation.attribute.workflow_run_result'] AS run_result,\n      mapContains(attributes_number, 'repoctopus.observation.attribute.rollback_total') AS has_rollbacks,\n      attributes_number['repoctopus.observation.attribute.rollback_total'] AS rb_total,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_open'] AS rb_build_to_open,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_design'] AS rb_build_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_design'] AS rb_verify_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_build'] AS rb_verify_to_build,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_design'] AS rb_archive_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_verify'] AS rb_archive_to_verify\n    FROM signoz_logs.distributed_logs_v2\n    WHERE timestamp >= window_start AND timestamp < window_end\n      AND ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      AND resource_fingerprint GLOBAL IN (\n        SELECT fingerprint FROM signoz_logs.distributed_logs_v2_resource\n        WHERE simpleJSONExtractString(labels, 'repoctopus.product.name') = 'repoctopus'\n          AND seen_at_ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      )\n      AND scope_name = 'repoctopus-runtime' AND workspace != '' AND run_id != '' AND change_id != '' AND event_id != ''\n      AND (event_type IN ('run.started', 'change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'))\n  ),\n  runs AS (\n    SELECT workspace, run_id, any(change_id) AS change_id,\n      countIf(event_type = 'run.started') > 0 AS started,\n      argMaxIf(phase, (seq, event_id, fact_kind != ''), phase != '') AS latest_phase,\n      argMaxIf(coalesce(nullIf(health_status, ''), if(event_type = 'run.started', 'running', nullIf(run_result, '')), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_status,\n      argMaxIf(coalesce(nullIf(reason, ''), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_reason,\n      argMaxIf(observed_at, (seq, event_id), fact_kind = 'state' OR event_type = 'run.started' OR (fact_kind = '' AND health_status != '' AND from_status != health_status)) AS status_since,\n      argMaxIf(observed_at, (seq, event_id), event_type = 'run.started' OR (from_phase != '' AND from_phase != phase)) AS phase_since,\n      argMaxIf(tuple(config, mode, testing, isolation), (seq, event_id), config != '') AS latest_config,\n      argMaxIf(run_result, (seq, event_id), run_result IN ('completed', 'failed')) AS terminal_result,\n      argMaxIf(tuple(has_rollbacks, rb_total, rb_build_to_open, rb_build_to_design, rb_verify_to_design, rb_verify_to_build, rb_archive_to_design, rb_archive_to_verify), (seq, event_id, has_rollbacks),\n        run_result = 'completed') AS rollback_counts\n    FROM facts\n    GROUP BY workspace, run_id\n  )\nSELECT multiIf(tupleElement(latest_config, 1) = 'approved', tupleElement(latest_config, 2), tupleElement(latest_config, 1) = 'unapproved', 'unapproved', 'unknown') AS execution_mode,\n  nullIf(tupleElement(latest_config, 3), '') AS testing, nullIf(tupleElement(latest_config, 4), '') AS isolation, toFloat64(count()) AS runs\nFROM runs WHERE started GROUP BY execution_mode, testing, isolation ORDER BY runs DESC"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "unfinished-breakdown": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "未完成 Run 按原因分组",
+            "description": "窗口截止时每个非终态 Run 归入一个阶段、状态和原因。未观察到的原因标为 unknown。"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/ClickHouseSQL",
+                  "spec": {
+                    "name": "A",
+                    "query": "WITH\n  toUInt64({{.start_timestamp_ms}}) * 1000000 AS window_start,\n  toUInt64({{.end_timestamp_ms}}) * 1000000 AS window_end,\n  facts AS (\n    SELECT\n      attributes_string['repoctopus.observation.correlation.workspace_id'] AS workspace, attributes_string['repoctopus.run.id'] AS run_id,\n      attributes_string['repoctopus.observation.correlation.change_id'] AS change_id, attributes_string['repoctopus.event.id'] AS event_id,\n      attributes_number['repoctopus.event.sequence'] AS seq,\n      attributes_string['repoctopus.event.type'] AS event_type,\n      timestamp AS observed_at, attributes_string['repoctopus.observation.correlation.phase'] AS phase, attributes_string['repoctopus.observation.attribute.from_status'] AS from_status, attributes_string['repoctopus.observation.attribute.from_phase'] AS from_phase,\n      attributes_string['repoctopus.observation.attribute.health_fact'] AS fact_kind, attributes_string['repoctopus.observation.attribute.health_status'] AS new_health_status, coalesce(nullIf(new_health_status, ''), nullIf(attributes_string['repoctopus.observation.attribute.to_status'], ''), '') AS health_status,\n      attributes_string['repoctopus.observation.attribute.health_reason'] AS reason, attributes_string['repoctopus.observation.attribute.health_configuration'] AS config,\n      attributes_string['repoctopus.observation.attribute.execution_mode'] AS mode, attributes_string['repoctopus.observation.attribute.tdd_mode'] AS testing, attributes_string['repoctopus.observation.attribute.isolation'] AS isolation,\n      attributes_string['repoctopus.observation.attribute.workflow_run_result'] AS run_result,\n      mapContains(attributes_number, 'repoctopus.observation.attribute.rollback_total') AS has_rollbacks,\n      attributes_number['repoctopus.observation.attribute.rollback_total'] AS rb_total,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_open'] AS rb_build_to_open,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_design'] AS rb_build_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_design'] AS rb_verify_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_build'] AS rb_verify_to_build,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_design'] AS rb_archive_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_verify'] AS rb_archive_to_verify\n    FROM signoz_logs.distributed_logs_v2\n    WHERE timestamp >= window_start AND timestamp < window_end\n      AND ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      AND resource_fingerprint GLOBAL IN (\n        SELECT fingerprint FROM signoz_logs.distributed_logs_v2_resource\n        WHERE simpleJSONExtractString(labels, 'repoctopus.product.name') = 'repoctopus'\n          AND seen_at_ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      )\n      AND scope_name = 'repoctopus-runtime' AND workspace != '' AND run_id != '' AND change_id != '' AND event_id != ''\n      AND (event_type IN ('run.started', 'change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'))\n  ),\n  runs AS (\n    SELECT workspace, run_id, any(change_id) AS change_id,\n      countIf(event_type = 'run.started') > 0 AS started,\n      argMaxIf(phase, (seq, event_id, fact_kind != ''), phase != '') AS latest_phase,\n      argMaxIf(coalesce(nullIf(health_status, ''), if(event_type = 'run.started', 'running', nullIf(run_result, '')), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_status,\n      argMaxIf(coalesce(nullIf(reason, ''), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_reason,\n      argMaxIf(observed_at, (seq, event_id), fact_kind = 'state' OR event_type = 'run.started' OR (fact_kind = '' AND health_status != '' AND from_status != health_status)) AS status_since,\n      argMaxIf(observed_at, (seq, event_id), event_type = 'run.started' OR (from_phase != '' AND from_phase != phase)) AS phase_since,\n      argMaxIf(tuple(config, mode, testing, isolation), (seq, event_id), config != '') AS latest_config,\n      argMaxIf(run_result, (seq, event_id), run_result IN ('completed', 'failed')) AS terminal_result,\n      argMaxIf(tuple(has_rollbacks, rb_total, rb_build_to_open, rb_build_to_design, rb_verify_to_design, rb_verify_to_build, rb_archive_to_design, rb_archive_to_verify), (seq, event_id, has_rollbacks),\n        run_result = 'completed') AS rollback_counts\n    FROM facts\n    GROUP BY workspace, run_id\n  )\nSELECT coalesce(nullIf(latest_phase, ''), 'unknown') AS phase, coalesce(nullIf(latest_status, ''), 'unknown') AS status,\n  coalesce(nullIf(latest_reason, ''), 'unknown') AS reason, toFloat64(count()) AS runs\nFROM runs WHERE started AND terminal_result = '' GROUP BY phase, status, reason ORDER BY runs DESC"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "unfinished-runs": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "未完成 Run 明细",
+            "description": "最多显示停留最久的 100 个。用 workspace 和 run_id 在 Logs Explorer 查看上下文。时长单位为分钟。"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/ClickHouseSQL",
+                  "spec": {
+                    "name": "A",
+                    "query": "WITH\n  toUInt64({{.start_timestamp_ms}}) * 1000000 AS window_start,\n  toUInt64({{.end_timestamp_ms}}) * 1000000 AS window_end,\n  facts AS (\n    SELECT\n      attributes_string['repoctopus.observation.correlation.workspace_id'] AS workspace, attributes_string['repoctopus.run.id'] AS run_id,\n      attributes_string['repoctopus.observation.correlation.change_id'] AS change_id, attributes_string['repoctopus.event.id'] AS event_id,\n      attributes_number['repoctopus.event.sequence'] AS seq,\n      attributes_string['repoctopus.event.type'] AS event_type,\n      timestamp AS observed_at, attributes_string['repoctopus.observation.correlation.phase'] AS phase, attributes_string['repoctopus.observation.attribute.from_status'] AS from_status, attributes_string['repoctopus.observation.attribute.from_phase'] AS from_phase,\n      attributes_string['repoctopus.observation.attribute.health_fact'] AS fact_kind, attributes_string['repoctopus.observation.attribute.health_status'] AS new_health_status, coalesce(nullIf(new_health_status, ''), nullIf(attributes_string['repoctopus.observation.attribute.to_status'], ''), '') AS health_status,\n      attributes_string['repoctopus.observation.attribute.health_reason'] AS reason, attributes_string['repoctopus.observation.attribute.health_configuration'] AS config,\n      attributes_string['repoctopus.observation.attribute.execution_mode'] AS mode, attributes_string['repoctopus.observation.attribute.tdd_mode'] AS testing, attributes_string['repoctopus.observation.attribute.isolation'] AS isolation,\n      attributes_string['repoctopus.observation.attribute.workflow_run_result'] AS run_result,\n      mapContains(attributes_number, 'repoctopus.observation.attribute.rollback_total') AS has_rollbacks,\n      attributes_number['repoctopus.observation.attribute.rollback_total'] AS rb_total,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_open'] AS rb_build_to_open,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_design'] AS rb_build_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_design'] AS rb_verify_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_build'] AS rb_verify_to_build,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_design'] AS rb_archive_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_verify'] AS rb_archive_to_verify\n    FROM signoz_logs.distributed_logs_v2\n    WHERE timestamp >= window_start AND timestamp < window_end\n      AND ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      AND resource_fingerprint GLOBAL IN (\n        SELECT fingerprint FROM signoz_logs.distributed_logs_v2_resource\n        WHERE simpleJSONExtractString(labels, 'repoctopus.product.name') = 'repoctopus'\n          AND seen_at_ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      )\n      AND scope_name = 'repoctopus-runtime' AND workspace != '' AND run_id != '' AND change_id != '' AND event_id != ''\n      AND (event_type IN ('run.started', 'change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'))\n  ),\n  runs AS (\n    SELECT workspace, run_id, any(change_id) AS change_id,\n      countIf(event_type = 'run.started') > 0 AS started,\n      argMaxIf(phase, (seq, event_id, fact_kind != ''), phase != '') AS latest_phase,\n      argMaxIf(coalesce(nullIf(health_status, ''), if(event_type = 'run.started', 'running', nullIf(run_result, '')), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_status,\n      argMaxIf(coalesce(nullIf(reason, ''), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_reason,\n      argMaxIf(observed_at, (seq, event_id), fact_kind = 'state' OR event_type = 'run.started' OR (fact_kind = '' AND health_status != '' AND from_status != health_status)) AS status_since,\n      argMaxIf(observed_at, (seq, event_id), event_type = 'run.started' OR (from_phase != '' AND from_phase != phase)) AS phase_since,\n      argMaxIf(tuple(config, mode, testing, isolation), (seq, event_id), config != '') AS latest_config,\n      argMaxIf(run_result, (seq, event_id), run_result IN ('completed', 'failed')) AS terminal_result,\n      argMaxIf(tuple(has_rollbacks, rb_total, rb_build_to_open, rb_build_to_design, rb_verify_to_design, rb_verify_to_build, rb_archive_to_design, rb_archive_to_verify), (seq, event_id, has_rollbacks),\n        run_result = 'completed') AS rollback_counts\n    FROM facts\n    GROUP BY workspace, run_id\n  )\nSELECT workspace, run_id, change_id, latest_phase AS phase, latest_status AS status, latest_reason AS reason,\n  if(phase_since = 0, NULL, (window_end - phase_since) / 60000000000.0) AS phase_minutes,\n  if(status_since = 0 OR latest_status = 'unknown', NULL, (window_end - status_since) / 60000000000.0) AS status_minutes\nFROM runs WHERE started AND terminal_result = '' ORDER BY phase_minutes DESC LIMIT 100"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "terminal-counts": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "终态与回退覆盖",
+            "description": "按窗口内完成或失败分组。完成总数与含回退汇总的完成数相同时，平均回退才有完整数据。"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/ClickHouseSQL",
+                  "spec": {
+                    "name": "A",
+                    "query": "WITH\n  toUInt64({{.start_timestamp_ms}}) * 1000000 AS window_start,\n  toUInt64({{.end_timestamp_ms}}) * 1000000 AS window_end,\n  facts AS (\n    SELECT\n      attributes_string['repoctopus.observation.correlation.workspace_id'] AS workspace, attributes_string['repoctopus.run.id'] AS run_id,\n      attributes_string['repoctopus.observation.correlation.change_id'] AS change_id, attributes_string['repoctopus.event.id'] AS event_id,\n      attributes_number['repoctopus.event.sequence'] AS seq,\n      attributes_string['repoctopus.event.type'] AS event_type,\n      timestamp AS observed_at, attributes_string['repoctopus.observation.correlation.phase'] AS phase, attributes_string['repoctopus.observation.attribute.from_status'] AS from_status, attributes_string['repoctopus.observation.attribute.from_phase'] AS from_phase,\n      attributes_string['repoctopus.observation.attribute.health_fact'] AS fact_kind, attributes_string['repoctopus.observation.attribute.health_status'] AS new_health_status, coalesce(nullIf(new_health_status, ''), nullIf(attributes_string['repoctopus.observation.attribute.to_status'], ''), '') AS health_status,\n      attributes_string['repoctopus.observation.attribute.health_reason'] AS reason, attributes_string['repoctopus.observation.attribute.health_configuration'] AS config,\n      attributes_string['repoctopus.observation.attribute.execution_mode'] AS mode, attributes_string['repoctopus.observation.attribute.tdd_mode'] AS testing, attributes_string['repoctopus.observation.attribute.isolation'] AS isolation,\n      attributes_string['repoctopus.observation.attribute.workflow_run_result'] AS run_result,\n      mapContains(attributes_number, 'repoctopus.observation.attribute.rollback_total') AS has_rollbacks,\n      attributes_number['repoctopus.observation.attribute.rollback_total'] AS rb_total,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_open'] AS rb_build_to_open,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_design'] AS rb_build_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_design'] AS rb_verify_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_build'] AS rb_verify_to_build,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_design'] AS rb_archive_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_verify'] AS rb_archive_to_verify\n    FROM signoz_logs.distributed_logs_v2\n    WHERE timestamp >= window_start AND timestamp < window_end\n      AND ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      AND resource_fingerprint GLOBAL IN (\n        SELECT fingerprint FROM signoz_logs.distributed_logs_v2_resource\n        WHERE simpleJSONExtractString(labels, 'repoctopus.product.name') = 'repoctopus'\n          AND seen_at_ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      )\n      AND scope_name = 'repoctopus-runtime' AND workspace != '' AND run_id != '' AND change_id != '' AND event_id != ''\n      AND (event_type IN ('run.started', 'change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'))\n  ),\n  runs AS (\n    SELECT workspace, run_id, any(change_id) AS change_id,\n      countIf(event_type = 'run.started') > 0 AS started,\n      argMaxIf(phase, (seq, event_id, fact_kind != ''), phase != '') AS latest_phase,\n      argMaxIf(coalesce(nullIf(health_status, ''), if(event_type = 'run.started', 'running', nullIf(run_result, '')), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_status,\n      argMaxIf(coalesce(nullIf(reason, ''), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_reason,\n      argMaxIf(observed_at, (seq, event_id), fact_kind = 'state' OR event_type = 'run.started' OR (fact_kind = '' AND health_status != '' AND from_status != health_status)) AS status_since,\n      argMaxIf(observed_at, (seq, event_id), event_type = 'run.started' OR (from_phase != '' AND from_phase != phase)) AS phase_since,\n      argMaxIf(tuple(config, mode, testing, isolation), (seq, event_id), config != '') AS latest_config,\n      argMaxIf(run_result, (seq, event_id), run_result IN ('completed', 'failed')) AS terminal_result,\n      argMaxIf(tuple(has_rollbacks, rb_total, rb_build_to_open, rb_build_to_design, rb_verify_to_design, rb_verify_to_build, rb_archive_to_design, rb_archive_to_verify), (seq, event_id, has_rollbacks),\n        run_result = 'completed') AS rollback_counts\n    FROM facts\n    GROUP BY workspace, run_id\n  )\nSELECT toFloat64(countIf(terminal_result = 'completed')) AS completed, toFloat64(countIf(terminal_result = 'failed')) AS failed,\n  toFloat64(countIf(terminal_result = 'completed' AND tupleElement(rollback_counts, 1))) AS completed_with_rollback_summary,\n  toFloat64(countIf(started AND terminal_result = '')) AS unfinished FROM runs"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "rollback-paths": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "回退平均次数按目标和路径",
+            "description": "六条实际跨阶段回退。使用同一组完成 Run 作为各行分母。窗口前回退包含在终态汇总中。"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/ClickHouseSQL",
+                  "spec": {
+                    "name": "A",
+                    "query": "WITH\n  toUInt64({{.start_timestamp_ms}}) * 1000000 AS window_start,\n  toUInt64({{.end_timestamp_ms}}) * 1000000 AS window_end,\n  facts AS (\n    SELECT\n      attributes_string['repoctopus.observation.correlation.workspace_id'] AS workspace, attributes_string['repoctopus.run.id'] AS run_id,\n      attributes_string['repoctopus.observation.correlation.change_id'] AS change_id, attributes_string['repoctopus.event.id'] AS event_id,\n      attributes_number['repoctopus.event.sequence'] AS seq,\n      attributes_string['repoctopus.event.type'] AS event_type,\n      timestamp AS observed_at, attributes_string['repoctopus.observation.correlation.phase'] AS phase, attributes_string['repoctopus.observation.attribute.from_status'] AS from_status, attributes_string['repoctopus.observation.attribute.from_phase'] AS from_phase,\n      attributes_string['repoctopus.observation.attribute.health_fact'] AS fact_kind, attributes_string['repoctopus.observation.attribute.health_status'] AS new_health_status, coalesce(nullIf(new_health_status, ''), nullIf(attributes_string['repoctopus.observation.attribute.to_status'], ''), '') AS health_status,\n      attributes_string['repoctopus.observation.attribute.health_reason'] AS reason, attributes_string['repoctopus.observation.attribute.health_configuration'] AS config,\n      attributes_string['repoctopus.observation.attribute.execution_mode'] AS mode, attributes_string['repoctopus.observation.attribute.tdd_mode'] AS testing, attributes_string['repoctopus.observation.attribute.isolation'] AS isolation,\n      attributes_string['repoctopus.observation.attribute.workflow_run_result'] AS run_result,\n      mapContains(attributes_number, 'repoctopus.observation.attribute.rollback_total') AS has_rollbacks,\n      attributes_number['repoctopus.observation.attribute.rollback_total'] AS rb_total,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_open'] AS rb_build_to_open,\n      attributes_number['repoctopus.observation.attribute.rollback_build_to_design'] AS rb_build_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_design'] AS rb_verify_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_verify_to_build'] AS rb_verify_to_build,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_design'] AS rb_archive_to_design,\n      attributes_number['repoctopus.observation.attribute.rollback_archive_to_verify'] AS rb_archive_to_verify\n    FROM signoz_logs.distributed_logs_v2\n    WHERE timestamp >= window_start AND timestamp < window_end\n      AND ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      AND resource_fingerprint GLOBAL IN (\n        SELECT fingerprint FROM signoz_logs.distributed_logs_v2_resource\n        WHERE simpleJSONExtractString(labels, 'repoctopus.product.name') = 'repoctopus'\n          AND seen_at_ts_bucket_start BETWEEN intDiv(window_start, 1000000000) - 1800 AND intDiv(window_end, 1000000000)\n      )\n      AND scope_name = 'repoctopus-runtime' AND workspace != '' AND run_id != '' AND change_id != '' AND event_id != ''\n      AND (event_type IN ('run.started', 'change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'))\n  ),\n  runs AS (\n    SELECT workspace, run_id, any(change_id) AS change_id,\n      countIf(event_type = 'run.started') > 0 AS started,\n      argMaxIf(phase, (seq, event_id, fact_kind != ''), phase != '') AS latest_phase,\n      argMaxIf(coalesce(nullIf(health_status, ''), if(event_type = 'run.started', 'running', nullIf(run_result, '')), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_status,\n      argMaxIf(coalesce(nullIf(reason, ''), 'unknown'), (seq, event_id, fact_kind != ''),\n        event_type = 'run.started' OR health_status != '' OR run_result IN ('completed', 'failed')) AS latest_reason,\n      argMaxIf(observed_at, (seq, event_id), fact_kind = 'state' OR event_type = 'run.started' OR (fact_kind = '' AND health_status != '' AND from_status != health_status)) AS status_since,\n      argMaxIf(observed_at, (seq, event_id), event_type = 'run.started' OR (from_phase != '' AND from_phase != phase)) AS phase_since,\n      argMaxIf(tuple(config, mode, testing, isolation), (seq, event_id), config != '') AS latest_config,\n      argMaxIf(run_result, (seq, event_id), run_result IN ('completed', 'failed')) AS terminal_result,\n      argMaxIf(tuple(has_rollbacks, rb_total, rb_build_to_open, rb_build_to_design, rb_verify_to_design, rb_verify_to_build, rb_archive_to_design, rb_archive_to_verify), (seq, event_id, has_rollbacks),\n        run_result = 'completed') AS rollback_counts\n    FROM facts\n    GROUP BY workspace, run_id\n  )\nSELECT item.1 AS destination, item.2 AS path, item.3 AS average_per_completed_run\nFROM (\n  SELECT countIf(terminal_result = 'completed') AS completed,\n    countIf(terminal_result = 'completed' AND tupleElement(rollback_counts, 1)) AS covered,\n    sumIf(tupleElement(rollback_counts, 3), terminal_result = 'completed') AS build_to_open,\n    sumIf(tupleElement(rollback_counts, 4), terminal_result = 'completed') AS build_to_design,\n    sumIf(tupleElement(rollback_counts, 5), terminal_result = 'completed') AS verify_to_design,\n    sumIf(tupleElement(rollback_counts, 6), terminal_result = 'completed') AS verify_to_build,\n    sumIf(tupleElement(rollback_counts, 7), terminal_result = 'completed') AS archive_to_design,\n    sumIf(tupleElement(rollback_counts, 8), terminal_result = 'completed') AS archive_to_verify\n  FROM runs\n)\nARRAY JOIN [\n  ('open', 'build → open', if(completed = covered, build_to_open / nullIf(completed,0), NULL)),\n  ('design', 'build → design', if(completed = covered, build_to_design / nullIf(completed,0), NULL)),\n  ('design', 'verify → design', if(completed = covered, verify_to_design / nullIf(completed,0), NULL)),\n  ('build', 'verify → build', if(completed = covered, verify_to_build / nullIf(completed,0), NULL)),\n  ('design', 'archive → design', if(completed = covered, archive_to_design / nullIf(completed,0), NULL)),\n  ('verify', 'archive → verify', if(completed = covered, archive_to_verify / nullIf(completed,0), NULL)),\n  ('open', 'all → open', if(completed = covered, (build_to_open) / nullIf(completed,0), NULL)),\n  ('design', 'all → design', if(completed = covered, (build_to_design + verify_to_design + archive_to_design) / nullIf(completed,0), NULL)),\n  ('build', 'all → build', if(completed = covered, (verify_to_build) / nullIf(completed,0), NULL)),\n  ('verify', 'all → verify', if(completed = covered, (archive_to_verify) / nullIf(completed,0), NULL))\n] AS item"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "content": {
+                "$ref": "#/spec/panels/started-runs"
+              },
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/terminal-failure"
+              },
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/unfinished-rate"
+              },
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/average-rollbacks"
+              },
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 3
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/configuration"
+              },
+              "x": 0,
+              "y": 3,
+              "width": 6,
+              "height": 7
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/unfinished-breakdown"
+              },
+              "x": 6,
+              "y": 3,
+              "width": 6,
+              "height": 7
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/unfinished-runs"
+              },
+              "x": 0,
+              "y": 10,
+              "width": 12,
+              "height": 8
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/terminal-counts"
+              },
+              "x": 0,
+              "y": 18,
+              "width": 12,
+              "height": 4
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/rollback-paths"
+              },
+              "x": 0,
+              "y": 22,
+              "width": 12,
+              "height": 8
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

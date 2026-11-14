@@ -1,6 +1,11 @@
 import { createHash } from 'node:crypto';
 
-import { CHANGE_PHASES, type ChangePhase } from '../change-lifecycle/transition.js';
+import {
+  CHANGE_PHASES,
+  CHANGE_RUN_STATUSES,
+  type ChangePhase,
+  type RunStatus,
+} from '../change-lifecycle/transition.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { DeliveryEvent } from '../delivery/ports.js';
 import type { EvidenceTelemetryBatch } from '../evidence/telemetry.js';
@@ -12,6 +17,18 @@ export type { ChangePhase } from '../change-lifecycle/transition.js';
 export type ObservationBuildAction = 'configure' | 'plan' | 'plan-evidence' | 'execute' | 'check';
 export type ContinuationKind = 'execute' | 'reobserve' | 'ask' | 'wait' | 'reconcile' | 'done';
 export type ObservationScalar = string | number | boolean;
+export const WORKFLOW_ROLLBACK_PATHS = {
+  rollbackBuildToOpen: ['build', 'open'],
+  rollbackBuildToDesign: ['build', 'design'],
+  rollbackVerifyToDesign: ['verify', 'design'],
+  rollbackVerifyToBuild: ['verify', 'build'],
+  rollbackArchiveToDesign: ['archive', 'design'],
+  rollbackArchiveToVerify: ['archive', 'verify'],
+} as const satisfies Record<string, readonly [ChangePhase, ChangePhase]>;
+export const WORKFLOW_ROLLBACK_KEYS = [
+  'rollbackTotal',
+  ...(Object.keys(WORKFLOW_ROLLBACK_PATHS) as (keyof typeof WORKFLOW_ROLLBACK_PATHS)[]),
+] as const;
 export type ObservationSkillRole =
   | 'action'
   | 'augmentation'
@@ -164,6 +181,11 @@ export const OBSERVATION_ATTRIBUTE_KEYS = [
   'workflowVersion',
   'workflowRunResult',
   'workflowRunDurationMs',
+  'healthFact',
+  'healthStatus',
+  'healthReason',
+  'healthConfiguration',
+  ...WORKFLOW_ROLLBACK_KEYS,
   'durationMs',
   'correctionKind',
   'deliveryState',
@@ -365,7 +387,7 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
   result.stateVersion = event.stateVersion;
   if (DIGEST.test(event.compositionDigest)) result.compositionDigest = event.compositionDigest;
   for (const key of OBSERVATION_ATTRIBUTE_KEYS) {
-    if (key === 'reason') continue;
+    if (key === 'reason' || key.startsWith('health') || key.startsWith('rollback')) continue;
     const value = scalar(event.data[key]);
     if (value !== undefined) result[key] = value;
   }
@@ -441,6 +463,162 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
   return result;
 }
 
+const HUMAN_WAIT_REASONS = new Set([
+  'open-approval',
+  'design-approval',
+  'workspace-intent',
+  'build-plan',
+]);
+const BLOCKER_REASONS: ReadonlyMap<string, string> = new Map([
+  ['open.invalid', 'planning-invalid'],
+  ['design.invalid', 'planning-invalid'],
+  ['build.verification-blocked', 'verification-input-pending'],
+  ['build.retry-exhausted', 'retry-exhausted'],
+  ['archive.publication-blocked', 'publication-incomplete'],
+]);
+
+type WorkflowHealthState = { phase: ChangePhase; status: RunStatus | 'unknown'; reason: string };
+
+function workflowHealthState(
+  event: TrajectoryEvent,
+  previous?: WorkflowHealthState,
+): WorkflowHealthState | undefined {
+  if (event.type === 'recovery.reconciled' || event.type === 'run.resumed') {
+    if (
+      !previous ||
+      (previous.status !== 'running' && previous.reason !== 'reconciliation-required')
+    )
+      return;
+    const workspaceRecovery =
+      record(event.data.buildWorkspaceRecovery) ?? record(event.data.evidenceWorkspaceRecovery);
+    if (event.type === 'recovery.reconciled') {
+      return { ...previous, status: 'blocked', reason: 'reconciliation-required' };
+    }
+    if (workspaceRecovery || event.data.authorizedBranchRebind) {
+      return { ...previous, status: 'running', reason: 'none' };
+    }
+    return;
+  }
+  const transition = nestedTransition(event);
+  const target = phase(transition?.to?.phase) ?? phase(event.data.phase);
+  if (!target || !['run.started', 'change.lifecycle.transitioned'].includes(event.type)) return;
+  const status =
+    transition?.to?.status ??
+    event.data.status ??
+    event.data.workflowRunResult ??
+    (event.type === 'run.started' ? 'running' : undefined);
+  const lifecycleStatus = CHANGE_RUN_STATUSES.includes(status as RunStatus)
+    ? (status as RunStatus)
+    : event.type === 'run.started'
+      ? 'running'
+      : 'unknown';
+  const wait = transition?.wait?.kind;
+  const waitId = transition?.wait?.waitId;
+  const waitReason = typeof waitId === 'string' ? waitId.split(':', 1)[0]! : '';
+  if (
+    lifecycleStatus === 'running' &&
+    previous?.reason === 'reconciliation-required' &&
+    !event.data.authorizedBranchRebind &&
+    previous.phase === target
+  ) {
+    return previous;
+  }
+  const blocker =
+    typeof transition?.transitionId === 'string'
+      ? BLOCKER_REASONS.get(transition.transitionId)
+      : undefined;
+  const reason =
+    wait === 'human-decision'
+      ? HUMAN_WAIT_REASONS.has(waitReason)
+        ? waitReason
+        : 'human-decision'
+      : wait === 'retry' || wait === 'external-fact'
+        ? wait
+        : blocker
+          ? blocker
+          : status === 'migration_required'
+            ? 'migration-required'
+            : status === 'waiting' || status === 'blocked' || !status
+              ? 'unknown'
+              : 'none';
+  return {
+    phase: target,
+    status: lifecycleStatus,
+    reason,
+  };
+}
+
+function workflowHealthAttributes(
+  event: TrajectoryEvent,
+  state: NonNullable<ReturnType<typeof workflowHealthState>>,
+  trajectory: readonly TrajectoryEvent[],
+  previous: ReturnType<typeof workflowHealthState>,
+): Record<string, ObservationScalar> {
+  const transition = nestedTransition(event);
+  const strategy = record(record(record(event.data.observation)?.buildProtocol)?.strategy);
+  const approval = transition?.transitionId === 'design.approved';
+  const invalidation =
+    previous &&
+    ((state.phase === 'open' && previous.phase !== 'open') ||
+      (state.phase === 'design' &&
+        CHANGE_PHASES.indexOf(previous.phase) > CHANGE_PHASES.indexOf('design')));
+  const phasesChanged =
+    state.phase !== previous?.phase ||
+    state.status !== previous?.status ||
+    state.reason !== previous?.reason;
+  const result: Record<string, ObservationScalar> = {
+    healthFact: phasesChanged ? 'state' : approval || invalidation ? 'configuration' : 'unchanged',
+    healthStatus: state.status,
+    healthReason: state.reason,
+  };
+  if (invalidation || event.type === 'run.started') result.healthConfiguration = 'unapproved';
+  if (approval) result.healthConfiguration = 'unknown';
+  if (approval && strategy) {
+    const { executionMode, tddMode, isolationIntent } = strategy;
+    if (
+      (executionMode === 'autonomous' || executionMode === 'subagent-driven-development') &&
+      (tddMode === 'tdd' || tddMode === 'direct') &&
+      (isolationIntent === 'current' ||
+        isolationIntent === 'branch' ||
+        isolationIntent === 'worktree')
+    ) {
+      Object.assign(result, {
+        healthConfiguration: 'approved',
+        executionMode,
+        tddMode,
+        isolation: isolationIntent,
+      });
+    }
+  }
+  if (state.status !== 'completed') return result;
+  const history = trajectory.filter(
+    (item) => item.runId === event.runId && item.sequence <= event.sequence,
+  );
+  const sequences = new Set(history.map((item) => item.sequence));
+  if (
+    !history.some((item) => item.type === 'run.started' && item.sequence === 1) ||
+    sequences.size !== event.sequence
+  )
+    return result;
+  const computed = Object.fromEntries(WORKFLOW_ROLLBACK_KEYS.map((key) => [key, 0]));
+  const revisions = new Set<number>();
+  for (const item of history) {
+    const fact = nestedTransition(item);
+    const from = phase(fact?.from?.phase);
+    const to = phase(fact?.to?.phase);
+    if (!from || !to || CHANGE_PHASES.indexOf(to) >= CHANGE_PHASES.indexOf(from)) continue;
+    if (!fact || revisions.has(fact.revision)) continue;
+    revisions.add(fact.revision);
+    const path = Object.entries(WORKFLOW_ROLLBACK_PATHS).find(
+      ([, pair]) => pair[0] === from && pair[1] === to,
+    );
+    if (!path) return result;
+    computed.rollbackTotal! += 1;
+    computed[path[0]]! += 1;
+  }
+  return { ...result, ...computed };
+}
+
 function canonicalEnvelope(input: {
   eventId: string;
   runId: string;
@@ -481,6 +659,45 @@ export function createObservationEnvelope(
     correlation: correlation(event, context),
     attributes: attributes(event, context),
   });
+}
+
+export function createWorkflowObservationEnvelopes(
+  events: readonly TrajectoryEvent[],
+  trajectory: readonly TrajectoryEvent[],
+  context: ObservationContext,
+): readonly ObservationEnvelope[] {
+  if (!context.changeId) return events.map((event) => createObservationEnvelope(event, context));
+  const requested = new Set(events.map((event) => event.eventId));
+  const health = new Map<
+    string,
+    { attributes: Record<string, ObservationScalar>; phase: ChangePhase }
+  >();
+  let previous: ReturnType<typeof workflowHealthState>;
+  for (const event of [...trajectory].sort((left, right) => left.sequence - right.sequence)) {
+    const state = workflowHealthState(event, previous);
+    if (!state) continue;
+    if (requested.has(event.eventId)) {
+      health.set(event.eventId, {
+        attributes: workflowHealthAttributes(event, state, trajectory, previous),
+        phase: state.phase,
+      });
+    }
+    previous = state;
+  }
+  return events.map((event) =>
+    canonicalEnvelope({
+      eventId: event.eventId,
+      runId: event.runId,
+      sequence: event.sequence,
+      observedAt: event.timestamp,
+      eventType: event.type,
+      correlation: {
+        ...correlation(event, context),
+        ...(health.get(event.eventId) ? { phase: health.get(event.eventId)!.phase } : {}),
+      },
+      attributes: { ...attributes(event, context), ...health.get(event.eventId)?.attributes },
+    }),
+  );
 }
 
 function safeAttributes(

@@ -1,5 +1,6 @@
 import {
   OBSERVATION_ATTRIBUTE_KEYS,
+  WORKFLOW_ROLLBACK_KEYS,
   type ObservationCorrelation,
 } from '../trajectory/observation.js';
 
@@ -148,6 +149,7 @@ const OBSERVATION_NUMBER_KEYS = new Set<string>([
   'bindingRevision',
   'workflowRunDurationMs',
   'durationMs',
+  ...WORKFLOW_ROLLBACK_KEYS,
 ]);
 const OBSERVATION_BOOLEAN_KEYS = new Set<string>([
   'redacted',
@@ -158,6 +160,34 @@ const OBSERVATION_BOOLEAN_KEYS = new Set<string>([
   'ruleTriggered',
 ]);
 const OBSERVATION_ENUMS: Readonly<Record<string, readonly string[]>> = {
+  healthFact: ['state', 'configuration', 'unchanged'],
+  healthStatus: [
+    'running',
+    'waiting',
+    'blocked',
+    'completed',
+    'failed',
+    'migration_required',
+    'unknown',
+  ],
+  healthConfiguration: ['approved', 'unapproved', 'unknown'],
+  healthReason: [
+    'none',
+    'open-approval',
+    'design-approval',
+    'workspace-intent',
+    'build-plan',
+    'human-decision',
+    'retry',
+    'external-fact',
+    'planning-invalid',
+    'retry-exhausted',
+    'migration-required',
+    'verification-input-pending',
+    'publication-incomplete',
+    'reconciliation-required',
+    'unknown',
+  ],
   correctionKind: ['changes-requested', 'outcome-rejection', 'task-reopen', 'repair-work'],
   deliveryState: [
     'development',

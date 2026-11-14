@@ -45,6 +45,11 @@ export type LifecycleDiagnostic =
       attempts: number;
       disposition: 'dropped_after_retry';
       timestamp: string;
+    }
+  | {
+      code: 'OBSERVATION_REMOTE_FLUSH_FAILED';
+      service: 'observationDelivery';
+      timestamp: string;
     };
 
 export class LifecycleDiagnostics extends Service {
