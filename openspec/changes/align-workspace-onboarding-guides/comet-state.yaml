@@ -16,8 +16,8 @@ base_ref: e16b7fc4c07c0e95d1764b800519c4912bb3ed02
 design_doc: openspec/changes/align-workspace-onboarding-guides/design.md
 plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
 verify_result: pending
-verify_failures: 0
-verification_report: null
+verify_failures: 1
+verification_report: docs/superpowers/reports/align-workspace-onboarding-guides.md
 branch_status: pending
 created_at: 2026-11-14
 verified_at: null
@@ -30,8 +30,8 @@ handoff_hash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: 38902682e3993cab410d8f1061f9112109084f834ecc7b335f6db10dff82d182
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 5afea5f313f1a8df06e800a82fd77b8c91575523c9e5385396aa6fc3453129d1
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 3
+      checkEpoch: 5
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -74,14 +74,14 @@ run_checkpoint:
       reviewMode: thorough
       subagentDispatch: null
       tddMode: tdd
-      verificationReport: null
+      verificationReport: docs/superpowers/reports/align-workspace-onboarding-guides.md
       verifiedAt: null
-      verifyFailures: 0
+      verifyFailures: 1
       verifyMode: null
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 16
+    sequence: 24
     actions:
       - attempt: 1
         claim:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/align-workspace-onboarding-guides
             workspaceBaseline:
               ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.evidence:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
+          outputs: {}
         inputHash: a066e991edf9f636ce0cab4b2e1c2dc211371bb0a02a432279cfe994c1eef010
         outcome:
           actionId: align-workspace-onboarding-guides:4
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/align-workspace-onboarding-guides
             workspaceBaseline:
               ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.evidence:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.revalidate:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+          outputs: {}
         inputHash: 2d3d25c76fa6216868e4703b958e9dce60ee3a22259403860cb856243ed4ed10
         outcome:
           actionId: align-workspace-onboarding-guides:5
@@ -267,65 +227,7 @@ run_checkpoint:
             changeDir: openspec/changes/align-workspace-onboarding-guides
             workspaceBaseline:
               ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-            full.design.handoff:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.evidence:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.revalidate:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+          outputs: {}
         inputHash: 0e74b5278fc9697ca7e297b87372c1cb943fca9d9a7fab979fa92a0ca582c705
         outcome:
           actionId: align-workspace-onboarding-guides:7
@@ -364,70 +266,7 @@ run_checkpoint:
             changeDir: openspec/changes/align-workspace-onboarding-guides
             workspaceBaseline:
               ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-            full.design.document:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-            full.design.evidence:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.evidence:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.revalidate:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+          outputs: {}
         inputHash: 14fd11b17cc52aefa26cf51fe396f590d052b67446a11b971d1fe1008fdf525e
         outcome:
           actionId: align-workspace-onboarding-guides:9
@@ -472,95 +311,7 @@ run_checkpoint:
             changeDir: openspec/changes/align-workspace-onboarding-guides
             workspaceBaseline:
               ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-          outputs:
-            full.build.configure:
-              boundBranch: codex/align-workspace-onboarding-guides
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/align-workspace-onboarding-guides
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-            full.design.document:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-            full.design.evidence:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.evidence:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.revalidate:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+          outputs: {}
         inputHash: 7c5be6bcd0cd504b626b98febcd2fab103d6b687445e7753ac1179009a6ad7a6
         outcome:
           actionId: align-workspace-onboarding-guides:11
@@ -607,107 +358,7 @@ run_checkpoint:
             changeDir: openspec/changes/align-workspace-onboarding-guides
             workspaceBaseline:
               ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-          outputs:
-            full.build.configure:
-              boundBranch: codex/align-workspace-onboarding-guides
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/align-workspace-onboarding-guides
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-                ref: openspec/changes/align-workspace-onboarding-guides/design.md
-              plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              planEvidence:
-                contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-                ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
-            full.build.plan.evidence:
-              contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-              ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-            full.design.document:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-            full.design.evidence:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.evidence:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.revalidate:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+          outputs: {}
         inputHash: a2561e2a399d4aa5bd1c58f757346e9db62afb2fb3e0a4d2234dac008bbce13d
         outcome:
           actionId: align-workspace-onboarding-guides:13
@@ -746,109 +397,7 @@ run_checkpoint:
             changeDir: openspec/changes/align-workspace-onboarding-guides
             workspaceBaseline:
               ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-          outputs:
-            full.build.configure:
-              boundBranch: codex/align-workspace-onboarding-guides
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/align-workspace-onboarding-guides
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.execute:
-              event: build-complete
-            full.build.plan:
-              designEvidence:
-                contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-                ref: openspec/changes/align-workspace-onboarding-guides/design.md
-              plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              planEvidence:
-                contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-                ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
-            full.build.plan.evidence:
-              contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-              ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-            full.design.document:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-            full.design.evidence:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.evidence:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.revalidate:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+          outputs: {}
         inputHash: ff3ade77686517c2cc7bbd71fc5ea8fe462477590a761d359ff3a78c52bd82e6
         outcome:
           actionId: align-workspace-onboarding-guides:14
@@ -891,6 +440,14 @@ run_checkpoint:
         stepId: full.build.check
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-b65279eb9b4f719249ea0b0a1bb90dede8e621278bf96a84ef4ed4035f9abf19
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: align-workspace-onboarding-guides:16
         input:
           input:
@@ -898,134 +455,243 @@ run_checkpoint:
             changeDir: openspec/changes/align-workspace-onboarding-guides
             workspaceBaseline:
               ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-          outputs:
-            full.build.check:
-              argv:
-                - npm.cmd
-                - run
-                - build
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
-              cwd: .
-              environment: 2b1065b5693723a442c3082a6a4cae36782bf9bf5701c4719c9b107d6890ed9c
-              exitCode: 0
-              inputAfter: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
-              inputBefore: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
-              manifestHash: dac550b0d9e5e8c786296c0e148df3a0ccbe100f3fbfc83712c610994527aa06
-              manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/154f8872-6180-424b-8ffc-450adfecb04c.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
-              reusable: true
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 2700000
-            full.build.check.evidence:
-              contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
-              ref: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
-            full.build.configure:
-              boundBranch: codex/align-workspace-onboarding-guides
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/align-workspace-onboarding-guides
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.execute:
-              event: build-complete
-            full.build.plan:
-              designEvidence:
-                contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-                ref: openspec/changes/align-workspace-onboarding-guides/design.md
-              plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              planEvidence:
-                contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-                ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
-            full.build.plan.evidence:
-              contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-              ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-            full.design.document:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-            full.design.evidence:
+          outputs: {}
+        inputHash: 351ce01cb479f4603034f949d9c13ed812bb91ece6cbcb0228a02c68e22d5c1f
+        outcome:
+          actionId: align-workspace-onboarding-guides:16
+          attempt: 1
+          claimToken: portable-b65279eb9b4f719249ea0b0a1bb90dede8e621278bf96a84ef4ed4035f9abf19
+          inputHash: 351ce01cb479f4603034f949d9c13ed812bb91ece6cbcb0228a02c68e22d5c1f
+          outcomeId: c9dd9549-f079-416a-90f1-8234758b3885
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/align-workspace-onboarding-guides.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 93eb10a4d6aefbd921117035537b25dba6758b271010ec0a1395f50bd2d1114a
+            outcomeId: c9dd9549-f079-416a-90f1-8234758b3885
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: align-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-d8aa6197e15ae17064c003ec3f9029fb3b3e6576c9c65aa7c31d7c9b1243406f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: align-workspace-onboarding-guides:18
+        input:
+          input:
+            change: align-workspace-onboarding-guides
+            changeDir: openspec/changes/align-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
+          outputs: {}
+        inputHash: ba460b1a8c11c52bd2ef7c112bc7a4bad80b6f1aa1a619a4bb03f7aeb1f38223
+        outcome:
+          actionId: align-workspace-onboarding-guides:18
+          attempt: 1
+          claimToken: portable-d8aa6197e15ae17064c003ec3f9029fb3b3e6576c9c65aa7c31d7c9b1243406f
+          inputHash: ba460b1a8c11c52bd2ef7c112bc7a4bad80b6f1aa1a619a4bb03f7aeb1f38223
+          outcomeId: 1ac85f3e-e8ea-49aa-81f0-daa63cab1ce7
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 141f1e5f13676c01ec6b44a756e5f8852750c1653179439f4eb9f7b71e56766b
+            cwd: .
+            deliveryInputs: {}
+            environment: 54e6b685e9262ab155b51be85f7135f826efff4f9ef8844c202108a300a01c55
+            exitCode: 1
+            inputAfter: 2281d250dfa57e73f5f22c718e2822f18ef6a4f05477ba82c49f2d9a8de02266
+            inputBefore: 2281d250dfa57e73f5f22c718e2822f18ef6a4f05477ba82c49f2d9a8de02266
+            manifestHash: e2dc9b25595c4409450c0b7118a9cfb683b0e593de7570f64d7a8759c40626f5
+            manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/26676ac9-301b-4d4a-94af-2b1894a8dcf9.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/7cd7989f-ec8a-419f-a129-92060fce7106.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 3fcb31c0ff2db132928c054b276fb7497a6388ac97b3d106131c6d187b725764
+            outcomeId: 1ac85f3e-e8ea-49aa-81f0-daa63cab1ce7
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: align-workspace-onboarding-guides
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-29a8e9b71f8b3b827284efda16c2a5a6121ef4a8686064bd01a003fac591f15c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: align-workspace-onboarding-guides:19
+        input:
+          input:
+            change: align-workspace-onboarding-guides
+            changeDir: openspec/changes/align-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
+          outputs: {}
+        inputHash: b1544184435aefdaaa358008ab20f3346633603097bfc017663a26add842d02e
+        outcome:
+          actionId: align-workspace-onboarding-guides:19
+          attempt: 1
+          claimToken: portable-29a8e9b71f8b3b827284efda16c2a5a6121ef4a8686064bd01a003fac591f15c
+          inputHash: b1544184435aefdaaa358008ab20f3346633603097bfc017663a26add842d02e
+          outcomeId: edd5f35a-f637-45f6-8ad4-048db3f1a9a2
+          output:
+            designEvidence:
               contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
               ref: openspec/changes/align-workspace-onboarding-guides/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.evidence:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-            full.open.revalidate:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-        inputHash: 351ce01cb479f4603034f949d9c13ed812bb91ece6cbcb0228a02c68e22d5c1f
+            plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+            planEvidence:
+              contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
+              ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+            taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b1a6a95e776e5d67f553928716466eff5e9d5f25b665e3b9c5cac735e1db1b5b
+            outcomeId: edd5f35a-f637-45f6-8ad4-048db3f1a9a2
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: align-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-align-workspace-onboarding-guides
+          token: portable-fe3cc49a1f9bceb679b639881b19f46f3c9df8d455c0fea377aa36481f2b408d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: align-workspace-onboarding-guides:21
+        input:
+          input:
+            change: align-workspace-onboarding-guides
+            changeDir: openspec/changes/align-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
+          outputs: {}
+        inputHash: b1544184435aefdaaa358008ab20f3346633603097bfc017663a26add842d02e
+        outcome:
+          actionId: align-workspace-onboarding-guides:21
+          attempt: 1
+          claimToken: portable-fe3cc49a1f9bceb679b639881b19f46f3c9df8d455c0fea377aa36481f2b408d
+          inputHash: b1544184435aefdaaa358008ab20f3346633603097bfc017663a26add842d02e
+          outcomeId: 232a63c4-20a0-41aa-b3e1-4ecbf743ed56
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5a179cd99774bf99e3f9d5dc1a1f891ed6d08646d7c30f86e5051495e14c6487
+            outcomeId: 232a63c4-20a0-41aa-b3e1-4ecbf743ed56
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: align-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-24b016b3810f73f12c797587f4ecbeaeb9378e6478e56814dacbd8fc37051332
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: align-workspace-onboarding-guides:22
+        input:
+          input:
+            change: align-workspace-onboarding-guides
+            changeDir: openspec/changes/align-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
+          outputs: {}
+        inputHash: b1544184435aefdaaa358008ab20f3346633603097bfc017663a26add842d02e
+        outcome:
+          actionId: align-workspace-onboarding-guides:22
+          attempt: 1
+          claimToken: portable-24b016b3810f73f12c797587f4ecbeaeb9378e6478e56814dacbd8fc37051332
+          inputHash: b1544184435aefdaaa358008ab20f3346633603097bfc017663a26add842d02e
+          outcomeId: 4f8fcfc1-7071-4ccc-94ad-7a6ea9032328
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 272c89ba3d56a7f780e8e88375c1b2c2c68f5f6a5c3070f0ac09d2c56977f12d
+            cwd: .
+            environment: 2b1065b5693723a442c3082a6a4cae36782bf9bf5701c4719c9b107d6890ed9c
+            exitCode: 0
+            inputAfter: e5f4e89be2faa145161cb60eab894f5f1e296379fcb592c101ed0ecfe29f2010
+            inputBefore: e5f4e89be2faa145161cb60eab894f5f1e296379fcb592c101ed0ecfe29f2010
+            manifestHash: e2dc9b25595c4409450c0b7118a9cfb683b0e593de7570f64d7a8759c40626f5
+            manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/47ec2cdc-828e-4064-81ac-b3023d68f58b.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/ee69333d-16d7-45c7-b73e-1440a2ab11a0.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bc95d7c050ecef46c422e7770a1580296f08e62d158de08d7c33347ad8cea7fd
+            outcomeId: 4f8fcfc1-7071-4ccc-94ad-7a6ea9032328
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: align-workspace-onboarding-guides
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        id: align-workspace-onboarding-guides:24
+        input:
+          input:
+            change: align-workspace-onboarding-guides
+            changeDir: openspec/changes/align-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
+          outputs: {}
+        inputHash: f6472032705d43c2faa44e68384467275effe8750b67382156c303ce0e506db8
         protocolVersion: 1
         receipts: []
         reconciliations: []
@@ -1041,747 +707,43 @@ run_checkpoint:
         results: {}
         sequence: 1
       align-workspace-onboarding-guides:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/align-workspace-onboarding-guides
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/align-workspace-onboarding-guides
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        results: {}
         sequence: 11
       align-workspace-onboarding-guides:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/align-workspace-onboarding-guides
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/align-workspace-onboarding-guides
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-                ref: openspec/changes/align-workspace-onboarding-guides/design.md
-              plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              planEvidence:
-                contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-                ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-              ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        results: {}
         sequence: 13
       align-workspace-onboarding-guides:14:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/align-workspace-onboarding-guides
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/align-workspace-onboarding-guides
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-                ref: openspec/changes/align-workspace-onboarding-guides/design.md
-              plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              planEvidence:
-                contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-                ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-              ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        results: {}
         sequence: 14
       align-workspace-onboarding-guides:16:
-        results:
-          full.build.check:
-            sequence: 14
-            value:
-              argv:
-                - npm.cmd
-                - run
-                - build
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
-              cwd: .
-              environment: 2b1065b5693723a442c3082a6a4cae36782bf9bf5701c4719c9b107d6890ed9c
-              exitCode: 0
-              inputAfter: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
-              inputBefore: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
-              manifestHash: dac550b0d9e5e8c786296c0e148df3a0ccbe100f3fbfc83712c610994527aa06
-              manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/154f8872-6180-424b-8ffc-450adfecb04c.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
-              reusable: true
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 2700000
-          full.build.check.evidence:
-            sequence: 15
-            value:
-              contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
-              ref: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/align-workspace-onboarding-guides
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/align-workspace-onboarding-guides
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-                ref: openspec/changes/align-workspace-onboarding-guides/design.md
-              plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              planEvidence:
-                contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-                ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-              ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        results: {}
         sequence: 16
+      align-workspace-onboarding-guides:18:
+        results: {}
+        sequence: 18
+      align-workspace-onboarding-guides:19:
+        results: {}
+        sequence: 19
+      align-workspace-onboarding-guides:21:
+        results: {}
+        sequence: 21
+      align-workspace-onboarding-guides:22:
+        results: {}
+        sequence: 22
+      align-workspace-onboarding-guides:24:
+        results: {}
+        sequence: 24
       align-workspace-onboarding-guides:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
+        results: {}
         sequence: 4
       align-workspace-onboarding-guides:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        results: {}
         sequence: 5
       align-workspace-onboarding-guides:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        results: {}
         sequence: 7
       align-workspace-onboarding-guides:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        results: {}
         sequence: 9
     waits:
       - id: align-workspace-onboarding-guides:3
@@ -1804,16 +766,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
+        results: {}
         decision:
           id: classic-open-4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
           choice: approved
@@ -1847,52 +800,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        results: {}
         decision:
           id: classic-design-b437513ef85c7a19c78896b35ec22d3b37179281b47a72415ac6cde36eea5d15-approved
           choice: approved
@@ -1920,96 +828,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/align-workspace-onboarding-guides
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        results: {}
         decision:
           id: 7dcdc9d1-4ccb-4ef5-8f4b-3ac2bac241c1
           choice: approved
@@ -2020,11 +839,7 @@ run_checkpoint:
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/align-workspace-onboarding-guides
           contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
@@ -2034,81 +849,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        results: {}
         receipt:
           ref: openspec/changes/align-workspace-onboarding-guides/design.md
           contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
@@ -2118,126 +859,7 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/align-workspace-onboarding-guides
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/align-workspace-onboarding-guides
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-                ref: openspec/changes/align-workspace-onboarding-guides/design.md
-              plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              planEvidence:
-                contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-                ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-              handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-              proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                install-entry-skills，旧引导以现有配置发起新的轻量
-                detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新 registry、指定宿主和刷新；保持
-                Open 规格范围。
-              requirementsEvidence:
-                contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                ref: openspec/changes/align-workspace-onboarding-guides
-              sourceEvidence:
-                contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                ref: openspec/changes/align-workspace-onboarding-guides
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        results: {}
         receipt:
           ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
           contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
@@ -2247,116 +869,77 @@ run_checkpoint:
         sequence: 15
         kind: classic-build-check
         status: resolved
-        results:
-          full.build.check:
-            sequence: 14
-            value:
-              argv:
-                - npm.cmd
-                - run
-                - build
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
-              cwd: .
-              environment: 2b1065b5693723a442c3082a6a4cae36782bf9bf5701c4719c9b107d6890ed9c
-              exitCode: 0
-              inputAfter: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
-              inputBefore: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
-              manifestHash: dac550b0d9e5e8c786296c0e148df3a0ccbe100f3fbfc83712c610994527aa06
-              manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/154f8872-6180-424b-8ffc-450adfecb04c.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
-              reusable: true
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 2700000
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/align-workspace-onboarding-guides
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/align-workspace-onboarding-guides
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-                ref: openspec/changes/align-workspace-onboarding-guides/design.md
-              plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              planEvidence:
-                contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-                ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-              taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-              ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
-                    handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
-                    proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
-                      install-entry-skills，旧引导以现有配置发起新的轻量
-                      detect/prepare/review。公开及生成文档统一为宿主 Skill 优先、保留原 Run 的审批与
-                      Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
-                      registry、指定宿主和刷新；保持 Open 规格范围。
-                    requirementsEvidence:
-                      contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
-                      ref: openspec/changes/align-workspace-onboarding-guides
-                    sourceEvidence:
-                      contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
-                      ref: openspec/changes/align-workspace-onboarding-guides
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-              ref: openspec/changes/align-workspace-onboarding-guides/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
+          contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
+          submissionId: 5394a658-7a34-4b40-a361-2fca36361647
+      - id: align-workspace-onboarding-guides:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/align-workspace-onboarding-guides.md
+          contentHash: 3c491b022665078ca7b1aac5528bf08e8af1a2da5ca93ac0f905f54180c66830
+          submissionId: 1447b97f-210d-43fe-98b6-99619028fb7e
+      - id: align-workspace-onboarding-guides:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+          contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
+          submissionId: 3fb3d42b-e99b-4acc-be8d-70b21db4abff
+      - id: align-workspace-onboarding-guides:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/ee69333d-16d7-45c7-b73e-1440a2ab11a0.log
+          contentHash: 272c89ba3d56a7f780e8e88375c1b2c2c68f5f6a5c3070f0ac09d2c56977f12d
+          submissionId: 75287ebb-8ceb-4400-bc83-6ae7ab88c1da
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 37
+  sourceHash: d3d3093d8e8c0312f199b1c364194ec1c25f00ee10cfa8892dc36eacdbce7c64
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: align-workspace-onboarding-guides
+            changeDir: openspec/changes/align-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+              ref: openspec/changes/align-workspace-onboarding-guides
+      - contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+        ref: openspec/changes/align-workspace-onboarding-guides
+      - contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
+      - choice: approved
+        proposal:
+          input:
+            change: align-workspace-onboarding-guides
+            changeDir: openspec/changes/align-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
               handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
               proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
@@ -2370,72 +953,125 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
                 ref: openspec/changes/align-workspace-onboarding-guides
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: align-workspace-onboarding-guides
-                  changeDir: openspec/changes/align-workspace-onboarding-guides
-                  workspaceBaseline:
-                    ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-                    ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-              ref: openspec/changes/align-workspace-onboarding-guides
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-        receipt:
-          ref: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
-          contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
-          submissionId: 5394a658-7a34-4b40-a361-2fca36361647
-    ready: []
-    joins: {}
-    outputs:
-      full.build.check:
-        sequence: 14
-        value:
-          argv:
-            - npm.cmd
-            - run
-            - build
-          changedDuringExecution: []
-          checkEpoch: 2
-          contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
-          cwd: .
-          environment: 2b1065b5693723a442c3082a6a4cae36782bf9bf5701c4719c9b107d6890ed9c
-          exitCode: 0
-          inputAfter: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
-          inputBefore: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
-          manifestHash: dac550b0d9e5e8c786296c0e148df3a0ccbe100f3fbfc83712c610994527aa06
-          manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/154f8872-6180-424b-8ffc-450adfecb04c.manifest
-          receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
-          reusable: true
-          reused: false
-          scope: build
-          tier: full
-          timeoutMs: 2700000
-      full.build.check.evidence:
-        sequence: 15
-        value:
-          contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
-          ref: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
-      full.build.configure:
-        sequence: 9
+      - handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
+        handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
+        proposal: 复用现有受管引导渲染与审批。新接入使用轻量 Init；已有成员在健康 Store 登记本机路径；补装用
+          install-entry-skills，旧引导以现有配置发起新的轻量 detect/prepare/review。公开及生成文档统一为宿主
+          Skill 优先、保留原 Run 的审批与 Verify、明示 Skill 清单并补齐 SigNoz。用实际安装包验证单仓、多仓、新
+          registry、指定宿主和刷新；保持 Open 规格范围。
+        requirementsEvidence:
+          contentHash: 8501c8a39c38b473e899bb1e8dba5542dc714214230ea96ed89974804bf79139
+          ref: openspec/changes/align-workspace-onboarding-guides
+        sourceEvidence:
+          contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
+          ref: openspec/changes/align-workspace-onboarding-guides
+      - designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
+      - contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
+        ref: openspec/changes/align-workspace-onboarding-guides/design.md
+      - boundBranch: codex/align-workspace-onboarding-guides
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: align-workspace-onboarding-guides
+            changeDir: openspec/changes/align-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
+          outputs:
+            full.build.configure:
+              boundBranch: codex/align-workspace-onboarding-guides
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
+          ref: openspec/changes/align-workspace-onboarding-guides/design.md
+        plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+        planEvidence:
+          contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
+          ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+        taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
+      - contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
+        ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
+        cwd: .
+        environment: 2b1065b5693723a442c3082a6a4cae36782bf9bf5701c4719c9b107d6890ed9c
+        exitCode: 0
+        inputAfter: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
+        inputBefore: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
+        manifestHash: dac550b0d9e5e8c786296c0e148df3a0ccbe100f3fbfc83712c610994527aa06
+        manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/154f8872-6180-424b-8ffc-450adfecb04c.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
+        ref: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
+      - contentHash: 3c491b022665078ca7b1aac5528bf08e8af1a2da5ca93ac0f905f54180c66830
+        ref: docs/superpowers/reports/align-workspace-onboarding-guides.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/align-workspace-onboarding-guides.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 141f1e5f13676c01ec6b44a756e5f8852750c1653179439f4eb9f7b71e56766b
+        cwd: .
+        deliveryInputs: {}
+        environment: 54e6b685e9262ab155b51be85f7135f826efff4f9ef8844c202108a300a01c55
+        exitCode: 1
+        inputAfter: 2281d250dfa57e73f5f22c718e2822f18ef6a4f05477ba82c49f2d9a8de02266
+        inputBefore: 2281d250dfa57e73f5f22c718e2822f18ef6a4f05477ba82c49f2d9a8de02266
+        manifestHash: e2dc9b25595c4409450c0b7118a9cfb683b0e593de7570f64d7a8759c40626f5
+        manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/26676ac9-301b-4d4a-94af-2b1894a8dcf9.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/7cd7989f-ec8a-419f-a129-92060fce7106.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 272c89ba3d56a7f780e8e88375c1b2c2c68f5f6a5c3070f0ac09d2c56977f12d
+        cwd: .
+        environment: 2b1065b5693723a442c3082a6a4cae36782bf9bf5701c4719c9b107d6890ed9c
+        exitCode: 0
+        inputAfter: e5f4e89be2faa145161cb60eab894f5f1e296379fcb592c101ed0ecfe29f2010
+        inputBefore: e5f4e89be2faa145161cb60eab894f5f1e296379fcb592c101ed0ecfe29f2010
+        manifestHash: e2dc9b25595c4409450c0b7118a9cfb683b0e593de7570f64d7a8759c40626f5
+        manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/47ec2cdc-828e-4064-81ac-b3023d68f58b.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/ee69333d-16d7-45c7-b73e-1440a2ab11a0.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 272c89ba3d56a7f780e8e88375c1b2c2c68f5f6a5c3070f0ac09d2c56977f12d
+        ref: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/ee69333d-16d7-45c7-b73e-1440a2ab11a0.log
+      - sequence: 9
         value:
           boundBranch: codex/align-workspace-onboarding-guides
           buildMode: autonomous
@@ -2444,8 +1080,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -2463,28 +1098,7 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.execute:
-        sequence: 13
-        value:
-          event: build-complete
-      full.build.plan:
-        sequence: 11
-        value:
-          designEvidence:
-            contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
-            ref: openspec/changes/align-workspace-onboarding-guides/design.md
-          plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-          planEvidence:
-            contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-            ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-          taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
-      full.build.plan.evidence:
-        sequence: 12
-        value:
-          contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
-          ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
-      full.design.confirm:
-        sequence: 6
+      - sequence: 6
         value:
           choice: approved
           proposal:
@@ -2508,17 +1122,14 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
                   ref: openspec/changes/align-workspace-onboarding-guides
-      full.design.document:
-        sequence: 7
+      - sequence: 7
         value:
           designDoc: openspec/changes/align-workspace-onboarding-guides/design.md
-      full.design.evidence:
-        sequence: 8
+      - sequence: 8
         value:
           contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
           ref: openspec/changes/align-workspace-onboarding-guides/design.md
-      full.design.handoff:
-        sequence: 5
+      - sequence: 5
         value:
           handoffContext: openspec/changes/align-workspace-onboarding-guides/.comet/handoff/design-context.json
           handoffHash: c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51
@@ -2532,12 +1143,10 @@ run_checkpoint:
           sourceEvidence:
             contentHash: aaf8f3bd75abacda63939d08ef9e20214b8a4e1c5fac6a2e10f67ef0a9a905bf
             ref: openspec/changes/align-workspace-onboarding-guides
-      full.open:
-        sequence: 1
+      - sequence: 1
         value:
           event: open-complete
-      full.open.confirm:
-        sequence: 3
+      - sequence: 3
         value:
           choice: approved
           proposal:
@@ -2552,17 +1161,1274 @@ run_checkpoint:
               full.open.evidence:
                 contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
                 ref: openspec/changes/align-workspace-onboarding-guides
-      full.open.evidence:
-        sequence: 2
+      - sequence: 2
         value:
           contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
           ref: openspec/changes/align-workspace-onboarding-guides
-      full.open.revalidate:
-        sequence: 4
+      - sequence: 4
         value:
           contentHash: 4ca65413f17b0a57d9e0a32c3ec644b1384f5f1b199aacf24ef0cdbcd51cbad8
-    children: []
-    lineage: []
-  sourceRevision: 24
-  sourceHash: 416fa215ef4f0a198c972a3e65d00095c7d4386d322f409930b12f8ce82e6608
-check_epoch: 3
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
+            ref: openspec/changes/align-workspace-onboarding-guides/design.md
+          plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+          planEvidence:
+            contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
+            ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+          taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
+      - sequence: 12
+        value:
+          contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
+          ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
+          cwd: .
+          environment: 2b1065b5693723a442c3082a6a4cae36782bf9bf5701c4719c9b107d6890ed9c
+          exitCode: 0
+          inputAfter: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
+          inputBefore: aba8402d5112e1291a24b4c965aba16af335cf7cbcbc2e28a48871c8b0638448
+          manifestHash: dac550b0d9e5e8c786296c0e148df3a0ccbe100f3fbfc83712c610994527aa06
+          manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/154f8872-6180-424b-8ffc-450adfecb04c.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 46b20ef45fcf0cf629053e284892b98eedb1c919a35caaaf35e0d97d692ed2e7
+          ref: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/107efbdf-37eb-4dec-9e4c-27fc616c2502.log
+      - sequence: 17
+        value:
+          contentHash: 3c491b022665078ca7b1aac5528bf08e8af1a2da5ca93ac0f905f54180c66830
+          ref: docs/superpowers/reports/align-workspace-onboarding-guides.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/align-workspace-onboarding-guides.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 141f1e5f13676c01ec6b44a756e5f8852750c1653179439f4eb9f7b71e56766b
+          cwd: .
+          deliveryInputs: {}
+          environment: 54e6b685e9262ab155b51be85f7135f826efff4f9ef8844c202108a300a01c55
+          exitCode: 1
+          inputAfter: 2281d250dfa57e73f5f22c718e2822f18ef6a4f05477ba82c49f2d9a8de02266
+          inputBefore: 2281d250dfa57e73f5f22c718e2822f18ef6a4f05477ba82c49f2d9a8de02266
+          manifestHash: e2dc9b25595c4409450c0b7118a9cfb683b0e593de7570f64d7a8759c40626f5
+          manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/26676ac9-301b-4d4a-94af-2b1894a8dcf9.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/7cd7989f-ec8a-419f-a129-92060fce7106.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: cdd8209d296b95988111a80e3d97cc24f86f23db9d4688dbef2c52f730327d2d
+            ref: openspec/changes/align-workspace-onboarding-guides/design.md
+          plan: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+          planEvidence:
+            contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
+            ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+          taskRevision: ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f
+      - sequence: 20
+        value:
+          contentHash: 594f7341a06ec26df222cd39866bb8feacbbd3d2471a26f229480caad38e02f4
+          ref: docs/superpowers/plans/2026-11-14-align-workspace-onboarding-guides.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 272c89ba3d56a7f780e8e88375c1b2c2c68f5f6a5c3070f0ac09d2c56977f12d
+          cwd: .
+          environment: 2b1065b5693723a442c3082a6a4cae36782bf9bf5701c4719c9b107d6890ed9c
+          exitCode: 0
+          inputAfter: e5f4e89be2faa145161cb60eab894f5f1e296379fcb592c101ed0ecfe29f2010
+          inputBefore: e5f4e89be2faa145161cb60eab894f5f1e296379fcb592c101ed0ecfe29f2010
+          manifestHash: e2dc9b25595c4409450c0b7118a9cfb683b0e593de7570f64d7a8759c40626f5
+          manifestRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/47ec2cdc-828e-4064-81ac-b3023d68f58b.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/ee69333d-16d7-45c7-b73e-1440a2ab11a0.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 23
+        value:
+          contentHash: 272c89ba3d56a7f780e8e88375c1b2c2c68f5f6a5c3070f0ac09d2c56977f12d
+          ref: .comet/runtime/classic-sdk-checks/6bc77b5b6ab9d39d3f8ec03f0aee4c61a0f13f92354d4a40c774308b86229694/ee69333d-16d7-45c7-b73e-1440a2ab11a0.log
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.build.configure
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 21
+        left: 54
+        right: 55
+        height: 2
+      - key: full.design.evidence
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 25
+        left: 57
+        right: 58
+        height: 2
+      - key: full.open.revalidate
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 28
+        left: null
+        right: 60
+        height: 2
+      - key: full.open.confirm
+        value: 27
+        left: 59
+        right: 61
+        height: 3
+      - key: full.design.document
+        value: 23
+        left: 56
+        right: 62
+        height: 4
+      - key: full.build.plan
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 31
+        left: 64
+        right: 65
+        height: 2
+      - key: full.build.confirm
+        value: 21
+        left: 54
+        right: 66
+        height: 3
+      - key: full.design.document
+        value: 23
+        left: 67
+        right: 62
+        height: 4
+      - key: full.build.execute
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 21
+        left: 54
+        right: 69
+        height: 2
+      - key: full.build.plan.evidence
+        value: 31
+        left: null
+        right: 65
+        height: 2
+      - key: full.build.plan
+        value: 30
+        left: 70
+        right: 71
+        height: 3
+      - key: full.design.document
+        value: 23
+        left: 72
+        right: 62
+        height: 4
+      - key: full.build.check
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 34
+        left: 74
+        right: 75
+        height: 2
+      - key: full.build.confirm
+        value: 21
+        left: 76
+        right: 69
+        height: 3
+      - key: full.build.plan
+        value: 30
+        left: 77
+        right: 71
+        height: 4
+      - key: full.design.document
+        value: 23
+        left: 78
+        right: 62
+        height: 5
+      - key: full.open.evidence
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 35
+        left: null
+        right: 81
+        height: 2
+      - key: full.open.revalidate
+        value: 29
+        left: 80
+        right: 82
+        height: 3
+      - key: full.open.confirm
+        value: 27
+        left: 59
+        right: 83
+        height: 4
+      - key: full.design.document
+        value: 23
+        left: 78
+        right: 84
+        height: 5
+      - key: full.verify.check
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 35
+        left: 86
+        right: 81
+        height: 2
+      - key: full.open.revalidate
+        value: 29
+        left: 80
+        right: 87
+        height: 3
+      - key: full.open.confirm
+        value: 27
+        left: 59
+        right: 88
+        height: 4
+      - key: full.design.document
+        value: 23
+        left: 78
+        right: 89
+        height: 5
+      - key: full.build.plan.evidence
+        value: 39
+        left: null
+        right: 65
+        height: 2
+      - key: full.build.plan
+        value: 38
+        left: 77
+        right: 91
+        height: 4
+      - key: full.design.document
+        value: 23
+        left: 92
+        right: 89
+        height: 5
+      - key: full.build.execute
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 21
+        left: 76
+        right: 94
+        height: 3
+      - key: full.build.plan
+        value: 38
+        left: 95
+        right: 91
+        height: 4
+      - key: full.design.document
+        value: 23
+        left: 96
+        right: 89
+        height: 5
+      - key: full.build.check
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 42
+        left: 98
+        right: 75
+        height: 2
+      - key: full.build.confirm
+        value: 21
+        left: 99
+        right: 94
+        height: 3
+      - key: full.build.plan
+        value: 38
+        left: 100
+        right: 91
+        height: 4
+      - key: full.design.document
+        value: 23
+        left: 101
+        right: 89
+        height: 5
+      - key: full.open
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 27
+        left: 103
+        right: 104
+        height: 2
+      - key: full.open.revalidate
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 28
+        left: null
+        right: 106
+        height: 2
+      - key: full.open.confirm
+        value: 27
+        left: 103
+        right: 107
+        height: 3
+      - key: full.design.confirm
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 25
+        left: 109
+        right: 110
+        height: 2
+      - key: full.open.confirm
+        value: 27
+        left: 111
+        right: 107
+        height: 3
+      - key: full.design.confirm
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 23
+        left: 113
+        right: 114
+        height: 2
+      - key: full.design.handoff
+        value: 25
+        left: 115
+        right: 110
+        height: 3
+      - key: full.open.confirm
+        value: 27
+        left: 116
+        right: 107
+        height: 4
+      - key: full.open.evidence
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 26
+        left: null
+        right: 118
+        height: 2
+      - key: full.design.handoff
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 28
+        left: 121
+        right: 122
+        height: 2
+      - key: full.open
+        value: 26
+        left: 120
+        right: 123
+        height: 3
+      - key: full.build.configure
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 24
+        left: 126
+        right: 127
+        height: 2
+      - key: full.design.confirm
+        value: 22
+        left: 125
+        right: 128
+        height: 3
+      - key: full.open
+        value: 26
+        left: 129
+        right: 123
+        height: 4
+      - key: full.open
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 23
+        left: 132
+        right: 133
+        height: 2
+      - key: full.open.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 28
+        left: 135
+        right: 136
+        height: 2
+      - key: full.open
+        value: 26
+        left: 134
+        right: 137
+        height: 3
+      - key: full.build.configure
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 21
+        left: 139
+        right: 140
+        height: 2
+      - key: full.design.document
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 24
+        left: 142
+        right: 143
+        height: 2
+      - key: full.design.confirm
+        value: 22
+        left: 141
+        right: 144
+        height: 3
+      - key: full.open
+        value: 26
+        left: 145
+        right: 137
+        height: 4
+      - key: full.build.check
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 20
+        left: 147
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 30
+        left: 149
+        right: 150
+        height: 2
+      - key: full.build.confirm
+        value: 21
+        left: 148
+        right: 151
+        height: 3
+      - key: full.open
+        value: 26
+        left: 144
+        right: 137
+        height: 3
+      - key: full.design.confirm
+        value: 22
+        left: 152
+        right: 153
+        height: 4
+      - key: full.build.check
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 34
+        left: 155
+        right: 156
+        height: 2
+      - key: full.build.confirm
+        value: 21
+        left: 157
+        right: 151
+        height: 3
+      - key: full.verify.run
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 29
+        left: null
+        right: 159
+        height: 2
+      - key: full.open.evidence
+        value: 28
+        left: 135
+        right: 160
+        height: 3
+      - key: full.open
+        value: 26
+        left: 144
+        right: 161
+        height: 4
+      - key: full.design.confirm
+        value: 22
+        left: 158
+        right: 162
+        height: 5
+      - key: full.build.plan
+        value: 38
+        left: 149
+        right: 150
+        height: 2
+      - key: full.build.confirm
+        value: 21
+        left: 157
+        right: 164
+        height: 3
+      - key: full.open.revalidate
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 28
+        left: 135
+        right: 166
+        height: 2
+      - key: full.verify.report.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 36
+        left: 168
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 37
+        left: 167
+        right: 169
+        height: 3
+      - key: full.open
+        value: 26
+        left: 144
+        right: 170
+        height: 4
+      - key: full.design.confirm
+        value: 22
+        left: 165
+        right: 171
+        height: 5
+      - key: full.build.check
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 34
+        left: 173
+        right: 156
+        height: 2
+      - key: full.build.execute
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 38
+        left: 175
+        right: 176
+        height: 2
+      - key: full.build.confirm
+        value: 21
+        left: 174
+        right: 177
+        height: 3
+      - key: full.design.confirm
+        value: 22
+        left: 178
+        right: 171
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 63
+      - 68
+      - 73
+      - 79
+      - 85
+      - 90
+      - 93
+      - 97
+      - 102
+      - 105
+      - 108
+      - 112
+      - 117
+      - 119
+      - 124
+      - 130
+      - 131
+      - 138
+      - 146
+      - 154
+      - 163
+      - 172
+      - 179
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:11
+          - results
+        map: 12
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:13
+          - results
+        map: 13
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:14
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:16
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:18
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:19
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:21
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:22
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:24
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:4
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:5
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:7
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - align-workspace-onboarding-guides:9
+          - results
+        map: 24
+      - path:
+          - outputs
+        map: 20
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 25
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 26
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 27
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 28
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 29
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 31
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 34
+  storageHash: 4f031020c8ac8b60b6bef63f5c04a00404c19387da2c22354975b3a2846f29ab
+check_epoch: 5
