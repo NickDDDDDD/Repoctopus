@@ -183,12 +183,13 @@ export class ObservationDelivery extends Service {
       });
     let body = selected.length ? encode() : '';
     const wireLimit = destination.id === 'desktop' ? 1024 * 1024 : 2 * 1024 * 1024;
+    const split = () => {
+      pending = pending.slice(0, Math.ceil(pending.length / 2));
+      selected = select();
+      body = selected.length ? encode() : '';
+    };
     if (destination.id === 'desktop' || deadline !== undefined) {
-      while (pending.length > 1 && Buffer.byteLength(body) > wireLimit) {
-        pending = pending.slice(0, Math.ceil(pending.length / 2));
-        selected = select();
-        body = selected.length ? encode() : '';
-      }
+      while (pending.length > 1 && Buffer.byteLength(body) > wireLimit) split();
     }
     let warning: string | undefined;
     let rejectedRecords = 0;
@@ -196,32 +197,50 @@ export class ObservationDelivery extends Service {
       if (body && deadline !== undefined && Date.now() >= deadline) {
         return { delivered: 0, warning: 'budget-exhausted' };
       }
-      if (body && deadline !== undefined && Buffer.byteLength(body) > wireLimit) {
+      if (
+        body &&
+        (destination.id === 'desktop' || deadline !== undefined) &&
+        Buffer.byteLength(body) > wireLimit
+      ) {
         warning = 'record-too-large';
         rejectedRecords = 1;
       } else if (body) {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            ...(destination.signalHeaders?.[signal] ?? destination.headers ?? {}),
-          },
-          body,
-          signal: AbortSignal.timeout(
-            Math.min(
-              destination.signalTimeouts?.[signal] ?? destination.timeoutMillis ?? 5_000,
-              deadline === undefined ? Infinity : Math.max(1, deadline - Date.now()),
+        const send = () =>
+          fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              ...(destination.signalHeaders?.[signal] ?? destination.headers ?? {}),
+            },
+            body,
+            signal: AbortSignal.timeout(
+              Math.min(
+                destination.signalTimeouts?.[signal] ?? destination.timeoutMillis ?? 5_000,
+                deadline === undefined ? Infinity : Math.max(1, deadline - Date.now()),
+              ),
             ),
-          ),
-        });
-        if (!response.ok) {
+          });
+        let response: Response | undefined = await send();
+        while (response.status === 413 && pending.length > 1) {
+          await response.body?.cancel();
+          split();
+          if (deadline !== undefined && Date.now() >= deadline) {
+            return { delivered: 0, warning: 'budget-exhausted' };
+          }
+          response = body ? await send() : undefined;
+          if (!response) break;
+        }
+        if (response?.status === 413) {
+          warning = 'record-too-large';
+          rejectedRecords = 1;
+        } else if (response && !response.ok) {
           if (destination.id === 'desktop' || RETRYABLE_HTTP_STATUS.has(response.status)) {
             warning = 'rejected';
           } else {
             warning = 'permanent-rejection';
             rejectedRecords = selected.length;
           }
-        } else {
+        } else if (response) {
           const content = await response.text();
           const acknowledgement: unknown = content ? JSON.parse(content) : {};
           if (

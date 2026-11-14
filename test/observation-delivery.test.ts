@@ -274,3 +274,41 @@ it('reports a persistent partial rejection without replaying an accepted batch',
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+it('splits an HTTP 413 batch before advancing the affected signal cursor', async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-gateway-limit-'));
+  const received: number[] = [];
+  const server = createServer((request, response) => {
+    const chunks: Buffer[] = [];
+    request.on('data', (chunk: Buffer) => chunks.push(chunk));
+    request.on('end', () => {
+      const count = decodeObservationOtlpJson(Buffer.concat(chunks)).length;
+      received.push(count);
+      response.writeHead(count === 1 ? 200 : 413).end();
+    });
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address();
+  if (!address || typeof address === 'string') throw new Error('Receiver failed to start');
+  const destination = {
+    id: 'remote',
+    signalEndpoints: { log: `http://127.0.0.1:${address.port}` },
+  };
+  const context = new Context();
+  try {
+    const delivery = new ObservationDelivery(context, { workspaceRoot: directory });
+    const first = envelope();
+    await delivery.append([first, { ...first, envelopeId: `sha256:${'9'.repeat(64)}` }]);
+    expect(await delivery.replay(destination)).toMatchObject({ delivered: 1 });
+    expect(await delivery.replay(destination)).toMatchObject({ delivered: 1 });
+    expect(received).toEqual([2, 1, 1]);
+    expect(await delivery.health('remote')).toMatchObject({
+      backlog: 0,
+      signals: { log: { rejectedRecords: 0 } },
+    });
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    await context.fiber.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
