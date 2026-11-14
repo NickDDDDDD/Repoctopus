@@ -2,6 +2,7 @@
 change: measure-workflow-health-in-signoz
 design-doc: openspec/changes/measure-workflow-health-in-signoz/design.md
 base-ref: 7ea00e5db03a42d4148a374a585c24238e72b54b
+archived-with: 2026-11-14-measure-workflow-health-in-signoz
 ---
 
 # 工作流健康指标实施计划

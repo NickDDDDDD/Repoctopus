@@ -2,6 +2,8 @@
 comet_change: measure-workflow-health-in-signoz
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-14-measure-workflow-health-in-signoz
+status: final
 ---
 
 # 工作流遥测与 SigNoz 验收设计

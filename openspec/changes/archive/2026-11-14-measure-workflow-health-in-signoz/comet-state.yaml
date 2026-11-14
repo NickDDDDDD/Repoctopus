@@ -13,7 +13,7 @@ isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: 38bf326a9de5021dc1afcdffcb25a843d6750a12
-design_doc: openspec/changes/measure-workflow-health-in-signoz/design.md
+design_doc: openspec/changes/archive/2026-11-14-measure-workflow-health-in-signoz/design.md
 plan: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
 verify_result: pass
 verify_failures: 0
@@ -21,17 +21,17 @@ verification_report: docs/superpowers/reports/measure-workflow-health-in-signoz.
 branch_status: pending
 created_at: 2026-11-13
 verified_at: 2026-11-14
-archive_confirmation: pending
-archived: false
+archive_confirmation: confirmed
+archived: true
 bound_branch: codex/measure-workflow-health-in-signoz
 direct_override: false
-handoff_context: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
+handoff_context: openspec/changes/archive/2026-11-14-measure-workflow-health-in-signoz/.comet/handoff/design-context.json
 handoff_hash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v2
-  hash: bacc7f4714dbec2b690d4b8824ab19b03503e70406b447f1aab4c2d888828b10
+  hash: fd417ccb47db5dd7904aa30f9fa5bc81fcbdfc0753af0d57365fda3659b84593
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -50,22 +50,22 @@ run_checkpoint:
       workspaceBaseline:
         ref: f1697684-a525-480b-892e-5775f9ba2ac1
     state:
-      archiveConfirmation: pending
-      archived: false
+      archiveConfirmation: confirmed
+      archived: true
       autoTransition: true
       baseRef: 38bf326a9de5021dc1afcdffcb25a843d6750a12
       boundBranch: codex/measure-workflow-health-in-signoz
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 6
+      checkEpoch: 10
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-13
-      designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
+      designDoc: openspec/changes/archive/2026-11-14-measure-workflow-health-in-signoz/design.md
       directOverride: false
-      handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
+      handoffContext: openspec/changes/archive/2026-11-14-measure-workflow-health-in-signoz/.comet/handoff/design-context.json
       handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
       isolation: worktree
       language: zh-CN
@@ -80,8 +80,8 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pass
       workflow: full
-    status: waiting
-    sequence: 29
+    status: running
+    sequence: 38
     actions:
       - attempt: 1
         claim:
@@ -826,6 +826,256 @@ run_checkpoint:
         status: succeeded
         stepId: full.archive.prepare
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-40da75a83ba8714d473b27cd6720ffd22c0e6fc59468ed88483ed8617cd6e7b9
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:30
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: beae0e32a38821c610b6a04e929743eb49be275767d532037cc35201d957551c
+        outcome:
+          actionId: measure-workflow-health-in-signoz:30
+          attempt: 1
+          claimToken: portable-40da75a83ba8714d473b27cd6720ffd22c0e6fc59468ed88483ed8617cd6e7b9
+          inputHash: beae0e32a38821c610b6a04e929743eb49be275767d532037cc35201d957551c
+          outcomeId: 858fdf49-718a-4228-8b2d-a8099d9ec5f5
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 27cdb009ddc58fedb0c658312bdd261a886c49578924cfb804c447c24049e2b8
+            outcomeId: 858fdf49-718a-4228-8b2d-a8099d9ec5f5
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-cfa31a8cde844a6621517bbc6bf5e26e2d57e305c76b85976456bacd5fa1ae2b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:32
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: beae0e32a38821c610b6a04e929743eb49be275767d532037cc35201d957551c
+        outcome:
+          actionId: measure-workflow-health-in-signoz:32
+          attempt: 1
+          claimToken: portable-cfa31a8cde844a6621517bbc6bf5e26e2d57e305c76b85976456bacd5fa1ae2b
+          inputHash: beae0e32a38821c610b6a04e929743eb49be275767d532037cc35201d957551c
+          outcomeId: 1488b94d-2e87-45f9-a524-fb69985f9905
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 7
+            contentHash: 319a946d4d67f9d5941f52b025cd5700930f53672ce265d12f4981fe44b673e8
+            cwd: .
+            deliveryInputs: {}
+            environment: 0dfbb0e74fb5b0e0a00577883dbc1ab8e6bc55e98ea92ae62c5d1ae0487c5d2d
+            exitCode: 0
+            inputAfter: 574b5e8b545f344b5392da44c61f6ce18b93235d4c6220b30466718e0b7ae5d8
+            inputBefore: 574b5e8b545f344b5392da44c61f6ce18b93235d4c6220b30466718e0b7ae5d8
+            manifestHash: 93e0c097e9b907d7b8a2a8561dc4a577d12ec6110b83529c560160cb7f7166a6
+            manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/db3e6b72-c8bf-4a3e-b221-5f90e4da91c8.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/54775552-48d0-4f43-a5c6-6bf962a709aa.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: dac0d8d1ecb46b2641a625c24a1ee60e3bf632f3637285b117a3610e463b4e69
+            outcomeId: 1488b94d-2e87-45f9-a524-fb69985f9905
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-a6c863ed8c41195e2f116634911607143d3f10ff81110cd69d6e7a526c7d4ed9
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:34
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 8a2b28b19b167af7b1d525bbb28927ce52e47d0f2a5c71c9c1e6e4436e5b250d
+        outcome:
+          actionId: measure-workflow-health-in-signoz:34
+          attempt: 1
+          claimToken: portable-a6c863ed8c41195e2f116634911607143d3f10ff81110cd69d6e7a526c7d4ed9
+          inputHash: 8a2b28b19b167af7b1d525bbb28927ce52e47d0f2a5c71c9c1e6e4436e5b250d
+          outcomeId: 59182cc0-0cf0-4ac0-9ce6-f9867712d6cf
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+              主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。使用当前分支创建指向 origin/main 的
+              PR，CI 通过后合入。
+            targetBranch: codex/measure-workflow-health-in-signoz
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 883cbe774f0fa616880298f4caf969728b0c4b231a5f6d61b5c3424178bc68a9
+            outcomeId: 59182cc0-0cf0-4ac0-9ce6-f9867712d6cf
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-56fa8e38f9aead19cd87d3e1630536f0357bea3deb51545fbd2d1693507a0c07
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:36
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 5bf23b483d5469ccb6d324ce5cb61f5ad9cb317f19eb7bf4282ea4a0fbad93bf
+        outcome:
+          actionId: measure-workflow-health-in-signoz:36
+          attempt: 1
+          claimToken: portable-56fa8e38f9aead19cd87d3e1630536f0357bea3deb51545fbd2d1693507a0c07
+          inputHash: 5bf23b483d5469ccb6d324ce5cb61f5ad9cb317f19eb7bf4282ea4a0fbad93bf
+          outcomeId: b9ed6fbb-a045-40ae-9134-ed508a77eb1e
+          output:
+            baseCommit: d9e63e71e1fc77b1a633f042f23e1e02d7f7252e
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/measure-workflow-health-in-signoz
+            verifiedBranch: codex/measure-workflow-health-in-signoz
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c108672d9d5f5c71f512f2af1f11c744e3fc2556a3283fd0b8a518322c8f8132
+            outcomeId: b9ed6fbb-a045-40ae-9134-ed508a77eb1e
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-abbd1896dd4af1ab85d7b90285df2fcd9e284ae0f83f82532d08c8000eeb3eaf
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:37
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 5719a171e75a2e25c7360fed34ae77734985013dce8182f765480279d3d0bce9
+        outcome:
+          actionId: measure-workflow-health-in-signoz:37
+          artifacts:
+            - sha256: b32cd23cea736e1684e834abe518dfdbc14dce56c50489220e44708b10530103
+              uri: openspec/changes/archive/2026-11-14-measure-workflow-health-in-signoz/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-abbd1896dd4af1ab85d7b90285df2fcd9e284ae0f83f82532d08c8000eeb3eaf
+          inputHash: 5719a171e75a2e25c7360fed34ae77734985013dce8182f765480279d3d0bce9
+          outcomeId: 1a50c9a3-b0c6-446d-9a4c-2764bd636cd5
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-14-measure-workflow-health-in-signoz
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 960b744d5c2fabedbe592730fb693f37f79a3e87b853a6c1b41f00f4b0784d51
+            outcomeId: 1a50c9a3-b0c6-446d-9a4c-2764bd636cd5
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: measure-workflow-health-in-signoz:38
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 1ce80f8d2ffdb5dd16fda8e3621a262ad8064474542a494e8f00b1be32a79e3f
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
     actionContexts:
       measure-workflow-health-in-signoz:1:
         results: {}
@@ -863,6 +1113,24 @@ run_checkpoint:
       measure-workflow-health-in-signoz:28:
         results: {}
         sequence: 28
+      measure-workflow-health-in-signoz:30:
+        results: {}
+        sequence: 30
+      measure-workflow-health-in-signoz:32:
+        results: {}
+        sequence: 32
+      measure-workflow-health-in-signoz:34:
+        results: {}
+        sequence: 34
+      measure-workflow-health-in-signoz:36:
+        results: {}
+        sequence: 36
+      measure-workflow-health-in-signoz:37:
+        results: {}
+        sequence: 37
+      measure-workflow-health-in-signoz:38:
+        results: {}
+        sequence: 38
       measure-workflow-health-in-signoz:4:
         results: {}
         sequence: 4
@@ -965,7 +1233,7 @@ run_checkpoint:
       - id: measure-workflow-health-in-signoz:29
         stepId: full.archive.confirm
         sequence: 29
-        status: pending
+        status: resolved
         proposal:
           input:
             change: measure-workflow-health-in-signoz
@@ -988,6 +1256,40 @@ run_checkpoint:
           - reverify
           - later
         results: {}
+        decision:
+          id: classic-archive-5937346ed887411e49725ccf17e4cbf4f03e11ddda673b40428226788e4afd17-reverify
+          choice: reverify
+          proposalHash: 5937346ed887411e49725ccf17e4cbf4f03e11ddda673b40428226788e4afd17
+      - id: measure-workflow-health-in-signoz:35
+        stepId: full.archive.confirm
+        sequence: 35
+        status: resolved
+        proposal:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+                主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。使用当前分支创建指向 origin/main 的
+                PR，CI 通过后合入。
+              targetBranch: codex/measure-workflow-health-in-signoz
+        proposalHash: 99b8d7c1072d8aa68093917777c65a33e33243467d8fef2e9389473c14505f9e
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-99b8d7c1072d8aa68093917777c65a33e33243467d8fef2e9389473c14505f9e-pr
+          choice: pr
+          proposalHash: 99b8d7c1072d8aa68093917777c65a33e33243467d8fef2e9389473c14505f9e
     evidenceWaits:
       - id: measure-workflow-health-in-signoz:2
         stepId: full.open.evidence
@@ -1079,13 +1381,33 @@ run_checkpoint:
           ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/745c8c7e-4c63-48f2-b18d-8c0778283d24.log
           contentHash: 7d449d86a4a4be4f49acc953a26261a5efccbd4eba28354ffaa3950ff8819f51
           submissionId: 37e408d8-ff87-49ec-a1ad-ca94988d89e1
+      - id: measure-workflow-health-in-signoz:31
+        stepId: full.verify.report.evidence
+        sequence: 31
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+          contentHash: 4dd61e6af808ddd8a53079c6f1f93e1f6505bece7fabebc72e9405fe43d9366c
+          submissionId: 4b99a182-6647-4b46-8799-d588e44be500
+      - id: measure-workflow-health-in-signoz:33
+        stepId: full.verify.check.evidence
+        sequence: 33
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/54775552-48d0-4f43-a5c6-6bf962a709aa.log
+          contentHash: 319a946d4d67f9d5941f52b025cd5700930f53672ce265d12f4981fe44b673e8
+          submissionId: cd9b68cb-f8af-4347-8221-1dda2744b23b
     ready: []
     joins: {}
     outputs: {}
     children: []
     lineage: []
-  sourceRevision: 45
-  sourceHash: e9a9d95773219770623d94e59f4e97ebff755e6ae0b4e00e1238a7d001e2daa8
+  sourceRevision: 59
+  sourceHash: 0d95ddd81edb3b5f44099298a93725f1425b69d89ab9038d1ac2430f77818780
   pool:
     version: 3
     values:
@@ -1266,6 +1588,79 @@ run_checkpoint:
         timeoutMs: 2700000
       - contentHash: 7d449d86a4a4be4f49acc953a26261a5efccbd4eba28354ffaa3950ff8819f51
         ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/745c8c7e-4c63-48f2-b18d-8c0778283d24.log
+      - choice: reverify
+        proposal:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+                主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。验证通过 1242 项，4 项跳过。目标为
+                origin/main，使用当前分支创建 PR，CI 通过后合入。
+              targetBranch: codex/measure-workflow-health-in-signoz
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+          主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。验证通过 1242 项，4 项跳过。目标为
+          origin/main，使用当前分支创建 PR，CI 通过后合入。
+        targetBranch: codex/measure-workflow-health-in-signoz
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 7
+        contentHash: 319a946d4d67f9d5941f52b025cd5700930f53672ce265d12f4981fe44b673e8
+        cwd: .
+        deliveryInputs: {}
+        environment: 0dfbb0e74fb5b0e0a00577883dbc1ab8e6bc55e98ea92ae62c5d1ae0487c5d2d
+        exitCode: 0
+        inputAfter: 574b5e8b545f344b5392da44c61f6ce18b93235d4c6220b30466718e0b7ae5d8
+        inputBefore: 574b5e8b545f344b5392da44c61f6ce18b93235d4c6220b30466718e0b7ae5d8
+        manifestHash: 93e0c097e9b907d7b8a2a8561dc4a577d12ec6110b83529c560160cb7f7166a6
+        manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/db3e6b72-c8bf-4a3e-b221-5f90e4da91c8.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/54775552-48d0-4f43-a5c6-6bf962a709aa.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 319a946d4d67f9d5941f52b025cd5700930f53672ce265d12f4981fe44b673e8
+        ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/54775552-48d0-4f43-a5c6-6bf962a709aa.log
+      - choice: pr
+        proposal:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+                主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。使用当前分支创建指向 origin/main 的
+                PR，CI 通过后合入。
+              targetBranch: codex/measure-workflow-health-in-signoz
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+          主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。使用当前分支创建指向 origin/main 的 PR，CI
+          通过后合入。
+        targetBranch: codex/measure-workflow-health-in-signoz
+      - baseCommit: d9e63e71e1fc77b1a633f042f23e1e02d7f7252e
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/measure-workflow-health-in-signoz
+        verifiedBranch: codex/measure-workflow-health-in-signoz
+      - archiveDirectory: openspec/changes/archive/2026-11-14-measure-workflow-health-in-signoz
       - sequence: 9
         value:
           boundBranch: codex/measure-workflow-health-in-signoz
@@ -1515,6 +1910,23 @@ run_checkpoint:
         value:
           contentHash: 7d449d86a4a4be4f49acc953a26261a5efccbd4eba28354ffaa3950ff8819f51
           ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/745c8c7e-4c63-48f2-b18d-8c0778283d24.log
+      - sequence: 29
+        value:
+          choice: reverify
+          proposal:
+            input:
+              change: measure-workflow-health-in-signoz
+              changeDir: openspec/changes/measure-workflow-health-in-signoz
+              workspaceBaseline:
+                ref: f1697684-a525-480b-892e-5775f9ba2ac1
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+                  主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。验证通过 1242 项，4 项跳过。目标为
+                  origin/main，使用当前分支创建 PR，CI 通过后合入。
+                targetBranch: codex/measure-workflow-health-in-signoz
       - sequence: 28
         value:
           prBaseBranch: main
@@ -1523,6 +1935,78 @@ run_checkpoint:
             主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。验证通过 1242 项，4 项跳过。目标为
             origin/main，使用当前分支创建 PR，CI 通过后合入。
           targetBranch: codex/measure-workflow-health-in-signoz
+      - sequence: 31
+        value:
+          contentHash: 4dd61e6af808ddd8a53079c6f1f93e1f6505bece7fabebc72e9405fe43d9366c
+          ref: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+      - sequence: 30
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+      - sequence: 32
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 7
+          contentHash: 319a946d4d67f9d5941f52b025cd5700930f53672ce265d12f4981fe44b673e8
+          cwd: .
+          deliveryInputs: {}
+          environment: 0dfbb0e74fb5b0e0a00577883dbc1ab8e6bc55e98ea92ae62c5d1ae0487c5d2d
+          exitCode: 0
+          inputAfter: 574b5e8b545f344b5392da44c61f6ce18b93235d4c6220b30466718e0b7ae5d8
+          inputBefore: 574b5e8b545f344b5392da44c61f6ce18b93235d4c6220b30466718e0b7ae5d8
+          manifestHash: 93e0c097e9b907d7b8a2a8561dc4a577d12ec6110b83529c560160cb7f7166a6
+          manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/db3e6b72-c8bf-4a3e-b221-5f90e4da91c8.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/54775552-48d0-4f43-a5c6-6bf962a709aa.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 33
+        value:
+          contentHash: 319a946d4d67f9d5941f52b025cd5700930f53672ce265d12f4981fe44b673e8
+          ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/54775552-48d0-4f43-a5c6-6bf962a709aa.log
+      - sequence: 35
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: measure-workflow-health-in-signoz
+              changeDir: openspec/changes/measure-workflow-health-in-signoz
+              workspaceBaseline:
+                ref: f1697684-a525-480b-892e-5775f9ba2ac1
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+                  主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。使用当前分支创建指向 origin/main
+                  的 PR，CI 通过后合入。
+                targetBranch: codex/measure-workflow-health-in-signoz
+      - sequence: 34
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+            主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。使用当前分支创建指向 origin/main 的
+            PR，CI 通过后合入。
+          targetBranch: codex/measure-workflow-health-in-signoz
+      - sequence: 36
+        value:
+          baseCommit: d9e63e71e1fc77b1a633f042f23e1e02d7f7252e
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/measure-workflow-health-in-signoz
+          verifiedBranch: codex/measure-workflow-health-in-signoz
+      - sequence: 37
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-14-measure-workflow-health-in-signoz
     nodes:
       - key: full.open
         value: 0
@@ -1824,251 +2308,286 @@ run_checkpoint:
         left: 52
         right: 58
         height: 5
-      - key: full.build.configure
+      - key: full.archive.confirm
         value: 21
         left: null
         right: null
         height: 1
-      - key: full.design.confirm
-        value: 23
+      - key: full.build.check
+        value: 18
         left: null
         right: null
         height: 1
-      - key: full.build.confirm
+      - key: full.archive.prepare
         value: 22
         left: 60
         right: 61
         height: 2
-      - key: full.design.evidence
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 62
+        right: 63
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 64
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 65
+        right: 58
+        height: 5
+      - key: full.verify.check.evidence
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 67
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 23
+        left: 54
+        right: 68
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 69
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 65
+        right: 70
+        height: 5
+      - key: full.archive.confirm
         value: 25
         left: null
         right: null
         height: 1
-      - key: full.open
+      - key: full.archive.prepare
+        value: 26
+        left: 72
+        right: 61
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 73
+        right: 63
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 74
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 75
+        right: 70
+        height: 5
+      - key: full.archive.preflight
         value: 27
         left: null
         right: null
         height: 1
-      - key: full.design.handoff
-        value: 26
-        left: 63
-        right: 64
+      - key: full.archive.confirm
+        value: 25
+        left: null
+        right: 77
         height: 2
-      - key: full.open.revalidate
-        value: 30
+      - key: full.archive.prepare
+        value: 26
+        left: 78
+        right: 61
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 63
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 79
+        right: 80
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 81
+        right: 70
+        height: 5
+      - key: full.archive.confirm
+        value: 25
         left: null
         right: null
         height: 1
-      - key: full.open.evidence
-        value: 29
+      - key: full.archive.preflight
+        value: 27
         left: null
-        right: 66
-        height: 2
-      - key: full.open.confirm
+        right: null
+        height: 1
+      - key: full.archive.execute
         value: 28
-        left: 65
-        right: 67
+        left: 83
+        right: 84
+        height: 2
+      - key: full.archive.prepare
+        value: 26
+        left: 85
+        right: 61
         height: 3
-      - key: full.design.document
-        value: 24
-        left: 62
-        right: 68
+      - key: full.build.check.evidence
+        value: 14
+        left: 86
+        right: 80
         height: 4
-      - key: full.build.plan
-        value: 31
+      - key: full.design.document
+        value: 6
+        left: 87
+        right: 70
+        height: 5
+      - key: full.build.configure
+        value: 29
         left: null
         right: null
         height: 1
       - key: full.design.confirm
-        value: 23
+        value: 31
         left: null
         right: null
         height: 1
-      - key: full.build.plan.evidence
-        value: 32
-        left: 70
-        right: 71
-        height: 2
       - key: full.build.confirm
-        value: 22
-        left: 60
-        right: 72
-        height: 3
-      - key: full.design.document
-        value: 24
-        left: 73
-        right: 68
-        height: 4
-      - key: full.build.execute
+        value: 30
+        left: 89
+        right: 90
+        height: 2
+      - key: full.design.evidence
         value: 33
         left: null
         right: null
         height: 1
-      - key: full.build.confirm
-        value: 22
-        left: 60
-        right: 75
-        height: 2
-      - key: full.build.plan.evidence
-        value: 32
-        left: null
-        right: 71
-        height: 2
-      - key: full.build.plan
-        value: 31
-        left: 76
-        right: 77
-        height: 3
-      - key: full.design.document
-        value: 24
-        left: 78
-        right: 68
-        height: 4
-      - key: full.build.check
-        value: 34
-        left: null
-        right: null
-        height: 1
-      - key: full.build.configure
-        value: 21
-        left: null
-        right: null
-        height: 1
-      - key: full.build.check.evidence
+      - key: full.open
         value: 35
-        left: 80
-        right: 81
-        height: 2
-      - key: full.build.confirm
-        value: 22
-        left: 82
-        right: 75
-        height: 3
-      - key: full.build.plan
-        value: 31
-        left: 83
-        right: 77
-        height: 4
-      - key: full.design.document
-        value: 24
-        left: 84
-        right: 68
-        height: 5
-      - key: full.open.evidence
-        value: 29
         left: null
         right: null
         height: 1
-      - key: full.verify.run
-        value: 37
-        left: null
-        right: null
-        height: 1
-      - key: full.verify.report.evidence
-        value: 36
-        left: null
-        right: 87
+      - key: full.design.handoff
+        value: 34
+        left: 92
+        right: 93
         height: 2
       - key: full.open.revalidate
-        value: 30
-        left: 86
-        right: 88
-        height: 3
-      - key: full.open.confirm
-        value: 28
-        left: 65
-        right: 89
-        height: 4
-      - key: full.design.document
-        value: 24
-        left: 84
-        right: 90
-        height: 5
-      - key: full.verify.check
         value: 38
         left: null
         right: null
         height: 1
-      - key: full.verify.report.evidence
-        value: 36
-        left: 92
-        right: 87
-        height: 2
-      - key: full.open.revalidate
-        value: 30
-        left: 86
-        right: 93
-        height: 3
-      - key: full.open.confirm
-        value: 28
-        left: 65
-        right: 94
-        height: 4
-      - key: full.design.document
-        value: 24
-        left: 84
-        right: 95
-        height: 5
-      - key: full.build.plan.evidence
-        value: 40
+      - key: full.open.evidence
+        value: 37
         left: null
-        right: 71
+        right: 95
         height: 2
-      - key: full.build.plan
-        value: 39
-        left: 83
+      - key: full.open.confirm
+        value: 36
+        left: 94
+        right: 96
+        height: 3
+      - key: full.design.document
+        value: 32
+        left: 91
         right: 97
         height: 4
+      - key: full.build.plan
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 40
+        left: 99
+        right: 100
+        height: 2
+      - key: full.build.confirm
+        value: 30
+        left: 89
+        right: 101
+        height: 3
       - key: full.design.document
-        value: 24
-        left: 98
-        right: 95
-        height: 5
+        value: 32
+        left: 102
+        right: 97
+        height: 4
       - key: full.build.execute
         value: 41
         left: null
         right: null
         height: 1
       - key: full.build.confirm
-        value: 22
-        left: 82
+        value: 30
+        left: 89
+        right: 104
+        height: 2
+      - key: full.build.plan.evidence
+        value: 40
+        left: null
         right: 100
-        height: 3
+        height: 2
       - key: full.build.plan
         value: 39
-        left: 101
+        left: 105
+        right: 106
+        height: 3
+      - key: full.design.document
+        value: 32
+        left: 107
         right: 97
         height: 4
-      - key: full.design.document
-        value: 24
-        left: 102
-        right: 95
-        height: 5
       - key: full.build.check
         value: 42
         left: null
         right: null
         height: 1
+      - key: full.build.configure
+        value: 29
+        left: null
+        right: null
+        height: 1
       - key: full.build.check.evidence
         value: 43
-        left: 104
-        right: 81
+        left: 109
+        right: 110
         height: 2
       - key: full.build.confirm
-        value: 22
-        left: 105
-        right: 100
+        value: 30
+        left: 111
+        right: 104
         height: 3
       - key: full.build.plan
         value: 39
-        left: 106
-        right: 97
+        left: 112
+        right: 106
         height: 4
       - key: full.design.document
-        value: 24
-        left: 107
-        right: 95
+        value: 32
+        left: 113
+        right: 97
         height: 5
+      - key: full.open.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
       - key: full.verify.run
         value: 45
         left: null
@@ -2076,503 +2595,693 @@ run_checkpoint:
         height: 1
       - key: full.verify.report.evidence
         value: 44
-        left: 92
-        right: 109
+        left: null
+        right: 116
         height: 2
       - key: full.open.revalidate
-        value: 30
-        left: 86
-        right: 110
+        value: 38
+        left: 115
+        right: 117
         height: 3
       - key: full.open.confirm
-        value: 28
-        left: 65
-        right: 111
+        value: 36
+        left: 94
+        right: 118
         height: 4
       - key: full.design.document
-        value: 24
-        left: 107
-        right: 112
+        value: 32
+        left: 113
+        right: 119
         height: 5
-      - key: full.open.revalidate
-        value: 30
-        left: 86
-        right: null
-        height: 2
-      - key: full.verify.check.evidence
-        value: 47
+      - key: full.verify.check
+        value: 46
         left: null
         right: null
         height: 1
       - key: full.verify.report.evidence
         value: 44
-        left: 115
-        right: 109
-        height: 2
-      - key: full.verify.check
-        value: 46
-        left: 114
+        left: 121
         right: 116
-        height: 3
-      - key: full.open.confirm
-        value: 28
-        left: 65
-        right: 117
-        height: 4
-      - key: full.design.document
-        value: 24
-        left: 107
-        right: 118
-        height: 5
-      - key: full.open
-        value: 27
-        left: null
-        right: null
-        height: 1
-      - key: full.open.evidence
-        value: 29
-        left: null
-        right: null
-        height: 1
-      - key: full.open.confirm
-        value: 28
-        left: 120
-        right: 121
         height: 2
       - key: full.open.revalidate
+        value: 38
+        left: 115
+        right: 122
+        height: 3
+      - key: full.open.confirm
+        value: 36
+        left: 94
+        right: 123
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 113
+        right: 124
+        height: 5
+      - key: full.build.plan.evidence
+        value: 48
+        left: null
+        right: 100
+        height: 2
+      - key: full.build.plan
+        value: 47
+        left: 112
+        right: 126
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 127
+        right: 124
+        height: 5
+      - key: full.build.execute
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
         value: 30
+        left: 111
+        right: 129
+        height: 3
+      - key: full.build.plan
+        value: 47
+        left: 130
+        right: 126
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 131
+        right: 124
+        height: 5
+      - key: full.build.check
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 51
+        left: 133
+        right: 110
+        height: 2
+      - key: full.build.confirm
+        value: 30
+        left: 134
+        right: 129
+        height: 3
+      - key: full.build.plan
+        value: 47
+        left: 135
+        right: 126
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 136
+        right: 124
+        height: 5
+      - key: full.verify.run
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 52
+        left: 121
+        right: 138
+        height: 2
+      - key: full.open.revalidate
+        value: 38
+        left: 115
+        right: 139
+        height: 3
+      - key: full.open.confirm
+        value: 36
+        left: 94
+        right: 140
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 136
+        right: 141
+        height: 5
+      - key: full.open.revalidate
+        value: 38
+        left: 115
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 52
+        left: 144
+        right: 138
+        height: 2
+      - key: full.verify.check
+        value: 54
+        left: 143
+        right: 145
+        height: 3
+      - key: full.open.confirm
+        value: 36
+        left: 94
+        right: 146
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 136
+        right: 147
+        height: 5
+      - key: full.archive.confirm
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 57
+        left: 149
+        right: 150
+        height: 2
+      - key: full.build.confirm
+        value: 30
+        left: 110
+        right: 129
+        height: 2
+      - key: full.build.check.evidence
+        value: 51
+        left: 151
+        right: 152
+        height: 3
+      - key: full.build.plan
+        value: 47
+        left: 153
+        right: 126
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 154
+        right: 147
+        height: 5
+      - key: full.verify.run
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 58
+        left: 144
+        right: 156
+        height: 2
+      - key: full.verify.check
+        value: 54
+        left: 143
+        right: 157
+        height: 3
+      - key: full.open.confirm
+        value: 36
+        left: 94
+        right: 158
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 154
+        right: 159
+        height: 5
+      - key: full.verify.check.evidence
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 58
+        left: 161
+        right: 156
+        height: 2
+      - key: full.verify.check
+        value: 60
+        left: 143
+        right: 162
+        height: 3
+      - key: full.open.confirm
+        value: 36
+        left: 94
+        right: 163
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 154
+        right: 164
+        height: 5
+      - key: full.archive.confirm
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 63
+        left: 166
+        right: 150
+        height: 2
+      - key: full.build.check.evidence
+        value: 51
+        left: 167
+        right: 152
+        height: 3
+      - key: full.build.plan
+        value: 47
+        left: 168
+        right: 126
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 169
+        right: 164
+        height: 5
+      - key: full.archive.preflight
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 62
+        left: null
+        right: 171
+        height: 2
+      - key: full.archive.prepare
+        value: 63
+        left: 172
+        right: 150
+        height: 3
+      - key: full.build.plan
+        value: 47
+        left: 152
+        right: 126
+        height: 3
+      - key: full.build.check.evidence
+        value: 51
+        left: 173
+        right: 174
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 175
+        right: 164
+        height: 5
+      - key: full.archive.confirm
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 65
+        left: 177
+        right: 178
+        height: 2
+      - key: full.archive.prepare
+        value: 63
+        left: 179
+        right: 150
+        height: 3
+      - key: full.build.check.evidence
+        value: 51
+        left: 180
+        right: 174
+        height: 4
+      - key: full.design.document
+        value: 32
+        left: 181
+        right: 164
+        height: 5
+      - key: full.open
+        value: 35
         left: null
         right: null
         height: 1
       - key: full.open.evidence
-        value: 29
+        value: 37
         left: null
-        right: 123
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 36
+        left: 183
+        right: 184
+        height: 2
+      - key: full.open.revalidate
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 37
+        left: null
+        right: 186
         height: 2
       - key: full.open.confirm
-        value: 28
-        left: 120
-        right: 124
+        value: 36
+        left: 183
+        right: 187
         height: 3
       - key: full.design.confirm
-        value: 23
+        value: 31
         left: null
         right: null
         height: 1
       - key: full.open
-        value: 27
+        value: 35
         left: null
         right: null
         height: 1
       - key: full.design.handoff
-        value: 26
-        left: 126
-        right: 127
+        value: 34
+        left: 189
+        right: 190
         height: 2
       - key: full.open.confirm
-        value: 28
-        left: 128
-        right: 124
+        value: 36
+        left: 191
+        right: 187
         height: 3
       - key: full.design.confirm
-        value: 23
+        value: 31
         left: null
         right: null
         height: 1
       - key: full.design.evidence
-        value: 25
+        value: 33
         left: null
         right: null
         height: 1
       - key: full.design.document
-        value: 24
-        left: 130
-        right: 131
+        value: 32
+        left: 193
+        right: 194
         height: 2
       - key: full.design.handoff
-        value: 26
-        left: 132
-        right: 127
+        value: 34
+        left: 195
+        right: 190
         height: 3
       - key: full.open.confirm
-        value: 28
-        left: 133
-        right: 124
+        value: 36
+        left: 196
+        right: 187
+        height: 4
+      - key: full.open.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 35
+        left: null
+        right: 198
+        height: 2
+      - key: full.design.handoff
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 37
+        left: 201
+        right: 202
+        height: 2
+      - key: full.open
+        value: 35
+        left: 200
+        right: 203
+        height: 3
+      - key: full.build.configure
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 33
+        left: 206
+        right: 207
+        height: 2
+      - key: full.design.confirm
+        value: 31
+        left: 205
+        right: 208
+        height: 3
+      - key: full.open
+        value: 35
+        left: 209
+        right: 203
         height: 4
       - key: full.archive.prepare
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 50
+        left: 211
+        right: 212
+        height: 2
+      - key: full.build.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
         value: 48
         left: null
         right: null
         height: 1
-      - key: full.build.check.evidence
-        value: 43
-        left: null
-        right: null
-        height: 1
-      - key: full.build.check
-        value: 42
-        left: 135
-        right: 136
-        height: 2
-      - key: full.build.confirm
-        value: 22
-        left: null
-        right: null
-        height: 1
       - key: full.build.plan
-        value: 39
+        value: 47
         left: null
-        right: null
-        height: 1
-      - key: full.design.confirm
-        value: 23
-        left: null
-        right: null
-        height: 1
-      - key: full.build.plan.evidence
-        value: 40
-        left: 139
-        right: 140
+        right: 215
         height: 2
       - key: full.build.execute
-        value: 41
-        left: 138
-        right: 141
+        value: 49
+        left: 214
+        right: 216
         height: 3
       - key: full.build.configure
-        value: 21
-        left: 137
-        right: 142
-        height: 4
-      - key: full.design.handoff
-        value: 26
-        left: 131
-        right: 127
-        height: 2
-      - key: full.open.evidence
         value: 29
-        left: null
-        right: null
-        height: 1
-      - key: full.verify.check
-        value: 46
-        left: null
-        right: null
-        height: 1
+        left: 213
+        right: 217
+        height: 4
       - key: full.open.revalidate
-        value: 30
-        left: 145
-        right: 146
-        height: 2
-      - key: full.verify.run
-        value: 45
+        value: 38
         left: null
         right: null
         height: 1
-      - key: full.verify.report.evidence
-        value: 44
-        left: null
-        right: 148
+      - key: full.open.evidence
+        value: 37
+        left: 201
+        right: 219
         height: 2
       - key: full.verify.check.evidence
-        value: 47
-        left: 147
-        right: 149
-        height: 3
-      - key: full.open.confirm
-        value: 28
-        left: 144
-        right: 150
-        height: 4
-      - key: full.design.document
-        value: 24
-        left: 143
-        right: 151
-        height: 5
-      - key: full.open.evidence
-        value: 29
+        value: 55
         left: null
         right: null
         height: 1
-      - key: full.open
-        value: 27
-        left: null
-        right: 153
-        height: 2
-      - key: full.design.handoff
-        value: 26
-        left: null
-        right: null
-        height: 1
-      - key: full.open.confirm
-        value: 28
-        left: null
-        right: null
-        height: 1
-      - key: full.open.revalidate
-        value: 30
-        left: null
-        right: null
-        height: 1
-      - key: full.open.evidence
-        value: 29
-        left: 156
-        right: 157
-        height: 2
-      - key: full.open
-        value: 27
-        left: 155
-        right: 158
-        height: 3
-      - key: full.build.configure
-        value: 21
-        left: null
-        right: null
-        height: 1
-      - key: full.design.document
-        value: 24
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 26
-        left: null
-        right: null
-        height: 1
-      - key: full.design.evidence
-        value: 25
-        left: 161
-        right: 162
-        height: 2
-      - key: full.design.confirm
-        value: 23
-        left: 160
-        right: 163
-        height: 3
-      - key: full.open
-        value: 27
-        left: 164
-        right: 158
-        height: 4
-      - key: full.open
-        value: 27
-        left: null
-        right: null
-        height: 1
-      - key: full.design.confirm
-        value: 23
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 26
-        left: null
-        right: null
-        height: 1
-      - key: full.design.document
-        value: 24
-        left: 167
-        right: 168
-        height: 2
-      - key: full.open.confirm
-        value: 28
-        left: null
-        right: null
-        height: 1
-      - key: full.open.revalidate
-        value: 30
-        left: null
-        right: null
-        height: 1
-      - key: full.open.evidence
-        value: 29
-        left: 170
-        right: 171
-        height: 2
-      - key: full.open
-        value: 27
-        left: 169
-        right: 172
-        height: 3
-      - key: full.build.configure
-        value: 21
-        left: null
-        right: null
-        height: 1
-      - key: full.build.plan
-        value: 31
-        left: null
-        right: null
-        height: 1
-      - key: full.build.confirm
-        value: 22
-        left: 174
-        right: 175
-        height: 2
-      - key: full.design.document
-        value: 24
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 26
-        left: null
-        right: null
-        height: 1
-      - key: full.design.evidence
-        value: 25
-        left: 177
-        right: 178
-        height: 2
-      - key: full.design.confirm
-        value: 23
-        left: 176
-        right: 179
-        height: 3
-      - key: full.open
-        value: 27
-        left: 180
-        right: 172
-        height: 4
-      - key: full.build.check
-        value: 34
-        left: null
-        right: null
-        height: 1
-      - key: full.build.configure
-        value: 21
-        left: 182
-        right: null
-        height: 2
-      - key: full.build.execute
-        value: 33
-        left: null
-        right: null
-        height: 1
-      - key: full.build.plan.evidence
-        value: 32
-        left: null
-        right: null
-        height: 1
-      - key: full.build.plan
-        value: 31
-        left: 184
-        right: 185
-        height: 2
-      - key: full.build.confirm
-        value: 22
-        left: 183
-        right: 186
-        height: 3
-      - key: full.open
-        value: 27
-        left: 179
-        right: 172
-        height: 3
-      - key: full.design.confirm
-        value: 23
-        left: 187
-        right: 188
-        height: 4
-      - key: full.build.check
-        value: 34
-        left: null
-        right: null
-        height: 1
-      - key: full.build.configure
-        value: 21
-        left: null
-        right: null
-        height: 1
-      - key: full.build.check.evidence
-        value: 35
-        left: 190
-        right: 191
-        height: 2
-      - key: full.build.confirm
-        value: 22
-        left: 192
-        right: 186
-        height: 3
       - key: full.verify.run
-        value: 37
+        value: 53
         left: null
         right: null
         height: 1
-      - key: full.open.revalidate
-        value: 30
-        left: null
-        right: 194
+      - key: full.verify.report.evidence
+        value: 52
+        left: 221
+        right: 222
         height: 2
-      - key: full.open.evidence
-        value: 29
-        left: 170
-        right: 195
+      - key: full.verify.check
+        value: 54
+        left: 220
+        right: 223
         height: 3
       - key: full.open
-        value: 27
-        left: 179
-        right: 196
+        value: 35
+        left: 208
+        right: 224
         height: 4
       - key: full.design.confirm
-        value: 23
-        left: 193
-        right: 197
+        value: 31
+        left: 218
+        right: 225
         height: 5
-      - key: full.build.plan
-        value: 39
-        left: 184
-        right: 185
-        height: 2
-      - key: full.build.confirm
-        value: 22
-        left: 192
-        right: 199
-        height: 3
-      - key: full.open.revalidate
-        value: 30
+      - key: full.archive.confirm
+        value: 56
         left: null
         right: null
         height: 1
-      - key: full.open.evidence
-        value: 29
-        left: 170
-        right: 201
+      - key: full.archive.prepare
+        value: 63
+        left: 227
+        right: null
         height: 2
+      - key: full.build.check
+        value: 50
+        left: 228
+        right: 212
+        height: 3
+      - key: full.build.configure
+        value: 29
+        left: 229
+        right: 217
+        height: 4
+      - key: full.verify.check.evidence
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 59
+        left: null
+        right: null
+        height: 1
       - key: full.verify.report.evidence
+        value: 58
+        left: 231
+        right: 232
+        height: 2
+      - key: full.verify.check
+        value: 60
+        left: 220
+        right: 233
+        height: 3
+      - key: full.open
+        value: 35
+        left: 208
+        right: 234
+        height: 4
+      - key: full.design.confirm
+        value: 31
+        left: 230
+        right: 235
+        height: 5
+      - key: full.open
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 32
+        left: 238
+        right: 239
+        height: 2
+      - key: full.open.confirm
         value: 36
         left: null
         right: null
         height: 1
-      - key: full.verify.run
-        value: 37
-        left: 203
-        right: null
-        height: 2
-      - key: full.verify.check
+      - key: full.open.revalidate
         value: 38
-        left: 202
-        right: 204
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 37
+        left: 241
+        right: 242
+        height: 2
+      - key: full.open
+        value: 35
+        left: 240
+        right: 243
+        height: 3
+      - key: full.build.configure
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 30
+        left: 245
+        right: 246
+        height: 2
+      - key: full.design.document
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 33
+        left: 248
+        right: 249
+        height: 2
+      - key: full.design.confirm
+        value: 31
+        left: 247
+        right: 250
         height: 3
       - key: full.open
-        value: 27
-        left: 179
-        right: 205
+        value: 35
+        left: 251
+        right: 243
         height: 4
-      - key: full.design.confirm
-        value: 23
-        left: 200
-        right: 206
-        height: 5
       - key: full.build.check
         value: 42
         left: null
         right: null
         height: 1
-      - key: full.build.check.evidence
-        value: 35
-        left: 208
-        right: 191
+      - key: full.build.configure
+        value: 29
+        left: 253
+        right: null
         height: 2
       - key: full.build.execute
         value: 41
@@ -2586,49 +3295,89 @@ run_checkpoint:
         height: 1
       - key: full.build.plan
         value: 39
-        left: 210
-        right: 211
+        left: 255
+        right: 256
         height: 2
       - key: full.build.confirm
-        value: 22
-        left: 209
-        right: 212
+        value: 30
+        left: 254
+        right: 257
+        height: 3
+      - key: full.open
+        value: 35
+        left: 250
+        right: 243
         height: 3
       - key: full.design.confirm
-        value: 23
-        left: 213
-        right: 206
-        height: 5
+        value: 31
+        left: 258
+        right: 259
+        height: 4
+      - key: full.build.check
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 29
+        left: null
+        right: null
+        height: 1
       - key: full.build.check.evidence
         value: 43
-        left: 208
-        right: 191
+        left: 261
+        right: 262
         height: 2
       - key: full.build.confirm
-        value: 22
-        left: 215
-        right: 212
+        value: 30
+        left: 263
+        right: 257
         height: 3
       - key: full.verify.run
         value: 45
-        left: 203
+        left: null
         right: null
-        height: 2
-      - key: full.verify.check
+        height: 1
+      - key: full.open.revalidate
         value: 38
-        left: 202
-        right: 217
+        left: null
+        right: 265
+        height: 2
+      - key: full.open.evidence
+        value: 37
+        left: 241
+        right: 266
         height: 3
       - key: full.open
-        value: 27
-        left: 179
-        right: 218
+        value: 35
+        left: 250
+        right: 267
         height: 4
       - key: full.design.confirm
-        value: 23
-        left: 216
-        right: 219
+        value: 31
+        left: 264
+        right: 268
         height: 5
+      - key: full.build.plan
+        value: 47
+        left: 255
+        right: 256
+        height: 2
+      - key: full.build.confirm
+        value: 30
+        left: 263
+        right: 270
+        height: 3
+      - key: full.open.revalidate
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 37
+        left: 241
+        right: 272
+        height: 2
       - key: full.verify.report.evidence
         value: 44
         left: null
@@ -2636,23 +3385,188 @@ run_checkpoint:
         height: 1
       - key: full.verify.run
         value: 45
-        left: 221
+        left: 274
         right: null
         height: 2
       - key: full.verify.check
         value: 46
-        left: 202
-        right: 222
+        left: 273
+        right: 275
         height: 3
       - key: full.open
-        value: 27
-        left: 179
-        right: 223
+        value: 35
+        left: 250
+        right: 276
         height: 4
       - key: full.design.confirm
-        value: 23
-        left: 216
-        right: 224
+        value: 31
+        left: 271
+        right: 277
+        height: 5
+      - key: full.build.check
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 43
+        left: 279
+        right: 262
+        height: 2
+      - key: full.build.execute
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 47
+        left: 281
+        right: 282
+        height: 2
+      - key: full.build.confirm
+        value: 30
+        left: 280
+        right: 283
+        height: 3
+      - key: full.design.confirm
+        value: 31
+        left: 284
+        right: 277
+        height: 5
+      - key: full.build.check.evidence
+        value: 51
+        left: 279
+        right: 262
+        height: 2
+      - key: full.build.confirm
+        value: 30
+        left: 286
+        right: 283
+        height: 3
+      - key: full.verify.run
+        value: 53
+        left: 274
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 46
+        left: 273
+        right: 288
+        height: 3
+      - key: full.open
+        value: 35
+        left: 250
+        right: 289
+        height: 4
+      - key: full.design.confirm
+        value: 31
+        left: 287
+        right: 290
+        height: 5
+      - key: full.verify.report.evidence
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 53
+        left: 292
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 54
+        left: 273
+        right: 293
+        height: 3
+      - key: full.open
+        value: 35
+        left: 250
+        right: 294
+        height: 4
+      - key: full.design.confirm
+        value: 31
+        left: 287
+        right: 295
+        height: 5
+      - key: full.archive.confirm
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 57
+        left: 297
+        right: 298
+        height: 2
+      - key: full.build.check.evidence
+        value: 51
+        left: 299
+        right: 262
+        height: 3
+      - key: full.build.confirm
+        value: 30
+        left: 300
+        right: 283
+        height: 4
+      - key: full.verify.check.evidence
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 52
+        left: 302
+        right: 303
+        height: 2
+      - key: full.verify.check
+        value: 54
+        left: 273
+        right: 304
+        height: 3
+      - key: full.open
+        value: 35
+        left: 250
+        right: 305
+        height: 4
+      - key: full.design.confirm
+        value: 31
+        left: 301
+        right: 306
+        height: 5
+      - key: full.verify.report.evidence
+        value: 58
+        left: 302
+        right: 303
+        height: 2
+      - key: full.verify.check
+        value: 60
+        left: 273
+        right: 308
+        height: 3
+      - key: full.open
+        value: 35
+        left: 250
+        right: 309
+        height: 4
+      - key: full.design.confirm
+        value: 31
+        left: 301
+        right: 310
         height: 5
     maps:
       - null
@@ -2668,34 +3582,48 @@ run_checkpoint:
       - 48
       - 53
       - 59
-      - 69
-      - 74
-      - 79
-      - 85
-      - 91
-      - 96
-      - 99
+      - 66
+      - 71
+      - 76
+      - 82
+      - 88
+      - 98
       - 103
       - 108
-      - 113
-      - 119
-      - 122
+      - 114
+      - 120
       - 125
-      - 129
-      - 134
-      - 152
-      - 154
-      - 159
+      - 128
+      - 132
+      - 137
+      - 142
+      - 148
+      - 155
+      - 160
       - 165
-      - 166
-      - 173
-      - 181
-      - 189
-      - 198
-      - 207
-      - 214
-      - 220
-      - 225
+      - 170
+      - 176
+      - 182
+      - 185
+      - 188
+      - 192
+      - 197
+      - 199
+      - 204
+      - 210
+      - 226
+      - 236
+      - 237
+      - 244
+      - 252
+      - 260
+      - 269
+      - 278
+      - 285
+      - 291
+      - 296
+      - 307
+      - 311
     bindings:
       - path:
           - actions
@@ -2794,6 +3722,42 @@ run_checkpoint:
           - outputs
         map: 12
       - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "21"
+          - input
+          - outputs
+        map: 17
+      - path:
           - actionContexts
           - measure-workflow-health-in-signoz:1
           - results
@@ -2802,144 +3766,189 @@ run_checkpoint:
           - actionContexts
           - measure-workflow-health-in-signoz:11
           - results
-        map: 13
+        map: 18
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:13
           - results
-        map: 14
+        map: 19
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:14
           - results
-        map: 15
+        map: 20
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:16
           - results
-        map: 16
+        map: 21
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:18
           - results
-        map: 17
+        map: 22
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:19
           - results
-        map: 18
+        map: 23
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:21
           - results
-        map: 19
+        map: 24
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:22
           - results
-        map: 20
+        map: 25
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:24
           - results
-        map: 21
+        map: 26
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:26
           - results
-        map: 22
+        map: 27
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:28
           - results
-        map: 23
+        map: 28
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:30
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:32
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:34
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:36
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:37
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:38
+          - results
+        map: 34
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:4
           - results
-        map: 24
+        map: 35
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:5
           - results
-        map: 25
+        map: 36
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:7
           - results
-        map: 26
+        map: 37
       - path:
           - actionContexts
           - measure-workflow-health-in-signoz:9
           - results
-        map: 27
+        map: 38
       - path:
           - outputs
-        map: 28
-      - path:
-          - waits
-          - "0"
-          - results
-        map: 29
-      - path:
-          - waits
-          - "1"
-          - results
-        map: 30
-      - path:
-          - waits
-          - "2"
-          - results
-        map: 31
-      - path:
-          - waits
-          - "3"
-          - results
-        map: 28
-      - path:
-          - evidenceWaits
-          - "0"
-          - results
-        map: 32
-      - path:
-          - evidenceWaits
-          - "1"
-          - results
-        map: 33
-      - path:
-          - evidenceWaits
-          - "2"
-          - results
         map: 34
       - path:
+          - waits
+          - "0"
+          - results
+        map: 39
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 40
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 41
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 42
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 43
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 44
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 45
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 46
+      - path:
           - evidenceWaits
           - "3"
           - results
-        map: 35
+        map: 47
       - path:
           - evidenceWaits
           - "4"
           - results
-        map: 36
+        map: 48
       - path:
           - evidenceWaits
           - "5"
           - results
-        map: 37
+        map: 49
       - path:
           - evidenceWaits
           - "6"
           - results
-        map: 38
+        map: 50
       - path:
           - evidenceWaits
           - "7"
           - results
-        map: 39
+        map: 51
       - path:
           - evidenceWaits
           - "8"
           - results
-        map: 40
-  storageHash: 285c3d2ffc021b736ac22d685fb2426f75fc511b86638d7a595a956ef7f1c381
-check_epoch: 6
+        map: 52
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 53
+      - path:
+          - evidenceWaits
+          - "10"
+          - results
+        map: 54
+  storageHash: 833c42aa4270ae03f1c5f85f4842e5cea4493b14bb02a356eb4fe567e241c218
+check_epoch: 10
