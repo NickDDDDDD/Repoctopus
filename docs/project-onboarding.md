@@ -63,6 +63,8 @@ repoctopus.cmd project review --request $prepared.result.file
 
 无 Profile 的新 Workspace 可完成 Open、Design 和 Build。Build Check 通过后，Runtime 会提示配置 Verify。把获批变更按团队流程提交后，用原 Run ID 恢复。有效 Verify Evidence 是归档前置条件。
 
+用终端准备候选时，将示例 `profiles` 中的一个 Profile 对象另存为本机文件，顶层包含 `id` 和 `nodes`。执行 `repoctopus.cmd project configure-verify --candidate <file> --run <run-id> --json`，再对返回的请求运行 `project review`。与已有 Run 绑定时，候选须沿用当前请求指定的 Profile ID。
+
 ## 终端排查与底层命令
 
 下面的 `detect`、`prepare`、`review` 命令适用于排查和需要查看中间产物的终端操作。
