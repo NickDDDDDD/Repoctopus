@@ -2,7 +2,7 @@
 change_id: e54e0ba4-509c-474d-bf13-dfb257ecd58d
 workflow: full
 language: zh-CN
-phase: build
+phase: archive
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -15,13 +15,13 @@ auto_transition: true
 base_ref: 38bf326a9de5021dc1afcdffcb25a843d6750a12
 design_doc: openspec/changes/measure-workflow-health-in-signoz/design.md
 plan: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-verify_result: pending
+verify_result: pass
 verify_failures: 0
-verification_report: null
+verification_report: docs/superpowers/reports/measure-workflow-health-in-signoz.md
 branch_status: pending
 created_at: 2026-11-13
-verified_at: null
-archive_confirmation: null
+verified_at: 2026-11-14
+archive_confirmation: pending
 archived: false
 bound_branch: codex/measure-workflow-health-in-signoz
 direct_override: false
@@ -30,8 +30,8 @@ handoff_hash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: cde2f1ded6546add9a82fd0c3f56846d53c411b3386709d117cc7a9718159a77
+  schema: comet.workflow-run-checkpoint.v2
+  hash: bacc7f4714dbec2b690d4b8824ab19b03503e70406b447f1aab4c2d888828b10
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -50,7 +50,7 @@ run_checkpoint:
       workspaceBaseline:
         ref: f1697684-a525-480b-892e-5775f9ba2ac1
     state:
-      archiveConfirmation: null
+      archiveConfirmation: pending
       archived: false
       autoTransition: true
       baseRef: 38bf326a9de5021dc1afcdffcb25a843d6750a12
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 2
+      checkEpoch: 6
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,19 +69,19 @@ run_checkpoint:
       handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
       isolation: worktree
       language: zh-CN
-      phase: build
+      phase: archive
       plan: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
       reviewMode: thorough
       subagentDispatch: null
       tddMode: tdd
-      verificationReport: null
-      verifiedAt: null
+      verificationReport: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+      verifiedAt: 2026-11-14
       verifyFailures: 0
       verifyMode: null
-      verifyResult: pending
+      verifyResult: pass
       workflow: full
-    status: running
-    sequence: 13
+    status: waiting
+    sequence: 29
     actions:
       - attempt: 1
         claim:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/measure-workflow-health-in-signoz
             workspaceBaseline:
               ref: f1697684-a525-480b-892e-5775f9ba2ac1
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open.evidence:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
+          outputs: {}
         inputHash: 5fb19b0852e1256738bdca6a3e6e2db69f34a3fc940a6676b1f209e2433b9f8e
         outcome:
           actionId: measure-workflow-health-in-signoz:4
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/measure-workflow-health-in-signoz
             workspaceBaseline:
               ref: f1697684-a525-480b-892e-5775f9ba2ac1
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open.evidence:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open.revalidate:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+          outputs: {}
         inputHash: f84d44ff676348e4bdab2c4020fc9b9ef7b6dc7f8ec4df6427685b80b1f6f341
         outcome:
           actionId: measure-workflow-health-in-signoz:5
@@ -267,63 +227,7 @@ run_checkpoint:
             changeDir: openspec/changes/measure-workflow-health-in-signoz
             workspaceBaseline:
               ref: f1697684-a525-480b-892e-5775f9ba2ac1
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-                    handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-                    proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                      envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                      ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP
-                      对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-                    sourceEvidence:
-                      contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-            full.design.handoff:
-              handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-              handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-              proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无
-                Spec Patch。
-              requirementsEvidence:
-                contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                ref: openspec/changes/measure-workflow-health-in-signoz
-              sourceEvidence:
-                contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open.evidence:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open.revalidate:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+          outputs: {}
         inputHash: 33103d4066a069ea38f455543c34c42c918339b7a592202cd7f4679b528995e8
         outcome:
           actionId: measure-workflow-health-in-signoz:7
@@ -362,68 +266,7 @@ run_checkpoint:
             changeDir: openspec/changes/measure-workflow-health-in-signoz
             workspaceBaseline:
               ref: f1697684-a525-480b-892e-5775f9ba2ac1
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-                    handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-                    proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                      envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                      ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP
-                      对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-                    sourceEvidence:
-                      contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-            full.design.document:
-              designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
-            full.design.evidence:
-              contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-              ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-              handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-              proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无
-                Spec Patch。
-              requirementsEvidence:
-                contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                ref: openspec/changes/measure-workflow-health-in-signoz
-              sourceEvidence:
-                contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open.evidence:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open.revalidate:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+          outputs: {}
         inputHash: aba175d1379d78916b1ea45a23c278f2d3752409cbac9db629d7a39a46ada4d9
         outcome:
           actionId: measure-workflow-health-in-signoz:9
@@ -468,93 +311,7 @@ run_checkpoint:
             changeDir: openspec/changes/measure-workflow-health-in-signoz
             workspaceBaseline:
               ref: f1697684-a525-480b-892e-5775f9ba2ac1
-          outputs:
-            full.build.configure:
-              boundBranch: codex/measure-workflow-health-in-signoz
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/measure-workflow-health-in-signoz
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-                    handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-                    proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                      envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                      ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP
-                      对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-                    sourceEvidence:
-                      contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-            full.design.document:
-              designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
-            full.design.evidence:
-              contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-              ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-              handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-              proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无
-                Spec Patch。
-              requirementsEvidence:
-                contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                ref: openspec/changes/measure-workflow-health-in-signoz
-              sourceEvidence:
-                contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open.evidence:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open.revalidate:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+          outputs: {}
         inputHash: b314c4d80068d7ea41b5b2c09c7632a803c6d9cc3fd48b05eade473fc3bae5cd
         outcome:
           actionId: measure-workflow-health-in-signoz:11
@@ -585,6 +342,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-workflow-health-20261114
+          token: portable-0e2b4b54042e8a5e87a1511af3a7233d94cc80db4e331a85493ed8404febf58a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: measure-workflow-health-in-signoz:13
         input:
           input:
@@ -592,564 +358,522 @@ run_checkpoint:
             changeDir: openspec/changes/measure-workflow-health-in-signoz
             workspaceBaseline:
               ref: f1697684-a525-480b-892e-5775f9ba2ac1
-          outputs:
-            full.build.configure:
-              boundBranch: codex/measure-workflow-health-in-signoz
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/measure-workflow-health-in-signoz
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-                ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-              plan: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-              planEvidence:
-                contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
-                ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-              taskRevision: 0fbea0491273a2709ee0cf3e141855dd4f1fdf3a9c9758afb67f336dc3e740ec
-            full.build.plan.evidence:
-              contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
-              ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-                    handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-                    proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                      envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                      ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP
-                      对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-                    sourceEvidence:
-                      contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-            full.design.document:
-              designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
-            full.design.evidence:
-              contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-              ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-              handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-              proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无
-                Spec Patch。
-              requirementsEvidence:
-                contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                ref: openspec/changes/measure-workflow-health-in-signoz
-              sourceEvidence:
-                contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open.evidence:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-            full.open.revalidate:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+          outputs: {}
         inputHash: d03e4bbc79561335e7563b6633ea6fdfb7c0e3a7aea3369b4b9cf0e47189dbb7
+        outcome:
+          actionId: measure-workflow-health-in-signoz:13
+          attempt: 1
+          claimToken: portable-0e2b4b54042e8a5e87a1511af3a7233d94cc80db4e331a85493ed8404febf58a
+          inputHash: d03e4bbc79561335e7563b6633ea6fdfb7c0e3a7aea3369b4b9cf0e47189dbb7
+          outcomeId: 7db95329-4e38-4fa0-8e53-f5a37b833977
+          output:
+            event: build-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: f57ef2e6386cf006ca658c7ba5204541e14e2bb10f9210b382ffb3ea4e650b0b
+            outcomeId: 7db95329-4e38-4fa0-8e53-f5a37b833977
         reconciliations: []
         ref: comet-build
         requiredCapabilities: []
         retry: manual
         runId: measure-workflow-health-in-signoz
-        status: pending
+        status: succeeded
         stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-525e9d77e858bfe8285236639788880d3c11ef8a13f008c14f1228179e77b468
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:14
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 6a0282a102145c90a456a6d33d2064f842b742c343f1a5b1b320c1fd7536b903
+        outcome:
+          actionId: measure-workflow-health-in-signoz:14
+          attempt: 1
+          claimToken: portable-525e9d77e858bfe8285236639788880d3c11ef8a13f008c14f1228179e77b468
+          inputHash: 6a0282a102145c90a456a6d33d2064f842b742c343f1a5b1b320c1fd7536b903
+          outcomeId: eb14fc04-4fa8-45a9-9396-8b548f347eea
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: c17b617adb3b8bae676460ccee9b63d7594918ff87e6ae93ae6163b727cc3687
+            cwd: .
+            environment: 39d20496193965586d10c573ed05fc5c7eaddc0e2f0be624452311bbe78500f8
+            exitCode: 0
+            inputAfter: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+            inputBefore: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+            manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+            manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/2f7714d7-7719-4f53-8100-d2ff234da035.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/62e4a67b-e16d-49e1-a219-a702e2bcf28a.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 22d96a9c024d002cedc893fa729e41b24a6690b865029e4a2ae900019d30b445
+            outcomeId: eb14fc04-4fa8-45a9-9396-8b548f347eea
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-5a0009e4677d6e00c45a24fb27d9d87d78b210b5494dc8dbe113ea11c8791a80
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:16
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 1db1a5f9eaca5a6f01861fb3c6c8b9b0182ddfeffdff4eb17fc0ba56a22c2694
+        outcome:
+          actionId: measure-workflow-health-in-signoz:16
+          attempt: 1
+          claimToken: portable-5a0009e4677d6e00c45a24fb27d9d87d78b210b5494dc8dbe113ea11c8791a80
+          inputHash: 1db1a5f9eaca5a6f01861fb3c6c8b9b0182ddfeffdff4eb17fc0ba56a22c2694
+          outcomeId: 8bea3b99-b605-4bdc-b614-22f9ece57123
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 21504e91180e972bc5f29d4a85400059a316cdf1b9e11b2dad40264dfa5f5f9a
+            outcomeId: 8bea3b99-b605-4bdc-b614-22f9ece57123
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-55d711f1481a17d9550a837c6f7d0c7cad517416f929461dc30eb9df7451a220
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:18
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 319a7f11b58345c1aa03a379491c34ee956554e61917b53539def7cf2e22e5ff
+        outcome:
+          actionId: measure-workflow-health-in-signoz:18
+          attempt: 1
+          claimToken: portable-55d711f1481a17d9550a837c6f7d0c7cad517416f929461dc30eb9df7451a220
+          inputHash: 319a7f11b58345c1aa03a379491c34ee956554e61917b53539def7cf2e22e5ff
+          outcomeId: 3800e03e-0c40-4d5b-a5ba-28a8e3ca2675
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: ca72522dd1361e2ac52eb93bde33936d3ad7009e1cb308bb20c67015a324c6df
+            cwd: .
+            deliveryInputs: {}
+            environment: 976308800ac7b56645f826fee0dab64907adbd7ca6db3b1e5f5cd47f79f3e967
+            exitCode: 1
+            inputAfter: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+            inputBefore: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+            manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+            manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/5ac257d6-ad10-416d-85f1-6314dc39dec0.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/27dbfff2-b3d3-407f-9e8b-3487b734de58.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 5a837b963adf9e954f9059360b791b61ad03966c682d52d770d111560a597f01
+            outcomeId: 3800e03e-0c40-4d5b-a5ba-28a8e3ca2675
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-531fa7be22610355bd5f4f3a55c1ff673f706a1527c4a34efe5bea3e1581ae29
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:19
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 536c1d30e5adef40caa86ab8ba106c1de41f09712b20d317f4d209b805d3bb0b
+        outcome:
+          actionId: measure-workflow-health-in-signoz:19
+          attempt: 1
+          claimToken: portable-531fa7be22610355bd5f4f3a55c1ff673f706a1527c4a34efe5bea3e1581ae29
+          inputHash: 536c1d30e5adef40caa86ab8ba106c1de41f09712b20d317f4d209b805d3bb0b
+          outcomeId: 5c0c927e-e229-4846-81a4-24a4491f78fe
+          output:
+            designEvidence:
+              contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
+              ref: openspec/changes/measure-workflow-health-in-signoz/design.md
+            plan: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+            planEvidence:
+              contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
+              ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+            taskRevision: 0fbea0491273a2709ee0cf3e141855dd4f1fdf3a9c9758afb67f336dc3e740ec
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 38a4da7ea00b884bb4fdad039557ca572c9637b7100e125e671369db3f911ae4
+            outcomeId: 5c0c927e-e229-4846-81a4-24a4491f78fe
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-workflow-health-20261114
+          token: portable-9ebba78d1cb1c79201434ea3f39de288b7a2cee45251b958099370985e0c5036
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:21
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 536c1d30e5adef40caa86ab8ba106c1de41f09712b20d317f4d209b805d3bb0b
+        outcome:
+          actionId: measure-workflow-health-in-signoz:21
+          attempt: 1
+          claimToken: portable-9ebba78d1cb1c79201434ea3f39de288b7a2cee45251b958099370985e0c5036
+          inputHash: 536c1d30e5adef40caa86ab8ba106c1de41f09712b20d317f4d209b805d3bb0b
+          outcomeId: ee9014de-1be2-4bf2-86e2-5337c1363dfd
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a52f89ff2e5b122d9103f2db8bd632039bf2d88967269f6c77bdf2a81ca7203f
+            outcomeId: ee9014de-1be2-4bf2-86e2-5337c1363dfd
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-b13714e937672a2e2f68ad1e591451d18bf3c78f527eb54cd0c21490856dc4c0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:22
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 536c1d30e5adef40caa86ab8ba106c1de41f09712b20d317f4d209b805d3bb0b
+        outcome:
+          actionId: measure-workflow-health-in-signoz:22
+          attempt: 1
+          claimToken: portable-b13714e937672a2e2f68ad1e591451d18bf3c78f527eb54cd0c21490856dc4c0
+          inputHash: 536c1d30e5adef40caa86ab8ba106c1de41f09712b20d317f4d209b805d3bb0b
+          outcomeId: 5d43b4b3-f7aa-4b8c-a916-86c56642a682
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: c17b617adb3b8bae676460ccee9b63d7594918ff87e6ae93ae6163b727cc3687
+            cwd: .
+            environment: 39d20496193965586d10c573ed05fc5c7eaddc0e2f0be624452311bbe78500f8
+            exitCode: 0
+            inputAfter: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+            inputBefore: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+            manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+            manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/2f7714d7-7719-4f53-8100-d2ff234da035.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/62e4a67b-e16d-49e1-a219-a702e2bcf28a.log
+            reusable: true
+            reused: true
+            reusedFrom: measure-workflow-health-in-signoz:14
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: df926245192fdcfc470933e06edd1c62fcd42fc552dea1fa111d22a3022b8e8f
+            outcomeId: 5d43b4b3-f7aa-4b8c-a916-86c56642a682
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-b79c1b1f0bc0b3c6f9dd3f43f136fff5fc91cab50333450607f0582912c26902
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:24
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: cbecc7a04ce877617fbdef0bcb0a89b707f295afb445dbbe6cd435bc8634c651
+        outcome:
+          actionId: measure-workflow-health-in-signoz:24
+          attempt: 1
+          claimToken: portable-b79c1b1f0bc0b3c6f9dd3f43f136fff5fc91cab50333450607f0582912c26902
+          inputHash: cbecc7a04ce877617fbdef0bcb0a89b707f295afb445dbbe6cd435bc8634c651
+          outcomeId: fe424928-3c35-4526-98c4-cf9517b8f937
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 891d56c827979ee553ae510b3cac05bae2236a92d44817ac6ecbfb17ec3cd80e
+            outcomeId: fe424928-3c35-4526-98c4-cf9517b8f937
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-9c617940efc98ae078ab282c48f1da00ceb0f705ddbfd2f096b61f7c8ddf250d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:26
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: cbecc7a04ce877617fbdef0bcb0a89b707f295afb445dbbe6cd435bc8634c651
+        outcome:
+          actionId: measure-workflow-health-in-signoz:26
+          attempt: 1
+          claimToken: portable-9c617940efc98ae078ab282c48f1da00ceb0f705ddbfd2f096b61f7c8ddf250d
+          inputHash: cbecc7a04ce877617fbdef0bcb0a89b707f295afb445dbbe6cd435bc8634c651
+          outcomeId: 53568117-1479-46ab-92ef-7d85d24b2718
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: 7d449d86a4a4be4f49acc953a26261a5efccbd4eba28354ffaa3950ff8819f51
+            cwd: .
+            deliveryInputs: {}
+            environment: 0dfbb0e74fb5b0e0a00577883dbc1ab8e6bc55e98ea92ae62c5d1ae0487c5d2d
+            exitCode: 0
+            inputAfter: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+            inputBefore: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+            manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+            manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/2bd563d3-34be-46ad-8e68-8046c943ebe2.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/745c8c7e-4c63-48f2-b18d-8c0778283d24.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a21dc3a5accac7ebec2abd069210ccb97994bc8d6587d103f4dc8f7b720cd381
+            outcomeId: 53568117-1479-46ab-92ef-7d85d24b2718
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-f5261397db35e01824a475226e9a4a7a909f596b2280ea8a281ed0e33873cdbb
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: measure-workflow-health-in-signoz:28
+        input:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs: {}
+        inputHash: 4e8ecea2dbe0b7ebcb95bfaff7682f11eadb53ec3fc8dbdb42c33cba0c39ce2d
+        outcome:
+          actionId: measure-workflow-health-in-signoz:28
+          attempt: 1
+          claimToken: portable-f5261397db35e01824a475226e9a4a7a909f596b2280ea8a281ed0e33873cdbb
+          inputHash: 4e8ecea2dbe0b7ebcb95bfaff7682f11eadb53ec3fc8dbdb42c33cba0c39ce2d
+          outcomeId: 34ae8f5b-b6e7-4d98-acb3-f5498873be42
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+              主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。验证通过 1242 项，4 项跳过。目标为
+              origin/main，使用当前分支创建 PR，CI 通过后合入。
+            targetBranch: codex/measure-workflow-health-in-signoz
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 169d8ae43a25d1c60fcab7fb9e1d30b6bc4db637f43118e417efe522a5d882b5
+            outcomeId: 34ae8f5b-b6e7-4d98-acb3-f5498873be42
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: measure-workflow-health-in-signoz
+        status: succeeded
+        stepId: full.archive.prepare
         type: invoke_skill
     actionContexts:
       measure-workflow-health-in-signoz:1:
         results: {}
         sequence: 1
       measure-workflow-health-in-signoz:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/measure-workflow-health-in-signoz
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/measure-workflow-health-in-signoz
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-                    handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-                    proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                      envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                      ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP
-                      对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-                    sourceEvidence:
-                      contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-              ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-              handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-              proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无
-                Spec Patch。
-              requirementsEvidence:
-                contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                ref: openspec/changes/measure-workflow-health-in-signoz
-              sourceEvidence:
-                contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+        results: {}
         sequence: 11
       measure-workflow-health-in-signoz:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/measure-workflow-health-in-signoz
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/measure-workflow-health-in-signoz
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-                ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-              plan: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-              planEvidence:
-                contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
-                ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-              taskRevision: 0fbea0491273a2709ee0cf3e141855dd4f1fdf3a9c9758afb67f336dc3e740ec
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
-              ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-                    handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-                    proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                      envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                      ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP
-                      对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-                    sourceEvidence:
-                      contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-              ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-              handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-              proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无
-                Spec Patch。
-              requirementsEvidence:
-                contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                ref: openspec/changes/measure-workflow-health-in-signoz
-              sourceEvidence:
-                contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+        results: {}
         sequence: 13
+      measure-workflow-health-in-signoz:14:
+        results: {}
+        sequence: 14
+      measure-workflow-health-in-signoz:16:
+        results: {}
+        sequence: 16
+      measure-workflow-health-in-signoz:18:
+        results: {}
+        sequence: 18
+      measure-workflow-health-in-signoz:19:
+        results: {}
+        sequence: 19
+      measure-workflow-health-in-signoz:21:
+        results: {}
+        sequence: 21
+      measure-workflow-health-in-signoz:22:
+        results: {}
+        sequence: 22
+      measure-workflow-health-in-signoz:24:
+        results: {}
+        sequence: 24
+      measure-workflow-health-in-signoz:26:
+        results: {}
+        sequence: 26
+      measure-workflow-health-in-signoz:28:
+        results: {}
+        sequence: 28
       measure-workflow-health-in-signoz:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
+        results: {}
         sequence: 4
       measure-workflow-health-in-signoz:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+        results: {}
         sequence: 5
       measure-workflow-health-in-signoz:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-                    handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-                    proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                      envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                      ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP
-                      对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-                    sourceEvidence:
-                      contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-              handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-              proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无
-                Spec Patch。
-              requirementsEvidence:
-                contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                ref: openspec/changes/measure-workflow-health-in-signoz
-              sourceEvidence:
-                contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+        results: {}
         sequence: 7
       measure-workflow-health-in-signoz:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-                    handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-                    proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                      envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                      ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP
-                      对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-                    sourceEvidence:
-                      contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-              ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-              handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-              proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无
-                Spec Patch。
-              requirementsEvidence:
-                contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                ref: openspec/changes/measure-workflow-health-in-signoz
-              sourceEvidence:
-                contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+        results: {}
         sequence: 9
     waits:
       - id: measure-workflow-health-in-signoz:3
@@ -1172,16 +896,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
+        results: {}
         decision:
           id: classic-open-8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
           choice: approved
@@ -1214,51 +929,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-              handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-              proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无
-                Spec Patch。
-              requirementsEvidence:
-                contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                ref: openspec/changes/measure-workflow-health-in-signoz
-              sourceEvidence:
-                contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+        results: {}
         decision:
           id: classic-design-c10e7e31d94e6d257cacf703e5e6ec36662a8dbdce6b49225d96e0b69984b12c-approved
           choice: approved
@@ -1286,109 +957,44 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/measure-workflow-health-in-signoz
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-                    handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-                    proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                      envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                      ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP
-                      对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-                    sourceEvidence:
-                      contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-              ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-              handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-              proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无
-                Spec Patch。
-              requirementsEvidence:
-                contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                ref: openspec/changes/measure-workflow-health-in-signoz
-              sourceEvidence:
-                contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+        results: {}
         decision:
           id: dda6ffa7-4083-413f-a365-ab35d43b5991
           choice: approved
           proposalHash: 0427a1e5f8dd5d13013d9543fd7ef99d920c7c51ba6d88b593e9fc00856d5d4c
+      - id: measure-workflow-health-in-signoz:29
+        stepId: full.archive.confirm
+        sequence: 29
+        status: pending
+        proposal:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+                主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。验证通过 1242 项，4 项跳过。目标为
+                origin/main，使用当前分支创建 PR，CI 通过后合入。
+              targetBranch: codex/measure-workflow-health-in-signoz
+        proposalHash: 5937346ed887411e49725ccf17e4cbf4f03e11ddda673b40428226788e4afd17
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
     evidenceWaits:
       - id: measure-workflow-health-in-signoz:2
         stepId: full.open.evidence
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/measure-workflow-health-in-signoz
           contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
@@ -1398,79 +1004,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-                    handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-                    proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                      envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                      ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP
-                      对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-                    sourceEvidence:
-                      contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-              handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-              proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无
-                Spec Patch。
-              requirementsEvidence:
-                contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                ref: openspec/changes/measure-workflow-health-in-signoz
-              sourceEvidence:
-                contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+        results: {}
         receipt:
           ref: openspec/changes/measure-workflow-health-in-signoz/design.md
           contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
@@ -1480,83 +1014,107 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/measure-workflow-health-in-signoz
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/measure-workflow-health-in-signoz
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-                ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-              plan: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-              planEvidence:
-                contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
-                ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-              taskRevision: 0fbea0491273a2709ee0cf3e141855dd4f1fdf3a9c9758afb67f336dc3e740ec
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
-                    handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
-                    proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
-                      envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz
-                      ClickHouse 看板、真实多仓 Windows 安装包和本地 MCP
-                      对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-                    sourceEvidence:
-                      contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
-                      ref: openspec/changes/measure-workflow-health-in-signoz
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-              ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+          contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
+          submissionId: c9fac731-87d8-4f42-a8b3-0ab52141b373
+      - id: measure-workflow-health-in-signoz:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/62e4a67b-e16d-49e1-a219-a702e2bcf28a.log
+          contentHash: c17b617adb3b8bae676460ccee9b63d7594918ff87e6ae93ae6163b727cc3687
+          submissionId: c7519acd-306c-42c0-9d9c-d003f4b10639
+      - id: measure-workflow-health-in-signoz:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+          contentHash: 4dd61e6af808ddd8a53079c6f1f93e1f6505bece7fabebc72e9405fe43d9366c
+          submissionId: cc32ef51-4baf-4504-a850-6c5e91ef24a8
+      - id: measure-workflow-health-in-signoz:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+          contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
+          submissionId: 17b0e021-2acb-48a7-ae4f-2d08d5f51087
+      - id: measure-workflow-health-in-signoz:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/62e4a67b-e16d-49e1-a219-a702e2bcf28a.log
+          contentHash: c17b617adb3b8bae676460ccee9b63d7594918ff87e6ae93ae6163b727cc3687
+          submissionId: 60a00919-9ce0-4c78-b4ef-2a06629891ed
+      - id: measure-workflow-health-in-signoz:25
+        stepId: full.verify.report.evidence
+        sequence: 25
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+          contentHash: 4dd61e6af808ddd8a53079c6f1f93e1f6505bece7fabebc72e9405fe43d9366c
+          submissionId: 78d6f52c-5a0f-4f27-acab-8c3885c33a07
+      - id: measure-workflow-health-in-signoz:27
+        stepId: full.verify.check.evidence
+        sequence: 27
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/745c8c7e-4c63-48f2-b18d-8c0778283d24.log
+          contentHash: 7d449d86a4a4be4f49acc953a26261a5efccbd4eba28354ffaa3950ff8819f51
+          submissionId: 37e408d8-ff87-49ec-a1ad-ca94988d89e1
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 45
+  sourceHash: e9a9d95773219770623d94e59f4e97ebff755e6ae0b4e00e1238a7d001e2daa8
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+              ref: openspec/changes/measure-workflow-health-in-signoz
+      - contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+        ref: openspec/changes/measure-workflow-health-in-signoz
+      - contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
+      - choice: approved
+        proposal:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
               handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
               proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
@@ -1569,44 +1127,146 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
                 ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: measure-workflow-health-in-signoz
-                  changeDir: openspec/changes/measure-workflow-health-in-signoz
-                  workspaceBaseline:
-                    ref: f1697684-a525-480b-892e-5775f9ba2ac1
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-                    ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-              ref: openspec/changes/measure-workflow-health-in-signoz
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-        receipt:
-          ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+      - handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
+        handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
+        proposal: 复用已接受的 Trajectory 事实，按批准策略和生命周期变化归类唯一 Run，并在完成终态附六条回退计数以支持跨窗口。共享 OTLP
+          envelope，本地即时，远端筛选后在请求关闭前有界合批，单信号独立确认，部分拒收显示覆盖缺口。使用 SigNoz ClickHouse
+          看板、真实多仓 Windows 安装包和本地 MCP 对账。设计保持已批准的四项口径和八项任务，无 Spec Patch。
+        requirementsEvidence:
+          contentHash: f43cc4dfe451ef86a14a50035bc6f20378d7eb22548ae8c226d6fc4120f799f8
+          ref: openspec/changes/measure-workflow-health-in-signoz
+        sourceEvidence:
+          contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
+          ref: openspec/changes/measure-workflow-health-in-signoz
+      - designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
+      - contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
+        ref: openspec/changes/measure-workflow-health-in-signoz/design.md
+      - boundBranch: codex/measure-workflow-health-in-signoz
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: measure-workflow-health-in-signoz
+            changeDir: openspec/changes/measure-workflow-health-in-signoz
+            workspaceBaseline:
+              ref: f1697684-a525-480b-892e-5775f9ba2ac1
+          outputs:
+            full.build.configure:
+              boundBranch: codex/measure-workflow-health-in-signoz
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
+          ref: openspec/changes/measure-workflow-health-in-signoz/design.md
+        plan: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+        planEvidence:
           contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
-          submissionId: c9fac731-87d8-4f42-a8b3-0ab52141b373
-    ready: []
-    joins: {}
-    outputs:
-      full.build.configure:
-        sequence: 9
+          ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+        taskRevision: 0fbea0491273a2709ee0cf3e141855dd4f1fdf3a9c9758afb67f336dc3e740ec
+      - contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
+        ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: c17b617adb3b8bae676460ccee9b63d7594918ff87e6ae93ae6163b727cc3687
+        cwd: .
+        environment: 39d20496193965586d10c573ed05fc5c7eaddc0e2f0be624452311bbe78500f8
+        exitCode: 0
+        inputAfter: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+        inputBefore: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+        manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+        manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/2f7714d7-7719-4f53-8100-d2ff234da035.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/62e4a67b-e16d-49e1-a219-a702e2bcf28a.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: c17b617adb3b8bae676460ccee9b63d7594918ff87e6ae93ae6163b727cc3687
+        ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/62e4a67b-e16d-49e1-a219-a702e2bcf28a.log
+      - contentHash: 4dd61e6af808ddd8a53079c6f1f93e1f6505bece7fabebc72e9405fe43d9366c
+        ref: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: ca72522dd1361e2ac52eb93bde33936d3ad7009e1cb308bb20c67015a324c6df
+        cwd: .
+        deliveryInputs: {}
+        environment: 976308800ac7b56645f826fee0dab64907adbd7ca6db3b1e5f5cd47f79f3e967
+        exitCode: 1
+        inputAfter: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+        inputBefore: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+        manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+        manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/5ac257d6-ad10-416d-85f1-6314dc39dec0.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/27dbfff2-b3d3-407f-9e8b-3487b734de58.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: c17b617adb3b8bae676460ccee9b63d7594918ff87e6ae93ae6163b727cc3687
+        cwd: .
+        environment: 39d20496193965586d10c573ed05fc5c7eaddc0e2f0be624452311bbe78500f8
+        exitCode: 0
+        inputAfter: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+        inputBefore: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+        manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+        manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/2f7714d7-7719-4f53-8100-d2ff234da035.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/62e4a67b-e16d-49e1-a219-a702e2bcf28a.log
+        reusable: true
+        reused: true
+        reusedFrom: measure-workflow-health-in-signoz:14
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: 7d449d86a4a4be4f49acc953a26261a5efccbd4eba28354ffaa3950ff8819f51
+        cwd: .
+        deliveryInputs: {}
+        environment: 0dfbb0e74fb5b0e0a00577883dbc1ab8e6bc55e98ea92ae62c5d1ae0487c5d2d
+        exitCode: 0
+        inputAfter: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+        inputBefore: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+        manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+        manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/2bd563d3-34be-46ad-8e68-8046c943ebe2.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/745c8c7e-4c63-48f2-b18d-8c0778283d24.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 7d449d86a4a4be4f49acc953a26261a5efccbd4eba28354ffaa3950ff8819f51
+        ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/745c8c7e-4c63-48f2-b18d-8c0778283d24.log
+      - sequence: 9
         value:
           boundBranch: codex/measure-workflow-health-in-signoz
           buildMode: autonomous
@@ -1615,8 +1275,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -1634,24 +1293,7 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.plan:
-        sequence: 11
-        value:
-          designEvidence:
-            contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
-            ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-          plan: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-          planEvidence:
-            contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
-            ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-          taskRevision: 0fbea0491273a2709ee0cf3e141855dd4f1fdf3a9c9758afb67f336dc3e740ec
-      full.build.plan.evidence:
-        sequence: 12
-        value:
-          contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
-          ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
-      full.design.confirm:
-        sequence: 6
+      - sequence: 6
         value:
           choice: approved
           proposal:
@@ -1674,17 +1316,14 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
                   ref: openspec/changes/measure-workflow-health-in-signoz
-      full.design.document:
-        sequence: 7
+      - sequence: 7
         value:
           designDoc: openspec/changes/measure-workflow-health-in-signoz/design.md
-      full.design.evidence:
-        sequence: 8
+      - sequence: 8
         value:
           contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
           ref: openspec/changes/measure-workflow-health-in-signoz/design.md
-      full.design.handoff:
-        sequence: 5
+      - sequence: 5
         value:
           handoffContext: openspec/changes/measure-workflow-health-in-signoz/.comet/handoff/design-context.json
           handoffHash: 3f58a1b8aa8c1f01f8e5be74b2186581476331e6ba87bc08317af4f0db487dbf
@@ -1698,12 +1337,10 @@ run_checkpoint:
           sourceEvidence:
             contentHash: fbef2ea4b208b1aa53d24c4bc157112fdf265b299c93d87030cc61a67c9310a4
             ref: openspec/changes/measure-workflow-health-in-signoz
-      full.open:
-        sequence: 1
+      - sequence: 1
         value:
           event: open-complete
-      full.open.confirm:
-        sequence: 3
+      - sequence: 3
         value:
           choice: approved
           proposal:
@@ -1718,17 +1355,1591 @@ run_checkpoint:
               full.open.evidence:
                 contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
                 ref: openspec/changes/measure-workflow-health-in-signoz
-      full.open.evidence:
-        sequence: 2
+      - sequence: 2
         value:
           contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
           ref: openspec/changes/measure-workflow-health-in-signoz
-      full.open.revalidate:
-        sequence: 4
+      - sequence: 4
         value:
           contentHash: 8c277185ddbda2653c1e5bb4ae1824f12a3cb48c75c799598aef66d94303bbeb
-    children: []
-    lineage: []
-  sourceRevision: 19
-  sourceHash: 3d604e49281c25c0b95ac536988eeabcfef3d9577f912c51d8d6af6ae1f709e7
-check_epoch: 2
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
+            ref: openspec/changes/measure-workflow-health-in-signoz/design.md
+          plan: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+          planEvidence:
+            contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
+            ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+          taskRevision: 0fbea0491273a2709ee0cf3e141855dd4f1fdf3a9c9758afb67f336dc3e740ec
+      - sequence: 12
+        value:
+          contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
+          ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: c17b617adb3b8bae676460ccee9b63d7594918ff87e6ae93ae6163b727cc3687
+          cwd: .
+          environment: 39d20496193965586d10c573ed05fc5c7eaddc0e2f0be624452311bbe78500f8
+          exitCode: 0
+          inputAfter: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+          inputBefore: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+          manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+          manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/2f7714d7-7719-4f53-8100-d2ff234da035.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/62e4a67b-e16d-49e1-a219-a702e2bcf28a.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: c17b617adb3b8bae676460ccee9b63d7594918ff87e6ae93ae6163b727cc3687
+          ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/62e4a67b-e16d-49e1-a219-a702e2bcf28a.log
+      - sequence: 17
+        value:
+          contentHash: 4dd61e6af808ddd8a53079c6f1f93e1f6505bece7fabebc72e9405fe43d9366c
+          ref: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: ca72522dd1361e2ac52eb93bde33936d3ad7009e1cb308bb20c67015a324c6df
+          cwd: .
+          deliveryInputs: {}
+          environment: 976308800ac7b56645f826fee0dab64907adbd7ca6db3b1e5f5cd47f79f3e967
+          exitCode: 1
+          inputAfter: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+          inputBefore: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+          manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+          manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/5ac257d6-ad10-416d-85f1-6314dc39dec0.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/27dbfff2-b3d3-407f-9e8b-3487b734de58.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: a0cde8efc6be460a962d4c22c950e16c3a465dfbf606fa49cf34c90a34233fd4
+            ref: openspec/changes/measure-workflow-health-in-signoz/design.md
+          plan: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+          planEvidence:
+            contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
+            ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+          taskRevision: 0fbea0491273a2709ee0cf3e141855dd4f1fdf3a9c9758afb67f336dc3e740ec
+      - sequence: 20
+        value:
+          contentHash: eac0efc9d30f38a4b7bf152d025c62df704b8015a2b54c6bcc67f7da1178523b
+          ref: docs/superpowers/plans/2026-11-14-measure-workflow-health-in-signoz.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: c17b617adb3b8bae676460ccee9b63d7594918ff87e6ae93ae6163b727cc3687
+          cwd: .
+          environment: 39d20496193965586d10c573ed05fc5c7eaddc0e2f0be624452311bbe78500f8
+          exitCode: 0
+          inputAfter: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+          inputBefore: 6e27fb9bc72652ab9c79aa0cbbabc59b12b3991edfd96f3427dd274b2a6be18a
+          manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+          manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/2f7714d7-7719-4f53-8100-d2ff234da035.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/62e4a67b-e16d-49e1-a219-a702e2bcf28a.log
+          reusable: true
+          reused: true
+          reusedFrom: measure-workflow-health-in-signoz:14
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 23
+        value:
+          contentHash: c17b617adb3b8bae676460ccee9b63d7594918ff87e6ae93ae6163b727cc3687
+          ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/62e4a67b-e16d-49e1-a219-a702e2bcf28a.log
+      - sequence: 25
+        value:
+          contentHash: 4dd61e6af808ddd8a53079c6f1f93e1f6505bece7fabebc72e9405fe43d9366c
+          ref: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+      - sequence: 24
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/measure-workflow-health-in-signoz.md
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: 7d449d86a4a4be4f49acc953a26261a5efccbd4eba28354ffaa3950ff8819f51
+          cwd: .
+          deliveryInputs: {}
+          environment: 0dfbb0e74fb5b0e0a00577883dbc1ab8e6bc55e98ea92ae62c5d1ae0487c5d2d
+          exitCode: 0
+          inputAfter: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+          inputBefore: af97ed59d215ab491011ec34884cd2fa451c33aab20a30c0f82b538f9b3b12e4
+          manifestHash: 16a47639cb2678fdd5ee599b269d68ad01a19b04a37dba69b6f1c177a1fd1e30
+          manifestRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/2bd563d3-34be-46ad-8e68-8046c943ebe2.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/745c8c7e-4c63-48f2-b18d-8c0778283d24.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 27
+        value:
+          contentHash: 7d449d86a4a4be4f49acc953a26261a5efccbd4eba28354ffaa3950ff8819f51
+          ref: .comet/runtime/classic-sdk-checks/d023c61eac446195ee077ab6e8189c21c710bea7a9440029b8864e6e9f665aa6/745c8c7e-4c63-48f2-b18d-8c0778283d24.log
+      - sequence: 28
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档 measure-workflow-health-in-signoz，将工作流遥测规格合入 development-telemetry
+            主规格，交付四项指标的 SigNoz 看板、默认降噪与投递恢复、字段和接入指南。验证通过 1242 项，4 项跳过。目标为
+            origin/main，使用当前分支创建 PR，CI 通过后合入。
+          targetBranch: codex/measure-workflow-health-in-signoz
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 55
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 19
+        left: 54
+        right: 56
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 57
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 58
+        height: 5
+      - key: full.build.configure
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 22
+        left: 60
+        right: 61
+        height: 2
+      - key: full.design.evidence
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 26
+        left: 63
+        right: 64
+        height: 2
+      - key: full.open.revalidate
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 29
+        left: null
+        right: 66
+        height: 2
+      - key: full.open.confirm
+        value: 28
+        left: 65
+        right: 67
+        height: 3
+      - key: full.design.document
+        value: 24
+        left: 62
+        right: 68
+        height: 4
+      - key: full.build.plan
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 32
+        left: 70
+        right: 71
+        height: 2
+      - key: full.build.confirm
+        value: 22
+        left: 60
+        right: 72
+        height: 3
+      - key: full.design.document
+        value: 24
+        left: 73
+        right: 68
+        height: 4
+      - key: full.build.execute
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 22
+        left: 60
+        right: 75
+        height: 2
+      - key: full.build.plan.evidence
+        value: 32
+        left: null
+        right: 71
+        height: 2
+      - key: full.build.plan
+        value: 31
+        left: 76
+        right: 77
+        height: 3
+      - key: full.design.document
+        value: 24
+        left: 78
+        right: 68
+        height: 4
+      - key: full.build.check
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 35
+        left: 80
+        right: 81
+        height: 2
+      - key: full.build.confirm
+        value: 22
+        left: 82
+        right: 75
+        height: 3
+      - key: full.build.plan
+        value: 31
+        left: 83
+        right: 77
+        height: 4
+      - key: full.design.document
+        value: 24
+        left: 84
+        right: 68
+        height: 5
+      - key: full.open.evidence
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 36
+        left: null
+        right: 87
+        height: 2
+      - key: full.open.revalidate
+        value: 30
+        left: 86
+        right: 88
+        height: 3
+      - key: full.open.confirm
+        value: 28
+        left: 65
+        right: 89
+        height: 4
+      - key: full.design.document
+        value: 24
+        left: 84
+        right: 90
+        height: 5
+      - key: full.verify.check
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 36
+        left: 92
+        right: 87
+        height: 2
+      - key: full.open.revalidate
+        value: 30
+        left: 86
+        right: 93
+        height: 3
+      - key: full.open.confirm
+        value: 28
+        left: 65
+        right: 94
+        height: 4
+      - key: full.design.document
+        value: 24
+        left: 84
+        right: 95
+        height: 5
+      - key: full.build.plan.evidence
+        value: 40
+        left: null
+        right: 71
+        height: 2
+      - key: full.build.plan
+        value: 39
+        left: 83
+        right: 97
+        height: 4
+      - key: full.design.document
+        value: 24
+        left: 98
+        right: 95
+        height: 5
+      - key: full.build.execute
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 22
+        left: 82
+        right: 100
+        height: 3
+      - key: full.build.plan
+        value: 39
+        left: 101
+        right: 97
+        height: 4
+      - key: full.design.document
+        value: 24
+        left: 102
+        right: 95
+        height: 5
+      - key: full.build.check
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 43
+        left: 104
+        right: 81
+        height: 2
+      - key: full.build.confirm
+        value: 22
+        left: 105
+        right: 100
+        height: 3
+      - key: full.build.plan
+        value: 39
+        left: 106
+        right: 97
+        height: 4
+      - key: full.design.document
+        value: 24
+        left: 107
+        right: 95
+        height: 5
+      - key: full.verify.run
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 44
+        left: 92
+        right: 109
+        height: 2
+      - key: full.open.revalidate
+        value: 30
+        left: 86
+        right: 110
+        height: 3
+      - key: full.open.confirm
+        value: 28
+        left: 65
+        right: 111
+        height: 4
+      - key: full.design.document
+        value: 24
+        left: 107
+        right: 112
+        height: 5
+      - key: full.open.revalidate
+        value: 30
+        left: 86
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 44
+        left: 115
+        right: 109
+        height: 2
+      - key: full.verify.check
+        value: 46
+        left: 114
+        right: 116
+        height: 3
+      - key: full.open.confirm
+        value: 28
+        left: 65
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 24
+        left: 107
+        right: 118
+        height: 5
+      - key: full.open
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 28
+        left: 120
+        right: 121
+        height: 2
+      - key: full.open.revalidate
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 29
+        left: null
+        right: 123
+        height: 2
+      - key: full.open.confirm
+        value: 28
+        left: 120
+        right: 124
+        height: 3
+      - key: full.design.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 26
+        left: 126
+        right: 127
+        height: 2
+      - key: full.open.confirm
+        value: 28
+        left: 128
+        right: 124
+        height: 3
+      - key: full.design.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 24
+        left: 130
+        right: 131
+        height: 2
+      - key: full.design.handoff
+        value: 26
+        left: 132
+        right: 127
+        height: 3
+      - key: full.open.confirm
+        value: 28
+        left: 133
+        right: 124
+        height: 4
+      - key: full.archive.prepare
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 42
+        left: 135
+        right: 136
+        height: 2
+      - key: full.build.confirm
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 40
+        left: 139
+        right: 140
+        height: 2
+      - key: full.build.execute
+        value: 41
+        left: 138
+        right: 141
+        height: 3
+      - key: full.build.configure
+        value: 21
+        left: 137
+        right: 142
+        height: 4
+      - key: full.design.handoff
+        value: 26
+        left: 131
+        right: 127
+        height: 2
+      - key: full.open.evidence
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 30
+        left: 145
+        right: 146
+        height: 2
+      - key: full.verify.run
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 44
+        left: null
+        right: 148
+        height: 2
+      - key: full.verify.check.evidence
+        value: 47
+        left: 147
+        right: 149
+        height: 3
+      - key: full.open.confirm
+        value: 28
+        left: 144
+        right: 150
+        height: 4
+      - key: full.design.document
+        value: 24
+        left: 143
+        right: 151
+        height: 5
+      - key: full.open.evidence
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 27
+        left: null
+        right: 153
+        height: 2
+      - key: full.design.handoff
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 29
+        left: 156
+        right: 157
+        height: 2
+      - key: full.open
+        value: 27
+        left: 155
+        right: 158
+        height: 3
+      - key: full.build.configure
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 25
+        left: 161
+        right: 162
+        height: 2
+      - key: full.design.confirm
+        value: 23
+        left: 160
+        right: 163
+        height: 3
+      - key: full.open
+        value: 27
+        left: 164
+        right: 158
+        height: 4
+      - key: full.open
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 24
+        left: 167
+        right: 168
+        height: 2
+      - key: full.open.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 29
+        left: 170
+        right: 171
+        height: 2
+      - key: full.open
+        value: 27
+        left: 169
+        right: 172
+        height: 3
+      - key: full.build.configure
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 22
+        left: 174
+        right: 175
+        height: 2
+      - key: full.design.document
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 25
+        left: 177
+        right: 178
+        height: 2
+      - key: full.design.confirm
+        value: 23
+        left: 176
+        right: 179
+        height: 3
+      - key: full.open
+        value: 27
+        left: 180
+        right: 172
+        height: 4
+      - key: full.build.check
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 21
+        left: 182
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 31
+        left: 184
+        right: 185
+        height: 2
+      - key: full.build.confirm
+        value: 22
+        left: 183
+        right: 186
+        height: 3
+      - key: full.open
+        value: 27
+        left: 179
+        right: 172
+        height: 3
+      - key: full.design.confirm
+        value: 23
+        left: 187
+        right: 188
+        height: 4
+      - key: full.build.check
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 35
+        left: 190
+        right: 191
+        height: 2
+      - key: full.build.confirm
+        value: 22
+        left: 192
+        right: 186
+        height: 3
+      - key: full.verify.run
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 30
+        left: null
+        right: 194
+        height: 2
+      - key: full.open.evidence
+        value: 29
+        left: 170
+        right: 195
+        height: 3
+      - key: full.open
+        value: 27
+        left: 179
+        right: 196
+        height: 4
+      - key: full.design.confirm
+        value: 23
+        left: 193
+        right: 197
+        height: 5
+      - key: full.build.plan
+        value: 39
+        left: 184
+        right: 185
+        height: 2
+      - key: full.build.confirm
+        value: 22
+        left: 192
+        right: 199
+        height: 3
+      - key: full.open.revalidate
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 29
+        left: 170
+        right: 201
+        height: 2
+      - key: full.verify.report.evidence
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 37
+        left: 203
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 38
+        left: 202
+        right: 204
+        height: 3
+      - key: full.open
+        value: 27
+        left: 179
+        right: 205
+        height: 4
+      - key: full.design.confirm
+        value: 23
+        left: 200
+        right: 206
+        height: 5
+      - key: full.build.check
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 35
+        left: 208
+        right: 191
+        height: 2
+      - key: full.build.execute
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 39
+        left: 210
+        right: 211
+        height: 2
+      - key: full.build.confirm
+        value: 22
+        left: 209
+        right: 212
+        height: 3
+      - key: full.design.confirm
+        value: 23
+        left: 213
+        right: 206
+        height: 5
+      - key: full.build.check.evidence
+        value: 43
+        left: 208
+        right: 191
+        height: 2
+      - key: full.build.confirm
+        value: 22
+        left: 215
+        right: 212
+        height: 3
+      - key: full.verify.run
+        value: 45
+        left: 203
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 38
+        left: 202
+        right: 217
+        height: 3
+      - key: full.open
+        value: 27
+        left: 179
+        right: 218
+        height: 4
+      - key: full.design.confirm
+        value: 23
+        left: 216
+        right: 219
+        height: 5
+      - key: full.verify.report.evidence
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 45
+        left: 221
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 46
+        left: 202
+        right: 222
+        height: 3
+      - key: full.open
+        value: 27
+        left: 179
+        right: 223
+        height: 4
+      - key: full.design.confirm
+        value: 23
+        left: 216
+        right: 224
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 59
+      - 69
+      - 74
+      - 79
+      - 85
+      - 91
+      - 96
+      - 99
+      - 103
+      - 108
+      - 113
+      - 119
+      - 122
+      - 125
+      - 129
+      - 134
+      - 152
+      - 154
+      - 159
+      - 165
+      - 166
+      - 173
+      - 181
+      - 189
+      - 198
+      - 207
+      - 214
+      - 220
+      - 225
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:11
+          - results
+        map: 13
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:13
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:14
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:16
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:18
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:19
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:21
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:22
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:24
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:26
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:28
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:4
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:5
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:7
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - measure-workflow-health-in-signoz:9
+          - results
+        map: 27
+      - path:
+          - outputs
+        map: 28
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 29
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 30
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 31
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 28
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 36
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 37
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 38
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 39
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 40
+  storageHash: 285c3d2ffc021b736ac22d685fb2426f75fc511b86638d7a595a956ef7f1c381
+check_epoch: 6
