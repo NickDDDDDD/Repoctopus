@@ -57,7 +57,13 @@ Remove-Item Env:REPOCTOPUS_OTLP_DIAGNOSTICS
 
 ## 导入工作流健康看板
 
-在 SigNoz v0.135.0 或更新版本打开 **Dashboards → New dashboard → Import JSON**，上传 [workflow-health.json](../deploy/signoz/workflow-health.json)。看板使用 Repoctopus 的规范 OTLP Logs 和 SigNoz 的 ClickHouse 查询，无需为字段改名。团队可用 [SigNoz 导入指南](https://signoz.io/docs/dashboards/import-dashboard/)核对界面步骤。
+先取得与团队 CLI 版本对应的 `deploy/signoz/workflow-health.json`。
+
+- 全局 npm 安装时，在 PowerShell 运行 `Join-Path (npm.cmd root --global) 'repoctopus/deploy/signoz/workflow-health.json'` 定位文件。
+- 从团队提供的 `.tgz` 提取时，在包所在目录运行 `tar -xzf ./repoctopus-0.1.2.tgz package/deploy/signoz/workflow-health.json`。文件名使用团队的实际版本，提取后从 `package/deploy/signoz/` 取文件。
+- 临时使用 npx 时，也可在对应 Git Tag 下载 JSON。[v0.1.2 看板 JSON](https://github.com/NickDDDDDD/Repoctopus/blob/v0.1.2/deploy/signoz/workflow-health.json)
+
+在 SigNoz v0.135.0 或更新版本打开 **Dashboards → New dashboard → Import JSON**，上传取得的文件。看板使用 Repoctopus 的规范 OTLP Logs 和 SigNoz 的 ClickHouse 查询。团队可用 [SigNoz 导入指南](https://signoz.io/docs/dashboards/import-dashboard/)核对界面步骤。
 
 | 指标                    | 样本与计算                                                                                                                                                                         |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

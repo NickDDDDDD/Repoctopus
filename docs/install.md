@@ -39,9 +39,9 @@ repoctopus.cmd --version
 
 从同一个 Release 下载 `Repoctopus-Desktop-<版本>-x64-Setup.exe`，对照 `SHA256SUMS` 核对文件再安装。在已接入的 Workspace 启动或恢复 Change 时，CLI 会尝试打开 Dashboard。详见[桌面激活与诊断](desktop-activation.md#使用已安装应用)。
 
-## 从 v0.1.1 更新
+## 更新 CLI 和 Workspace 引导
 
-用与首次安装相同的方式安装团队指定的版本，再运行 `repoctopus --version`。已接入的 Workspace 沿用原配置和 Store。按需为团队使用的宿主补装或更新 Skill，审批后提交并推送安装文件。[Workspace Skill 补装](skills.md#在宿主中调用-repoctopus)
+用与首次安装相同的方式安装团队指定的版本，再运行 `repoctopus --version`。已接入的 Workspace 沿用原配置和 Store。按需单独补装或更新所用宿主的 Skill。需要更新本地 README、AGENTS 和使用指南时，走 Workspace 引导刷新。审批通过后提交并推送生成的文件。[Workspace Skill 补装](skills.md#在宿主中调用-repoctopus) · [刷新引导](project-onboarding.md#补齐或更新-workspace-引导)
 
 有进行中的 Run 时，先用创建该 Run 的版本完成交付。升级后如果 `run status` 返回 `migration_required`，保留原 Run 和证据，并使用原版本继续。[Run 状态与恢复](runtime-state.md#身份分层与失效范围)
 

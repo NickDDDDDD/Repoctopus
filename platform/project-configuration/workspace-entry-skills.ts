@@ -6,6 +6,7 @@ import {
   isOwnedWorkspaceEntrySkill,
   markWorkspaceEntrySkill,
   workspaceEntryDigest as digest,
+  WORKSPACE_ENTRY_DIRECTORIES,
   WORKSPACE_ENTRY_HOSTS,
   type WorkspaceEntryHost,
   type WorkspaceEntrySkillPlan,
@@ -26,18 +27,10 @@ const productRoot = path.resolve(
 type EntrySkill = 'repoctopus' | 'repoctopus-init' | 'repoctopus-configure-verify';
 type EntryTarget = { host: WorkspaceEntryHost; path: string; skill: EntrySkill };
 const DEFAULT_WORKSPACE_ENTRY_HOSTS = ['codex', 'opencode'] as const;
-const HOST_DIRECTORIES: Record<WorkspaceEntryHost, { workspace: string; personal: string }> = {
-  codex: { workspace: '.agents', personal: '.codex' },
-  opencode: { workspace: '.opencode', personal: '.config/opencode' },
-  codebuddy: { workspace: '.codebuddy', personal: '.codebuddy' },
-  codearts: { workspace: '.codeartsdoer', personal: '.codeartsdoer' },
-  trae: { workspace: '.trae', personal: '.trae' },
-  'trae-cn': { workspace: '.trae', personal: '.trae-cn' },
-};
 
 function workspaceTargets(): EntryTarget[] {
   return WORKSPACE_ENTRY_HOSTS.flatMap((host) => {
-    const directory = HOST_DIRECTORIES[host].workspace;
+    const directory = WORKSPACE_ENTRY_DIRECTORIES[host].workspace;
     return (['repoctopus', 'repoctopus-configure-verify'] as const).map((skill) => ({
       host,
       skill,
@@ -47,12 +40,12 @@ function workspaceTargets(): EntryTarget[] {
 }
 
 export function workspaceSkillPath(host: WorkspaceEntryHost, name: string): string {
-  return `${HOST_DIRECTORIES[host].workspace}/skills/${name}/SKILL.md`;
+  return `${WORKSPACE_ENTRY_DIRECTORIES[host].workspace}/skills/${name}/SKILL.md`;
 }
 
 function workflowTargets(root: string, hosts: readonly WorkspaceEntryHost[], openSpec: boolean) {
   const targets = hosts.flatMap((host) =>
-    workflowSkillTargets(root, host, HOST_DIRECTORIES[host].workspace, openSpec),
+    workflowSkillTargets(root, host, WORKSPACE_ENTRY_DIRECTORIES[host].workspace, openSpec),
   );
   return uniqueEntryTargets(targets);
 }
@@ -348,7 +341,7 @@ export async function installPersonalInitSkills(hosts: readonly string[], previe
   const root = await realpath(homedir());
   const targets = uniqueEntryTargets(
     selectedHosts(hosts).map((host): EntryTarget => {
-      const defaultDirectory = path.join(root, HOST_DIRECTORIES[host].personal);
+      const defaultDirectory = path.join(root, WORKSPACE_ENTRY_DIRECTORIES[host].personal);
       const directory =
         host === 'codex' && process.env.CODEX_HOME
           ? process.env.CODEX_HOME

@@ -68,7 +68,7 @@ team-platform/
 
 ### 提交接入结果
 
-把生成的共享配置、规格、所选宿主的 Skill 目录及其管理记录提交并推送。多仓接入如获批生成业务仓的 `openspec/config.yaml`，把文件提交到它所属的仓。
+把共享配置、规格、生成的 README、AGENTS 和本地使用指南提交并推送。一起提交所选宿主的 Skill 目录、资源和同级的 `.repoctopus-workflow-skills/` 管理记录。多仓接入如获批生成业务仓的 `openspec/config.yaml`，把文件提交到它所属的仓。
 
 初始化完成后即可开发。到需要正式验证时，在 Workspace 调用 `repoctopus-configure-verify`，按项目实际命令配置 Verify，再恢复原 Run。团队已经配置好 Profile 时可直接执行 Verify。 [接入和配置详情](docs/project-onboarding.md)
 
@@ -87,7 +87,7 @@ git push -u origin HEAD
 
 ## 接入已有团队项目
 
-检出团队的 Workspace 和所需业务仓，使用团队指定的 CLI 版本。首次在本机使用时，登记团队的 OpenSpec Store，并按需配置本机仓库路径和团队凭据。[新成员接入](docs/project-onboarding.md#新成员接入)
+检出团队的 Workspace 和所需业务仓，使用团队指定的 CLI 版本。首次在本机使用时，登记团队的 OpenSpec Store，并按需配置本机仓库路径和团队凭据。打开 Workspace 调用团队已安装的 `repoctopus` Skill。缺少所用宿主的入口时，可以单独补装。[新成员接入](docs/project-onboarding.md#新成员接入) · [Workspace Skill 补装](docs/skills.md#在宿主中调用-repoctopus)
 
 ## 工作流如何推进
 

@@ -1,0 +1,16 @@
+{
+  "change": "align-workspace-onboarding-guides",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "c4da9cd43bad10594fb7c807b388453e9d5ed5125d47f25a798f1546a3cb8a51",
+  "files": [
+    { "path": "openspec/changes/align-workspace-onboarding-guides/proposal.md", "sha256": "e19493fc300a9839cce554dd0975c8ee54f590fb916a46512576bf02f3730638" },
+    { "path": "openspec/changes/align-workspace-onboarding-guides/design.md", "sha256": "a605829a353266292154630daef2fd0b7a5745b8b2c552aedc11e81b5f11e05a" },
+    { "path": "openspec/changes/align-workspace-onboarding-guides/tasks.md", "sha256": "ceb8511e62c4f82d36d2988c082ce901909beca82cb64145707c728043edb38f" },
+    { "path": "openspec/changes/align-workspace-onboarding-guides/.openspec.yaml", "sha256": "2e91af4681be83038a92e715cfb64d8067b4c8399c2b25074da27a778869f3aa" },
+    { "path": "openspec/changes/align-workspace-onboarding-guides/specs/project-configuration/spec.md", "sha256": "544100c790ee4bf8b6ff4550d907b2064df86544fff491cd8593c7989fc8563f" }
+  ]
+}

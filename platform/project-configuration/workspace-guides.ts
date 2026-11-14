@@ -7,6 +7,8 @@ import {
 } from '../../domains/project-configuration/workspace-guides.js';
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
 import { atomicWriteText } from '../filesystem/atomic-write.js';
+import { PRODUCT_VERSION } from '../product/version.js';
+import { installedOpenSpecVersion } from '../specification/openspec-process.js';
 
 interface GuideWrite extends WorkspaceGuide {
   before: string | null;
@@ -86,7 +88,10 @@ export async function planWorkspaceGuides(
   config: SharedProjectConfig,
 ): Promise<GuideWrite[]> {
   return Promise.all(
-    renderWorkspaceGuides(config).map(async (guide) => {
+    renderWorkspaceGuides(config, {
+      product: PRODUCT_VERSION,
+      openSpec: installedOpenSpecVersion(),
+    }).map(async (guide) => {
       const observed = await source(workspace, guide.file);
       const before = observed?.text ?? null;
       return {

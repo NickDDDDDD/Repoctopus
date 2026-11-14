@@ -15,7 +15,7 @@ Repoctopus 使用 DSH Skill Registry 解析 Skill，并通过 Cordis Provider �
 | TRAE 国际版       | `trae`          | `.trae/skills`         | `~/.trae/skills`            |
 | TRAE 中国版       | `trae-cn`       | `.trae/skills`         | `~/.trae-cn/skills`         |
 
-个人安装支持预览。CodeBuddy Code 使用 `CODEBUDDY_CONFIG_DIR` 时，个人目录跟随该设置，仍须位于用户目录内。首次接入默认预览 Codex 和 OpenCode 的 Workspace 入口。用 `--entry-hosts` 选择实际需要的宿主。
+个人安装支持预览。CLI 会检查 Codex 的 `CODEX_HOME`、OpenCode 的 `XDG_CONFIG_HOME` 下的 `opencode/` 和 CodeBuddy Code 的 `CODEBUDDY_CONFIG_DIR`，使用用户目录内的对应位置。首次接入默认预览 Codex 和 OpenCode 的 Workspace 入口。用 `--entry-hosts` 选择实际需要的宿主。
 
 获批的 Workspace 初始化与补装还会安装八个阶段 Action、Matt 的 `grilling`、`codebase-design`、`tdd`、`code-review`、`diagnosing-bugs`、`pr`，以及使用 OpenSpec 时的只读 `openspec-explore`。每个 Skill 的正文和资源位于所选宿主的 `skills/<name>/`。把接入或补装产生的 Skill 目录与同级的 `.repoctopus-workflow-skills/` 管理记录一起提交并推送，再开始 Change。其他成员拉取后即可使用同一套 Skill，也可通过补装增加团队尚未提交的宿主。升级走同一个补装命令，预览会报告被修改或占用的文件。
 
@@ -31,7 +31,9 @@ $prepared = repoctopus.cmd project install-entry-skills --entry-hosts codearts -
 repoctopus.cmd project review --request $prepared.result.file
 ```
 
-审批只写入所选宿主的 Workspace Skill。按团队流程提交生成的入口，并在宿主里打开 Workspace 的新会话。CodeArts 码道使用智能体模式，在「技能与规则」核对目标 Skill 的启用状态。TRAE 可在「技能与命令」检查项目与全局技能。CodeBuddy Code 可用 `/skills` 核对发现情况。遇到同名 Skill 时，在宿主确认实际来源。
+审批只写入所选宿主的 Workspace Skill、资源和管理记录。按团队流程提交这些文件，并在宿主里打开 Workspace 的新会话。需要更新 README、AGENTS 或本地教程时，请走[刷新引导](project-onboarding.md#补齐或更新-workspace-引导)。
+
+CodeArts 码道使用智能体模式，在「技能与规则」核对目标 Skill 的启用状态。TRAE 可在「技能与命令」检查项目与全局技能。CodeBuddy Code 可用 `/skills` 核对发现情况。遇到同名 Skill 时，在宿主确认实际来源。
 
 [CodeBuddy Code](https://www.codebuddy.cn/docs/cli/skills) · [CodeArts 码道](https://support.huaweicloud.com/usermanual-codeartsagent/codeartsagent_ug_0024.html) · [TRAE 中国版](https://docs.trae.cn/ide_skills?lang=zh)
 

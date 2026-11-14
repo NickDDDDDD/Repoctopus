@@ -30,6 +30,7 @@ const guide = {
   tag: 'repoctopus-workspace',
   content: '## Workflow\n\nUse runtime.',
 };
+const versions = { product: '0.1.2', openSpec: '1.14.3' };
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 async function root() {
@@ -39,6 +40,34 @@ async function root() {
 }
 
 describe('Workspace guide ownership', () => {
+  it('routes team members through the current Init, Skill, Verify and telemetry entry points', () => {
+    const [readme, agents, tutorial] = renderWorkspaceGuides(config, versions);
+    expect(readme?.content).toContain('调用 `repoctopus` Skill');
+    expect(agents?.content).toContain('run work-content');
+    expect(agents?.content).toContain('CodeArts');
+    const text = tutorial!.content;
+    for (const command of [
+      'skill install-init --entry-hosts',
+      'project init --layout single',
+      'project init --layout multi',
+      "store register . --id 'team-store' --json",
+      'project install-entry-skills --entry-hosts',
+      'project detect --layout multi --scan-root ..',
+      '.repoctopus-workflow-skills/',
+      'project configure-verify --candidate',
+      'REPOCTOPUS_OTLP_DIAGNOSTICS=full',
+      'deploy/signoz/workflow-health.json',
+    ]) {
+      expect(text).toContain(command);
+    }
+    expect(text.indexOf('调用 `repoctopus` Skill')).toBeLessThan(text.indexOf('run start'));
+    const single = renderWorkspaceGuides(
+      { ...config, repositories: config.repositories.slice(0, 1) },
+      versions,
+    );
+    expect(single[2]?.content).toContain('project detect --layout single --scan-root . ');
+  });
+
   it('preserves exact mixed-ending user prefix/suffix and does not duplicate its own block', () => {
     const prefix = '# Team\r\n\nKeep this exactly.\r\n';
     const suffix = '\r\n\n## Rules\nNo changes here.';
@@ -153,11 +182,14 @@ describe('Workspace guide ownership', () => {
   });
 
   it('renders single-repository use without exposing local paths or configured credentials', () => {
-    const rendered = renderWorkspaceGuides({
-      ...config,
-      repositories: [{ id: 'workspace', path: 'C:/private/project' }],
-      telemetry: { endpoint: 'https://secret-collector.example/actual' },
-    });
+    const rendered = renderWorkspaceGuides(
+      {
+        ...config,
+        repositories: [{ id: 'workspace', path: 'C:/private/project' }],
+        telemetry: { endpoint: 'https://secret-collector.example/actual' },
+      },
+      versions,
+    );
     expect(rendered[2]!.content).toContain('单仓');
     expect(JSON.stringify(rendered)).not.toContain('C:/private');
     expect(JSON.stringify(rendered)).not.toContain('secret-collector');
