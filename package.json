@@ -17,6 +17,7 @@
     "!dist/desktop-release/**",
     "app",
     "docs",
+    "deploy/signoz/workflow-health.json",
     "!docs/superpowers",
     "!docs/superpowers/**",
     "domains",

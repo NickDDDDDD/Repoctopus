@@ -104,6 +104,12 @@ function workflowHealthLog(envelope: ObservationEnvelope): boolean {
     attributes.healthFact === 'state' ||
     attributes.healthFact === 'configuration' ||
     eventType === 'run.started' ||
+    (eventType === 'change.lifecycle.transitioned' &&
+      attributes.healthFact === undefined &&
+      (attributes.fromPhase !== envelope.correlation.phase ||
+        attributes.fromStatus !== attributes.toStatus ||
+        attributes.workflowRunResult === 'completed' ||
+        attributes.workflowRunResult === 'failed')) ||
     attributes.workflowRunResult === 'failed' ||
     IMPORTANT_DIAGNOSTICS.has(eventType) ||
     (eventType.startsWith('application.') && attributes.result === 'failed')

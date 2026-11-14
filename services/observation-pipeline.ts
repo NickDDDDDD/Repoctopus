@@ -25,6 +25,7 @@ interface ObservationDestinationState {
   lastAttempt: ObservationDestinationAttempt | null;
   activeSignals?: readonly ObservationSignal[];
   signals?: Partial<Record<ObservationSignal, SignalCursor>>;
+  legacyCoverageThroughPosition?: number;
 }
 
 export type ObservationSignal = 'trace' | 'log' | 'metric';
@@ -263,13 +264,23 @@ export class ObservationPipeline {
     );
   }
 
-  setActiveSignals(destinationId: string, signals: readonly ObservationSignal[]): Promise<void> {
+  setActiveSignals(
+    destinationId: string,
+    signals: readonly ObservationSignal[],
+    deadline?: number,
+  ): Promise<void> {
     return this.mutate((state) => {
       const id = this.destinationId(destinationId);
       const current = state.destinations[id] ?? newDestination();
       if (current.activeSignals?.join(',') === signals.join(',')) return false;
-      state.destinations[id] = { ...current, activeSignals: signals };
-    });
+      state.destinations[id] = {
+        ...current,
+        activeSignals: signals,
+        ...(current.cursorPosition >= 0
+          ? { legacyCoverageThroughPosition: current.cursorPosition }
+          : {}),
+      };
+    }, deadline);
   }
 
   recordSignalAttempt(
@@ -278,6 +289,7 @@ export class ObservationPipeline {
     attempt: ObservationDestinationAttempt,
     confirmed?: PendingObservation,
     rejectedRecords = 0,
+    deadline?: number,
   ): Promise<void> {
     return this.mutate((state) => {
       const id = this.destinationId(destinationId);
@@ -295,7 +307,7 @@ export class ObservationPipeline {
           },
         },
       };
-    });
+    }, deadline);
   }
 
   acknowledge(destinationId: string, envelopeId: string): Promise<void> {
@@ -321,7 +333,11 @@ export class ObservationPipeline {
     });
   }
 
-  recordAttempt(destinationId: string, attempt: ObservationDestinationAttempt): Promise<void> {
+  recordAttempt(
+    destinationId: string,
+    attempt: ObservationDestinationAttempt,
+    deadline?: number,
+  ): Promise<void> {
     return this.mutate((state) => {
       const destination = this.destinationId(destinationId);
       const current = state.destinations[destination] ?? {
@@ -332,7 +348,7 @@ export class ObservationPipeline {
         lastAttempt: null,
       };
       state.destinations[destination] = { ...current, lastAttempt: structuredClone(attempt) };
-    });
+    }, deadline);
   }
 
   async status(destinationId: string): Promise<ObservationDestinationStatus> {
@@ -362,12 +378,19 @@ export class ObservationPipeline {
     return destination;
   }
 
-  private mutate(operation: (state: ObservationStoreState) => void | boolean): Promise<void> {
-    return withRecoverableFileLock(`${this.file}.lock`, async () => {
-      const state = await this.readState();
-      if (operation(state) === false) return;
-      await atomicWriteText(this.file, `${JSON.stringify(state)}\n`);
-    });
+  private mutate(
+    operation: (state: ObservationStoreState) => void | boolean,
+    deadline?: number,
+  ): Promise<void> {
+    return withRecoverableFileLock(
+      `${this.file}.lock`,
+      async () => {
+        const state = await this.readState();
+        if (operation(state) === false) return;
+        await atomicWriteText(this.file, `${JSON.stringify(state)}\n`);
+      },
+      deadline === undefined ? {} : { timeoutMs: Math.max(1, deadline - Date.now()) },
+    );
   }
 
   private async readState(): Promise<ObservationStoreState> {

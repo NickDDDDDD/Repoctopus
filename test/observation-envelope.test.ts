@@ -35,7 +35,7 @@ function event(type: TrajectoryEvent['type'], data: Record<string, unknown> = {}
 describe('ObservationEnvelope', () => {
   it('projects approved strategies, invalidation and complete rollback counts from accepted facts', () => {
     const start = {
-      ...event('run.started', { phase: 'open', healthStatus: 'running' }),
+      ...event('run.started', { phase: 'open', workflowRunResult: 'started' }),
       sequence: 1,
       eventId: 'start',
     };
@@ -51,7 +51,7 @@ describe('ObservationEnvelope', () => {
           revision: sequence,
           transitionId,
           from: { phase: from },
-          to: { phase: to, status: 'running' },
+          to: { phase: to, status: transitionId === 'archive.completed' ? 'completed' : 'running' },
         },
         ...extra,
       }),
@@ -73,7 +73,7 @@ describe('ObservationEnvelope', () => {
     const unchanged = transition(4, 'design', 'design', 'design.reobserved');
     const verifyRepair = transition(5, 'verify', 'build', 'verify.failed');
     const completed = transition(6, 'archive', 'archive', 'archive.completed', {
-      healthStatus: 'completed',
+      status: 'completed',
       workflowRunResult: 'completed',
     });
     const history = [start, approval, designRepair, unchanged, verifyRepair, completed];
@@ -100,6 +100,56 @@ describe('ObservationEnvelope', () => {
     expect(
       createWorkflowObservationEnvelopes([completed], history.slice(1), context)[0]?.attributes,
     ).not.toHaveProperty('rollbackTotal');
+  });
+
+  it('preserves their last accepted reason without exposing raw wait and blocker values', () => {
+    const history = [
+      {
+        ...event('run.started', { phase: 'open', workflowRunResult: 'started' }),
+        sequence: 1,
+        eventId: 'start',
+      },
+      {
+        ...event('change.lifecycle.transitioned', {
+          phase: 'open',
+          status: 'waiting',
+          changeLifecycleTransition: {
+            to: { phase: 'open', status: 'waiting' },
+            wait: { kind: 'human-decision', waitId: 'open-approval:private-request' },
+          },
+        }),
+        sequence: 2,
+        eventId: 'wait',
+      },
+      {
+        ...event('change.lifecycle.transitioned', {
+          phase: 'open',
+          status: 'blocked',
+          healthBlocker: 'private-provider-reason',
+        }),
+        sequence: 3,
+        eventId: 'blocked',
+      },
+      {
+        ...event('change.lifecycle.transitioned', {
+          phase: 'open',
+          status: 'failed',
+          workflowRunResult: 'failed',
+        }),
+        sequence: 4,
+        eventId: 'failed',
+      },
+    ];
+    const observed = createWorkflowObservationEnvelopes(history, history, context);
+    expect(
+      observed.map(({ attributes }) => [attributes.healthStatus, attributes.healthReason]),
+    ).toEqual([
+      ['running', 'none'],
+      ['waiting', 'open-approval'],
+      ['blocked', 'unknown'],
+      ['failed', 'none'],
+    ]);
+    expect(JSON.stringify(observed.map(({ attributes }) => attributes))).not.toContain('private-');
   });
 
   it('maps the same fact to one stable, canonical and allowlisted envelope', () => {

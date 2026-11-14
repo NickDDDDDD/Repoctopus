@@ -470,24 +470,63 @@ const HUMAN_WAIT_REASONS = new Set([
   'build-plan',
 ]);
 const BLOCKER_REASONS: ReadonlyMap<string, string> = new Map([
-  ['open.planning-invalid', 'planning-invalid'],
-  ['design.planning-invalid', 'planning-invalid'],
-  ['work-execution.migration-required', 'migration-required'],
-  ['verification-input-pending', 'verification-input-pending'],
+  ['open.invalid', 'planning-invalid'],
+  ['design.invalid', 'planning-invalid'],
+  ['build.verification-blocked', 'verification-input-pending'],
   ['build.retry-exhausted', 'retry-exhausted'],
-  ['publication-receipt-incomplete', 'publication-incomplete'],
+  ['archive.publication-blocked', 'publication-incomplete'],
 ]);
 
-function workflowHealthState(event: TrajectoryEvent) {
+type WorkflowHealthState = { phase: ChangePhase; status: RunStatus | 'unknown'; reason: string };
+
+function workflowHealthState(
+  event: TrajectoryEvent,
+  previous?: WorkflowHealthState,
+): WorkflowHealthState | undefined {
+  if (event.type === 'recovery.reconciled' || event.type === 'run.resumed') {
+    if (
+      !previous ||
+      (previous.status !== 'running' && previous.reason !== 'reconciliation-required')
+    )
+      return;
+    const workspaceRecovery =
+      record(event.data.buildWorkspaceRecovery) ?? record(event.data.evidenceWorkspaceRecovery);
+    if (event.type === 'recovery.reconciled') {
+      return { ...previous, status: 'blocked', reason: 'reconciliation-required' };
+    }
+    if (workspaceRecovery || event.data.authorizedBranchRebind) {
+      return { ...previous, status: 'running', reason: 'none' };
+    }
+    return;
+  }
   const transition = nestedTransition(event);
-  const target =
-    phase(event.data.healthPhase) ?? phase(transition?.to?.phase) ?? phase(event.data.phase);
+  const target = phase(transition?.to?.phase) ?? phase(event.data.phase);
   if (!target || !['run.started', 'change.lifecycle.transitioned'].includes(event.type)) return;
-  const status = event.data.healthStatus ?? transition?.to?.status ?? event.data.status;
-  const wait = event.data.healthWaitKind ?? transition?.wait?.kind;
-  const waitId = event.data.healthWaitId ?? transition?.wait?.waitId;
+  const status =
+    transition?.to?.status ??
+    event.data.status ??
+    event.data.workflowRunResult ??
+    (event.type === 'run.started' ? 'running' : undefined);
+  const lifecycleStatus = CHANGE_RUN_STATUSES.includes(status as RunStatus)
+    ? (status as RunStatus)
+    : event.type === 'run.started'
+      ? 'running'
+      : 'unknown';
+  const wait = transition?.wait?.kind;
+  const waitId = transition?.wait?.waitId;
   const waitReason = typeof waitId === 'string' ? waitId.split(':', 1)[0]! : '';
-  const blocker = event.data.healthBlocker;
+  if (
+    lifecycleStatus === 'running' &&
+    previous?.reason === 'reconciliation-required' &&
+    !event.data.authorizedBranchRebind &&
+    previous.phase === target
+  ) {
+    return previous;
+  }
+  const blocker =
+    typeof transition?.transitionId === 'string'
+      ? BLOCKER_REASONS.get(transition.transitionId)
+      : undefined;
   const reason =
     wait === 'human-decision'
       ? HUMAN_WAIT_REASONS.has(waitReason)
@@ -495,8 +534,8 @@ function workflowHealthState(event: TrajectoryEvent) {
         : 'human-decision'
       : wait === 'retry' || wait === 'external-fact'
         ? wait
-        : typeof blocker === 'string'
-          ? (BLOCKER_REASONS.get(blocker) ?? 'other-blocker')
+        : blocker
+          ? blocker
           : status === 'migration_required'
             ? 'migration-required'
             : status === 'waiting' || status === 'blocked' || !status
@@ -504,7 +543,7 @@ function workflowHealthState(event: TrajectoryEvent) {
               : 'none';
   return {
     phase: target,
-    status: CHANGE_RUN_STATUSES.includes(status as RunStatus) ? (status as RunStatus) : 'unknown',
+    status: lifecycleStatus,
     reason,
   };
 }
@@ -629,13 +668,19 @@ export function createWorkflowObservationEnvelopes(
 ): readonly ObservationEnvelope[] {
   if (!context.changeId) return events.map((event) => createObservationEnvelope(event, context));
   const requested = new Set(events.map((event) => event.eventId));
-  const health = new Map<string, Record<string, ObservationScalar>>();
+  const health = new Map<
+    string,
+    { attributes: Record<string, ObservationScalar>; phase: ChangePhase }
+  >();
   let previous: ReturnType<typeof workflowHealthState>;
   for (const event of [...trajectory].sort((left, right) => left.sequence - right.sequence)) {
-    const state = workflowHealthState(event);
+    const state = workflowHealthState(event, previous);
     if (!state) continue;
     if (requested.has(event.eventId)) {
-      health.set(event.eventId, workflowHealthAttributes(event, state, trajectory, previous));
+      health.set(event.eventId, {
+        attributes: workflowHealthAttributes(event, state, trajectory, previous),
+        phase: state.phase,
+      });
     }
     previous = state;
   }
@@ -646,8 +691,11 @@ export function createWorkflowObservationEnvelopes(
       sequence: event.sequence,
       observedAt: event.timestamp,
       eventType: event.type,
-      correlation: correlation(event, context),
-      attributes: { ...attributes(event, context), ...health.get(event.eventId) },
+      correlation: {
+        ...correlation(event, context),
+        ...(health.get(event.eventId) ? { phase: health.get(event.eventId)!.phase } : {}),
+      },
+      attributes: { ...attributes(event, context), ...health.get(event.eventId)?.attributes },
     }),
   );
 }

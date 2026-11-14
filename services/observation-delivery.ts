@@ -17,6 +17,7 @@ const REJECTED_RECORDS = {
   log: 'rejectedLogRecords',
   metric: 'rejectedDataPoints',
 } as const;
+const RETRYABLE_HTTP_STATUS = new Set([429, 502, 503, 504]);
 
 export interface ObservationDestination {
   id: string;
@@ -108,20 +109,30 @@ export class ObservationDelivery extends Service {
           await store.setActiveSignals(
             destination.id,
             targets.map(({ signal }) => signal),
+            deadline,
           );
-          const results = await Promise.all(
+          const outcomes = await Promise.allSettled(
             targets.map(async ({ signal, endpoint }) =>
               this.replaySignal(store, destination, signal, endpoint, deadline),
             ),
           );
+          const results = outcomes.map((outcome) =>
+            outcome.status === 'fulfilled'
+              ? outcome.value
+              : { delivered: 0, warning: 'unavailable' },
+          );
           const warning = results.find((result) => result.warning)?.warning;
           const delivered = Math.max(0, ...results.map((result) => result.delivered));
           if (results.some((result) => result.delivered > 0 || result.warning)) {
-            await store.recordAttempt(destination.id, {
-              result: warning ? 'failed' : 'succeeded',
-              attemptedAt: new Date().toISOString(),
-              ...(warning ? { warningCode: warning } : {}),
-            });
+            await store.recordAttempt(
+              destination.id,
+              {
+                result: warning ? 'failed' : 'succeeded',
+                attemptedAt: new Date().toISOString(),
+                ...(warning ? { warningCode: warning } : {}),
+              },
+              deadline,
+            );
           }
           return {
             destinationId: destination.id,
@@ -133,11 +144,15 @@ export class ObservationDelivery extends Service {
       );
     } catch {
       const warningCode = 'unavailable';
-      await store.recordAttempt(destination.id, {
-        result: 'failed',
-        attemptedAt: new Date().toISOString(),
-        warningCode,
-      });
+      await store.recordAttempt(
+        destination.id,
+        {
+          result: 'failed',
+          attemptedAt: new Date().toISOString(),
+          warningCode,
+        },
+        deadline,
+      );
       return {
         destinationId: destination.id,
         delivered: 0,
@@ -199,7 +214,12 @@ export class ObservationDelivery extends Service {
           ),
         });
         if (!response.ok) {
-          warning = 'rejected';
+          if (RETRYABLE_HTTP_STATUS.has(response.status)) {
+            warning = 'rejected';
+          } else {
+            warning = 'permanent-rejection';
+            rejectedRecords = selected.length;
+          }
         } else {
           const content = await response.text();
           const acknowledgement = content ? JSON.parse(content) : {};
@@ -226,6 +246,7 @@ export class ObservationDelivery extends Service {
       },
       !warning || rejectedRecords > 0 ? pending.at(-1) : undefined,
       rejectedRecords,
+      deadline,
     );
     return {
       delivered: warning ? 0 : selected.length,

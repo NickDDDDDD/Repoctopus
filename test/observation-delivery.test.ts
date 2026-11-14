@@ -172,15 +172,27 @@ it('coalesces remote health logs until close and continues immediate desktop del
       eventType: 'change.lifecycle.transitioned',
       attributes: { healthFact: 'state' },
     };
-    for (const record of [start, diagnostic, phase]) {
+    const legacyCompletion: ObservationEnvelope = {
+      ...phase,
+      identity: { ...phase.identity, sequence: 4, eventId: 'event-4' },
+      envelopeId: `sha256:${'c'.repeat(64)}`,
+      correlation: { ...phase.correlation, phase: 'archive' },
+      attributes: {
+        fromPhase: 'archive',
+        fromStatus: 'running',
+        toStatus: 'completed',
+        workflowRunResult: 'completed',
+      },
+    };
+    for (const record of [start, diagnostic, phase, legacyCompletion]) {
       await delivery.append([record]);
       await delivery.deliver(destinations);
     }
-    expect(desktopRecords).toEqual([start, diagnostic, phase]);
+    expect(desktopRecords).toEqual([start, diagnostic, phase, legacyCompletion]);
     expect(remote.paths).toEqual([]);
     await delivery.flushRemote();
     expect(remote.paths).toEqual(['/v1/logs']);
-    expect(remoteRecords).toEqual([start, phase]);
+    expect(remoteRecords).toEqual([start, phase, legacyCompletion]);
   } finally {
     await Promise.all([remote.close(), desktop.close()]);
     await context.fiber.dispose();

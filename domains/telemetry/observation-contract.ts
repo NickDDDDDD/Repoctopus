@@ -185,7 +185,7 @@ const OBSERVATION_ENUMS: Readonly<Record<string, readonly string[]>> = {
     'migration-required',
     'verification-input-pending',
     'publication-incomplete',
-    'other-blocker',
+    'reconciliation-required',
     'unknown',
   ],
   correctionKind: ['changes-requested', 'outcome-rejection', 'task-reopen', 'repair-work'],
