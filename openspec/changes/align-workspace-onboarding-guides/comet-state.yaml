@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: feba2257-cf81-4a53-b279-bbd79c94b050
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: e16b7fc4c07c0e95d1764b800519c4912bb3ed02
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-14
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/align-workspace-onboarding-guides
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 126614cd745829f8f19560b7d2700dc5189a0052164672e045e593bdd42086f8
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: align-workspace-onboarding-guides
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: fa2223cb627822d9310f8bf3583d059f39f453bbd2a11b8762867acc0651688c
+    input:
+      change: align-workspace-onboarding-guides
+      changeDir: openspec/changes/align-workspace-onboarding-guides
+      workspaceBaseline:
+        ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: e16b7fc4c07c0e95d1764b800519c4912bb3ed02
+      boundBranch: codex/align-workspace-onboarding-guides
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-14
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: align-workspace-onboarding-guides:1
+        input:
+          input:
+            change: align-workspace-onboarding-guides
+            changeDir: openspec/changes/align-workspace-onboarding-guides
+            workspaceBaseline:
+              ref: 73748a14-83bc-48b4-b132-fc88bbdb77aa
+          outputs: {}
+        inputHash: 5ebdc30ff1977c3c67b46770e3e1b0352bdfc17b508bbbfba9757d4607dd7bde
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: align-workspace-onboarding-guides
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      align-workspace-onboarding-guides:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 42606f4ee505a24be24fbf911066c10737a2afa8a16776c685de606a4ee92b0b
