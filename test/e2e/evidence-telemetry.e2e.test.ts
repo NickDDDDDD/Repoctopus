@@ -74,6 +74,7 @@ describe('Evidence OTLP export', () => {
       const workspaceConfigPath = path.join(workspace, 'repoctopus.yaml');
       await writeFile(workspaceConfigPath, stringify(config));
       const environment = {
+        REPOCTOPUS_OTLP_DIAGNOSTICS: 'full',
         OTEL_EXPORTER_OTLP_ENDPOINT: undefined,
         OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: undefined,
         OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: undefined,
@@ -141,6 +142,7 @@ guardrails:
           cwd: workspace,
           environment: {
             ...environment,
+            REPOCTOPUS_OTLP_DIAGNOSTICS: 'full',
             OTEL_EXPORTER_OTLP_ENDPOINT: source === 'environment' ? base : undefined,
           },
           args: [

@@ -247,12 +247,20 @@ export class ObservationPipeline {
       .slice(0, limit);
   }
 
-  withReplayLock<T>(destinationId: string, action: () => Promise<T>): Promise<T> {
+  withReplayLock<T>(
+    destinationId: string,
+    action: () => Promise<T>,
+    timeoutMs?: number,
+  ): Promise<T> {
     const key = createHash('sha256')
       .update(this.destinationId(destinationId))
       .digest('hex')
       .slice(0, 16);
-    return withRecoverableFileLock(`${this.file}.${key}.lock`, action);
+    return withRecoverableFileLock(
+      `${this.file}.${key}.lock`,
+      action,
+      timeoutMs === undefined ? {} : { timeoutMs },
+    );
   }
 
   setActiveSignals(destinationId: string, signals: readonly ObservationSignal[]): Promise<void> {

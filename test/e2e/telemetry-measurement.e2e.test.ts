@@ -144,6 +144,7 @@ describe('telemetry measurement OTLP protocol', () => {
       };
       const delivery = new ObservationDelivery(context, { workspaceRoot: directory });
       const telemetry = new WorkflowObservationTelemetry(delivery, {
+        REPOCTOPUS_OTLP_DIAGNOSTICS: 'full',
         OTEL_EXPORTER_OTLP_ENDPOINT: `http://127.0.0.1:${address.port}`,
       });
       await telemetry.export(batch);

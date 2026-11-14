@@ -5,6 +5,7 @@ import {
   createDeliveryObservationEnvelope,
   createEvidenceObservationEnvelopes,
   createObservationEnvelope,
+  createWorkflowObservationEnvelopes,
   type ObservationContext,
 } from '../domains/trajectory/observation.js';
 import type { EvidenceTelemetryBatch } from '../domains/evidence/telemetry.js';
@@ -32,6 +33,75 @@ function event(type: TrajectoryEvent['type'], data: Record<string, unknown> = {}
 }
 
 describe('ObservationEnvelope', () => {
+  it('projects approved strategies, invalidation and complete rollback counts from accepted facts', () => {
+    const start = {
+      ...event('run.started', { phase: 'open', healthStatus: 'running' }),
+      sequence: 1,
+      eventId: 'start',
+    };
+    const transition = (
+      sequence: number,
+      from: string,
+      to: string,
+      transitionId: string,
+      extra = {},
+    ) => ({
+      ...event('change.lifecycle.transitioned', {
+        changeLifecycleTransition: {
+          revision: sequence,
+          transitionId,
+          from: { phase: from },
+          to: { phase: to, status: 'running' },
+        },
+        ...extra,
+      }),
+      sequence,
+      eventId: `event-${sequence}`,
+    });
+    const approval = transition(2, 'design', 'build', 'design.approved', {
+      observation: {
+        buildProtocol: {
+          strategy: {
+            executionMode: 'subagent-driven-development',
+            tddMode: 'direct',
+            isolationIntent: 'worktree',
+          },
+        },
+      },
+    });
+    const designRepair = transition(3, 'build', 'design', 'build.semantic-plan-drift');
+    const unchanged = transition(4, 'design', 'design', 'design.reobserved');
+    const verifyRepair = transition(5, 'verify', 'build', 'verify.failed');
+    const completed = transition(6, 'archive', 'archive', 'archive.completed', {
+      healthStatus: 'completed',
+      workflowRunResult: 'completed',
+    });
+    const history = [start, approval, designRepair, unchanged, verifyRepair, completed];
+    const exported = createWorkflowObservationEnvelopes(history, [...history].reverse(), context);
+
+    expect(exported[1]?.attributes).toMatchObject({
+      healthConfiguration: 'approved',
+      executionMode: 'subagent-driven-development',
+      tddMode: 'direct',
+      isolation: 'worktree',
+    });
+    expect(exported[2]?.attributes).toMatchObject({ healthConfiguration: 'unapproved' });
+    expect(exported[3]?.attributes).toMatchObject({ healthFact: 'unchanged' });
+    expect(exported[5]?.attributes).toMatchObject({
+      healthStatus: 'completed',
+      rollbackTotal: 2,
+      rollbackBuildToDesign: 1,
+      rollbackBuildToOpen: 0,
+      rollbackVerifyToBuild: 1,
+      rollbackVerifyToDesign: 0,
+      rollbackArchiveToDesign: 0,
+      rollbackArchiveToVerify: 0,
+    });
+    expect(
+      createWorkflowObservationEnvelopes([completed], history.slice(1), context)[0]?.attributes,
+    ).not.toHaveProperty('rollbackTotal');
+  });
+
   it('maps the same fact to one stable, canonical and allowlisted envelope', () => {
     const source = event('work.host-completed', {
       phase: 'build',

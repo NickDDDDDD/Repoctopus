@@ -31,7 +31,7 @@ describe('canonical observation destination configuration', () => {
     }
   });
 
-  it('uses the workspace base for signals with no environment endpoint', () => {
+  it('uses the workspace base for health logs and honors explicitly enabled signals', () => {
     const [remote] = observationDestinationsFromEnvironment(
       { OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: 'https://trace.example/collect' },
       'https://workspace.example/otel/',
@@ -40,7 +40,6 @@ describe('canonical observation destination configuration', () => {
     expect(remote?.signalEndpoints).toEqual({
       trace: 'https://trace.example/collect',
       log: 'https://workspace.example/otel/v1/logs',
-      metric: 'https://workspace.example/otel/v1/metrics',
     });
   });
 
@@ -67,9 +66,12 @@ describe('canonical observation destination configuration', () => {
     expect(remote?.signalTimeouts?.metric).toBe(9_000);
   });
 
-  it('prefers the common environment endpoint to the workspace base', () => {
+  it('prefers the common environment endpoint to the workspace base in full mode', () => {
     const [remote] = observationDestinationsFromEnvironment(
-      { OTEL_EXPORTER_OTLP_ENDPOINT: 'https://deployment.example/otel' },
+      {
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'https://deployment.example/otel',
+        REPOCTOPUS_OTLP_DIAGNOSTICS: 'full',
+      },
       'https://workspace.example/otel',
     );
 
@@ -86,7 +88,7 @@ describe('canonical observation destination configuration', () => {
     });
     expect(remoteOnly).toMatchObject({
       id: 'remote',
-      endpoint: 'http://collector:4318',
+      signalEndpoints: { log: 'http://collector:4318/v1/logs' },
       timeoutMillis: 5_000,
     });
     expect(remoteOnly?.resourceAttributes).toMatchObject({
@@ -101,7 +103,10 @@ describe('canonical observation destination configuration', () => {
         REPOCTOPUS_DESKTOP_OTLP_TOKEN: 'session-token',
       }),
     ).toEqual([
-      expect.objectContaining({ id: 'remote', endpoint: 'http://collector:4318' }),
+      expect.objectContaining({
+        id: 'remote',
+        signalEndpoints: { log: 'http://collector:4318/v1/logs' },
+      }),
       expect.objectContaining({
         id: 'desktop',
         endpoint: 'http://127.0.0.1:4319',

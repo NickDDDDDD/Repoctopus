@@ -195,6 +195,8 @@ export async function bootApp(options: BootOptions): Promise<RunningApp> {
     result: 'succeeded',
   });
   lifecycleDiagnostics.bindCanonicalTelemetry();
+  const observationDelivery = context.get('observationDelivery');
+  observationDelivery?.deferRemoteUntilClose();
 
   let closed = false;
   return {
@@ -221,6 +223,7 @@ export async function bootApp(options: BootOptions): Promise<RunningApp> {
         result: 'succeeded',
       });
       await lifecycleDiagnostics.flush();
+      await observationDelivery?.flushRemote();
     },
   };
 }

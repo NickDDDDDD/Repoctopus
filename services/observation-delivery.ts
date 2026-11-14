@@ -40,6 +40,8 @@ export interface ObservationDeliveryResult {
 /** Shared outbox boundary used by remote OTLP and the optional Desktop destination. */
 export class ObservationDelivery extends Service {
   private pipeline: Promise<ObservationPipeline> | null = null;
+  private deferredRemote: ObservationDestination | undefined;
+  private deferRemote = false;
 
   constructor(
     context: Context,
@@ -53,49 +55,82 @@ export class ObservationDelivery extends Service {
   }
 
   async append(envelopes: readonly ObservationEnvelope[]): Promise<void> {
+    if (envelopes.length === 0) return;
     await (await this.store()).append(envelopes);
   }
 
-  async replay(destination: ObservationDestination): Promise<ObservationDeliveryResult> {
+  deferRemoteUntilClose(): void {
+    this.deferRemote = true;
+  }
+
+  async deliver(destinations: readonly ObservationDestination[]): Promise<void> {
+    if (!this.deferRemote) {
+      await this.replayAll(destinations);
+      return;
+    }
+    this.deferredRemote = destinations.find(({ id }) => id === 'remote');
+    await this.replayAll(destinations.filter(({ id }) => id !== 'remote'));
+  }
+
+  async flushRemote(): Promise<void> {
+    const destination = this.deferredRemote;
+    if (!destination) return;
+    this.deferredRemote = undefined;
+    const stopAt = Date.now() + 2_000;
+    for (let batch = 0; batch < 4 && Date.now() < stopAt; batch += 1) {
+      const result = await this.replay(destination, stopAt);
+      if (result.warning || result.skipped || (await this.health(destination.id)).backlog === 0)
+        break;
+    }
+  }
+
+  async replay(
+    destination: ObservationDestination,
+    deadline?: number,
+  ): Promise<ObservationDeliveryResult> {
     const store = await this.store();
     try {
-      return await store.withReplayLock(destination.id, async () => {
-        const status = await store.status(destination.id);
-        if (status.mode !== 'enabled') {
-          return { destinationId: destination.id, delivered: 0, skipped: status.mode };
-        }
-        const baseEndpoint = destination.endpoint?.trim().replace(/\/$/u, '');
-        const targets = (Object.keys(SIGNAL_ROUTES) as ObservationSignal[]).flatMap((signal) => {
-          const endpoint =
-            destination.signalEndpoints?.[signal]?.trim() ||
-            (baseEndpoint && `${baseEndpoint}/v1/${SIGNAL_ROUTES[signal]}`);
-          return endpoint ? [{ signal, endpoint }] : [];
-        });
-        if (!targets.length) throw new Error('No OTLP endpoint');
-        await store.setActiveSignals(
-          destination.id,
-          targets.map(({ signal }) => signal),
-        );
-        const results = await Promise.all(
-          targets.map(async ({ signal, endpoint }) =>
-            this.replaySignal(store, destination, signal, endpoint),
-          ),
-        );
-        const warning = results.find((result) => result.warning)?.warning;
-        const delivered = Math.max(0, ...results.map((result) => result.delivered));
-        if (results.some((result) => result.delivered > 0 || result.warning)) {
-          await store.recordAttempt(destination.id, {
-            result: warning ? 'failed' : 'succeeded',
-            attemptedAt: new Date().toISOString(),
-            ...(warning ? { warningCode: warning } : {}),
+      return await store.withReplayLock(
+        destination.id,
+        async () => {
+          const status = await store.status(destination.id);
+          if (status.mode !== 'enabled') {
+            return { destinationId: destination.id, delivered: 0, skipped: status.mode };
+          }
+          const baseEndpoint = destination.endpoint?.trim().replace(/\/$/u, '');
+          const targets = (Object.keys(SIGNAL_ROUTES) as ObservationSignal[]).flatMap((signal) => {
+            const endpoint =
+              destination.signalEndpoints?.[signal]?.trim() ||
+              (baseEndpoint && `${baseEndpoint}/v1/${SIGNAL_ROUTES[signal]}`);
+            return endpoint ? [{ signal, endpoint }] : [];
           });
-        }
-        return {
-          destinationId: destination.id,
-          delivered: warning ? 0 : delivered,
-          ...(warning ? { warning: `OTLP destination ${warning}` } : {}),
-        };
-      });
+          if (!targets.length) throw new Error('No OTLP endpoint');
+          await store.setActiveSignals(
+            destination.id,
+            targets.map(({ signal }) => signal),
+          );
+          const results = await Promise.all(
+            targets.map(async ({ signal, endpoint }) =>
+              this.replaySignal(store, destination, signal, endpoint, deadline),
+            ),
+          );
+          const warning = results.find((result) => result.warning)?.warning;
+          const delivered = Math.max(0, ...results.map((result) => result.delivered));
+          if (results.some((result) => result.delivered > 0 || result.warning)) {
+            await store.recordAttempt(destination.id, {
+              result: warning ? 'failed' : 'succeeded',
+              attemptedAt: new Date().toISOString(),
+              ...(warning ? { warningCode: warning } : {}),
+            });
+          }
+          return {
+            destinationId: destination.id,
+            delivered: warning ? 0 : delivered,
+            ...(warning ? { warning: `OTLP destination ${warning}` } : {}),
+          };
+        },
+        deadline === undefined ? undefined : Math.max(1, deadline - Date.now()),
+      );
     } catch {
       const warningCode = 'unavailable';
       await store.recordAttempt(destination.id, {
@@ -116,29 +151,51 @@ export class ObservationDelivery extends Service {
     destination: ObservationDestination,
     signal: ObservationSignal,
     endpoint: string,
+    deadline?: number,
   ): Promise<{ delivered: number; warning?: string }> {
-    const pending = await store.pendingSignal(destination.id, signal);
+    let pending = await store.pendingSignal(destination.id, signal);
     if (!pending.length) return { delivered: 0 };
-    const selected = pending
-      .map(({ envelope }) => envelope)
-      .filter((envelope) => destination.select?.(envelope, signal) ?? true);
+    const select = () =>
+      pending
+        .map(({ envelope }) => envelope)
+        .filter((envelope) => destination.select?.(envelope, signal) ?? true);
+    let selected = select();
+    const encode = () =>
+      encodeObservationOtlpJson(selected, signal, {
+        ...(destination.resourceAttributes
+          ? { resourceAttributes: destination.resourceAttributes }
+          : {}),
+      });
+    let body = selected.length ? encode() : '';
+    if (deadline !== undefined) {
+      while (pending.length > 1 && Buffer.byteLength(body) > 2 * 1024 * 1024) {
+        pending = pending.slice(0, Math.ceil(pending.length / 2));
+        selected = select();
+        body = selected.length ? encode() : '';
+      }
+    }
     let warning: string | undefined;
     let rejectedRecords = 0;
     try {
-      if (selected.length) {
+      if (body && deadline !== undefined && Date.now() >= deadline) {
+        return { delivered: 0, warning: 'budget-exhausted' };
+      }
+      if (body && deadline !== undefined && Buffer.byteLength(body) > 2 * 1024 * 1024) {
+        warning = 'record-too-large';
+        rejectedRecords = 1;
+      } else if (body) {
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'content-type': 'application/json',
             ...(destination.signalHeaders?.[signal] ?? destination.headers ?? {}),
           },
-          body: encodeObservationOtlpJson(selected, signal, {
-            ...(destination.resourceAttributes
-              ? { resourceAttributes: destination.resourceAttributes }
-              : {}),
-          }),
+          body,
           signal: AbortSignal.timeout(
-            destination.signalTimeouts?.[signal] ?? destination.timeoutMillis ?? 5_000,
+            Math.min(
+              destination.signalTimeouts?.[signal] ?? destination.timeoutMillis ?? 5_000,
+              deadline === undefined ? Infinity : Math.max(1, deadline - Date.now()),
+            ),
           ),
         });
         if (!response.ok) {
@@ -167,7 +224,7 @@ export class ObservationDelivery extends Service {
         attemptedAt: new Date().toISOString(),
         ...(warning ? { warningCode: warning } : {}),
       },
-      !warning || warning === 'partial-rejection' ? pending.at(-1) : undefined,
+      !warning || rejectedRecords > 0 ? pending.at(-1) : undefined,
       rejectedRecords,
     );
     return {

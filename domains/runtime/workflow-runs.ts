@@ -232,6 +232,18 @@ function event(options: {
   state: RunState;
   data?: Record<string, unknown>;
 }): TrajectoryEvent {
+  const lifecycle = options.state.changeLifecycle;
+  const lifecycleFact =
+    lifecycle &&
+    (options.type === 'run.started' || options.type === 'change.lifecycle.transitioned')
+      ? {
+          healthPhase: lifecycle.phase,
+          healthStatus: options.state.status,
+          healthWaitKind: lifecycle.waitCondition?.kind,
+          healthWaitId: lifecycle.waitCondition?.waitId,
+          healthBlocker: lifecycle.blocker?.code,
+        }
+      : {};
   return {
     schemaVersion: 1,
     sequence: options.sequence,
@@ -241,7 +253,7 @@ function event(options: {
     runId: options.state.runId,
     stateVersion: options.state.stateVersion,
     compositionDigest: options.state.composition.compositionDigest,
-    data: options.data ?? {},
+    data: { ...options.data, ...lifecycleFact },
   };
 }
 

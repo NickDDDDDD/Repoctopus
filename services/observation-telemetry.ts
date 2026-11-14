@@ -12,8 +12,9 @@ import {
   createApplicationObservationEnvelope,
   createDeliveryObservationEnvelope,
   createEvidenceObservationEnvelopes,
-  createObservationEnvelope,
+  createWorkflowObservationEnvelopes,
   type ObservationContext,
+  type ObservationEnvelope,
 } from '../domains/trajectory/observation.js';
 import type { ObservationDelivery, ObservationDestination } from './observation-delivery.js';
 import type { LifecycleTelemetryEvent, LifecycleTelemetryPort } from './lifecycle-diagnostics.js';
@@ -36,10 +37,27 @@ export function observationDestinationsFromEnvironment(
   };
   if (deployment.enabled) {
     const resource = createRepoctopusResource('repoctopus-runtime', PRODUCT_VERSION, environment);
+    const diagnosticMode = environment.REPOCTOPUS_OTLP_DIAGNOSTICS === 'full';
+    const explicitSignals = {
+      trace: environment.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT?.trim(),
+      log: environment.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT?.trim(),
+      metric: environment.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT?.trim(),
+    };
     destinations.push({
       id: 'remote',
-      ...(deployment.baseEndpoint ? { endpoint: deployment.baseEndpoint } : {}),
-      ...(Object.keys(signalEndpoints).length > 0 ? { signalEndpoints } : {}),
+      signalEndpoints: diagnosticMode
+        ? signalEndpoints
+        : {
+            ...(signalEndpoints.log ? { log: signalEndpoints.log } : {}),
+            ...(explicitSignals.trace ? { trace: explicitSignals.trace } : {}),
+            ...(explicitSignals.metric ? { metric: explicitSignals.metric } : {}),
+          },
+      ...(!diagnosticMode
+        ? {
+            select: (envelope, signal) =>
+              Boolean(explicitSignals[signal]) || workflowHealthLog(envelope),
+          }
+        : {}),
       signalHeaders: {
         trace: deployment.traces.headers,
         log: deployment.logs.headers,
@@ -74,6 +92,24 @@ export function observationDestinationsFromEnvironment(
   return destinations;
 }
 
+const IMPORTANT_DIAGNOSTICS = new Set([
+  'work.outcome-processing-error',
+  'skill-composition.rejected',
+  'work.claim-capability-rejected',
+]);
+
+function workflowHealthLog(envelope: ObservationEnvelope): boolean {
+  const { eventType, attributes } = envelope;
+  return (
+    attributes.healthFact === 'state' ||
+    attributes.healthFact === 'configuration' ||
+    eventType === 'run.started' ||
+    attributes.workflowRunResult === 'failed' ||
+    IMPORTANT_DIAGNOSTICS.has(eventType) ||
+    (eventType.startsWith('application.') && attributes.result === 'failed')
+  );
+}
+
 abstract class CanonicalObservationTelemetry {
   constructor(
     protected readonly delivery: ObservationDelivery,
@@ -98,7 +134,7 @@ abstract class CanonicalObservationTelemetry {
             : 'enabled',
       ),
     ]);
-    await this.delivery.replayAll(destinations);
+    await this.delivery.deliver(destinations);
   }
 }
 
@@ -117,7 +153,7 @@ export class WorkflowObservationTelemetry
       workflowVersion: batch.run.workflowVersion,
     };
     await this.delivery.append(
-      batch.events.map((event) => createObservationEnvelope(event, context)),
+      createWorkflowObservationEnvelopes(batch.events, batch.trajectory, context),
     );
     await this.deliver();
   }

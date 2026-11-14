@@ -59,6 +59,7 @@ describe('real Run dual-destination OTLP delivery', () => {
     });
     const desktopEndpoint = await desktop.start();
     const environment = {
+      REPOCTOPUS_OTLP_DIAGNOSTICS: 'full',
       OTEL_EXPORTER_OTLP_ENDPOINT: remote.endpoint,
       REPOCTOPUS_DESKTOP_OTLP_ENDPOINT: desktopEndpoint,
       REPOCTOPUS_DESKTOP_OTLP_TOKEN: token,

@@ -10,6 +10,7 @@ import { decodeObservationOtlpJson } from '../app/desktop/host/otlp-envelope-cod
 import type { ObservationEnvelope } from '../domains/trajectory/observation.js';
 import { DesktopLauncher } from '../services/desktop-launcher.js';
 import { ObservationDelivery } from '../services/observation-delivery.js';
+import { observationDestinationsFromEnvironment } from '../services/observation-telemetry.js';
 
 function envelope(): ObservationEnvelope {
   return {
@@ -141,6 +142,50 @@ describe('desktop observation delivery slice', () => {
       await rm(directory, { recursive: true, force: true });
     }
   });
+});
+
+it('coalesces remote health logs until close and continues immediate desktop delivery', async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-remote-batch-'));
+  const remoteRecords: ObservationEnvelope[] = [];
+  const desktopRecords: ObservationEnvelope[] = [];
+  const remote = await receiver(remoteRecords);
+  const desktop = await receiver(desktopRecords);
+  const context = new Context();
+  try {
+    const delivery = new ObservationDelivery(context, { workspaceRoot: directory });
+    delivery.deferRemoteUntilClose();
+    const destinations = observationDestinationsFromEnvironment({
+      OTEL_EXPORTER_OTLP_ENDPOINT: remote.endpoint,
+      REPOCTOPUS_DESKTOP_OTLP_ENDPOINT: desktop.endpoint,
+    });
+    const start = envelope();
+    const diagnostic: ObservationEnvelope = {
+      ...start,
+      identity: { ...start.identity, sequence: 2, eventId: 'event-2' },
+      envelopeId: `sha256:${'a'.repeat(64)}`,
+      eventType: 'skill.delivered',
+    };
+    const phase: ObservationEnvelope = {
+      ...start,
+      identity: { ...start.identity, sequence: 3, eventId: 'event-3' },
+      envelopeId: `sha256:${'b'.repeat(64)}`,
+      eventType: 'change.lifecycle.transitioned',
+      attributes: { healthFact: 'state' },
+    };
+    for (const record of [start, diagnostic, phase]) {
+      await delivery.append([record]);
+      await delivery.deliver(destinations);
+    }
+    expect(desktopRecords).toEqual([start, diagnostic, phase]);
+    expect(remote.paths).toEqual([]);
+    await delivery.flushRemote();
+    expect(remote.paths).toEqual(['/v1/logs']);
+    expect(remoteRecords).toEqual([start, phase]);
+  } finally {
+    await Promise.all([remote.close(), desktop.close()]);
+    await context.fiber.dispose();
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 it('retries only the failed signal after reopening the outbox', async () => {
