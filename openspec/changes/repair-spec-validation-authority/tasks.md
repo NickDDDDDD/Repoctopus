@@ -26,9 +26,9 @@
 - [x] 3.1 复跑生命周期、规划批准、Verify 身份与 Archive 回归。 <!-- comet-task:aa7b2ce0-202b-46ef-bc53-770fc9e5f2d0 -->
   **Acceptance:** 原审批和冷恢复守卫测试通过，复选框提交与真实规划变更继续走各自路径。
   **Requirements:** specification-authority#阶段校验证据随受保护转换提交, specification-authority#规划观察区分不可用和确定性失效
-- [ ] 3.2 用实际安装包完成同一 Run 的失败修正与多仓真实验收。 <!-- comet-task:5e9abfb6-3915-4853-ab62-b7d297e44421 -->
+- [x] 3.2 用实际安装包完成同一 Run 的失败修正与多仓真实验收。 <!-- comet-task:5e9abfb6-3915-4853-ab62-b7d297e44421 -->
   **Acceptance:** 从无效草案修正、换进程、正式批准 Open 和 Design，到多仓 Verify、Archive 及发布后的终态恢复，验证关联和副作用次数。
   **Requirements:** specification-authority#手动规格校验只读并绑定查询归属, specification-authority#阶段校验证据随受保护转换提交, specification-authority#规划观察区分不可用和确定性失效
-- [ ] 3.3 对齐 CLI 说明并记录验证证据。 <!-- comet-task:6d8d3a0a-a9fc-4119-82cf-d7f117874630 -->
+- [x] 3.3 对齐 CLI 说明并记录验证证据。 <!-- comet-task:6d8d3a0a-a9fc-4119-82cf-d7f117874630 -->
   **Acceptance:** 文档说明 `--run` 查询关联、阶段接受与故障恢复，固定候选包及实际验收证据可以复核。
   **Requirements:** specification-authority#手动规格校验只读并绑定查询归属, specification-authority#规划观察区分不可用和确定性失效
