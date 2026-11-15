@@ -1299,6 +1299,16 @@ describe('Archive publication terminal lifecycle', () => {
         if (!archiveDefinition) throw new Error('Expected Archive Skill');
         const boundArchiveSkill = await snapshotSkillDefinition(archiveDefinition);
         const { preflight, closure } = archiveState();
+        vi.spyOn(app.context.specificationPlanning, 'observeAuthority').mockResolvedValue({
+          status: 'authorized',
+          observationKind: 'same',
+          invalidationKind: null,
+          planningDigest: preflight.planningDigest!,
+          reasonCode: 'authorized',
+          reason: 'Fixture has an unchanged approved design',
+          evidenceDigests: [],
+          snapshot: null,
+        });
         const coordinateProject = projectFixture({
           root: workspace,
           repositories: preflight.archiveDeliveryInput!.publicationCheckpoint.repositories.map(
@@ -1343,6 +1353,7 @@ describe('Archive publication terminal lifecycle', () => {
             facts: {
               projectConfigDigest: digest('5'),
               specificationRoot: { repositoryId: 'workspace' },
+              targetBranch: { repositoryId: 'workspace', remote: 'origin', targetBranch: 'main' },
             },
           },
           changeLifecycle: {
@@ -1482,6 +1493,16 @@ describe('Archive publication terminal lifecycle', () => {
       if (!archiveDefinition) throw new Error('Expected Archive Skill');
       const boundArchiveSkill = await snapshotSkillDefinition(archiveDefinition);
       const { preflight, closure } = archiveState();
+      vi.spyOn(app.context.specificationPlanning, 'observeAuthority').mockResolvedValue({
+        status: 'authorized',
+        observationKind: 'same',
+        invalidationKind: null,
+        planningDigest: preflight.planningDigest!,
+        reasonCode: 'authorized',
+        reason: 'Fixture has an unchanged approved design',
+        evidenceDigests: [],
+        snapshot: null,
+      });
       const coordinateProject = projectFixture({
         root: workspace,
         repositories: preflight.archiveDeliveryInput!.publicationCheckpoint.repositories.map(
@@ -1519,6 +1540,15 @@ describe('Archive publication terminal lifecycle', () => {
         workflow: workflowFixture(),
         projectSnapshot: project,
         runId: preflight.identity.runId,
+        trigger: {
+          schemaVersion: 1,
+          kind: 'change',
+          identityDigest: digest('4'),
+          facts: {
+            projectConfigDigest: digest('5'),
+            targetBranch: { repositoryId: 'workspace', remote: 'origin', targetBranch: 'main' },
+          },
+        },
         changeLifecycle: {
           ...preflight,
           currentWork: {

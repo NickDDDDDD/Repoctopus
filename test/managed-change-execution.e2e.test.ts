@@ -1177,9 +1177,9 @@ describe('managed Change execution production composition', () => {
             designWork.value.state.specificationUsageSnapshot?.validationDigest,
           );
           const invocations = capture.invocations.length;
-          vi.spyOn(application.context.specification, 'inspect').mockRejectedValueOnce(
-            new Error('Provider temporarily offline'),
-          );
+          const unavailableProvider = vi
+            .spyOn(application.context.specification, 'inspect')
+            .mockRejectedValueOnce(new Error('Provider temporarily offline'));
           const unavailable = await next();
           expect(unavailable.value.continuation?.continuation).toBe('reobserve');
           expect(unavailable.diagnostics).toContainEqual(
@@ -1189,7 +1189,7 @@ describe('managed Change execution production composition', () => {
             enterBuild.value.state.changeLifecycle,
           );
           expect(capture.invocations).toHaveLength(invocations);
-          vi.mocked(application.context.specification.inspect).mockRestore();
+          unavailableProvider.mockRestore();
         }
         await next();
         const configurationInvocation = capture.invocations.findLast(
