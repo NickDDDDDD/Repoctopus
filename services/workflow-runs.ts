@@ -2995,8 +2995,9 @@ export class WorkflowRuns extends Service {
       };
     }
     const beforeNext = await this.ctx.runStore.loadRun(runId);
-    const result = await this.operations
-      .run<RuntimeResult<RunStatusView>>({ cancellable: false, signal }, async () => {
+    const operation = this.operations.run<RuntimeResult<RunStatusView>>(
+      { cancellable: false, signal },
+      async () => {
         const state = await this.ctx.runStore.loadRun(runId);
         if (state.changeLifecycle) {
           const work = state.changeLifecycle.currentWork;
@@ -5358,12 +5359,13 @@ export class WorkflowRuns extends Service {
           ...result,
           value: { ...result.value, skillCompatibility, specificationCompatibility },
         };
-      })
-      .catch((error: unknown) => {
-        if (planningObservationUnavailableError(error))
-          return this.planningObservationUnavailable(runId);
-        throw error;
-      });
+      },
+    );
+    const result = await operation.catch((error: unknown) => {
+      if (planningObservationUnavailableError(error))
+        return this.planningObservationUnavailable(runId);
+      throw error;
+    });
     if (
       result.diagnostics.some(
         (diagnostic) => diagnostic.code === 'runtime.planning-observation-unavailable',
