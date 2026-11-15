@@ -1,0 +1,16 @@
+{
+  "change": "repair-spec-validation-authority",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03",
+  "files": [
+    { "path": "openspec/changes/repair-spec-validation-authority/proposal.md", "sha256": "fa34ddc4529237a497f39fbd5e743dbe3c0afb2a3d46d38cbe02fb08b74ab63a" },
+    { "path": "openspec/changes/repair-spec-validation-authority/design.md", "sha256": "0a6757a4c3c39db8fdbb776432f570d33d029c054888ec6fd8f573db6560b751" },
+    { "path": "openspec/changes/repair-spec-validation-authority/tasks.md", "sha256": "1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2" },
+    { "path": "openspec/changes/repair-spec-validation-authority/.openspec.yaml", "sha256": "db997d460a2d6d123d14faf903215b90f63faf4e7e2dadacfdab82c07857e113" },
+    { "path": "openspec/changes/repair-spec-validation-authority/specs/specification-authority/spec.md", "sha256": "a09758645e5e1ee69228291afbeba9b137ffad5a78cf00c47e538a66fc450ba9" }
+  ]
+}
