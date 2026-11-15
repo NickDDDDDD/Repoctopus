@@ -560,6 +560,13 @@ export class WorkflowRunCoordinator {
     observation: ChangeLifecycleObservation,
     options?: {
       reobserve?: (state: RunState) => Promise<void>;
+      specificationAcceptance?: {
+        expectedRevision: number;
+        expectedCheckEpoch: number;
+        expectedWorkId: string | null;
+        expectedWaitId: string | null;
+        snapshot: SpecificationUsageSnapshot;
+      };
       authorizedRebind?: {
         entrypoint: 'next' | 'resume';
         evidence: AuthorizedProtectedBranchRebind;
@@ -576,17 +583,56 @@ export class WorkflowRunCoordinator {
       ) {
         throw new Error('Build workspace requires reconciliation before advancing the Run');
       }
+      const acceptance = options?.specificationAcceptance;
       const observationDigest = createHash('sha256')
-        .update(canonicalJson(observation))
+        .update(canonicalJson(acceptance ? { observation, acceptance } : observation))
         .digest('hex');
       const replayed = trajectory.some(
         (entry) =>
           entry.type === 'change.lifecycle.transitioned' &&
           (entry.data.observationDigest === observationDigest ||
-            (entry.data.observation !== undefined &&
+            (!acceptance &&
+              entry.data.observation !== undefined &&
               canonicalJson(entry.data.observation) === canonicalJson(observation))),
       );
       if (replayed) return { value: undefined };
+      const approvesSpecification =
+        (observation.kind === 'open-gate' || observation.kind === 'design-gate') &&
+        observation.result === 'approved';
+      if (approvesSpecification !== Boolean(acceptance))
+        throw new Error(
+          'Specification evidence is required only for an approved planning transition',
+        );
+      if (acceptance) {
+        const lifecycle = state.changeLifecycle;
+        const expectedProvider =
+          state.specificationUsageSnapshot?.provider ?? state.trigger?.facts.specificationProvider;
+        if (
+          acceptance.expectedRevision !== lifecycle.revision ||
+          acceptance.expectedCheckEpoch !== lifecycle.checkEpoch ||
+          acceptance.expectedWorkId !== (lifecycle.currentWork?.workId ?? null) ||
+          acceptance.expectedWaitId !== (lifecycle.waitCondition?.waitId ?? null)
+        )
+          throw new Error('Specification evidence belongs to a stale lifecycle checkpoint');
+        if (
+          (observation.kind !== 'open-gate' && observation.kind !== 'design-gate') ||
+          (observation.kind === 'open-gate' ? 'open' : 'design') !== lifecycle.phase ||
+          !observation.requestId ||
+          !observation.proposalDigest ||
+          (lifecycle.waitCondition?.kind === 'human-decision' &&
+            (lifecycle.waitCondition.requestId !== observation.requestId ||
+              lifecycle.waitCondition.proposalDigest !== observation.proposalDigest)) ||
+          acceptance.snapshot.changeId !== lifecycle.identity.changeId ||
+          !observation.evidenceIds.includes(acceptance.snapshot.validationDigest) ||
+          (expectedProvider &&
+            canonicalJson(expectedProvider) !== canonicalJson(acceptance.snapshot.provider))
+        )
+          throw new Error('Specification evidence does not match the current planning authority');
+        if (!options?.reobserve)
+          throw new Error(
+            'Specification acceptance requires fresh Provider and approval observation',
+          );
+      }
       await options?.reobserve?.(state);
       const authorizedRebind = options?.authorizedRebind;
       if (authorizedRebind) {
@@ -645,6 +691,7 @@ export class WorkflowRunCoordinator {
         ...retirement.state,
         status,
         changeLifecycle,
+        ...(acceptance ? { specificationUsageSnapshot: structuredClone(acceptance.snapshot) } : {}),
         reconciliationRequired: authorizedRebind ? false : state.reconciliationRequired,
         acceptedEvidenceBundleIds:
           observation.kind === 'verify-gate-satisfied'
@@ -666,6 +713,9 @@ export class WorkflowRunCoordinator {
             observationKind: observation.kind,
             observationDigest,
             observation: structuredClone(observation),
+            ...(acceptance
+              ? { specificationAcceptance: structuredClone(acceptance.snapshot) }
+              : {}),
             ...(authorizedRebind
               ? {
                   authorizedBranchRebind: {
@@ -950,112 +1000,6 @@ export class WorkflowRunCoordinator {
         },
       });
       return { state: nextState, event: bound, value: snapshot };
-    });
-    await this.flushTelemetry(runId);
-    return result;
-  }
-
-  async bindSpecification(
-    runId: string,
-    snapshot: SpecificationUsageSnapshot,
-  ): Promise<SpecificationUsageSnapshot> {
-    await this.prepareWritableComposition(runId);
-    const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
-      this.assertWritableComposition(state);
-      const existing = state.specificationUsageSnapshot;
-      if (existing) {
-        if (
-          existing.changeId !== snapshot.changeId ||
-          existing.provider.id !== snapshot.provider.id ||
-          existing.provider.version !== snapshot.provider.version ||
-          existing.provider.protocolVersion !== snapshot.provider.protocolVersion ||
-          existing.validationDigest !== snapshot.validationDigest
-        ) {
-          throw new Error(`Specification drift detected for Run ${runId}`);
-        }
-        return { value: existing };
-      }
-      const timestamp = this.clock().toISOString();
-      const nextState: RunState = {
-        ...state,
-        specificationUsageSnapshot: structuredClone(snapshot),
-        stateVersion: state.stateVersion + 1,
-        updatedAt: timestamp,
-      };
-      const bound = event({
-        eventId: stableEventId(
-          runId,
-          snapshot.changeId,
-          snapshot.validationDigest,
-          'specification.bound',
-        ),
-        sequence: trajectory.length + 1,
-        timestamp,
-        type: 'specification.bound',
-        state: nextState,
-        data: {
-          changeId: snapshot.changeId,
-          providerId: snapshot.provider.id,
-          providerVersion: snapshot.provider.version,
-          validationDigest: snapshot.validationDigest,
-        },
-      });
-      return { state: nextState, event: bound, value: snapshot };
-    });
-    await this.flushTelemetry(runId);
-    return result;
-  }
-
-  async bindSpecificationClosurePlan(
-    runId: string,
-    plan: {
-      changeId: string;
-      provider: { id: string; version: string };
-      planDigest: `sha256:${string}`;
-    },
-  ): Promise<SpecificationUsageSnapshot> {
-    await this.prepareWritableComposition(runId);
-    const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
-      this.assertWritableComposition(state);
-      const existing = state.specificationUsageSnapshot;
-      if (!existing) throw new Error(`Run ${runId} has no bound Specification validation`);
-      if (
-        existing.changeId !== plan.changeId ||
-        existing.provider.id !== plan.provider.id ||
-        existing.provider.version !== plan.provider.version
-      ) {
-        throw new Error(`Specification closure plan does not match Run ${runId}`);
-      }
-      if (existing.closurePlanDigest) {
-        if (existing.closurePlanDigest !== plan.planDigest) {
-          throw new Error(`Specification closure plan drift detected for Run ${runId}`);
-        }
-        return { value: existing };
-      }
-      const timestamp = this.clock().toISOString();
-      const snapshot = { ...existing, closurePlanDigest: plan.planDigest };
-      const nextState: RunState = {
-        ...state,
-        specificationUsageSnapshot: snapshot,
-        stateVersion: state.stateVersion + 1,
-        updatedAt: timestamp,
-      };
-      return {
-        state: nextState,
-        event: event({
-          eventId: stableEventId(runId, plan.planDigest, 'specification.closure-planned'),
-          sequence: trajectory.length + 1,
-          timestamp,
-          type: 'specification.closure-planned',
-          state: nextState,
-          data: {
-            changeId: plan.changeId,
-            providerId: plan.provider.id,
-            closurePlanDigest: plan.planDigest,
-          },
-        }),
-        value: snapshot,
-      };
     });
     await this.flushTelemetry(runId);
     return result;

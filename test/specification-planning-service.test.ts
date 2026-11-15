@@ -428,6 +428,19 @@ describe('SpecificationPlanning service', () => {
       reasonCode: 'authorized',
     });
 
+    running.specification.unavailable = true;
+    await expect(
+      running.planning.observeAuthority({ ...prepareInput(), expectedPlanningDigest }),
+    ).resolves.toMatchObject({
+      status: 'unavailable',
+      invalidationKind: null,
+      planningDigest: expectedPlanningDigest,
+      reasonCode: 'observation-unavailable',
+      evidenceDigests: [],
+    });
+    expect(await running.planning.status(prepared.changeId)).toEqual(approved);
+    running.specification.unavailable = false;
+
     running.specification.proposalDigest = digest('9');
     await expect(
       running.planning.observeAuthority({

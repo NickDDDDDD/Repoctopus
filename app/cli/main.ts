@@ -70,7 +70,10 @@ import {
   parseProjectConfigurationResponse,
   reviewProjectConfigurationDecision,
 } from './project-configuration-decision.js';
-import type { SpecificationApprovalState } from '../../domains/specification/types.js';
+import type {
+  SpecificationApprovalState,
+  SpecificationValidation,
+} from '../../domains/specification/types.js';
 import { inspectPublishedChangeBranch } from '../../platform/git/change-branch.js';
 import {
   reviewHumanDecision as reviewLifecycleDecision,
@@ -639,17 +642,32 @@ async function specificationInspect(parsed: ParsedArguments): Promise<CliEnvelop
 async function specificationValidate(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const runId = stringFlag(parsed, 'run');
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute<
-      { changeId: string; strict: boolean },
-      { valid: boolean }
+      { changeId: string; strict: boolean; runId?: string },
+      SpecificationValidation
     >('specification.validate', {
       changeId,
       strict: true,
-      ...(stringFlag(parsed, 'run') ? { runId: stringFlag(parsed, 'run') } : {}),
+      ...(runId ? { runId } : {}),
     });
-    if (!result.valid) throw new Error(`Specification validation failed: ${changeId}`);
+    if (!result.valid) {
+      const failure = failureEnvelope(
+        'spec validate',
+        new Error(`Specification validation failed: ${changeId}`),
+      );
+      return result.diagnostics.length === 0
+        ? failure
+        : {
+            ...failure,
+            diagnostics: result.diagnostics.map(({ severity, ...diagnostic }) => ({
+              level: severity,
+              ...diagnostic,
+            })),
+          };
+    }
     return successEnvelope({ command: 'spec validate', result });
   } finally {
     await app.close();
@@ -1997,8 +2015,9 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     }
     preflightCli(parsed);
     const envelope = await dispatch(parsed);
-    process.stdout.write(`${asJson ? JSON.stringify(envelope) : renderHuman(envelope)}\n`);
-    return 0;
+    const output = envelope.ok ? process.stdout : process.stderr;
+    output.write(`${asJson ? JSON.stringify(envelope) : renderHuman(envelope)}\n`);
+    return envelope.ok ? 0 : 1;
   } catch (error) {
     const envelope = failureEnvelope(command, error);
     process.stderr.write(`${asJson ? JSON.stringify(envelope) : renderHuman(envelope)}\n`);

@@ -232,7 +232,9 @@ async function exists(file: string): Promise<boolean> {
   try {
     await access(file);
     return true;
-  } catch {
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code !== 'ENOENT' && code !== 'ENOTDIR') throw error;
     return false;
   }
 }
@@ -990,6 +992,8 @@ export class OpenSpecProvider extends Specification {
           );
         }
       } catch (error) {
+        options.signal?.throwIfAborted();
+        if ((error as NodeJS.ErrnoException).code) throw error;
         valid = false;
         findings.push({
           code: 'repoctopus.planning-authority-invalid',

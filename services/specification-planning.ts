@@ -71,22 +71,28 @@ export interface OpenApprovalRevalidation {
   };
 }
 
-export interface PlanningAuthorityObservation {
-  status: 'authorized' | 'invalid';
-  observationKind: 'same' | 'semantic' | 'approval-authority' | 'publication' | 'unknown';
-  invalidationKind: 'semantic' | 'approval-authority' | null;
+export type PlanningAuthorityObservation = {
   planningDigest: `sha256:${string}`;
   reasonCode:
     | 'authorized'
     | 'planning-incomplete'
     | 'strict-validation-failed'
+    | 'observation-unavailable'
     | 'semantic-drift'
     | 'approval-missing'
     | 'approval-stale';
   reason: string;
   evidenceDigests: `sha256:${string}`[];
   snapshot: PlanningSnapshot | null;
-}
+} & (
+  | { status: 'authorized'; observationKind: 'same' | 'publication'; invalidationKind: null }
+  | {
+      status: 'invalid';
+      observationKind: 'semantic' | 'approval-authority';
+      invalidationKind: 'semantic' | 'approval-authority';
+    }
+  | { status: 'unavailable'; observationKind: 'unknown'; invalidationKind: null }
+);
 
 export class SpecificationPlanning extends Service {
   static inject = ['specification'];
@@ -381,12 +387,13 @@ export class SpecificationPlanning extends Service {
     try {
       collected = await this.collect({ ...input, approvalPhase: 'design' });
     } catch (error) {
+      input.signal?.throwIfAborted();
       return {
-        status: 'invalid',
+        status: 'unavailable',
         observationKind: 'unknown',
-        invalidationKind: 'semantic',
+        invalidationKind: null,
         planningDigest: input.expectedPlanningDigest,
-        reasonCode: 'strict-validation-failed',
+        reasonCode: 'observation-unavailable',
         reason:
           error instanceof Error ? error.message : 'Specification planning observation failed',
         evidenceDigests: [],
@@ -517,8 +524,17 @@ export class SpecificationPlanning extends Service {
     requestId: string,
     proposalHash: string,
     changeBranch?: ChangeBranchReference,
-  ): Promise<void> {
-    const { manifest, validation, current } = await this.collect({ changeId, approvalPhase });
+  ): Promise<{ approval: SpecificationApprovalState; validation: SpecificationValidation }> {
+    const { manifest, validation, current } = await this.collect({ changeId, approvalPhase }).catch(
+      (error: unknown) => {
+        throw Object.assign(
+          new Error('Planning authority is unavailable during proposal revalidation', {
+            cause: error,
+          }),
+          { code: 'runtime.planning-observation-unavailable' },
+        );
+      },
+    );
     if (
       !current ||
       current.decisionRequest.requestId !== requestId ||
@@ -541,6 +557,7 @@ export class SpecificationPlanning extends Service {
     });
     if (snapshot.digest !== current.snapshot.digest)
       throw new Error('Human Decision planning or Provider identity drifted');
+    return { approval: current, validation };
   }
 
   async decide(input: {
