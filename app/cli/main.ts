@@ -55,7 +55,16 @@ import type {
   WorkExecutionPacket,
   WorkExecutionResult,
 } from '../../domains/work-execution/types.js';
-import { bootBootstrapComposition, bootProjectComposition } from '../boot/bootstrap.js';
+import {
+  bootBootstrapComposition,
+  bootProjectComposition,
+  bootSkillPreviewComposition,
+} from '../boot/bootstrap.js';
+import {
+  previewWorkSkills,
+  renderWorkSkillPreview,
+  type WorkSkillPreview,
+} from './skill-preview.js';
 import { reviewHumanDecision } from './human-decision.js';
 import {
   parseProjectConfigurationResponse,
@@ -86,7 +95,7 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <init|detect|prepare|install-entry-skills|configure-verify|decision|review> | skill <list|get|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-content|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <init|detect|prepare|install-entry-skills|configure-verify|decision|review> | skill <list|get|preview|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-content|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const COMMANDS = new Set([
   'project init',
   'project detect',
@@ -97,6 +106,7 @@ const COMMANDS = new Set([
   'project review',
   'skill list',
   'skill get',
+  'skill preview',
   'skill project',
   'skill install-init',
   'spec inspect',
@@ -578,6 +588,19 @@ async function skillGet(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
       ...(stringFlag(parsed, 'run') ? { runId: stringFlag(parsed, 'run') } : {}),
     });
     return successEnvelope({ command: 'skill get', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function skillPreview(parsed: ParsedArguments): Promise<CliEnvelope<WorkSkillPreview>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const app = await bootSkillPreviewComposition(PRODUCT_ROOT, workspace);
+  try {
+    return successEnvelope({
+      command: 'skill preview',
+      result: await previewWorkSkills(app.context, workspace),
+    });
   } finally {
     await app.close();
   }
@@ -1873,6 +1896,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   }
   if (command === 'skill list') return skillList(parsed);
   if (command === 'skill get') return skillGet(parsed);
+  if (command === 'skill preview') return skillPreview(parsed);
   if (command === 'skill project') return skillProject(parsed);
   if (command === 'spec inspect') return specificationInspect(parsed);
   if (command === 'spec validate') return specificationValidate(parsed);
@@ -1921,7 +1945,9 @@ export function renderHuman(envelope: CliEnvelope<unknown>): string {
     lines.push(`${diagnostic.level.toUpperCase()} ${diagnostic.code}: ${diagnostic.message}`);
   }
   const projection = changeProjection(envelope.result);
-  if (projection) lines.push(...renderChangeProjection(projection));
+  if (envelope.command === 'skill preview' && envelope.ok && envelope.result) {
+    lines.push(...renderWorkSkillPreview(envelope.result as WorkSkillPreview));
+  } else if (projection) lines.push(...renderChangeProjection(projection));
   else if (
     envelope.command === 'run work-claim' &&
     envelope.result &&

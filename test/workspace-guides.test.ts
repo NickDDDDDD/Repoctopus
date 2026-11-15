@@ -55,6 +55,9 @@ describe('Workspace guide ownership', () => {
       'project detect --layout multi --scan-root ..',
       '.repoctopus-workflow-skills/',
       'project configure-verify --candidate',
+      '.agents/skills/team-api-review/SKILL.md',
+      'target: build.check',
+      'repoctopus.cmd skill preview --workspace .',
       'REPOCTOPUS_OTLP_DIAGNOSTICS=full',
       'deploy/signoz/workflow-health.json',
     ]) {

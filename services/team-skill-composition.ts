@@ -18,7 +18,7 @@ interface Config {
   bindings?: readonly TeamSkillBindingConfig[];
 }
 
-function protocolMetadata(definition: SkillDefinition): {
+export function skillProtocolMetadata(definition: SkillDefinition): {
   artifactProtocolOwner: boolean;
   artifactKinds: string[];
   requestedCapabilities: string[];
@@ -61,7 +61,18 @@ export class TeamSkillComposition extends Service {
     definition: ChangeLifecycleDefinition,
     signal?: AbortSignal,
   ): Promise<EffectiveSkillComposition> {
-    const names = new Set<string>();
+    return (await this.resolveComposition(definition, signal)).effectiveComposition;
+  }
+
+  async resolveComposition(
+    definition: ChangeLifecycleDefinition,
+    signal?: AbortSignal,
+    additionalNames: readonly string[] = [],
+  ): Promise<{
+    effectiveComposition: EffectiveSkillComposition;
+    catalog: ReadonlyMap<string, SkillCompositionCatalogEntry>;
+  }> {
+    const names = new Set(additionalNames);
     for (const work of definition.works) {
       if (work.actionSkill) names.add(work.actionSkill.name);
       for (const skill of work.augmentationSkills) names.add(skill.name);
@@ -71,7 +82,14 @@ export class TeamSkillComposition extends Service {
     const catalog = await Promise.all(
       [...names].sort().map((name) => this.resolveCatalogEntry(name, signal)),
     );
-    return compileEffectiveSkillComposition({ definition, bindings: this.bindings, catalog });
+    return {
+      effectiveComposition: compileEffectiveSkillComposition({
+        definition,
+        bindings: this.bindings,
+        catalog,
+      }),
+      catalog: new Map(catalog.map((entry) => [entry.snapshot.name, entry])),
+    };
   }
 
   async resolveWork(
@@ -90,32 +108,9 @@ export class TeamSkillComposition extends Service {
     if (!compiled) throw new Error(`Skill composition has no lifecycle Work: ${kind}`);
 
     const dynamic = await Promise.all(
-      dynamicBuiltinNames.map(async (name, index) => {
-        const entry = await this.resolveCatalogEntry(name, signal);
-        if (entry.source === 'user-agents' || entry.source === 'user-dsh') {
-          throw new Error(`Lifecycle augmentation Skill ${name} resolves from a user source`);
-        }
-        return {
-          role: 'builtin-augmentation' as const,
-          origin: 'builtin' as const,
-          order: compiled.layers.length + index,
-          bindingId: null,
-          slotId: null,
-          replacedSkillName: null,
-          skill: entry.snapshot,
-        };
-      }),
+      dynamicBuiltinNames.map((name) => this.resolveCatalogEntry(name, signal)),
     );
-    const firstGuidance = compiled.layers.findIndex((layer) => layer.role === 'team-guidance');
-    const insertion = firstGuidance < 0 ? compiled.layers.length : firstGuidance;
-    const skillComposition = createEffectiveWorkSkillComposition({
-      workKind: kind,
-      layers: [
-        ...compiled.layers.slice(0, insertion),
-        ...dynamic,
-        ...compiled.layers.slice(insertion),
-      ].map((layer, index) => ({ ...layer, order: index })),
-    });
+    const skillComposition = this.withBuiltinAugmentations(compiled, dynamic);
     const action = skillComposition.layers.filter((layer) => layer.role === 'action');
     if (action.length !== 1) {
       throw new Error(`Lifecycle Work must resolve exactly one Action Skill: ${kind}`);
@@ -128,6 +123,38 @@ export class TeamSkillComposition extends Service {
         .filter((layer) => layer.role !== 'action')
         .map((layer) => structuredClone(layer.skill)),
     };
+  }
+
+  withBuiltinAugmentations(
+    compiled: EffectiveWorkSkillComposition,
+    dynamicEntries: readonly SkillCompositionCatalogEntry[],
+  ): EffectiveWorkSkillComposition {
+    const dynamic = dynamicEntries.map((entry, index) => {
+      if (entry.source === 'user-agents' || entry.source === 'user-dsh') {
+        throw new Error(
+          `Lifecycle augmentation Skill ${entry.snapshot.name} resolves from a user source`,
+        );
+      }
+      return {
+        role: 'builtin-augmentation' as const,
+        origin: 'builtin' as const,
+        order: compiled.layers.length + index,
+        bindingId: null,
+        slotId: null,
+        replacedSkillName: null,
+        skill: entry.snapshot,
+      };
+    });
+    const firstGuidance = compiled.layers.findIndex((layer) => layer.role === 'team-guidance');
+    const insertion = firstGuidance < 0 ? compiled.layers.length : firstGuidance;
+    return createEffectiveWorkSkillComposition({
+      workKind: compiled.workKind,
+      layers: [
+        ...compiled.layers.slice(0, insertion),
+        ...dynamic,
+        ...compiled.layers.slice(insertion),
+      ].map((layer, index) => ({ ...layer, order: index })),
+    });
   }
 
   private async resolveCatalogEntry(
@@ -144,7 +171,7 @@ export class TeamSkillComposition extends Service {
     return {
       snapshot: await snapshotSkillDefinition(definition),
       source: definition.source,
-      ...protocolMetadata(definition),
+      ...skillProtocolMetadata(definition),
     };
   }
 }
