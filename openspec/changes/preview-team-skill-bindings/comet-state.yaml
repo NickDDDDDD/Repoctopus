@@ -2,7 +2,7 @@
 change_id: d39d814b-c4b6-4f44-a0f3-7796e915ee52
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/preview-team-skill-bindings
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+handoff_hash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 26a7b2c3826a1d1fb2170d42cd81020f809a8348f2201d64b476cfca0b15c669
+  hash: bd89d5babc4664cf3933d8529f37fb2ecc68ed5352600d1cdb1aff7c5463c6c8
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,17 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 1
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-15
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+      handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
       isolation: worktree
       language: zh-CN
-      phase: open
+      phase: design
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -79,10 +80,18 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 1
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-21685f18ff12f817dbfeb0a833a48934ecf09ee73bb32a6f2718e2ccc3bdc6e3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: preview-team-skill-bindings:1
         input:
           input:
@@ -92,25 +101,396 @@ run_checkpoint:
               ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
           outputs: {}
         inputHash: 05814a08bfb35ecf2625b85188cd0eb1477c95d8f98364ae9c7cb5d9456870dd
+        outcome:
+          actionId: preview-team-skill-bindings:1
+          attempt: 1
+          claimToken: portable-21685f18ff12f817dbfeb0a833a48934ecf09ee73bb32a6f2718e2ccc3bdc6e3
+          inputHash: 05814a08bfb35ecf2625b85188cd0eb1477c95d8f98364ae9c7cb5d9456870dd
+          outcomeId: 7d3e7169-e6a9-49ee-9049-d6593ef369a0
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 2b694fd753988e6fa0322da4113c8d34eb34756de071b5a1570b7c209dec541b
+            outcomeId: 7d3e7169-e6a9-49ee-9049-d6593ef369a0
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: preview-team-skill-bindings
-        status: pending
+        status: succeeded
         stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-6bba0300d2d8eefc38bc7b0e19426d485a081621f8dfe620d10528f45bf8838e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:4
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: preview-team-skill-bindings
+                  changeDir: openspec/changes/preview-team-skill-bindings
+                  workspaceBaseline:
+                    ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+                    ref: openspec/changes/preview-team-skill-bindings
+            full.open.evidence:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+              ref: openspec/changes/preview-team-skill-bindings
+        inputHash: cd1b05dad5af09a929d3ebc52942ec23d95518c448b67a55b4fb2d05a183baee
+        outcome:
+          actionId: preview-team-skill-bindings:4
+          attempt: 1
+          claimToken: portable-6bba0300d2d8eefc38bc7b0e19426d485a081621f8dfe620d10528f45bf8838e
+          inputHash: cd1b05dad5af09a929d3ebc52942ec23d95518c448b67a55b4fb2d05a183baee
+          outcomeId: preview-team-skill-bindings:4:1:executor-result
+          output:
+            contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2f849f8c338f4c965bb2786328922197ec5c037712933f0a7513e575e27a6d25
+            outcomeId: preview-team-skill-bindings:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-7462555b107b48f09bc740e8478eb89aae7b8d51ce20a49e3380e7551eb6b8ef
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:5
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: preview-team-skill-bindings
+                  changeDir: openspec/changes/preview-team-skill-bindings
+                  workspaceBaseline:
+                    ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+                    ref: openspec/changes/preview-team-skill-bindings
+            full.open.evidence:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+              ref: openspec/changes/preview-team-skill-bindings
+            full.open.revalidate:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+        inputHash: 0f054e774d4d620cc9e7297f4f8523f9a54902bce24f0d889d65db9b7a78fad3
+        outcome:
+          actionId: preview-team-skill-bindings:5
+          attempt: 1
+          claimToken: portable-7462555b107b48f09bc740e8478eb89aae7b8d51ce20a49e3380e7551eb6b8ef
+          inputHash: 0f054e774d4d620cc9e7297f4f8523f9a54902bce24f0d889d65db9b7a78fad3
+          outcomeId: 277d446e-c4a6-4607-b165-783f965a919f
+          output:
+            handoffContext: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+            handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+            proposal: 确认采用现有 YAML 与运行时 Skill 组合规则，增加 repoctopus skill preview 的终端和 JSON
+              视图。通过只读查询装配展示实际 Provider、来源、顺序与诊断，明确 Build Check 的 code-review 和
+              Build Execute 的 TDD/direct 差异。若第三方 Provider 无法只读查询则诊断并停止。Workspace
+              教程给出 build.check 的完整示例并随现有受管流程刷新。用候选包、实际 Work 领取与文件快照核对。无 Spec
+              Patch。
+            requirementsEvidence:
+              contentHash: 32e9a81e66596bc549479651173f9dfc78c808da9b8db9a8c5c66817de9c60ea
+              ref: openspec/changes/preview-team-skill-bindings
+            sourceEvidence:
+              contentHash: ab46bd5be94b88666f6b546a31626ef3a314d175d31e1d46eb337abec09c4016
+              ref: openspec/changes/preview-team-skill-bindings
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bc09f8f37041f245f7dac2b12a80fe20b72aaf5a5f80654d99a5d73c99976287
+            outcomeId: 277d446e-c4a6-4607-b165-783f965a919f
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
       preview-team-skill-bindings:1:
         results: {}
         sequence: 1
-    waits: []
+      preview-team-skill-bindings:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: preview-team-skill-bindings
+                  changeDir: openspec/changes/preview-team-skill-bindings
+                  workspaceBaseline:
+                    ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+                    ref: openspec/changes/preview-team-skill-bindings
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+              ref: openspec/changes/preview-team-skill-bindings
+        sequence: 4
+      preview-team-skill-bindings:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: preview-team-skill-bindings
+                  changeDir: openspec/changes/preview-team-skill-bindings
+                  workspaceBaseline:
+                    ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+                    ref: openspec/changes/preview-team-skill-bindings
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+              ref: openspec/changes/preview-team-skill-bindings
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+        sequence: 5
+    waits:
+      - id: preview-team-skill-bindings:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+              ref: openspec/changes/preview-team-skill-bindings
+        proposalHash: 9ce6e92ca4b0c1045fa62b83e4cec55cac5fac2f01417b134c56cd0fed473b0e
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+              ref: openspec/changes/preview-team-skill-bindings
+        decision:
+          id: classic-open-d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+          choice: approved
+          proposalHash: 9ce6e92ca4b0c1045fa62b83e4cec55cac5fac2f01417b134c56cd0fed473b0e
+      - id: preview-team-skill-bindings:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+              handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+              proposal: 确认采用现有 YAML 与运行时 Skill 组合规则，增加 repoctopus skill preview 的终端和 JSON
+                视图。通过只读查询装配展示实际 Provider、来源、顺序与诊断，明确 Build Check 的 code-review 和
+                Build Execute 的 TDD/direct 差异。若第三方 Provider
+                无法只读查询则诊断并停止。Workspace 教程给出 build.check 的完整示例并随现有受管流程刷新。用候选包、实际
+                Work 领取与文件快照核对。无 Spec Patch。
+              requirementsEvidence:
+                contentHash: 32e9a81e66596bc549479651173f9dfc78c808da9b8db9a8c5c66817de9c60ea
+                ref: openspec/changes/preview-team-skill-bindings
+              sourceEvidence:
+                contentHash: ab46bd5be94b88666f6b546a31626ef3a314d175d31e1d46eb337abec09c4016
+                ref: openspec/changes/preview-team-skill-bindings
+        proposalHash: 7c28e5d18f0b52ae4871ee7185bf33eec674d8955528be0019672d654eaad9a0
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+              handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+              proposal: 确认采用现有 YAML 与运行时 Skill 组合规则，增加 repoctopus skill preview 的终端和 JSON
+                视图。通过只读查询装配展示实际 Provider、来源、顺序与诊断，明确 Build Check 的 code-review 和
+                Build Execute 的 TDD/direct 差异。若第三方 Provider
+                无法只读查询则诊断并停止。Workspace 教程给出 build.check 的完整示例并随现有受管流程刷新。用候选包、实际
+                Work 领取与文件快照核对。无 Spec Patch。
+              requirementsEvidence:
+                contentHash: 32e9a81e66596bc549479651173f9dfc78c808da9b8db9a8c5c66817de9c60ea
+                ref: openspec/changes/preview-team-skill-bindings
+              sourceEvidence:
+                contentHash: ab46bd5be94b88666f6b546a31626ef3a314d175d31e1d46eb337abec09c4016
+                ref: openspec/changes/preview-team-skill-bindings
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: preview-team-skill-bindings
+                  changeDir: openspec/changes/preview-team-skill-bindings
+                  workspaceBaseline:
+                    ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+                    ref: openspec/changes/preview-team-skill-bindings
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+              ref: openspec/changes/preview-team-skill-bindings
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+    evidenceWaits:
+      - id: preview-team-skill-bindings:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/preview-team-skill-bindings
+          contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+          submissionId: ffae4dad-0e2b-497d-9556-e30fa598cc68
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+          handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+          proposal: 确认采用现有 YAML 与运行时 Skill 组合规则，增加 repoctopus skill preview 的终端和 JSON
+            视图。通过只读查询装配展示实际 Provider、来源、顺序与诊断，明确 Build Check 的 code-review 和
+            Build Execute 的 TDD/direct 差异。若第三方 Provider 无法只读查询则诊断并停止。Workspace
+            教程给出 build.check 的完整示例并随现有受管流程刷新。用候选包、实际 Work 领取与文件快照核对。无 Spec
+            Patch。
+          requirementsEvidence:
+            contentHash: 32e9a81e66596bc549479651173f9dfc78c808da9b8db9a8c5c66817de9c60ea
+            ref: openspec/changes/preview-team-skill-bindings
+          sourceEvidence:
+            contentHash: ab46bd5be94b88666f6b546a31626ef3a314d175d31e1d46eb337abec09c4016
+            ref: openspec/changes/preview-team-skill-bindings
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: preview-team-skill-bindings
+              changeDir: openspec/changes/preview-team-skill-bindings
+              workspaceBaseline:
+                ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+                ref: openspec/changes/preview-team-skill-bindings
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+          ref: openspec/changes/preview-team-skill-bindings
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: 8dd9c12e35ba77232d92b6bf104a190070198a3f641e0dbe8c3f49281e6ea32a
+  sourceRevision: 9
+  sourceHash: 4c46c92f5d0bc7e5e230acfea3a25e0940f0a505399d0d9220e6057e88b8988a
+check_epoch: 1

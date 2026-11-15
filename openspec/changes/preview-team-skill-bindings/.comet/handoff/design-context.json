@@ -1,0 +1,17 @@
+{
+  "change": "preview-team-skill-bindings",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846",
+  "files": [
+    { "path": "openspec/changes/preview-team-skill-bindings/proposal.md", "sha256": "766199da6adef22fab2c04bcfce138bcc24b2c871d69f3f5649472026cb89e47" },
+    { "path": "openspec/changes/preview-team-skill-bindings/design.md", "sha256": "0f5a2813bbf848248ce22c45494aff05ad1a30ad9501daac40dec14c95ba2589" },
+    { "path": "openspec/changes/preview-team-skill-bindings/tasks.md", "sha256": "c1202d61255005cff593ad0e8f2a4ded71eb69a4dd5696765e2fc4d0dab80870" },
+    { "path": "openspec/changes/preview-team-skill-bindings/.openspec.yaml", "sha256": "95a9a7d17f5cbd573f5ec85bba1fef77465d4658dc49a60203cbef4f4af5f8df" },
+    { "path": "openspec/changes/preview-team-skill-bindings/specs/project-configuration/spec.md", "sha256": "5bd6e2a0c51f785f440ba156c0bdc1167eeee42a234d4db6e6d70dfc853a8c6d" },
+    { "path": "openspec/changes/preview-team-skill-bindings/specs/skill-integration/spec.md", "sha256": "ace0061d2b30846f6086689bd3d71132a8103143ea68ffd032387631b5d5df05" }
+  ]
+}
