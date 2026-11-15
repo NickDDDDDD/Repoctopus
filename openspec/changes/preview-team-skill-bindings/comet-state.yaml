@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: d39d814b-c4b6-4f44-a0f3-7796e915ee52
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 88d563ad6407cf9aba9fc4c993bc8e220a3b0565
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-15
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/preview-team-skill-bindings
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 26a7b2c3826a1d1fb2170d42cd81020f809a8348f2201d64b476cfca0b15c669
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: preview-team-skill-bindings
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: c04904d00e22ab7a4485f90098f4d446ca75db1b093da4f8751b875a88502c25
+    input:
+      change: preview-team-skill-bindings
+      changeDir: openspec/changes/preview-team-skill-bindings
+      workspaceBaseline:
+        ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 88d563ad6407cf9aba9fc4c993bc8e220a3b0565
+      boundBranch: codex/preview-team-skill-bindings
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-15
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: preview-team-skill-bindings:1
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: 05814a08bfb35ecf2625b85188cd0eb1477c95d8f98364ae9c7cb5d9456870dd
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      preview-team-skill-bindings:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 8dd9c12e35ba77232d92b6bf104a190070198a3f641e0dbe8c3f49281e6ea32a
