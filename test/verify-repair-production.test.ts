@@ -124,17 +124,22 @@ describe('production Verify implementation failure continuation', () => {
     const runOrResume = vi
       .fn()
       .mockResolvedValue({ bundle: { bundleId: 'failed-bundle', findings: [] } });
+    const detectRepairScope = vi
+      .fn()
+      .mockRejectedValue(new Error('Verify repair scope unavailable: unowned finding'));
     const service = Object.create(WorkflowRuns.prototype) as WorkflowRuns;
     Object.defineProperties(service, {
       operations: {
         value: { run: (_options: unknown, operation: () => Promise<unknown>) => operation() },
       },
       recoverEvidenceWorkspace: { value: vi.fn() },
-      createVerifyFailureContinuation: {
+      observeChangePlanning: {
         value: vi
           .fn()
-          .mockRejectedValue(new Error('Verify repair scope unavailable: unowned finding')),
+          .mockResolvedValueOnce({ status: 'unavailable', reason: 'Provider is offline' })
+          .mockResolvedValue({ status: 'authorized' }),
       },
+      createVerifyFailureContinuation: { value: detectRepairScope },
       coordinator: { value: { status: vi.fn().mockResolvedValue({ state }) } },
       ctx: {
         value: {
@@ -161,6 +166,7 @@ describe('production Verify implementation failure continuation', () => {
       });
     }
     expect(recordContinuation).toHaveBeenCalledTimes(2);
+    expect(detectRepairScope).toHaveBeenCalledTimes(1);
     expect(runOrResume.mock.calls.map((c) => c[1] as unknown)).toEqual([
       'original-attempt',
       'original-attempt',
