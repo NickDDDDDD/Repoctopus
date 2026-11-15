@@ -1,3 +1,9 @@
+---
+comet_change: repair-spec-validation-authority
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context

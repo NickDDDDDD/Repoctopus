@@ -2,19 +2,19 @@
 change_id: b3fdf787-e1f0-4281-8f6c-6a0a20dad172
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: 5c294dee5cdb33257ebe8679d273db868f7b6baa
-design_doc: null
-plan: null
+design_doc: openspec/changes/repair-spec-validation-authority/design.md
+plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: codex/repair-spec-validation-authority
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
 handoff_hash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 35d7e2b539209eb4a367db26af5aad3058c95f6583beb1abf8e012c032e93b6c
+  hash: 47170cbd593b24cc8d08231630b4a6169ca6f342bb0a9c1228c503e8fe0be695
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,32 +56,32 @@ run_checkpoint:
       baseRef: 5c294dee5cdb33257ebe8679d273db868f7b6baa
       boundBranch: codex/repair-spec-validation-authority
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-15
-      designDoc: null
-      directOverride: null
+      designDoc: openspec/changes/repair-spec-validation-authority/design.md
+      directOverride: false
       handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
       handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
       isolation: worktree
       language: zh-CN
-      phase: design
-      plan: null
+      phase: build
+      plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 6
+    status: running
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -253,10 +253,731 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-ff24fd4ba9e043fcee2954ab68247269e37d98a866aac12f32da1b252770e767
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:7
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                      delta spec 无补丁。
+                    requirementsEvidence:
+                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                      ref: openspec/changes/repair-spec-validation-authority
+                    sourceEvidence:
+                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                      ref: openspec/changes/repair-spec-validation-authority
+            full.design.handoff:
+              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
+                spec 无补丁。
+              requirementsEvidence:
+                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                ref: openspec/changes/repair-spec-validation-authority
+              sourceEvidence:
+                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                ref: openspec/changes/repair-spec-validation-authority
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+                    ref: openspec/changes/repair-spec-validation-authority
+            full.open.evidence:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+            full.open.revalidate:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        inputHash: d9e5dec5a2029f23f8cc699642fd9bd37006079affa7baf9c7792bb054b5dcef
+        outcome:
+          actionId: repair-spec-validation-authority:7
+          attempt: 1
+          claimToken: portable-ff24fd4ba9e043fcee2954ab68247269e37d98a866aac12f32da1b252770e767
+          inputHash: d9e5dec5a2029f23f8cc699642fd9bd37006079affa7baf9c7792bb054b5dcef
+          outcomeId: 919272aa-b997-4d17-b051-cfd5f846ed7d
+          output:
+            designDoc: openspec/changes/repair-spec-validation-authority/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5db3ec749299ec56f58d9c08d69da8423d169d1ce956327848eb2daea00ceaf7
+            outcomeId: 919272aa-b997-4d17-b051-cfd5f846ed7d
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-a957ce5d0765e8cd46cb54746f02e934ddfbd3d3d8ea09a0ec858cbf21e9879f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:9
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                      delta spec 无补丁。
+                    requirementsEvidence:
+                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                      ref: openspec/changes/repair-spec-validation-authority
+                    sourceEvidence:
+                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                      ref: openspec/changes/repair-spec-validation-authority
+            full.design.document:
+              designDoc: openspec/changes/repair-spec-validation-authority/design.md
+            full.design.evidence:
+              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+              ref: openspec/changes/repair-spec-validation-authority/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
+                spec 无补丁。
+              requirementsEvidence:
+                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                ref: openspec/changes/repair-spec-validation-authority
+              sourceEvidence:
+                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                ref: openspec/changes/repair-spec-validation-authority
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+                    ref: openspec/changes/repair-spec-validation-authority
+            full.open.evidence:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+            full.open.revalidate:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        inputHash: 6343dd19f1e4827bd70478a2d0f3605f370d23bc1e338858240329f87b7723b8
+        outcome:
+          actionId: repair-spec-validation-authority:9
+          attempt: 1
+          claimToken: portable-a957ce5d0765e8cd46cb54746f02e934ddfbd3d3d8ea09a0ec858cbf21e9879f
+          inputHash: 6343dd19f1e4827bd70478a2d0f3605f370d23bc1e338858240329f87b7723b8
+          outcomeId: 1b1e287f-d7d7-4eb3-9bd7-7752708f29d7
+          output:
+            boundBranch: codex/repair-spec-validation-authority
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7a2c3931899a39f821dc016b8c0c53712361533389c90fd975006d542310e4e9
+            outcomeId: 1b1e287f-d7d7-4eb3-9bd7-7752708f29d7
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d6a65b341b595141aacb86502c10e305a2aa57e4853be9a712de16f873d92647
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:11
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs:
+            full.build.configure:
+              boundBranch: codex/repair-spec-validation-authority
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/repair-spec-validation-authority
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                      delta spec 无补丁。
+                    requirementsEvidence:
+                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                      ref: openspec/changes/repair-spec-validation-authority
+                    sourceEvidence:
+                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                      ref: openspec/changes/repair-spec-validation-authority
+            full.design.document:
+              designDoc: openspec/changes/repair-spec-validation-authority/design.md
+            full.design.evidence:
+              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+              ref: openspec/changes/repair-spec-validation-authority/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
+                spec 无补丁。
+              requirementsEvidence:
+                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                ref: openspec/changes/repair-spec-validation-authority
+              sourceEvidence:
+                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                ref: openspec/changes/repair-spec-validation-authority
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+                    ref: openspec/changes/repair-spec-validation-authority
+            full.open.evidence:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+            full.open.revalidate:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        inputHash: 327d30c1440b466fb46bcca25bc677063fe4cd985d879872ec1c66842c796284
+        outcome:
+          actionId: repair-spec-validation-authority:11
+          attempt: 1
+          claimToken: portable-d6a65b341b595141aacb86502c10e305a2aa57e4853be9a712de16f873d92647
+          inputHash: 327d30c1440b466fb46bcca25bc677063fe4cd985d879872ec1c66842c796284
+          outcomeId: a1bc869f-0a16-455a-a12d-6b3f0fa822a1
+          output:
+            designEvidence:
+              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+              ref: openspec/changes/repair-spec-validation-authority/design.md
+            plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+            planEvidence:
+              contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+              ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+            taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5fc52e288c1f8c9a89f5f257b63819c80c00abd389aea233fc4b90280a73f250
+            outcomeId: a1bc869f-0a16-455a-a12d-6b3f0fa822a1
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: repair-spec-validation-authority:13
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs:
+            full.build.configure:
+              boundBranch: codex/repair-spec-validation-authority
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/repair-spec-validation-authority
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+                ref: openspec/changes/repair-spec-validation-authority/design.md
+              plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+              planEvidence:
+                contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+                ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+              taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
+            full.build.plan.evidence:
+              contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+              ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                      delta spec 无补丁。
+                    requirementsEvidence:
+                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                      ref: openspec/changes/repair-spec-validation-authority
+                    sourceEvidence:
+                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                      ref: openspec/changes/repair-spec-validation-authority
+            full.design.document:
+              designDoc: openspec/changes/repair-spec-validation-authority/design.md
+            full.design.evidence:
+              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+              ref: openspec/changes/repair-spec-validation-authority/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
+                spec 无补丁。
+              requirementsEvidence:
+                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                ref: openspec/changes/repair-spec-validation-authority
+              sourceEvidence:
+                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                ref: openspec/changes/repair-spec-validation-authority
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+                    ref: openspec/changes/repair-spec-validation-authority
+            full.open.evidence:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+            full.open.revalidate:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        inputHash: 7a68463642bf9ddc9d15cc32747fd72a441a092498e813e3fdc2c49bd467460c
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
     actionContexts:
       repair-spec-validation-authority:1:
         results: {}
         sequence: 1
+      repair-spec-validation-authority:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/repair-spec-validation-authority
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/repair-spec-validation-authority
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                      delta spec 无补丁。
+                    requirementsEvidence:
+                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                      ref: openspec/changes/repair-spec-validation-authority
+                    sourceEvidence:
+                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                      ref: openspec/changes/repair-spec-validation-authority
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/repair-spec-validation-authority/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+              ref: openspec/changes/repair-spec-validation-authority/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
+                spec 无补丁。
+              requirementsEvidence:
+                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                ref: openspec/changes/repair-spec-validation-authority
+              sourceEvidence:
+                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                ref: openspec/changes/repair-spec-validation-authority
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+                    ref: openspec/changes/repair-spec-validation-authority
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        sequence: 11
+      repair-spec-validation-authority:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/repair-spec-validation-authority
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/repair-spec-validation-authority
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+                ref: openspec/changes/repair-spec-validation-authority/design.md
+              plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+              planEvidence:
+                contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+                ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+              taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+              ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                      delta spec 无补丁。
+                    requirementsEvidence:
+                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                      ref: openspec/changes/repair-spec-validation-authority
+                    sourceEvidence:
+                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                      ref: openspec/changes/repair-spec-validation-authority
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/repair-spec-validation-authority/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+              ref: openspec/changes/repair-spec-validation-authority/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
+                spec 无补丁。
+              requirementsEvidence:
+                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                ref: openspec/changes/repair-spec-validation-authority
+              sourceEvidence:
+                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                ref: openspec/changes/repair-spec-validation-authority
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+                    ref: openspec/changes/repair-spec-validation-authority
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        sequence: 13
       repair-spec-validation-authority:4:
         results:
           full.open:
@@ -317,6 +1038,169 @@ run_checkpoint:
             value:
               contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
         sequence: 5
+      repair-spec-validation-authority:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                      delta spec 无补丁。
+                    requirementsEvidence:
+                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                      ref: openspec/changes/repair-spec-validation-authority
+                    sourceEvidence:
+                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                      ref: openspec/changes/repair-spec-validation-authority
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
+                spec 无补丁。
+              requirementsEvidence:
+                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                ref: openspec/changes/repair-spec-validation-authority
+              sourceEvidence:
+                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                ref: openspec/changes/repair-spec-validation-authority
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+                    ref: openspec/changes/repair-spec-validation-authority
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        sequence: 7
+      repair-spec-validation-authority:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                      delta spec 无补丁。
+                    requirementsEvidence:
+                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                      ref: openspec/changes/repair-spec-validation-authority
+                    sourceEvidence:
+                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                      ref: openspec/changes/repair-spec-validation-authority
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/repair-spec-validation-authority/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+              ref: openspec/changes/repair-spec-validation-authority/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
+                spec 无补丁。
+              requirementsEvidence:
+                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                ref: openspec/changes/repair-spec-validation-authority
+              sourceEvidence:
+                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                ref: openspec/changes/repair-spec-validation-authority
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+                    ref: openspec/changes/repair-spec-validation-authority
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        sequence: 9
     waits:
       - id: repair-spec-validation-authority:3
         stepId: full.open.confirm
@@ -355,7 +1239,7 @@ run_checkpoint:
       - id: repair-spec-validation-authority:6
         stepId: full.design.confirm
         sequence: 6
-        status: pending
+        status: resolved
         proposal:
           input:
             change: repair-spec-validation-authority
@@ -431,6 +1315,131 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        decision:
+          id: classic-design-ee91aacec51f66215346e2a85ee70c91d606b8dd01c5a4d82dc2cc2e6f507adc-approved
+          choice: approved
+          proposalHash: ee91aacec51f66215346e2a85ee70c91d606b8dd01c5a4d82dc2cc2e6f507adc
+      - id: repair-spec-validation-authority:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs:
+            full.build.configure:
+              boundBranch: codex/repair-spec-validation-authority
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: bd27df1c115530103f55eba40b79eb2ef1e3e87a0f21bc34113b2570cbf5bef3
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/repair-spec-validation-authority
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                      delta spec 无补丁。
+                    requirementsEvidence:
+                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                      ref: openspec/changes/repair-spec-validation-authority
+                    sourceEvidence:
+                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                      ref: openspec/changes/repair-spec-validation-authority
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/repair-spec-validation-authority/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+              ref: openspec/changes/repair-spec-validation-authority/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
+                spec 无补丁。
+              requirementsEvidence:
+                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                ref: openspec/changes/repair-spec-validation-authority
+              sourceEvidence:
+                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                ref: openspec/changes/repair-spec-validation-authority
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+                    ref: openspec/changes/repair-spec-validation-authority
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        decision:
+          id: a4031bd5-2dd7-4df5-a3aa-202bdd6bd6da
+          choice: approved
+          proposalHash: bd27df1c115530103f55eba40b79eb2ef1e3e87a0f21bc34113b2570cbf5bef3
     evidenceWaits:
       - id: repair-spec-validation-authority:2
         stepId: full.open.evidence
@@ -446,9 +1455,311 @@ run_checkpoint:
           ref: openspec/changes/repair-spec-validation-authority
           contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
           submissionId: fe3ab428-0004-4b65-8f10-729890924926
+      - id: repair-spec-validation-authority:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                      delta spec 无补丁。
+                    requirementsEvidence:
+                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                      ref: openspec/changes/repair-spec-validation-authority
+                    sourceEvidence:
+                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                      ref: openspec/changes/repair-spec-validation-authority
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/repair-spec-validation-authority/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
+                spec 无补丁。
+              requirementsEvidence:
+                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                ref: openspec/changes/repair-spec-validation-authority
+              sourceEvidence:
+                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                ref: openspec/changes/repair-spec-validation-authority
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+                    ref: openspec/changes/repair-spec-validation-authority
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        receipt:
+          ref: openspec/changes/repair-spec-validation-authority/design.md
+          contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+          submissionId: 37dcbd32-1141-4dca-b17e-6a06afe4147f
+      - id: repair-spec-validation-authority:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/repair-spec-validation-authority
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/repair-spec-validation-authority
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+                ref: openspec/changes/repair-spec-validation-authority/design.md
+              plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+              planEvidence:
+                contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+                ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+              taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                      delta spec 无补丁。
+                    requirementsEvidence:
+                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                      ref: openspec/changes/repair-spec-validation-authority
+                    sourceEvidence:
+                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                      ref: openspec/changes/repair-spec-validation-authority
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/repair-spec-validation-authority/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+              ref: openspec/changes/repair-spec-validation-authority/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
+                spec 无补丁。
+              requirementsEvidence:
+                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                ref: openspec/changes/repair-spec-validation-authority
+              sourceEvidence:
+                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                ref: openspec/changes/repair-spec-validation-authority
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-spec-validation-authority
+                  changeDir: openspec/changes/repair-spec-validation-authority
+                  workspaceBaseline:
+                    ref: 41075127-eb94-4113-8406-30d54d743c11
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+                    ref: openspec/changes/repair-spec-validation-authority
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        receipt:
+          ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+          contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+          submissionId: 6b91fbc9-55fb-407d-9080-68393a609cdd
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: codex/repair-spec-validation-authority
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: repair-spec-validation-authority
+              changeDir: openspec/changes/repair-spec-validation-authority
+              workspaceBaseline:
+                ref: 41075127-eb94-4113-8406-30d54d743c11
+            outputs:
+              full.build.configure:
+                boundBranch: codex/repair-spec-validation-authority
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+            ref: openspec/changes/repair-spec-validation-authority/design.md
+          plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+          planEvidence:
+            contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+            ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+          taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+          ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: repair-spec-validation-authority
+              changeDir: openspec/changes/repair-spec-validation-authority
+              workspaceBaseline:
+                ref: 41075127-eb94-4113-8406-30d54d743c11
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+                handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+                proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+                  Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+                  证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
+                  暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
+                  修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
+                  故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
+                  delta spec 无补丁。
+                requirementsEvidence:
+                  contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+                  ref: openspec/changes/repair-spec-validation-authority
+                sourceEvidence:
+                  contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+                  ref: openspec/changes/repair-spec-validation-authority
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/repair-spec-validation-authority/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+          ref: openspec/changes/repair-spec-validation-authority/design.md
       full.design.handoff:
         sequence: 5
         value:
@@ -497,6 +1808,6 @@ run_checkpoint:
           contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
     children: []
     lineage: []
-  sourceRevision: 9
-  sourceHash: b5aeab3ca0497ab4834abde9986fb200be6cb5f3bc4a65d59eac274de186df3b
-check_epoch: 1
+  sourceRevision: 19
+  sourceHash: 0ea1a07aa072c68e150323d34e8ae5fc975523e8cff34b43fea1d5983ba30d60
+check_epoch: 2
