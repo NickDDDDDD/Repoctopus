@@ -1,0 +1,2602 @@
+# comet-execution: managed-run
+change_id: d39d814b-c4b6-4f44-a0f3-7796e915ee52
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 88d563ad6407cf9aba9fc4c993bc8e220a3b0565
+design_doc: openspec/changes/archive/2026-11-15-preview-team-skill-bindings/design.md
+plan: docs/superpowers/plans/2026-11-15-preview-team-skill-bindings.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/preview-team-skill-bindings.md
+branch_status: pending
+created_at: 2026-11-15
+verified_at: 2026-11-15
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/preview-team-skill-bindings
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-15-preview-team-skill-bindings/.comet/handoff/design-context.json
+handoff_hash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 971d144130f774e9b72a6cd7fbf5c447b0e36f2317461083590cfadaf74cf235
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: preview-team-skill-bindings
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: c04904d00e22ab7a4485f90098f4d446ca75db1b093da4f8751b875a88502c25
+    input:
+      change: preview-team-skill-bindings
+      changeDir: openspec/changes/preview-team-skill-bindings
+      workspaceBaseline:
+        ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 88d563ad6407cf9aba9fc4c993bc8e220a3b0565
+      boundBranch: codex/preview-team-skill-bindings
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 6
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-15
+      designDoc: openspec/changes/archive/2026-11-15-preview-team-skill-bindings/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-15-preview-team-skill-bindings/.comet/handoff/design-context.json
+      handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-15-preview-team-skill-bindings.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/preview-team-skill-bindings.md
+      verifiedAt: 2026-11-15
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 24
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-21685f18ff12f817dbfeb0a833a48934ecf09ee73bb32a6f2718e2ccc3bdc6e3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:1
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: 05814a08bfb35ecf2625b85188cd0eb1477c95d8f98364ae9c7cb5d9456870dd
+        outcome:
+          actionId: preview-team-skill-bindings:1
+          attempt: 1
+          claimToken: portable-21685f18ff12f817dbfeb0a833a48934ecf09ee73bb32a6f2718e2ccc3bdc6e3
+          inputHash: 05814a08bfb35ecf2625b85188cd0eb1477c95d8f98364ae9c7cb5d9456870dd
+          outcomeId: 7d3e7169-e6a9-49ee-9049-d6593ef369a0
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2b694fd753988e6fa0322da4113c8d34eb34756de071b5a1570b7c209dec541b
+            outcomeId: 7d3e7169-e6a9-49ee-9049-d6593ef369a0
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-6bba0300d2d8eefc38bc7b0e19426d485a081621f8dfe620d10528f45bf8838e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:4
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: cd1b05dad5af09a929d3ebc52942ec23d95518c448b67a55b4fb2d05a183baee
+        outcome:
+          actionId: preview-team-skill-bindings:4
+          attempt: 1
+          claimToken: portable-6bba0300d2d8eefc38bc7b0e19426d485a081621f8dfe620d10528f45bf8838e
+          inputHash: cd1b05dad5af09a929d3ebc52942ec23d95518c448b67a55b4fb2d05a183baee
+          outcomeId: preview-team-skill-bindings:4:1:executor-result
+          output:
+            contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2f849f8c338f4c965bb2786328922197ec5c037712933f0a7513e575e27a6d25
+            outcomeId: preview-team-skill-bindings:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-7462555b107b48f09bc740e8478eb89aae7b8d51ce20a49e3380e7551eb6b8ef
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:5
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: 0f054e774d4d620cc9e7297f4f8523f9a54902bce24f0d889d65db9b7a78fad3
+        outcome:
+          actionId: preview-team-skill-bindings:5
+          attempt: 1
+          claimToken: portable-7462555b107b48f09bc740e8478eb89aae7b8d51ce20a49e3380e7551eb6b8ef
+          inputHash: 0f054e774d4d620cc9e7297f4f8523f9a54902bce24f0d889d65db9b7a78fad3
+          outcomeId: 277d446e-c4a6-4607-b165-783f965a919f
+          output:
+            handoffContext: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+            handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+            proposal: 确认采用现有 YAML 与运行时 Skill 组合规则，增加 repoctopus skill preview 的终端和 JSON
+              视图。通过只读查询装配展示实际 Provider、来源、顺序与诊断，明确 Build Check 的 code-review 和
+              Build Execute 的 TDD/direct 差异。若第三方 Provider 无法只读查询则诊断并停止。Workspace
+              教程给出 build.check 的完整示例并随现有受管流程刷新。用候选包、实际 Work 领取与文件快照核对。无 Spec
+              Patch。
+            requirementsEvidence:
+              contentHash: 32e9a81e66596bc549479651173f9dfc78c808da9b8db9a8c5c66817de9c60ea
+              ref: openspec/changes/preview-team-skill-bindings
+            sourceEvidence:
+              contentHash: ab46bd5be94b88666f6b546a31626ef3a314d175d31e1d46eb337abec09c4016
+              ref: openspec/changes/preview-team-skill-bindings
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bc09f8f37041f245f7dac2b12a80fe20b72aaf5a5f80654d99a5d73c99976287
+            outcomeId: 277d446e-c4a6-4607-b165-783f965a919f
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-5c936206059a20127a2e394def1798e5ff46dde9c7ed2f36d1f0320ce0a4b440
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:7
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: 9d05a4878e9d5c0ba18267be4706e1b54280ee9a1647412881ad881154979639
+        outcome:
+          actionId: preview-team-skill-bindings:7
+          attempt: 1
+          claimToken: portable-5c936206059a20127a2e394def1798e5ff46dde9c7ed2f36d1f0320ce0a4b440
+          inputHash: 9d05a4878e9d5c0ba18267be4706e1b54280ee9a1647412881ad881154979639
+          outcomeId: 1a4b5163-7996-4a2d-b7d6-06df8f6e1e8a
+          output:
+            designDoc: openspec/changes/preview-team-skill-bindings/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7960fa48430e6283f5f1cb28c7d181aaa1b5a4ce80ef4fee826fae5b12aaa836
+            outcomeId: 1a4b5163-7996-4a2d-b7d6-06df8f6e1e8a
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-aac1c480acf7e88f7d8c72fcc07dab18bea94889d9e38c835b076103dd64824c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:9
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: 7ca4e0b39ed1aa3c4214fe3af886eb98e34bb02aedee68ecf9f243b95eeecd7a
+        outcome:
+          actionId: preview-team-skill-bindings:9
+          attempt: 1
+          claimToken: portable-aac1c480acf7e88f7d8c72fcc07dab18bea94889d9e38c835b076103dd64824c
+          inputHash: 7ca4e0b39ed1aa3c4214fe3af886eb98e34bb02aedee68ecf9f243b95eeecd7a
+          outcomeId: 82633660-7cb1-4651-9407-70e68ba11c99
+          output:
+            boundBranch: codex/preview-team-skill-bindings
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 95a0110647502ecf3d2c7465102a3a3c882f681f3c2c67a6077f21ecd901153c
+            outcomeId: 82633660-7cb1-4651-9407-70e68ba11c99
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-ed4a6b685410b302781f8ac4c11e88acdbc40c5bd0c638c1d2b8bad9225d81fe
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:11
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: 775133cb8dd3de9c1e75b85c2531198a80df6c5d0ecf11f8f7a926deb70a4206
+        outcome:
+          actionId: preview-team-skill-bindings:11
+          attempt: 1
+          claimToken: portable-ed4a6b685410b302781f8ac4c11e88acdbc40c5bd0c638c1d2b8bad9225d81fe
+          inputHash: 775133cb8dd3de9c1e75b85c2531198a80df6c5d0ecf11f8f7a926deb70a4206
+          outcomeId: 211d0bae-7fca-4fc3-9233-4c64c8a5901b
+          output:
+            designEvidence:
+              contentHash: 368803776f9076a52afe376563161adc0c7fa7703e71b654e6da2159218db1af
+              ref: openspec/changes/preview-team-skill-bindings/design.md
+            plan: docs/superpowers/plans/2026-11-15-preview-team-skill-bindings.md
+            planEvidence:
+              contentHash: 59ac7c5b7a0492abef04e5b990876a537426ea8e0b0165230131c491eb296171
+              ref: docs/superpowers/plans/2026-11-15-preview-team-skill-bindings.md
+            taskRevision: c1202d61255005cff593ad0e8f2a4ded71eb69a4dd5696765e2fc4d0dab80870
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 35ad811b9124d328cc07c48074ea7f7ed45556780df467df936b082f691d8923
+            outcomeId: 211d0bae-7fca-4fc3-9233-4c64c8a5901b
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-preview-team-skill-bindings
+          token: portable-19d706f0e2be089817641673388486a43562473a4dba08edc05b7aaaff76fa78
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:13
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: 798c7ea1e548495ad796d64dbc9cce16c7dba30b54c3919908a1a93d96b4e4fa
+        outcome:
+          actionId: preview-team-skill-bindings:13
+          attempt: 1
+          claimToken: portable-19d706f0e2be089817641673388486a43562473a4dba08edc05b7aaaff76fa78
+          inputHash: 798c7ea1e548495ad796d64dbc9cce16c7dba30b54c3919908a1a93d96b4e4fa
+          outcomeId: 2d991f67-88fc-4310-9deb-fd58c2b83539
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d7a28f06bf08277e16bbc1b44ba418c1272ab63313ebb5c268cfee8736ba8bd6
+            outcomeId: 2d991f67-88fc-4310-9deb-fd58c2b83539
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-8ee1007ab625d6da470707fce6e5e4f7cf20f1ef816305da85f422b4bdc4c0c5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:14
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: f0cf5fed187e80821fa83ae5863d6d0bd3b23608d964db85bbc204a6d373d530
+        outcome:
+          actionId: preview-team-skill-bindings:14
+          attempt: 1
+          claimToken: portable-8ee1007ab625d6da470707fce6e5e4f7cf20f1ef816305da85f422b4bdc4c0c5
+          inputHash: f0cf5fed187e80821fa83ae5863d6d0bd3b23608d964db85bbc204a6d373d530
+          outcomeId: 96272b6d-eba7-4f09-b84b-a231cd862dd8
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 21f8ba4b61393a2b4d295419abb8243075f9caa683e8715a32165d0dc43bdfae
+            cwd: .
+            environment: 842d008021c398418e2a4de12a7f95aceb3a3854f31bf375e66e52df39503259
+            exitCode: 0
+            inputAfter: 82589981525f934281145b7dffbe5f95c774e8e40c4ee63e96536447960078f3
+            inputBefore: 82589981525f934281145b7dffbe5f95c774e8e40c4ee63e96536447960078f3
+            manifestHash: 1ff5ed44bc62f15221edef000c74bc79eea3c220e2ff7b06297be6ab55da00d7
+            manifestRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/822c1528-3b8e-42f2-8cee-69c3ea0272e9.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/ae8a077a-3729-42af-bd62-f572459d169f.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 55448bea010e5628b44985675d5b7f08c1ea45b492ee21d42daa4c73902c2623
+            outcomeId: 96272b6d-eba7-4f09-b84b-a231cd862dd8
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-c1dc3bf04e4f2690852d2a1c857cc9e7e932b4a895db47e323face2a56968891
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:16
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: 83288a9868b684a373bb1a7cc76fa8e41a808933c2311e5fb6eeafe2e8a1fd64
+        outcome:
+          actionId: preview-team-skill-bindings:16
+          attempt: 1
+          claimToken: portable-c1dc3bf04e4f2690852d2a1c857cc9e7e932b4a895db47e323face2a56968891
+          inputHash: 83288a9868b684a373bb1a7cc76fa8e41a808933c2311e5fb6eeafe2e8a1fd64
+          outcomeId: af18468a-02f0-41c6-a539-a792ee837074
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/preview-team-skill-bindings.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 73dfa7739c6f6eb2b9f1b52ddd392a567b6993f55240cdf38d25a14948186775
+            outcomeId: af18468a-02f0-41c6-a539-a792ee837074
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-cf781e85c3a67c9d9281c77ade696c75b7b1c5d26aa068c3df04c57759a68135
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:18
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: e0deffd4fcbe0feb1f7e05ac8b17abb0a79a1a9f7c3f49abcacc87dcbfe220b0
+        outcome:
+          actionId: preview-team-skill-bindings:18
+          attempt: 1
+          claimToken: portable-cf781e85c3a67c9d9281c77ade696c75b7b1c5d26aa068c3df04c57759a68135
+          inputHash: e0deffd4fcbe0feb1f7e05ac8b17abb0a79a1a9f7c3f49abcacc87dcbfe220b0
+          outcomeId: fc1d5cf0-3898-4a01-880a-1deac5d26ddc
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: a19d756bc1c3124289b10adb45640a05ee87a1e4ec389a24b5144e137eca45c3
+            cwd: .
+            deliveryInputs: {}
+            environment: 379520c60e6f5439292da8d6b479ca81264a7455469948c2848f5b2027c40205
+            exitCode: 0
+            inputAfter: ad67fd7a2112d7ee93e2ab6c6e4d420c1e198d38a4048ca01a37235c5cc4e772
+            inputBefore: ad67fd7a2112d7ee93e2ab6c6e4d420c1e198d38a4048ca01a37235c5cc4e772
+            manifestHash: f791bc39178c78196d20dc36415b46bb0a9f273e06adbf9ce90b8ae9f86c7b76
+            manifestRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/79422eb5-6583-49c2-b465-5734bebe79af.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/a3a1d1bc-651e-4326-ab4c-6e1e9b9eb5db.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ed5c18dd84045ad047e886fee78c743a4d07fcdff9dd4bc577f2cf033cbc69e7
+            outcomeId: fc1d5cf0-3898-4a01-880a-1deac5d26ddc
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-6e15e50997a0c33fee3a125eb73cbf0e99611c1dd4d49a5b01d7cbc471b8795f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:20
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: a6ac1e24c870f3e41583819a7df2e3ab617bb5adb66b23361676ba6db2417dcf
+        outcome:
+          actionId: preview-team-skill-bindings:20
+          attempt: 1
+          claimToken: portable-6e15e50997a0c33fee3a125eb73cbf0e99611c1dd4d49a5b01d7cbc471b8795f
+          inputHash: a6ac1e24c870f3e41583819a7df2e3ab617bb5adb66b23361676ba6db2417dcf
+          outcomeId: ddf19c2c-d5f3-45c0-aeae-a60ff3a98dc4
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档团队 Skill 预览及 Workspace 教程 Change，合并 skill-integration 与
+              project-configuration 规格，并提交发行包验收报告。目标 origin/main，创建 PR，待 GitHub
+              CI 通过后合入。
+            targetBranch: codex/preview-team-skill-bindings
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: df9211a97c2c8eb2af9eaa17de3c7fa1e3f7b14fb9a23afc3ccd976954b0de58
+            outcomeId: ddf19c2c-d5f3-45c0-aeae-a60ff3a98dc4
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-4f8c9a3d9575aad56997786b46b37d0d573eff41c43ee9c2f510d4570ce040a9
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:22
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: 0fe9b94b1c3f64efaa5bad9e7053155155815f4fd8ee8ffd624dbb7dcefec03d
+        outcome:
+          actionId: preview-team-skill-bindings:22
+          attempt: 1
+          claimToken: portable-4f8c9a3d9575aad56997786b46b37d0d573eff41c43ee9c2f510d4570ce040a9
+          inputHash: 0fe9b94b1c3f64efaa5bad9e7053155155815f4fd8ee8ffd624dbb7dcefec03d
+          outcomeId: ae0841ae-61b9-421d-a459-65f047d5bf8e
+          output:
+            baseCommit: 58a10eb1849d7e8d34869ac73b48024d86b77729
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/preview-team-skill-bindings
+            verifiedBranch: codex/preview-team-skill-bindings
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c0dc8354fe7d8836cc104bcce67afa94802eab61916df4d317472c4abc75ea71
+            outcomeId: ae0841ae-61b9-421d-a459-65f047d5bf8e
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-cedeeac2057edd11a72cdff100b7e67d8e7f819f522fa7899888fa599a3a1380
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: preview-team-skill-bindings:23
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: f529ecfb9d17a550230cb436f5d75f163ca79bf1b3c62b87ae25e593adc93840
+        outcome:
+          actionId: preview-team-skill-bindings:23
+          artifacts:
+            - sha256: 5fd2fe85ed932fc4ff6b7f8767468893419b95c1fa4d396fd432ce2c36cd9863
+              uri: openspec/changes/archive/2026-11-15-preview-team-skill-bindings/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-cedeeac2057edd11a72cdff100b7e67d8e7f819f522fa7899888fa599a3a1380
+          inputHash: f529ecfb9d17a550230cb436f5d75f163ca79bf1b3c62b87ae25e593adc93840
+          outcomeId: b11b7e51-8428-4052-8298-ae8d4574663d
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-15-preview-team-skill-bindings
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: db5f5c1298f5dbda22356285ae88f5352672166dd67e92304349a8bfc30af64e
+            outcomeId: b11b7e51-8428-4052-8298-ae8d4574663d
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: preview-team-skill-bindings:24
+        input:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs: {}
+        inputHash: 0d7efad07df706bf4bef1b29374a4a87e33428bc858876e559c53fdc3eff8558
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: preview-team-skill-bindings
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      preview-team-skill-bindings:1:
+        results: {}
+        sequence: 1
+      preview-team-skill-bindings:11:
+        results: {}
+        sequence: 11
+      preview-team-skill-bindings:13:
+        results: {}
+        sequence: 13
+      preview-team-skill-bindings:14:
+        results: {}
+        sequence: 14
+      preview-team-skill-bindings:16:
+        results: {}
+        sequence: 16
+      preview-team-skill-bindings:18:
+        results: {}
+        sequence: 18
+      preview-team-skill-bindings:20:
+        results: {}
+        sequence: 20
+      preview-team-skill-bindings:22:
+        results: {}
+        sequence: 22
+      preview-team-skill-bindings:23:
+        results: {}
+        sequence: 23
+      preview-team-skill-bindings:24:
+        results: {}
+        sequence: 24
+      preview-team-skill-bindings:4:
+        results: {}
+        sequence: 4
+      preview-team-skill-bindings:5:
+        results: {}
+        sequence: 5
+      preview-team-skill-bindings:7:
+        results: {}
+        sequence: 7
+      preview-team-skill-bindings:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: preview-team-skill-bindings:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+              ref: openspec/changes/preview-team-skill-bindings
+        proposalHash: 9ce6e92ca4b0c1045fa62b83e4cec55cac5fac2f01417b134c56cd0fed473b0e
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+          choice: approved
+          proposalHash: 9ce6e92ca4b0c1045fa62b83e4cec55cac5fac2f01417b134c56cd0fed473b0e
+      - id: preview-team-skill-bindings:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+              handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+              proposal: 确认采用现有 YAML 与运行时 Skill 组合规则，增加 repoctopus skill preview 的终端和 JSON
+                视图。通过只读查询装配展示实际 Provider、来源、顺序与诊断，明确 Build Check 的 code-review 和
+                Build Execute 的 TDD/direct 差异。若第三方 Provider
+                无法只读查询则诊断并停止。Workspace 教程给出 build.check 的完整示例并随现有受管流程刷新。用候选包、实际
+                Work 领取与文件快照核对。无 Spec Patch。
+              requirementsEvidence:
+                contentHash: 32e9a81e66596bc549479651173f9dfc78c808da9b8db9a8c5c66817de9c60ea
+                ref: openspec/changes/preview-team-skill-bindings
+              sourceEvidence:
+                contentHash: ab46bd5be94b88666f6b546a31626ef3a314d175d31e1d46eb337abec09c4016
+                ref: openspec/changes/preview-team-skill-bindings
+        proposalHash: 7c28e5d18f0b52ae4871ee7185bf33eec674d8955528be0019672d654eaad9a0
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-7c28e5d18f0b52ae4871ee7185bf33eec674d8955528be0019672d654eaad9a0-approved
+          choice: approved
+          proposalHash: 7c28e5d18f0b52ae4871ee7185bf33eec674d8955528be0019672d654eaad9a0
+      - id: preview-team-skill-bindings:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.build.configure:
+              boundBranch: codex/preview-team-skill-bindings
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: aab5488499cb9db5539d996bfd3807119f389f5d6292d475e9117fc0984f050d
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 266d9d97-583d-4f39-8155-746813c19ee0
+          choice: approved
+          proposalHash: aab5488499cb9db5539d996bfd3807119f389f5d6292d475e9117fc0984f050d
+      - id: preview-team-skill-bindings:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档团队 Skill 预览及 Workspace 教程 Change，合并 skill-integration 与
+                project-configuration 规格，并提交发行包验收报告。目标 origin/main，创建 PR，待
+                GitHub CI 通过后合入。
+              targetBranch: codex/preview-team-skill-bindings
+        proposalHash: 1f4902afe73de2d9c785e4005a377415680f8687c4a796ef044a32c7cf9aa202
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-1f4902afe73de2d9c785e4005a377415680f8687c4a796ef044a32c7cf9aa202-pr
+          choice: pr
+          proposalHash: 1f4902afe73de2d9c785e4005a377415680f8687c4a796ef044a32c7cf9aa202
+    evidenceWaits:
+      - id: preview-team-skill-bindings:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/preview-team-skill-bindings
+          contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+          submissionId: ffae4dad-0e2b-497d-9556-e30fa598cc68
+      - id: preview-team-skill-bindings:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/preview-team-skill-bindings/design.md
+          contentHash: 368803776f9076a52afe376563161adc0c7fa7703e71b654e6da2159218db1af
+          submissionId: 3d23ee7f-1b18-4fa1-a597-8660d9a0f2a3
+      - id: preview-team-skill-bindings:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-15-preview-team-skill-bindings.md
+          contentHash: 59ac7c5b7a0492abef04e5b990876a537426ea8e0b0165230131c491eb296171
+          submissionId: 93fa0241-c3a6-4cef-aa1c-9aba769bb3b0
+      - id: preview-team-skill-bindings:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/ae8a077a-3729-42af-bd62-f572459d169f.log
+          contentHash: 21f8ba4b61393a2b4d295419abb8243075f9caa683e8715a32165d0dc43bdfae
+          submissionId: 660e4ff0-0fe1-4a2d-8d2c-5bc5eb2370de
+      - id: preview-team-skill-bindings:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/preview-team-skill-bindings.md
+          contentHash: df5d64dcfdee7b8ef2dbfeae872de6e5189ce139d4b8e808d947b187fded64ee
+          submissionId: dce5ec1f-c293-4ca9-9276-0a32aa245e19
+      - id: preview-team-skill-bindings:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/a3a1d1bc-651e-4326-ab4c-6e1e9b9eb5db.log
+          contentHash: a19d756bc1c3124289b10adb45640a05ee87a1e4ec389a24b5144e137eca45c3
+          submissionId: 9dc04203-ac7f-43d1-b7bd-2fd36d127202
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 37
+  sourceHash: 384806f917ed1a67c3fbf6dea24772284c7eb41a29848402769906c724431d4a
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+              ref: openspec/changes/preview-team-skill-bindings
+      - contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+        ref: openspec/changes/preview-team-skill-bindings
+      - contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+      - choice: approved
+        proposal:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+              handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+              proposal: 确认采用现有 YAML 与运行时 Skill 组合规则，增加 repoctopus skill preview 的终端和 JSON
+                视图。通过只读查询装配展示实际 Provider、来源、顺序与诊断，明确 Build Check 的 code-review 和
+                Build Execute 的 TDD/direct 差异。若第三方 Provider
+                无法只读查询则诊断并停止。Workspace 教程给出 build.check 的完整示例并随现有受管流程刷新。用候选包、实际
+                Work 领取与文件快照核对。无 Spec Patch。
+              requirementsEvidence:
+                contentHash: 32e9a81e66596bc549479651173f9dfc78c808da9b8db9a8c5c66817de9c60ea
+                ref: openspec/changes/preview-team-skill-bindings
+              sourceEvidence:
+                contentHash: ab46bd5be94b88666f6b546a31626ef3a314d175d31e1d46eb337abec09c4016
+                ref: openspec/changes/preview-team-skill-bindings
+      - handoffContext: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+        handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+        proposal: 确认采用现有 YAML 与运行时 Skill 组合规则，增加 repoctopus skill preview 的终端和 JSON
+          视图。通过只读查询装配展示实际 Provider、来源、顺序与诊断，明确 Build Check 的 code-review 和 Build
+          Execute 的 TDD/direct 差异。若第三方 Provider 无法只读查询则诊断并停止。Workspace 教程给出
+          build.check 的完整示例并随现有受管流程刷新。用候选包、实际 Work 领取与文件快照核对。无 Spec Patch。
+        requirementsEvidence:
+          contentHash: 32e9a81e66596bc549479651173f9dfc78c808da9b8db9a8c5c66817de9c60ea
+          ref: openspec/changes/preview-team-skill-bindings
+        sourceEvidence:
+          contentHash: ab46bd5be94b88666f6b546a31626ef3a314d175d31e1d46eb337abec09c4016
+          ref: openspec/changes/preview-team-skill-bindings
+      - designDoc: openspec/changes/preview-team-skill-bindings/design.md
+      - contentHash: 368803776f9076a52afe376563161adc0c7fa7703e71b654e6da2159218db1af
+        ref: openspec/changes/preview-team-skill-bindings/design.md
+      - boundBranch: codex/preview-team-skill-bindings
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.build.configure:
+              boundBranch: codex/preview-team-skill-bindings
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 368803776f9076a52afe376563161adc0c7fa7703e71b654e6da2159218db1af
+          ref: openspec/changes/preview-team-skill-bindings/design.md
+        plan: docs/superpowers/plans/2026-11-15-preview-team-skill-bindings.md
+        planEvidence:
+          contentHash: 59ac7c5b7a0492abef04e5b990876a537426ea8e0b0165230131c491eb296171
+          ref: docs/superpowers/plans/2026-11-15-preview-team-skill-bindings.md
+        taskRevision: c1202d61255005cff593ad0e8f2a4ded71eb69a4dd5696765e2fc4d0dab80870
+      - contentHash: 59ac7c5b7a0492abef04e5b990876a537426ea8e0b0165230131c491eb296171
+        ref: docs/superpowers/plans/2026-11-15-preview-team-skill-bindings.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 21f8ba4b61393a2b4d295419abb8243075f9caa683e8715a32165d0dc43bdfae
+        cwd: .
+        environment: 842d008021c398418e2a4de12a7f95aceb3a3854f31bf375e66e52df39503259
+        exitCode: 0
+        inputAfter: 82589981525f934281145b7dffbe5f95c774e8e40c4ee63e96536447960078f3
+        inputBefore: 82589981525f934281145b7dffbe5f95c774e8e40c4ee63e96536447960078f3
+        manifestHash: 1ff5ed44bc62f15221edef000c74bc79eea3c220e2ff7b06297be6ab55da00d7
+        manifestRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/822c1528-3b8e-42f2-8cee-69c3ea0272e9.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/ae8a077a-3729-42af-bd62-f572459d169f.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 21f8ba4b61393a2b4d295419abb8243075f9caa683e8715a32165d0dc43bdfae
+        ref: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/ae8a077a-3729-42af-bd62-f572459d169f.log
+      - contentHash: df5d64dcfdee7b8ef2dbfeae872de6e5189ce139d4b8e808d947b187fded64ee
+        ref: docs/superpowers/reports/preview-team-skill-bindings.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/preview-team-skill-bindings.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: a19d756bc1c3124289b10adb45640a05ee87a1e4ec389a24b5144e137eca45c3
+        cwd: .
+        deliveryInputs: {}
+        environment: 379520c60e6f5439292da8d6b479ca81264a7455469948c2848f5b2027c40205
+        exitCode: 0
+        inputAfter: ad67fd7a2112d7ee93e2ab6c6e4d420c1e198d38a4048ca01a37235c5cc4e772
+        inputBefore: ad67fd7a2112d7ee93e2ab6c6e4d420c1e198d38a4048ca01a37235c5cc4e772
+        manifestHash: f791bc39178c78196d20dc36415b46bb0a9f273e06adbf9ce90b8ae9f86c7b76
+        manifestRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/79422eb5-6583-49c2-b465-5734bebe79af.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/a3a1d1bc-651e-4326-ab4c-6e1e9b9eb5db.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: a19d756bc1c3124289b10adb45640a05ee87a1e4ec389a24b5144e137eca45c3
+        ref: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/a3a1d1bc-651e-4326-ab4c-6e1e9b9eb5db.log
+      - choice: pr
+        proposal:
+          input:
+            change: preview-team-skill-bindings
+            changeDir: openspec/changes/preview-team-skill-bindings
+            workspaceBaseline:
+              ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档团队 Skill 预览及 Workspace 教程 Change，合并 skill-integration 与
+                project-configuration 规格，并提交发行包验收报告。目标 origin/main，创建 PR，待
+                GitHub CI 通过后合入。
+              targetBranch: codex/preview-team-skill-bindings
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档团队 Skill 预览及 Workspace 教程 Change，合并 skill-integration 与
+          project-configuration 规格，并提交发行包验收报告。目标 origin/main，创建 PR，待 GitHub CI
+          通过后合入。
+        targetBranch: codex/preview-team-skill-bindings
+      - baseCommit: 58a10eb1849d7e8d34869ac73b48024d86b77729
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/preview-team-skill-bindings
+        verifiedBranch: codex/preview-team-skill-bindings
+      - archiveDirectory: openspec/changes/archive/2026-11-15-preview-team-skill-bindings
+      - sequence: 9
+        value:
+          boundBranch: codex/preview-team-skill-bindings
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: preview-team-skill-bindings
+              changeDir: openspec/changes/preview-team-skill-bindings
+              workspaceBaseline:
+                ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+            outputs:
+              full.build.configure:
+                boundBranch: codex/preview-team-skill-bindings
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: preview-team-skill-bindings
+              changeDir: openspec/changes/preview-team-skill-bindings
+              workspaceBaseline:
+                ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+                handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+                proposal: 确认采用现有 YAML 与运行时 Skill 组合规则，增加 repoctopus skill preview 的终端和 JSON
+                  视图。通过只读查询装配展示实际 Provider、来源、顺序与诊断，明确 Build Check 的 code-review
+                  和 Build Execute 的 TDD/direct 差异。若第三方 Provider
+                  无法只读查询则诊断并停止。Workspace 教程给出 build.check
+                  的完整示例并随现有受管流程刷新。用候选包、实际 Work 领取与文件快照核对。无 Spec Patch。
+                requirementsEvidence:
+                  contentHash: 32e9a81e66596bc549479651173f9dfc78c808da9b8db9a8c5c66817de9c60ea
+                  ref: openspec/changes/preview-team-skill-bindings
+                sourceEvidence:
+                  contentHash: ab46bd5be94b88666f6b546a31626ef3a314d175d31e1d46eb337abec09c4016
+                  ref: openspec/changes/preview-team-skill-bindings
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/preview-team-skill-bindings/design.md
+      - sequence: 8
+        value:
+          contentHash: 368803776f9076a52afe376563161adc0c7fa7703e71b654e6da2159218db1af
+          ref: openspec/changes/preview-team-skill-bindings/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/preview-team-skill-bindings/.comet/handoff/design-context.json
+          handoffHash: 9ced7e75dceca27742deb6ed6b20c27469adc659278e4174d5597333f9b6e846
+          proposal: 确认采用现有 YAML 与运行时 Skill 组合规则，增加 repoctopus skill preview 的终端和 JSON
+            视图。通过只读查询装配展示实际 Provider、来源、顺序与诊断，明确 Build Check 的 code-review 和
+            Build Execute 的 TDD/direct 差异。若第三方 Provider 无法只读查询则诊断并停止。Workspace
+            教程给出 build.check 的完整示例并随现有受管流程刷新。用候选包、实际 Work 领取与文件快照核对。无 Spec
+            Patch。
+          requirementsEvidence:
+            contentHash: 32e9a81e66596bc549479651173f9dfc78c808da9b8db9a8c5c66817de9c60ea
+            ref: openspec/changes/preview-team-skill-bindings
+          sourceEvidence:
+            contentHash: ab46bd5be94b88666f6b546a31626ef3a314d175d31e1d46eb337abec09c4016
+            ref: openspec/changes/preview-team-skill-bindings
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: preview-team-skill-bindings
+              changeDir: openspec/changes/preview-team-skill-bindings
+              workspaceBaseline:
+                ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+                ref: openspec/changes/preview-team-skill-bindings
+      - sequence: 2
+        value:
+          contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+          ref: openspec/changes/preview-team-skill-bindings
+      - sequence: 4
+        value:
+          contentHash: d727a99f30db89f747ad31395bda1fd9337ee25860d8037b61c5509f26810f3f
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 368803776f9076a52afe376563161adc0c7fa7703e71b654e6da2159218db1af
+            ref: openspec/changes/preview-team-skill-bindings/design.md
+          plan: docs/superpowers/plans/2026-11-15-preview-team-skill-bindings.md
+          planEvidence:
+            contentHash: 59ac7c5b7a0492abef04e5b990876a537426ea8e0b0165230131c491eb296171
+            ref: docs/superpowers/plans/2026-11-15-preview-team-skill-bindings.md
+          taskRevision: c1202d61255005cff593ad0e8f2a4ded71eb69a4dd5696765e2fc4d0dab80870
+      - sequence: 12
+        value:
+          contentHash: 59ac7c5b7a0492abef04e5b990876a537426ea8e0b0165230131c491eb296171
+          ref: docs/superpowers/plans/2026-11-15-preview-team-skill-bindings.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 21f8ba4b61393a2b4d295419abb8243075f9caa683e8715a32165d0dc43bdfae
+          cwd: .
+          environment: 842d008021c398418e2a4de12a7f95aceb3a3854f31bf375e66e52df39503259
+          exitCode: 0
+          inputAfter: 82589981525f934281145b7dffbe5f95c774e8e40c4ee63e96536447960078f3
+          inputBefore: 82589981525f934281145b7dffbe5f95c774e8e40c4ee63e96536447960078f3
+          manifestHash: 1ff5ed44bc62f15221edef000c74bc79eea3c220e2ff7b06297be6ab55da00d7
+          manifestRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/822c1528-3b8e-42f2-8cee-69c3ea0272e9.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/ae8a077a-3729-42af-bd62-f572459d169f.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 21f8ba4b61393a2b4d295419abb8243075f9caa683e8715a32165d0dc43bdfae
+          ref: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/ae8a077a-3729-42af-bd62-f572459d169f.log
+      - sequence: 17
+        value:
+          contentHash: df5d64dcfdee7b8ef2dbfeae872de6e5189ce139d4b8e808d947b187fded64ee
+          ref: docs/superpowers/reports/preview-team-skill-bindings.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/preview-team-skill-bindings.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: a19d756bc1c3124289b10adb45640a05ee87a1e4ec389a24b5144e137eca45c3
+          cwd: .
+          deliveryInputs: {}
+          environment: 379520c60e6f5439292da8d6b479ca81264a7455469948c2848f5b2027c40205
+          exitCode: 0
+          inputAfter: ad67fd7a2112d7ee93e2ab6c6e4d420c1e198d38a4048ca01a37235c5cc4e772
+          inputBefore: ad67fd7a2112d7ee93e2ab6c6e4d420c1e198d38a4048ca01a37235c5cc4e772
+          manifestHash: f791bc39178c78196d20dc36415b46bb0a9f273e06adbf9ce90b8ae9f86c7b76
+          manifestRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/79422eb5-6583-49c2-b465-5734bebe79af.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/a3a1d1bc-651e-4326-ab4c-6e1e9b9eb5db.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          contentHash: a19d756bc1c3124289b10adb45640a05ee87a1e4ec389a24b5144e137eca45c3
+          ref: .comet/runtime/classic-sdk-checks/92878454c960a8acfe6d37306c6c5d9ae12be87cd8501ca6a58d6078070dfe7a/a3a1d1bc-651e-4326-ab4c-6e1e9b9eb5db.log
+      - sequence: 21
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: preview-team-skill-bindings
+              changeDir: openspec/changes/preview-team-skill-bindings
+              workspaceBaseline:
+                ref: cfbf0e03-4b0b-46a7-a44a-942201c3d243
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档团队 Skill 预览及 Workspace 教程 Change，合并 skill-integration 与
+                  project-configuration 规格，并提交发行包验收报告。目标 origin/main，创建 PR，待
+                  GitHub CI 通过后合入。
+                targetBranch: codex/preview-team-skill-bindings
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档团队 Skill 预览及 Workspace 教程 Change，合并 skill-integration 与
+            project-configuration 规格，并提交发行包验收报告。目标 origin/main，创建 PR，待 GitHub CI
+            通过后合入。
+          targetBranch: codex/preview-team-skill-bindings
+      - sequence: 22
+        value:
+          baseCommit: 58a10eb1849d7e8d34869ac73b48024d86b77729
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/preview-team-skill-bindings
+          verifiedBranch: codex/preview-team-skill-bindings
+      - sequence: 23
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-15-preview-team-skill-bindings
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 52
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 54
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 48
+        height: 5
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: 57
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 58
+        right: 51
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 53
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 59
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 22
+        left: 63
+        right: 64
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 65
+        right: 51
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 66
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 67
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 70
+        height: 2
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 72
+        right: 73
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 75
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 76
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 71
+        right: 77
+        height: 4
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: 79
+        right: 80
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 81
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 82
+        right: 77
+        height: 4
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 84
+        height: 2
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: 80
+        height: 2
+      - key: full.build.plan
+        value: 33
+        left: 85
+        right: 86
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 87
+        right: 77
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 89
+        right: 90
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 91
+        right: 84
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 92
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 77
+        height: 5
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: 96
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: 97
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 99
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 102
+        right: 96
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 101
+        right: 103
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 104
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 43
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 90
+        right: 84
+        height: 2
+      - key: full.build.check.evidence
+        value: 37
+        left: 109
+        right: 110
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 111
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 112
+        right: 105
+        height: 5
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: 114
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 115
+        right: 108
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 110
+        right: 86
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 116
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 118
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 45
+        left: 120
+        right: 121
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 122
+        right: 108
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 123
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 124
+        right: 105
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 127
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 129
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 132
+        right: 133
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 134
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 136
+        right: 137
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: 138
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 139
+        right: 130
+        height: 4
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: 141
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 145
+        height: 2
+      - key: full.open
+        value: 29
+        left: 143
+        right: 146
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 149
+        right: 150
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 148
+        right: 151
+        height: 3
+      - key: full.open
+        value: 29
+        left: 152
+        right: 146
+        height: 4
+      - key: full.archive.prepare
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: 154
+        right: 155
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: 158
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: 157
+        right: 159
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: 156
+        right: 160
+        height: 4
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 162
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 164
+        right: 165
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 163
+        right: 166
+        height: 3
+      - key: full.open
+        value: 29
+        left: 151
+        right: 167
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 161
+        right: 168
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 171
+        right: 172
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 175
+        height: 2
+      - key: full.open
+        value: 29
+        left: 173
+        right: 176
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 178
+        right: 179
+        height: 2
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 181
+        right: 182
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 180
+        right: 183
+        height: 3
+      - key: full.open
+        value: 29
+        left: 184
+        right: 176
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: 186
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: 188
+        right: 189
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 187
+        right: 190
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 176
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: 191
+        right: 192
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 194
+        right: 195
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 196
+        right: 190
+        height: 3
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: 198
+        height: 2
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 199
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 200
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 201
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 203
+        height: 2
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: 205
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 204
+        right: 206
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 207
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 208
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 56
+      - 62
+      - 68
+      - 78
+      - 83
+      - 88
+      - 94
+      - 100
+      - 106
+      - 113
+      - 119
+      - 125
+      - 128
+      - 131
+      - 135
+      - 140
+      - 142
+      - 147
+      - 153
+      - 169
+      - 170
+      - 177
+      - 185
+      - 193
+      - 202
+      - 209
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:11
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:13
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:14
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:16
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:18
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:20
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:22
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:23
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:4
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:5
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:7
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - preview-team-skill-bindings:9
+          - results
+        map: 26
+      - path:
+          - outputs
+        map: 22
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 27
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 28
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 29
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 31
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 36
+  storageHash: 5ac72d00add9dbe6c379b7030562642ae6f499e1b464f1e2d1941015cc8eb7ff
+check_epoch: 6

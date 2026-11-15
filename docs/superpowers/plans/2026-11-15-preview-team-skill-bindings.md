@@ -2,6 +2,7 @@
 change: preview-team-skill-bindings
 design-doc: openspec/changes/preview-team-skill-bindings/design.md
 base-ref: eebf1ce
+archived-with: 2026-11-15-preview-team-skill-bindings
 ---
 
 # 团队 Skill 预览实施计划

@@ -2,6 +2,8 @@
 comet_change: preview-team-skill-bindings
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-15-preview-team-skill-bindings
+status: final
 ---
 
 # 团队 Skill 预览设计
