@@ -23,7 +23,7 @@
 
 ## 3. 安装包验收与文档
 
-- [ ] 3.1 复跑生命周期、规划批准、Verify 身份与 Archive 回归。 <!-- comet-task:aa7b2ce0-202b-46ef-bc53-770fc9e5f2d0 -->
+- [x] 3.1 复跑生命周期、规划批准、Verify 身份与 Archive 回归。 <!-- comet-task:aa7b2ce0-202b-46ef-bc53-770fc9e5f2d0 -->
   **Acceptance:** 原审批和冷恢复守卫测试通过，复选框提交与真实规划变更继续走各自路径。
   **Requirements:** specification-authority#阶段校验证据随受保护转换提交, specification-authority#规划观察区分不可用和确定性失效
 - [ ] 3.2 用实际安装包完成同一 Run 的失败修正与多仓真实验收。 <!-- comet-task:5e9abfb6-3915-4853-ab62-b7d297e44421 -->
