@@ -1362,12 +1362,13 @@ export class WorkflowRuns extends Service {
       projectConfigDigest: base.projectConfigDigest,
       workspaceRepositoryId: base.workspaceRepositoryId,
     };
+    const buildStrategyDigest = this.buildStrategy(state, lifecycle).semanticDigest;
     try {
       const observation = await this.ctx.specificationPlanning.observeAuthority({
         changeId: lifecycle.identity.changeId,
         approvalPhase: 'design',
         expectedPlanningDigest: lifecycle.planningDigest,
-        buildStrategyDigest: this.buildStrategy(state, lifecycle).semanticDigest,
+        buildStrategyDigest,
         ...(signal ? { signal } : {}),
       });
       return { ...observation, ...context };
@@ -5650,6 +5651,7 @@ export class WorkflowRuns extends Service {
     bundleId: string | null,
     reason: string,
     continuation: Awaited<ReturnType<WorkflowRuns['createVerifyFailureContinuation']>>,
+    signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
     const evidenceIds = [attemptId, ...(bundleId ? [bundleId] : [])];
     if (result === 'implementation-failure') {
@@ -5678,6 +5680,7 @@ export class WorkflowRuns extends Service {
           evidenceIds,
         },
         reobserve: async (latest) => {
+          await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal);
           const facts = await this.ctx.evidenceCoordinator.verifyRepairFacts(latest, attemptId);
           const latestProtocol = latest.changeLifecycle!.buildProtocol!;
           const invalidation = createBuildInvalidation({
@@ -5724,6 +5727,7 @@ export class WorkflowRuns extends Service {
         verificationInput: continuation.verificationInput,
         evidenceIds,
       },
+      reobserve: (latest) => this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal),
     });
   }
 
@@ -5736,7 +5740,8 @@ export class WorkflowRuns extends Service {
       if (
         observed &&
         (observed.value.state.reconciliationRequired ||
-          observed.value.continuation?.continuation === 'reobserve')
+          observed.value.continuation?.continuation === 'reobserve' ||
+          observed.value.changeLifecycle?.phase !== 'verify')
       ) {
         return {
           value: {
@@ -5898,6 +5903,31 @@ export class WorkflowRuns extends Service {
             'The original Evidence Attempt contains an uncertain node result',
           );
         }
+        const planning = await this.observeChangePlanning(state, lifecycle, signal);
+        if (planning.status === 'unavailable') {
+          return this.preserveUnsettledVerify(
+            input.runId,
+            attemptId,
+            gate.bundleId,
+            planning.reason,
+            'reobserve',
+          );
+        }
+        if (planning.status === 'invalid') {
+          const revised = await this.returnToDesignForPlanningRevision(
+            state,
+            lifecycle,
+            planning,
+            planning.projectSnapshot,
+            planning.projectConfigDigest,
+            planning.workspaceRepositoryId,
+            signal,
+          );
+          return {
+            value: { attemptId, bundleId: gate.bundleId, gate: 'blocked', run: revised.value },
+            diagnostics: revised.diagnostics,
+          };
+        }
         const rejected = rejectVerifyGate({
           runId: input.runId,
           lifecycle: current,
@@ -5936,7 +5966,20 @@ export class WorkflowRuns extends Service {
           rejected.bundleId,
           rejected.reason,
           continuation,
-        );
+          signal,
+        ).catch((error: unknown) => {
+          if (planningObservationUnavailableError(error)) return null;
+          throw error;
+        });
+        if (!fallback) {
+          return this.preserveUnsettledVerify(
+            input.runId,
+            attemptId,
+            rejected.bundleId,
+            'Planning authority is unavailable during protected Verify recovery',
+            'reobserve',
+          );
+        }
         await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, continuation.work);
         return {
           value: {
@@ -6123,7 +6166,8 @@ export class WorkflowRuns extends Service {
     input: PrepareArchiveDeliveryInput,
     signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
-    return this.archiveOperation(input.runId, signal, async () => {
+    return this.archiveOperation<RuntimeResult<RunStatusView>>(input.runId, signal, async () => {
+      await this.assertSpecificationChange(input.runId, input.intent.changeId);
       const recovery = await this.recoverEvidenceWorkspace(input.runId, signal);
       if (
         recovery &&
@@ -6152,6 +6196,16 @@ export class WorkflowRuns extends Service {
       ) {
         throw new Error(`Change Run is not ready to plan Archive Delivery: ${input.runId}`);
       }
+      const replacing = lifecycle.currentWork !== null;
+      if (
+        replacing &&
+        ((state.workExecution && ['invoking', 'unknown'].includes(state.workExecution.status)) ||
+          (await this.ctx.specification.closureExecutionStarted(lifecycle.identity.changeId)))
+      ) {
+        throw new Error(
+          'Archive has a started or uncertain original execution; reconcile it before replacing preflight',
+        );
+      }
       if (!evidence.bundle || !evidence.bundle.verificationReport) {
         throw new Error('Archive Delivery requires a completed formal verification report');
       }
@@ -6168,26 +6222,7 @@ export class WorkflowRuns extends Service {
           'Archive preflight requires the Bundle accepted for the current immutable Verification Input',
         );
       }
-      const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
-      const specificationRoot = state.trigger?.facts.specificationRoot as
-        | { repositoryId?: unknown }
-        | undefined;
-      if (
-        !lifecycle.planningDigest ||
-        typeof projectConfigDigest !== 'string' ||
-        !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
-        typeof specificationRoot?.repositoryId !== 'string'
-      ) {
-        throw new Error('Archive planning authority identities are missing');
-      }
-      const planningAuthority = await this.ctx.specificationPlanning.observeAuthority({
-        changeId: lifecycle.identity.changeId,
-        approvalPhase: 'design',
-        changeBranch: input.intent.changeBranch,
-        expectedPlanningDigest: lifecycle.planningDigest,
-        buildStrategyDigest: this.buildStrategy(state, lifecycle).semanticDigest,
-        ...(signal ? { signal } : {}),
-      });
+      const planningAuthority = await this.observeChangePlanning(state, lifecycle, signal);
       if (planningAuthority.status === 'unavailable')
         return this.planningObservationUnavailable(input.runId);
       if (planningAuthority.status === 'invalid') {
@@ -6196,8 +6231,8 @@ export class WorkflowRuns extends Service {
           lifecycle,
           planningAuthority,
           projectSnapshot,
-          projectConfigDigest as `sha256:${string}`,
-          specificationRoot.repositoryId,
+          planningAuthority.projectConfigDigest,
+          planningAuthority.workspaceRepositoryId,
           signal,
         );
       }
@@ -6231,18 +6266,8 @@ export class WorkflowRuns extends Service {
           input.intent,
         ),
       });
-      const replacing = lifecycle.currentWork !== null;
       if (replacing && lifecycle.archiveDeliveryInput?.digest === archiveInput.digest)
         return { value: await this.coordinator.status(input.runId), diagnostics: [] };
-      if (
-        replacing &&
-        ((state.workExecution && ['invoking', 'unknown'].includes(state.workExecution.status)) ||
-          (await this.ctx.specification.closureExecutionStarted(lifecycle.identity.changeId)))
-      ) {
-        throw new Error(
-          'Archive has a started or uncertain original execution; reconcile it before replacing preflight',
-        );
-      }
       const repositoryIds = Array.isArray(state.trigger?.facts.repositoryIds)
         ? state.trigger.facts.repositoryIds.filter(
             (repositoryId): repositoryId is string => typeof repositoryId === 'string',
@@ -6298,6 +6323,9 @@ export class WorkflowRuns extends Service {
       );
       await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, work);
       return { ...created, value: await this.coordinator.status(input.runId) };
+    }).catch((error: unknown) => {
+      if (!planningObservationUnavailableError(error)) throw error;
+      return this.planningObservationUnavailable(input.runId);
     });
   }
 

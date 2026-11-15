@@ -15,6 +15,7 @@ import {
 } from '../domains/change-lifecycle/archive-input.js';
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import { createLifecyclePhaseWork } from '../domains/change-lifecycle/phase-work.js';
+import { createExecutionWorkspaceIntent } from '../domains/change-lifecycle/build-protocol.js';
 import {
   BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
   createChangeLifecycleSnapshot,
@@ -47,6 +48,12 @@ import { runCli } from './e2e/cli.js';
 
 const cleanup: string[] = [];
 const git = promisify(execFile);
+const archiveBuildPreference = {
+  schemaVersion: 1,
+  executionMode: 'autonomous',
+  tddMode: 'tdd',
+  reviewMode: 'standard',
+};
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 async function recordHistoricalReconciliation(
@@ -1354,10 +1361,15 @@ describe('Archive publication terminal lifecycle', () => {
               projectConfigDigest: digest('5'),
               specificationRoot: { repositoryId: 'workspace' },
               targetBranch: { repositoryId: 'workspace', remote: 'origin', targetBranch: 'main' },
+              buildStrategyPreference: archiveBuildPreference,
             },
           },
           changeLifecycle: {
             ...preflight,
+            workspaceIntent: createExecutionWorkspaceIntent({
+              ...preflight.identity,
+              isolation: 'branch',
+            }),
             currentWork: { ...preflight.currentWork!, actionSkill: boundArchiveSkill },
           },
         });
@@ -1547,10 +1559,15 @@ describe('Archive publication terminal lifecycle', () => {
           facts: {
             projectConfigDigest: digest('5'),
             targetBranch: { repositoryId: 'workspace', remote: 'origin', targetBranch: 'main' },
+            buildStrategyPreference: archiveBuildPreference,
           },
         },
         changeLifecycle: {
           ...preflight,
+          workspaceIntent: createExecutionWorkspaceIntent({
+            ...preflight.identity,
+            isolation: 'branch',
+          }),
           currentWork: {
             ...preflight.currentWork!,
             actionSkill: boundArchiveSkill,

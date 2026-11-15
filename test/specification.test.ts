@@ -19,6 +19,7 @@ import {
 } from '../platform/specification/openspec-process.js';
 import { Specification, type SpecificationRoot } from '../services/specification.js';
 import { assertSpecificationPlanningManifest } from '../domains/specification/planning-manifest.js';
+import { SpecificationChangeMissingError } from '../domains/specification/types.js';
 import {
   createEvidenceNodeInputSnapshot,
   evidenceInputDigest,
@@ -775,6 +776,30 @@ Use the official OpenSpec retirement metadata.
     expect(result.valid).toBe(false);
     expect(result.diagnostics).not.toHaveLength(0);
     await context.fiber.dispose();
+  });
+
+  it('distinguishes an explicitly missing Change in the available OpenSpec Store', async () => {
+    const fixture = await openSpecFixture();
+    const context = new Context();
+    await context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
+    try {
+      await expect(context.specification.planningManifest('missing-change')).rejects.toBeInstanceOf(
+        SpecificationChangeMissingError,
+      );
+      const design = await context.specification.phaseContext('design', 'missing-change');
+      expect(design.artifacts.map(({ id }) => id)).toEqual([
+        'proposal',
+        'specs',
+        'design',
+        'tasks',
+      ]);
+    } finally {
+      await context.fiber.dispose();
+    }
   });
 
   it('preserves the official skipped artifact and INFO diagnostic for skip_specs changes', async () => {

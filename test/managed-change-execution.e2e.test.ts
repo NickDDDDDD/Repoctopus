@@ -2333,6 +2333,22 @@ describe('managed Change execution production composition', () => {
             : {}),
         };
         vi.spyOn(application.context.delivery, 'validateArchiveIntent').mockResolvedValue();
+        if (derivedCloseDrift) {
+          const before = await application.context.runStore.inspect(runId);
+          await expect(
+            application.context.workflowRuns.prepareArchiveDelivery({
+              runId,
+              attemptId: acceptedAttemptId!,
+              intent: {
+                ...intent,
+                changeId: 'another-change',
+                changeBranch: { ...intent.changeBranch, targetBranch: 'another-target' },
+              },
+              policy,
+            }),
+          ).rejects.toMatchObject({ code: 'specification.run-change-mismatch' });
+          expect(await application.context.runStore.inspect(runId)).toEqual(before);
+        }
         const preparedArchive = await application.context.commandRouter.execute<
           { runId: string; attemptId: string; intent: DeliveryIntentV3; policy: DeliveryPolicy },
           RuntimeResult<RunStatusView>

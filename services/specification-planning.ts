@@ -1,4 +1,5 @@
 import { Service, type Context } from '@deepseek-ai/cordis';
+import { createHash } from 'node:crypto';
 import type { ExecutionIsolation } from '../domains/change-lifecycle/build-protocol.js';
 import type { HumanDecisionInteraction } from '../domains/change-lifecycle/human-decision.js';
 
@@ -21,6 +22,7 @@ import type {
   SpecificationApprovalMigrationPlan,
   SpecificationPlanningManifest,
 } from '../domains/specification/types.js';
+import { SpecificationChangeMissingError } from '../domains/specification/types.js';
 import { FilePlanningApprovalStore } from '../platform/specification/file-planning-approval-store.js';
 
 export interface SpecificationPlanningConfig {
@@ -388,6 +390,20 @@ export class SpecificationPlanning extends Service {
       collected = await this.collect({ ...input, approvalPhase: 'design' });
     } catch (error) {
       input.signal?.throwIfAborted();
+      if (error instanceof SpecificationChangeMissingError && error.changeId === input.changeId) {
+        const absence =
+          `sha256:${createHash('sha256').update(error.message).digest('hex')}` as const;
+        return {
+          status: 'invalid',
+          observationKind: 'semantic',
+          invalidationKind: 'semantic',
+          planningDigest: absence,
+          reasonCode: 'planning-incomplete',
+          reason: error.message,
+          evidenceDigests: [absence],
+          snapshot: null,
+        };
+      }
       return {
         status: 'unavailable',
         observationKind: 'unknown',

@@ -471,3 +471,9 @@ export interface SpecificationConflictResolution {
   authorityUpdateDigest: `sha256:${string}`;
   resolvedAt: string;
 }
+/** An available provider confirmed that the requested active Change is absent. */
+export class SpecificationChangeMissingError extends Error {
+  constructor(readonly changeId: string) {
+    super(`Active specification Change is missing: ${changeId}`);
+  }
+}

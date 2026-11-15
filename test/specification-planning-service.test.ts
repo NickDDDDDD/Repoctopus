@@ -11,6 +11,7 @@ import type {
   SpecificationSchemaInstructions,
   SpecificationValidation,
 } from '../domains/specification/types.js';
+import { SpecificationChangeMissingError } from '../domains/specification/types.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
 import { Specification, type SpecificationRoot } from '../services/specification.js';
 import {
@@ -32,6 +33,7 @@ class TestSpecification extends Specification {
   };
   proposalDigest = digest('1');
   unavailable = false;
+  missing = false;
 
   identity(): SpecificationProviderIdentity {
     return this.provider;
@@ -56,6 +58,7 @@ class TestSpecification extends Specification {
 
   inspect(changeId: string): Promise<SpecificationChange> {
     if (this.unavailable) return Promise.reject(new Error('provider unavailable'));
+    if (this.missing) return Promise.reject(new SpecificationChangeMissingError(changeId));
     return Promise.resolve({
       apiVersion: 'repoctopus.specification/v1alpha1',
       kind: 'SpecificationChange',
@@ -440,6 +443,20 @@ describe('SpecificationPlanning service', () => {
     });
     expect(await running.planning.status(prepared.changeId)).toEqual(approved);
     running.specification.unavailable = false;
+
+    running.specification.missing = true;
+    const missing = await running.planning.observeAuthority({
+      ...prepareInput(),
+      expectedPlanningDigest,
+    });
+    expect(missing).toMatchObject({
+      status: 'invalid',
+      invalidationKind: 'semantic',
+      reasonCode: 'planning-incomplete',
+    });
+    expect(missing.planningDigest).not.toBe(expectedPlanningDigest);
+    expect(await running.planning.status(prepared.changeId)).toEqual(approved);
+    running.specification.missing = false;
 
     running.specification.proposalDigest = digest('9');
     await expect(
