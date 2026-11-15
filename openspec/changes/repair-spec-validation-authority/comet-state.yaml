@@ -2,7 +2,7 @@
 change_id: b3fdf787-e1f0-4281-8f6c-6a0a20dad172
 workflow: full
 language: zh-CN
-phase: build
+phase: archive
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -15,13 +15,13 @@ auto_transition: true
 base_ref: 5c294dee5cdb33257ebe8679d273db868f7b6baa
 design_doc: openspec/changes/repair-spec-validation-authority/design.md
 plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-verify_result: pending
+verify_result: pass
 verify_failures: 0
-verification_report: null
+verification_report: docs/superpowers/reports/repair-spec-validation-authority.md
 branch_status: pending
 created_at: 2026-11-15
-verified_at: null
-archive_confirmation: null
+verified_at: 2026-11-15
+archive_confirmation: pending
 archived: false
 bound_branch: codex/repair-spec-validation-authority
 direct_override: false
@@ -30,8 +30,8 @@ handoff_hash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: 47170cbd593b24cc8d08231630b4a6169ca6f342bb0a9c1228c503e8fe0be695
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 2e814ded6c3a314ba608782994d6972c1795aa401f1187f023116074025eb797
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -50,7 +50,7 @@ run_checkpoint:
       workspaceBaseline:
         ref: 41075127-eb94-4113-8406-30d54d743c11
     state:
-      archiveConfirmation: null
+      archiveConfirmation: pending
       archived: false
       autoTransition: true
       baseRef: 5c294dee5cdb33257ebe8679d273db868f7b6baa
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 2
+      checkEpoch: 6
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,19 +69,19 @@ run_checkpoint:
       handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
       isolation: worktree
       language: zh-CN
-      phase: build
+      phase: archive
       plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
       reviewMode: thorough
       subagentDispatch: null
       tddMode: tdd
-      verificationReport: null
-      verifiedAt: null
+      verificationReport: docs/superpowers/reports/repair-spec-validation-authority.md
+      verifiedAt: 2026-11-15
       verifyFailures: 0
       verifyMode: null
-      verifyResult: pending
+      verifyResult: pass
       workflow: full
-    status: running
-    sequence: 13
+    status: waiting
+    sequence: 29
     actions:
       - attempt: 1
         claim:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/repair-spec-validation-authority
             workspaceBaseline:
               ref: 41075127-eb94-4113-8406-30d54d743c11
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-            full.open.evidence:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
+          outputs: {}
         inputHash: fb698302781793589a339e7facd602ac3fa097a2b4a8117ffe3128a6797c422b
         outcome:
           actionId: repair-spec-validation-authority:4
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/repair-spec-validation-authority
             workspaceBaseline:
               ref: 41075127-eb94-4113-8406-30d54d743c11
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-            full.open.evidence:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-            full.open.revalidate:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+          outputs: {}
         inputHash: 9eefa8d28b8c222c58cbe548e5a67005ff5e4504ebb60ec0499c3f8442e633ba
         outcome:
           actionId: repair-spec-validation-authority:5
@@ -269,69 +229,7 @@ run_checkpoint:
             changeDir: openspec/changes/repair-spec-validation-authority
             workspaceBaseline:
               ref: 41075127-eb94-4113-8406-30d54d743c11
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
-                      delta spec 无补丁。
-                    requirementsEvidence:
-                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                      ref: openspec/changes/repair-spec-validation-authority
-                    sourceEvidence:
-                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                      ref: openspec/changes/repair-spec-validation-authority
-            full.design.handoff:
-              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
-                spec 无补丁。
-              requirementsEvidence:
-                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                ref: openspec/changes/repair-spec-validation-authority
-              sourceEvidence:
-                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                ref: openspec/changes/repair-spec-validation-authority
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-            full.open.evidence:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-            full.open.revalidate:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+          outputs: {}
         inputHash: d9e5dec5a2029f23f8cc699642fd9bd37006079affa7baf9c7792bb054b5dcef
         outcome:
           actionId: repair-spec-validation-authority:7
@@ -370,74 +268,7 @@ run_checkpoint:
             changeDir: openspec/changes/repair-spec-validation-authority
             workspaceBaseline:
               ref: 41075127-eb94-4113-8406-30d54d743c11
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
-                      delta spec 无补丁。
-                    requirementsEvidence:
-                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                      ref: openspec/changes/repair-spec-validation-authority
-                    sourceEvidence:
-                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                      ref: openspec/changes/repair-spec-validation-authority
-            full.design.document:
-              designDoc: openspec/changes/repair-spec-validation-authority/design.md
-            full.design.evidence:
-              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-              ref: openspec/changes/repair-spec-validation-authority/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
-                spec 无补丁。
-              requirementsEvidence:
-                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                ref: openspec/changes/repair-spec-validation-authority
-              sourceEvidence:
-                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                ref: openspec/changes/repair-spec-validation-authority
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-            full.open.evidence:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-            full.open.revalidate:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+          outputs: {}
         inputHash: 6343dd19f1e4827bd70478a2d0f3605f370d23bc1e338858240329f87b7723b8
         outcome:
           actionId: repair-spec-validation-authority:9
@@ -482,99 +313,7 @@ run_checkpoint:
             changeDir: openspec/changes/repair-spec-validation-authority
             workspaceBaseline:
               ref: 41075127-eb94-4113-8406-30d54d743c11
-          outputs:
-            full.build.configure:
-              boundBranch: codex/repair-spec-validation-authority
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/repair-spec-validation-authority
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
-                      delta spec 无补丁。
-                    requirementsEvidence:
-                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                      ref: openspec/changes/repair-spec-validation-authority
-                    sourceEvidence:
-                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                      ref: openspec/changes/repair-spec-validation-authority
-            full.design.document:
-              designDoc: openspec/changes/repair-spec-validation-authority/design.md
-            full.design.evidence:
-              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-              ref: openspec/changes/repair-spec-validation-authority/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
-                spec 无补丁。
-              requirementsEvidence:
-                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                ref: openspec/changes/repair-spec-validation-authority
-              sourceEvidence:
-                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                ref: openspec/changes/repair-spec-validation-authority
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-            full.open.evidence:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-            full.open.revalidate:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+          outputs: {}
         inputHash: 327d30c1440b466fb46bcca25bc677063fe4cd985d879872ec1c66842c796284
         outcome:
           actionId: repair-spec-validation-authority:11
@@ -605,6 +344,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-repair-spec-validation-authority-20261116
+          token: portable-d3c6528a247f016c9a60416bf3bf1542c61fae930b063030edbe6d5458b75d26
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: repair-spec-validation-authority:13
         input:
           input:
@@ -612,594 +360,522 @@ run_checkpoint:
             changeDir: openspec/changes/repair-spec-validation-authority
             workspaceBaseline:
               ref: 41075127-eb94-4113-8406-30d54d743c11
-          outputs:
-            full.build.configure:
-              boundBranch: codex/repair-spec-validation-authority
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/repair-spec-validation-authority
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-                ref: openspec/changes/repair-spec-validation-authority/design.md
-              plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-              planEvidence:
-                contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
-                ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-              taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
-            full.build.plan.evidence:
-              contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
-              ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
-                      delta spec 无补丁。
-                    requirementsEvidence:
-                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                      ref: openspec/changes/repair-spec-validation-authority
-                    sourceEvidence:
-                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                      ref: openspec/changes/repair-spec-validation-authority
-            full.design.document:
-              designDoc: openspec/changes/repair-spec-validation-authority/design.md
-            full.design.evidence:
-              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-              ref: openspec/changes/repair-spec-validation-authority/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
-                spec 无补丁。
-              requirementsEvidence:
-                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                ref: openspec/changes/repair-spec-validation-authority
-              sourceEvidence:
-                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                ref: openspec/changes/repair-spec-validation-authority
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-            full.open.evidence:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-            full.open.revalidate:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+          outputs: {}
         inputHash: 7a68463642bf9ddc9d15cc32747fd72a441a092498e813e3fdc2c49bd467460c
+        outcome:
+          actionId: repair-spec-validation-authority:13
+          attempt: 1
+          claimToken: portable-d3c6528a247f016c9a60416bf3bf1542c61fae930b063030edbe6d5458b75d26
+          inputHash: 7a68463642bf9ddc9d15cc32747fd72a441a092498e813e3fdc2c49bd467460c
+          outcomeId: baa992fc-006d-48ff-b484-2c4f1b7d0cde
+          output:
+            event: build-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: b1fac106b8920dc6878080dca5cf631ec9573e5cb680e9e41c5d89b3308a4a48
+            outcomeId: baa992fc-006d-48ff-b484-2c4f1b7d0cde
         reconciliations: []
         ref: comet-build
         requiredCapabilities: []
         retry: manual
         runId: repair-spec-validation-authority
-        status: pending
+        status: succeeded
         stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-3eed4ce114db04c6acac48e12f7b8df930f1229eed8f1e9685db892d05f674d4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:14
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs: {}
+        inputHash: 1f042839d6c787939bdd7a432c1c222bc05ce2f8bfeea69842eaf7bfde70dd7e
+        outcome:
+          actionId: repair-spec-validation-authority:14
+          attempt: 1
+          claimToken: portable-3eed4ce114db04c6acac48e12f7b8df930f1229eed8f1e9685db892d05f674d4
+          inputHash: 1f042839d6c787939bdd7a432c1c222bc05ce2f8bfeea69842eaf7bfde70dd7e
+          outcomeId: a3572555-ae02-412d-99c2-9605f966b167
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: e3e1656d5a57cf3aa1dd4603c2a2e0cd5d8456664cd9863b0ac44493b4693a93
+            cwd: .
+            environment: ed167c875e8e5e9e1b0fb7846827785509f40b8120d6cf5972e3dc6495499cf0
+            exitCode: 0
+            inputAfter: 843d3a2f09d11499e4941c2887f56e13e654b9fed0aa4ff5503ff3dc5fd6dbeb
+            inputBefore: 843d3a2f09d11499e4941c2887f56e13e654b9fed0aa4ff5503ff3dc5fd6dbeb
+            manifestHash: 9f3d57af5e9cd3ef01ea6391a88907e88062585ac98fa68294f3649d4cc254ad
+            manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/9a1b9a55-a8d4-4b8e-9026-e8fa606bb4ca.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/3e9c9354-7176-4adb-8b9b-4d5d56dfd207.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a2225f8622f2ed67cb933bc671d75efee523a7857b29a3560f6df8beac8ed62f
+            outcomeId: a3572555-ae02-412d-99c2-9605f966b167
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-38b1c46eddca85d5a1caf828aa9eea28c2861c1aa14c43fb54fcc7e5212d3aaf
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:16
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs: {}
+        inputHash: 3b2b6d16a5b27a1a6aaea47b71c37650fbf276f3a2e45cde4fe21057189330e0
+        outcome:
+          actionId: repair-spec-validation-authority:16
+          attempt: 1
+          claimToken: portable-38b1c46eddca85d5a1caf828aa9eea28c2861c1aa14c43fb54fcc7e5212d3aaf
+          inputHash: 3b2b6d16a5b27a1a6aaea47b71c37650fbf276f3a2e45cde4fe21057189330e0
+          outcomeId: bec093e8-3c69-42e9-a655-3b6dcce5d4f9
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/repair-spec-validation-authority.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 57ce36a781f8ffc53e44b43f038c1768ace46310727b847c0cc1e45c2b6c9865
+            outcomeId: bec093e8-3c69-42e9-a655-3b6dcce5d4f9
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-7242bbc0c81770fc637acb4c335c6423c11059e5d3ec9597a8dfee4ac95c1079
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:18
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs: {}
+        inputHash: 0b5b4b9431b130e8c51cf4eb6255e3466a7f4c6e87fe00fcae22fec6e7631b94
+        outcome:
+          actionId: repair-spec-validation-authority:18
+          attempt: 1
+          claimToken: portable-7242bbc0c81770fc637acb4c335c6423c11059e5d3ec9597a8dfee4ac95c1079
+          inputHash: 0b5b4b9431b130e8c51cf4eb6255e3466a7f4c6e87fe00fcae22fec6e7631b94
+          outcomeId: 782da142-7d26-4887-9ebb-a9d4eab6db98
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 91133279dd0c795f70196c358d63c2326fde2f393d9c36da016ae1424d5b9644
+            cwd: .
+            deliveryInputs: {}
+            environment: 847f607087bb7222ebcda61b9e732aa1057823fbca311b8b9e048a63f8c4522f
+            exitCode: 1
+            inputAfter: d2bcf050559a51e8648351300ed6bb7d778842bbd7fb893b231dee838c15410a
+            inputBefore: d2bcf050559a51e8648351300ed6bb7d778842bbd7fb893b231dee838c15410a
+            manifestHash: 23539d16e10e0b736b6fe153f7efdb395f9f7cc37b463b4a78784ec3a7b8ea7d
+            manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/6abd23eb-c5a1-46cc-bc25-c4d0a6858692.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/7ca0440f-fdc6-40b1-9f8f-02da22b3c0a7.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 6d73e90bcdd44a854470c2510082086354b3443c0a124dfeea37d5f37e561c0d
+            outcomeId: 782da142-7d26-4887-9ebb-a9d4eab6db98
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-565c375cb110ba5f60e4e2f517553ce4bc4886606673d96e0e8716c8aa58845c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:19
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs: {}
+        inputHash: 018d367e1289aee8edb912743b176c583502f1c6bbd855f6b993e8b75a348685
+        outcome:
+          actionId: repair-spec-validation-authority:19
+          attempt: 1
+          claimToken: portable-565c375cb110ba5f60e4e2f517553ce4bc4886606673d96e0e8716c8aa58845c
+          inputHash: 018d367e1289aee8edb912743b176c583502f1c6bbd855f6b993e8b75a348685
+          outcomeId: 379f7b2c-f805-4fd9-9199-2eeb7ed64aea
+          output:
+            designEvidence:
+              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+              ref: openspec/changes/repair-spec-validation-authority/design.md
+            plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+            planEvidence:
+              contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+              ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+            taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e8ec766470fbccd51913019dfdf9c5a2375513e7562af843e45082694c0c8a2c
+            outcomeId: 379f7b2c-f805-4fd9-9199-2eeb7ed64aea
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-repair-spec-validation-authority-20261116
+          token: portable-eda0e893542d71a3d47d36f535ffd8477de04b7ab4a4ae5da92deb55a6fdf898
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:21
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs: {}
+        inputHash: 018d367e1289aee8edb912743b176c583502f1c6bbd855f6b993e8b75a348685
+        outcome:
+          actionId: repair-spec-validation-authority:21
+          attempt: 1
+          claimToken: portable-eda0e893542d71a3d47d36f535ffd8477de04b7ab4a4ae5da92deb55a6fdf898
+          inputHash: 018d367e1289aee8edb912743b176c583502f1c6bbd855f6b993e8b75a348685
+          outcomeId: a066d6a3-9d7c-47ac-9a88-78a8868f9e35
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 34e20cabd4fceb90bcd44cc5a8c3296bba2f36562a6660f1f72637bca9942a17
+            outcomeId: a066d6a3-9d7c-47ac-9a88-78a8868f9e35
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-cc6c673c3955e1faffc24f03276e326616a70da63ecc2b0911db757e44dbbfb0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:22
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs: {}
+        inputHash: 018d367e1289aee8edb912743b176c583502f1c6bbd855f6b993e8b75a348685
+        outcome:
+          actionId: repair-spec-validation-authority:22
+          attempt: 1
+          claimToken: portable-cc6c673c3955e1faffc24f03276e326616a70da63ecc2b0911db757e44dbbfb0
+          inputHash: 018d367e1289aee8edb912743b176c583502f1c6bbd855f6b993e8b75a348685
+          outcomeId: 26e70b4d-9682-495d-aebe-4359780db8dc
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 91b6507c499380e0a130aa4f392da856c1d72bda399a1a10bc9cffa858be2bf5
+            cwd: .
+            environment: ed167c875e8e5e9e1b0fb7846827785509f40b8120d6cf5972e3dc6495499cf0
+            exitCode: 0
+            inputAfter: 0ea2260ff2b242cc6a477f1bb37c37e030cba2c9352e490c751f82fea15124bd
+            inputBefore: 0ea2260ff2b242cc6a477f1bb37c37e030cba2c9352e490c751f82fea15124bd
+            manifestHash: edfe62bfecb12b0c5867d9da2364a7e653a82eba2f95c437f3fadefffbff33cb
+            manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/e3335ede-fec3-4828-925f-e700a31f5b81.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/7b184fe7-956e-4250-8e6e-b0ceaf1e9268.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0410ef769f9a36e78d85feab1278cefb6ebeb8d6a3909a4cf5981176ebe82863
+            outcomeId: 26e70b4d-9682-495d-aebe-4359780db8dc
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-6f6c1e956613821d52c8062441549192fb469e76f295a15b50d6ddf437558460
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:24
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs: {}
+        inputHash: 30f5e447e354cf3eb0a40c7a84aff506b1395160b72b5c3ca407343eb60e54d3
+        outcome:
+          actionId: repair-spec-validation-authority:24
+          attempt: 1
+          claimToken: portable-6f6c1e956613821d52c8062441549192fb469e76f295a15b50d6ddf437558460
+          inputHash: 30f5e447e354cf3eb0a40c7a84aff506b1395160b72b5c3ca407343eb60e54d3
+          outcomeId: 2d1e35e0-ee75-4350-8bd1-637989dc4ead
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/repair-spec-validation-authority.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6154b522374a0a06444b9fcf8843a920e3c18726493fe2ae3e1fb8262b7e7b92
+            outcomeId: 2d1e35e0-ee75-4350-8bd1-637989dc4ead
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-ec2b53b634cd36db6bbce9789a1206f04daa5b6becd2294af2a9eb23fcd301ec
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:26
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs: {}
+        inputHash: fcdbf5df8735bac1bda7205bc3ab61b958a1545950ba319978f45ca8a56169a4
+        outcome:
+          actionId: repair-spec-validation-authority:26
+          attempt: 1
+          claimToken: portable-ec2b53b634cd36db6bbce9789a1206f04daa5b6becd2294af2a9eb23fcd301ec
+          inputHash: fcdbf5df8735bac1bda7205bc3ab61b958a1545950ba319978f45ca8a56169a4
+          outcomeId: 2453f70e-5ebc-48e6-be78-e22544136e48
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: 76a8d89a5406cd6c4deac95b7a99a2e33ba2e0d0a51170b9cab107288fb15121
+            cwd: .
+            deliveryInputs: {}
+            environment: 847f607087bb7222ebcda61b9e732aa1057823fbca311b8b9e048a63f8c4522f
+            exitCode: 0
+            inputAfter: f5744e5f106c525fc695e103c1681e2337228319c5c1dd8015d7d368db3c3e92
+            inputBefore: f5744e5f106c525fc695e103c1681e2337228319c5c1dd8015d7d368db3c3e92
+            manifestHash: edfe62bfecb12b0c5867d9da2364a7e653a82eba2f95c437f3fadefffbff33cb
+            manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/609ddf45-213d-470e-9b07-2a89d300291d.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/1365877b-4d56-4ee0-b75a-6eadb64ef3eb.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 836bc17a03c55d019fe452e77b536ac9f9fbfa6ca606e9bc845be1504300eac2
+            outcomeId: 2453f70e-5ebc-48e6-be78-e22544136e48
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-6faea16d09b1325dea367b25f767c2ae5343f9d76fccd42bb2431aee58904e49
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-spec-validation-authority:28
+        input:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs: {}
+        inputHash: 16ff71d920483e86d491d69a4a3cb6cd72f5a89bf0e05171b594ab846d50f426
+        outcome:
+          actionId: repair-spec-validation-authority:28
+          attempt: 1
+          claimToken: portable-6faea16d09b1325dea367b25f767c2ae5343f9d76fccd42bb2431aee58904e49
+          inputHash: 16ff71d920483e86d491d69a4a3cb6cd72f5a89bf0e05171b594ab846d50f426
+          outcomeId: 26001bc8-d896-4b9e-ab93-8c4d1b6932a5
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档 repair-spec-validation-authority 并同步 specification-authority
+              主规格。交付已通过完整 Verify 的 Runtime 修复、回归与五仓验收证据。从
+              codex/repair-spec-validation-authority 推送并创建以 origin/main 为基准的产品
+              PR，CI 通过后合入。
+            targetBranch: codex/repair-spec-validation-authority
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 78e84bf515a23c01df8021eb9d3a28e058a666a636a3b0b908b19950ac5f89cd
+            outcomeId: 26001bc8-d896-4b9e-ab93-8c4d1b6932a5
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-spec-validation-authority
+        status: succeeded
+        stepId: full.archive.prepare
         type: invoke_skill
     actionContexts:
       repair-spec-validation-authority:1:
         results: {}
         sequence: 1
       repair-spec-validation-authority:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/repair-spec-validation-authority
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/repair-spec-validation-authority
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
-                      delta spec 无补丁。
-                    requirementsEvidence:
-                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                      ref: openspec/changes/repair-spec-validation-authority
-                    sourceEvidence:
-                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                      ref: openspec/changes/repair-spec-validation-authority
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-spec-validation-authority/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-              ref: openspec/changes/repair-spec-validation-authority/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
-                spec 无补丁。
-              requirementsEvidence:
-                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                ref: openspec/changes/repair-spec-validation-authority
-              sourceEvidence:
-                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                ref: openspec/changes/repair-spec-validation-authority
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        results: {}
         sequence: 11
       repair-spec-validation-authority:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/repair-spec-validation-authority
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/repair-spec-validation-authority
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-                ref: openspec/changes/repair-spec-validation-authority/design.md
-              plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-              planEvidence:
-                contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
-                ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-              taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
-              ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
-                      delta spec 无补丁。
-                    requirementsEvidence:
-                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                      ref: openspec/changes/repair-spec-validation-authority
-                    sourceEvidence:
-                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                      ref: openspec/changes/repair-spec-validation-authority
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-spec-validation-authority/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-              ref: openspec/changes/repair-spec-validation-authority/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
-                spec 无补丁。
-              requirementsEvidence:
-                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                ref: openspec/changes/repair-spec-validation-authority
-              sourceEvidence:
-                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                ref: openspec/changes/repair-spec-validation-authority
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        results: {}
         sequence: 13
+      repair-spec-validation-authority:14:
+        results: {}
+        sequence: 14
+      repair-spec-validation-authority:16:
+        results: {}
+        sequence: 16
+      repair-spec-validation-authority:18:
+        results: {}
+        sequence: 18
+      repair-spec-validation-authority:19:
+        results: {}
+        sequence: 19
+      repair-spec-validation-authority:21:
+        results: {}
+        sequence: 21
+      repair-spec-validation-authority:22:
+        results: {}
+        sequence: 22
+      repair-spec-validation-authority:24:
+        results: {}
+        sequence: 24
+      repair-spec-validation-authority:26:
+        results: {}
+        sequence: 26
+      repair-spec-validation-authority:28:
+        results: {}
+        sequence: 28
       repair-spec-validation-authority:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
+        results: {}
         sequence: 4
       repair-spec-validation-authority:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        results: {}
         sequence: 5
       repair-spec-validation-authority:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
-                      delta spec 无补丁。
-                    requirementsEvidence:
-                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                      ref: openspec/changes/repair-spec-validation-authority
-                    sourceEvidence:
-                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                      ref: openspec/changes/repair-spec-validation-authority
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
-                spec 无补丁。
-              requirementsEvidence:
-                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                ref: openspec/changes/repair-spec-validation-authority
-              sourceEvidence:
-                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                ref: openspec/changes/repair-spec-validation-authority
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        results: {}
         sequence: 7
       repair-spec-validation-authority:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
-                      delta spec 无补丁。
-                    requirementsEvidence:
-                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                      ref: openspec/changes/repair-spec-validation-authority
-                    sourceEvidence:
-                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                      ref: openspec/changes/repair-spec-validation-authority
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-spec-validation-authority/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-              ref: openspec/changes/repair-spec-validation-authority/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
-                spec 无补丁。
-              requirementsEvidence:
-                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                ref: openspec/changes/repair-spec-validation-authority
-              sourceEvidence:
-                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                ref: openspec/changes/repair-spec-validation-authority
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        results: {}
         sequence: 9
     waits:
       - id: repair-spec-validation-authority:3
@@ -1222,16 +898,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
+        results: {}
         decision:
           id: classic-open-156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
           choice: approved
@@ -1267,54 +934,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
-                spec 无补丁。
-              requirementsEvidence:
-                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                ref: openspec/changes/repair-spec-validation-authority
-              sourceEvidence:
-                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                ref: openspec/changes/repair-spec-validation-authority
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        results: {}
         decision:
           id: classic-design-ee91aacec51f66215346e2a85ee70c91d606b8dd01c5a4d82dc2cc2e6f507adc-approved
           choice: approved
@@ -1342,115 +962,45 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/repair-spec-validation-authority
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
-                      delta spec 无补丁。
-                    requirementsEvidence:
-                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                      ref: openspec/changes/repair-spec-validation-authority
-                    sourceEvidence:
-                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                      ref: openspec/changes/repair-spec-validation-authority
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-spec-validation-authority/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-              ref: openspec/changes/repair-spec-validation-authority/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
-                spec 无补丁。
-              requirementsEvidence:
-                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                ref: openspec/changes/repair-spec-validation-authority
-              sourceEvidence:
-                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                ref: openspec/changes/repair-spec-validation-authority
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        results: {}
         decision:
           id: a4031bd5-2dd7-4df5-a3aa-202bdd6bd6da
           choice: approved
           proposalHash: bd27df1c115530103f55eba40b79eb2ef1e3e87a0f21bc34113b2570cbf5bef3
+      - id: repair-spec-validation-authority:29
+        stepId: full.archive.confirm
+        sequence: 29
+        status: pending
+        proposal:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 repair-spec-validation-authority 并同步 specification-authority
+                主规格。交付已通过完整 Verify 的 Runtime 修复、回归与五仓验收证据。从
+                codex/repair-spec-validation-authority 推送并创建以 origin/main 为基准的产品
+                PR，CI 通过后合入。
+              targetBranch: codex/repair-spec-validation-authority
+        proposalHash: 407cef7736b403392c4c1eb9750152a34aefcd5093932a5b3cb0fb89a79706b6
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
     evidenceWaits:
       - id: repair-spec-validation-authority:2
         stepId: full.open.evidence
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/repair-spec-validation-authority
           contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
@@ -1460,85 +1010,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
-                      delta spec 无补丁。
-                    requirementsEvidence:
-                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                      ref: openspec/changes/repair-spec-validation-authority
-                    sourceEvidence:
-                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                      ref: openspec/changes/repair-spec-validation-authority
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-spec-validation-authority/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-              handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-              proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准 delta
-                spec 无补丁。
-              requirementsEvidence:
-                contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                ref: openspec/changes/repair-spec-validation-authority
-              sourceEvidence:
-                contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                ref: openspec/changes/repair-spec-validation-authority
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        results: {}
         receipt:
           ref: openspec/changes/repair-spec-validation-authority/design.md
           contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
@@ -1548,86 +1020,107 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/repair-spec-validation-authority
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/repair-spec-validation-authority
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-                ref: openspec/changes/repair-spec-validation-authority/design.md
-              plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-              planEvidence:
-                contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
-                ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-              taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
-                    handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
-                    proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
-                      Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
-                      证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider
-                      暂不可用返回重新观察并保留当前 checkpoint，只有确定的语义或批准失效走既有 Design
-                      修订。基于三项真实复现补齐公开 CLI、并发中断、状态持久化、Provider
-                      故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive Journal，已知旧失败现场留作复现。已批准
-                      delta spec 无补丁。
-                    requirementsEvidence:
-                      contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
-                      ref: openspec/changes/repair-spec-validation-authority
-                    sourceEvidence:
-                      contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
-                      ref: openspec/changes/repair-spec-validation-authority
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/repair-spec-validation-authority/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-              ref: openspec/changes/repair-spec-validation-authority/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+          contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+          submissionId: 6b91fbc9-55fb-407d-9080-68393a609cdd
+      - id: repair-spec-validation-authority:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/3e9c9354-7176-4adb-8b9b-4d5d56dfd207.log
+          contentHash: e3e1656d5a57cf3aa1dd4603c2a2e0cd5d8456664cd9863b0ac44493b4693a93
+          submissionId: dada30ac-bf7a-4644-8e8d-33f11553065d
+      - id: repair-spec-validation-authority:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/repair-spec-validation-authority.md
+          contentHash: f430743eaf57fc59a252c03ef0a204046b6b6813b1e2ecae81962e7df9f9fc8b
+          submissionId: f93d9c5a-18a0-4252-8c92-1af3b00b76a5
+      - id: repair-spec-validation-authority:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+          contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+          submissionId: 9cdb82ca-0196-416d-bf0b-0a84d86e7617
+      - id: repair-spec-validation-authority:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/7b184fe7-956e-4250-8e6e-b0ceaf1e9268.log
+          contentHash: 91b6507c499380e0a130aa4f392da856c1d72bda399a1a10bc9cffa858be2bf5
+          submissionId: 849ffa61-d628-4675-845a-e71169d8c8de
+      - id: repair-spec-validation-authority:25
+        stepId: full.verify.report.evidence
+        sequence: 25
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/repair-spec-validation-authority.md
+          contentHash: 6db62f65fb5e02edba7ecd55bf9e57921f6e932506f057c04be619a72b794a13
+          submissionId: 7a975651-aaeb-41bd-bd24-d2645673f110
+      - id: repair-spec-validation-authority:27
+        stepId: full.verify.check.evidence
+        sequence: 27
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/1365877b-4d56-4ee0-b75a-6eadb64ef3eb.log
+          contentHash: 76a8d89a5406cd6c4deac95b7a99a2e33ba2e0d0a51170b9cab107288fb15121
+          submissionId: 3d341924-4980-4354-97ee-d29788c4da9f
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 45
+  sourceHash: c958378e0726892aaaa1cae889b867116d1704a68e58e9f8f25613dde3f11065
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+              ref: openspec/changes/repair-spec-validation-authority
+      - contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+        ref: openspec/changes/repair-spec-validation-authority
+      - contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
+      - choice: approved
+        proposal:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
               handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
               proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
@@ -1643,44 +1136,152 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
                 ref: openspec/changes/repair-spec-validation-authority
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: repair-spec-validation-authority
-                  changeDir: openspec/changes/repair-spec-validation-authority
-                  workspaceBaseline:
-                    ref: 41075127-eb94-4113-8406-30d54d743c11
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-                    ref: openspec/changes/repair-spec-validation-authority
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-              ref: openspec/changes/repair-spec-validation-authority
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-        receipt:
-          ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+      - handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
+        handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
+        proposal: 采用 design.md 中的唯一阶段接受路径。spec validate --run 只读核对 Workspace、Run 与
+          Change，移除独立绑定入口和非受管关闭计划摘要写入。最终有效 Open/Design
+          证据与当前阶段转换由同一受保护提交接受，保留各自历史和 Provider 兼容校验。Provider 暂不可用返回重新观察并保留当前
+          checkpoint，只有确定的语义或批准失效走既有 Design 修订。基于三项真实复现补齐公开
+          CLI、并发中断、状态持久化、Provider 故障和真实多仓发布冷恢复验收。沿用现有持久化结构与 Archive
+          Journal，已知旧失败现场留作复现。已批准 delta spec 无补丁。
+        requirementsEvidence:
+          contentHash: 0f4f112ed5b4b78e2b9724aca14488c500a223f73effaa599a661a46ed22a495
+          ref: openspec/changes/repair-spec-validation-authority
+        sourceEvidence:
+          contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
+          ref: openspec/changes/repair-spec-validation-authority
+      - designDoc: openspec/changes/repair-spec-validation-authority/design.md
+      - contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+        ref: openspec/changes/repair-spec-validation-authority/design.md
+      - boundBranch: codex/repair-spec-validation-authority
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: repair-spec-validation-authority
+            changeDir: openspec/changes/repair-spec-validation-authority
+            workspaceBaseline:
+              ref: 41075127-eb94-4113-8406-30d54d743c11
+          outputs:
+            full.build.configure:
+              boundBranch: codex/repair-spec-validation-authority
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+          ref: openspec/changes/repair-spec-validation-authority/design.md
+        plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+        planEvidence:
           contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
-          submissionId: 6b91fbc9-55fb-407d-9080-68393a609cdd
-    ready: []
-    joins: {}
-    outputs:
-      full.build.configure:
-        sequence: 9
+          ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+        taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
+      - contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+        ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: e3e1656d5a57cf3aa1dd4603c2a2e0cd5d8456664cd9863b0ac44493b4693a93
+        cwd: .
+        environment: ed167c875e8e5e9e1b0fb7846827785509f40b8120d6cf5972e3dc6495499cf0
+        exitCode: 0
+        inputAfter: 843d3a2f09d11499e4941c2887f56e13e654b9fed0aa4ff5503ff3dc5fd6dbeb
+        inputBefore: 843d3a2f09d11499e4941c2887f56e13e654b9fed0aa4ff5503ff3dc5fd6dbeb
+        manifestHash: 9f3d57af5e9cd3ef01ea6391a88907e88062585ac98fa68294f3649d4cc254ad
+        manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/9a1b9a55-a8d4-4b8e-9026-e8fa606bb4ca.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/3e9c9354-7176-4adb-8b9b-4d5d56dfd207.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: e3e1656d5a57cf3aa1dd4603c2a2e0cd5d8456664cd9863b0ac44493b4693a93
+        ref: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/3e9c9354-7176-4adb-8b9b-4d5d56dfd207.log
+      - contentHash: f430743eaf57fc59a252c03ef0a204046b6b6813b1e2ecae81962e7df9f9fc8b
+        ref: docs/superpowers/reports/repair-spec-validation-authority.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/repair-spec-validation-authority.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 91133279dd0c795f70196c358d63c2326fde2f393d9c36da016ae1424d5b9644
+        cwd: .
+        deliveryInputs: {}
+        environment: 847f607087bb7222ebcda61b9e732aa1057823fbca311b8b9e048a63f8c4522f
+        exitCode: 1
+        inputAfter: d2bcf050559a51e8648351300ed6bb7d778842bbd7fb893b231dee838c15410a
+        inputBefore: d2bcf050559a51e8648351300ed6bb7d778842bbd7fb893b231dee838c15410a
+        manifestHash: 23539d16e10e0b736b6fe153f7efdb395f9f7cc37b463b4a78784ec3a7b8ea7d
+        manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/6abd23eb-c5a1-46cc-bc25-c4d0a6858692.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/7ca0440f-fdc6-40b1-9f8f-02da22b3c0a7.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 91b6507c499380e0a130aa4f392da856c1d72bda399a1a10bc9cffa858be2bf5
+        cwd: .
+        environment: ed167c875e8e5e9e1b0fb7846827785509f40b8120d6cf5972e3dc6495499cf0
+        exitCode: 0
+        inputAfter: 0ea2260ff2b242cc6a477f1bb37c37e030cba2c9352e490c751f82fea15124bd
+        inputBefore: 0ea2260ff2b242cc6a477f1bb37c37e030cba2c9352e490c751f82fea15124bd
+        manifestHash: edfe62bfecb12b0c5867d9da2364a7e653a82eba2f95c437f3fadefffbff33cb
+        manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/e3335ede-fec3-4828-925f-e700a31f5b81.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/7b184fe7-956e-4250-8e6e-b0ceaf1e9268.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 91b6507c499380e0a130aa4f392da856c1d72bda399a1a10bc9cffa858be2bf5
+        ref: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/7b184fe7-956e-4250-8e6e-b0ceaf1e9268.log
+      - contentHash: 6db62f65fb5e02edba7ecd55bf9e57921f6e932506f057c04be619a72b794a13
+        ref: docs/superpowers/reports/repair-spec-validation-authority.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: 76a8d89a5406cd6c4deac95b7a99a2e33ba2e0d0a51170b9cab107288fb15121
+        cwd: .
+        deliveryInputs: {}
+        environment: 847f607087bb7222ebcda61b9e732aa1057823fbca311b8b9e048a63f8c4522f
+        exitCode: 0
+        inputAfter: f5744e5f106c525fc695e103c1681e2337228319c5c1dd8015d7d368db3c3e92
+        inputBefore: f5744e5f106c525fc695e103c1681e2337228319c5c1dd8015d7d368db3c3e92
+        manifestHash: edfe62bfecb12b0c5867d9da2364a7e653a82eba2f95c437f3fadefffbff33cb
+        manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/609ddf45-213d-470e-9b07-2a89d300291d.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/1365877b-4d56-4ee0-b75a-6eadb64ef3eb.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 76a8d89a5406cd6c4deac95b7a99a2e33ba2e0d0a51170b9cab107288fb15121
+        ref: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/1365877b-4d56-4ee0-b75a-6eadb64ef3eb.log
+      - sequence: 9
         value:
           boundBranch: codex/repair-spec-validation-authority
           buildMode: autonomous
@@ -1689,8 +1290,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -1708,24 +1308,7 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.plan:
-        sequence: 11
-        value:
-          designEvidence:
-            contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
-            ref: openspec/changes/repair-spec-validation-authority/design.md
-          plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-          planEvidence:
-            contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
-            ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-          taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
-      full.build.plan.evidence:
-        sequence: 12
-        value:
-          contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
-          ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
-      full.design.confirm:
-        sequence: 6
+      - sequence: 6
         value:
           choice: approved
           proposal:
@@ -1751,17 +1334,14 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
                   ref: openspec/changes/repair-spec-validation-authority
-      full.design.document:
-        sequence: 7
+      - sequence: 7
         value:
           designDoc: openspec/changes/repair-spec-validation-authority/design.md
-      full.design.evidence:
-        sequence: 8
+      - sequence: 8
         value:
           contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
           ref: openspec/changes/repair-spec-validation-authority/design.md
-      full.design.handoff:
-        sequence: 5
+      - sequence: 5
         value:
           handoffContext: openspec/changes/repair-spec-validation-authority/.comet/handoff/design-context.json
           handoffHash: 995cdd2e9a014942de06f24663f16830d620f4beaaffd210f8685d70cdfb1e03
@@ -1777,12 +1357,10 @@ run_checkpoint:
           sourceEvidence:
             contentHash: 311af9fb38388f1d03d7dbfeaae5ef7c8d4ad160fb8284e1a375cd978d36f834
             ref: openspec/changes/repair-spec-validation-authority
-      full.open:
-        sequence: 1
+      - sequence: 1
         value:
           event: open-complete
-      full.open.confirm:
-        sequence: 3
+      - sequence: 3
         value:
           choice: approved
           proposal:
@@ -1797,17 +1375,1612 @@ run_checkpoint:
               full.open.evidence:
                 contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
                 ref: openspec/changes/repair-spec-validation-authority
-      full.open.evidence:
-        sequence: 2
+      - sequence: 2
         value:
           contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
           ref: openspec/changes/repair-spec-validation-authority
-      full.open.revalidate:
-        sequence: 4
+      - sequence: 4
         value:
           contentHash: 156776786aa8e082cbce4143f93247ea1d7b1f6608e67934ff9ae48fbce786b8
-    children: []
-    lineage: []
-  sourceRevision: 19
-  sourceHash: 0ea1a07aa072c68e150323d34e8ae5fc975523e8cff34b43fea1d5983ba30d60
-check_epoch: 2
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+            ref: openspec/changes/repair-spec-validation-authority/design.md
+          plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+          planEvidence:
+            contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+            ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+          taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
+      - sequence: 12
+        value:
+          contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+          ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: e3e1656d5a57cf3aa1dd4603c2a2e0cd5d8456664cd9863b0ac44493b4693a93
+          cwd: .
+          environment: ed167c875e8e5e9e1b0fb7846827785509f40b8120d6cf5972e3dc6495499cf0
+          exitCode: 0
+          inputAfter: 843d3a2f09d11499e4941c2887f56e13e654b9fed0aa4ff5503ff3dc5fd6dbeb
+          inputBefore: 843d3a2f09d11499e4941c2887f56e13e654b9fed0aa4ff5503ff3dc5fd6dbeb
+          manifestHash: 9f3d57af5e9cd3ef01ea6391a88907e88062585ac98fa68294f3649d4cc254ad
+          manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/9a1b9a55-a8d4-4b8e-9026-e8fa606bb4ca.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/3e9c9354-7176-4adb-8b9b-4d5d56dfd207.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: e3e1656d5a57cf3aa1dd4603c2a2e0cd5d8456664cd9863b0ac44493b4693a93
+          ref: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/3e9c9354-7176-4adb-8b9b-4d5d56dfd207.log
+      - sequence: 17
+        value:
+          contentHash: f430743eaf57fc59a252c03ef0a204046b6b6813b1e2ecae81962e7df9f9fc8b
+          ref: docs/superpowers/reports/repair-spec-validation-authority.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/repair-spec-validation-authority.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 91133279dd0c795f70196c358d63c2326fde2f393d9c36da016ae1424d5b9644
+          cwd: .
+          deliveryInputs: {}
+          environment: 847f607087bb7222ebcda61b9e732aa1057823fbca311b8b9e048a63f8c4522f
+          exitCode: 1
+          inputAfter: d2bcf050559a51e8648351300ed6bb7d778842bbd7fb893b231dee838c15410a
+          inputBefore: d2bcf050559a51e8648351300ed6bb7d778842bbd7fb893b231dee838c15410a
+          manifestHash: 23539d16e10e0b736b6fe153f7efdb395f9f7cc37b463b4a78784ec3a7b8ea7d
+          manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/6abd23eb-c5a1-46cc-bc25-c4d0a6858692.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/7ca0440f-fdc6-40b1-9f8f-02da22b3c0a7.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: 9750a0975d4626d2592d485034d611d0d31569c2f276dafc262e8466ab895797
+            ref: openspec/changes/repair-spec-validation-authority/design.md
+          plan: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+          planEvidence:
+            contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+            ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+          taskRevision: 1d2a765b41e4368a43e3d0a3a863543fdfe0d34ec328c3c76f2681ff058c57f2
+      - sequence: 20
+        value:
+          contentHash: 6a9ebb6b4427c108143be08bd30842b4d31236be33e0318bc5381f3c8cc38499
+          ref: docs/superpowers/plans/2026-11-16-repair-spec-validation-authority.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 91b6507c499380e0a130aa4f392da856c1d72bda399a1a10bc9cffa858be2bf5
+          cwd: .
+          environment: ed167c875e8e5e9e1b0fb7846827785509f40b8120d6cf5972e3dc6495499cf0
+          exitCode: 0
+          inputAfter: 0ea2260ff2b242cc6a477f1bb37c37e030cba2c9352e490c751f82fea15124bd
+          inputBefore: 0ea2260ff2b242cc6a477f1bb37c37e030cba2c9352e490c751f82fea15124bd
+          manifestHash: edfe62bfecb12b0c5867d9da2364a7e653a82eba2f95c437f3fadefffbff33cb
+          manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/e3335ede-fec3-4828-925f-e700a31f5b81.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/7b184fe7-956e-4250-8e6e-b0ceaf1e9268.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 23
+        value:
+          contentHash: 91b6507c499380e0a130aa4f392da856c1d72bda399a1a10bc9cffa858be2bf5
+          ref: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/7b184fe7-956e-4250-8e6e-b0ceaf1e9268.log
+      - sequence: 25
+        value:
+          contentHash: 6db62f65fb5e02edba7ecd55bf9e57921f6e932506f057c04be619a72b794a13
+          ref: docs/superpowers/reports/repair-spec-validation-authority.md
+      - sequence: 24
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/repair-spec-validation-authority.md
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: 76a8d89a5406cd6c4deac95b7a99a2e33ba2e0d0a51170b9cab107288fb15121
+          cwd: .
+          deliveryInputs: {}
+          environment: 847f607087bb7222ebcda61b9e732aa1057823fbca311b8b9e048a63f8c4522f
+          exitCode: 0
+          inputAfter: f5744e5f106c525fc695e103c1681e2337228319c5c1dd8015d7d368db3c3e92
+          inputBefore: f5744e5f106c525fc695e103c1681e2337228319c5c1dd8015d7d368db3c3e92
+          manifestHash: edfe62bfecb12b0c5867d9da2364a7e653a82eba2f95c437f3fadefffbff33cb
+          manifestRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/609ddf45-213d-470e-9b07-2a89d300291d.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/1365877b-4d56-4ee0-b75a-6eadb64ef3eb.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 27
+        value:
+          contentHash: 76a8d89a5406cd6c4deac95b7a99a2e33ba2e0d0a51170b9cab107288fb15121
+          ref: .comet/runtime/classic-sdk-checks/a54471a6b388659ff0ece1433a41921cc61de4e99bcfe8d75f55a6d7cc7e3aa3/1365877b-4d56-4ee0-b75a-6eadb64ef3eb.log
+      - sequence: 28
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档 repair-spec-validation-authority 并同步 specification-authority
+            主规格。交付已通过完整 Verify 的 Runtime 修复、回归与五仓验收证据。从
+            codex/repair-spec-validation-authority 推送并创建以 origin/main 为基准的产品
+            PR，CI 通过后合入。
+          targetBranch: codex/repair-spec-validation-authority
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.verify.report.evidence
+        value: 20
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 54
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 55
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 56
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 59
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 21
+        left: 58
+        right: 60
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 61
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 62
+        height: 5
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 64
+        right: 65
+        height: 2
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 67
+        right: 68
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 70
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 69
+        right: 71
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 66
+        right: 72
+        height: 4
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: 74
+        right: 75
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 64
+        right: 76
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 77
+        right: 72
+        height: 4
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 64
+        right: 79
+        height: 2
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: 75
+        height: 2
+      - key: full.build.plan
+        value: 33
+        left: 80
+        right: 81
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 82
+        right: 72
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 84
+        right: 85
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 86
+        right: 79
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 87
+        right: 81
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 88
+        right: 72
+        height: 5
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: 91
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 90
+        right: 92
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 69
+        right: 93
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 88
+        right: 94
+        height: 5
+      - key: full.verify.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 96
+        right: 91
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 90
+        right: 97
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 69
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 88
+        right: 99
+        height: 5
+      - key: full.build.plan.evidence
+        value: 42
+        left: null
+        right: 75
+        height: 2
+      - key: full.build.plan
+        value: 41
+        left: 87
+        right: 101
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 102
+        right: 99
+        height: 5
+      - key: full.build.execute
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 86
+        right: 104
+        height: 3
+      - key: full.build.plan
+        value: 41
+        left: 105
+        right: 101
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 106
+        right: 99
+        height: 5
+      - key: full.build.check
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 45
+        left: 108
+        right: 85
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 109
+        right: 104
+        height: 3
+      - key: full.build.plan
+        value: 41
+        left: 110
+        right: 101
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 111
+        right: 99
+        height: 5
+      - key: full.verify.run
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 46
+        left: 96
+        right: 113
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 90
+        right: 114
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 69
+        right: 115
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 111
+        right: 116
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: 90
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 46
+        left: 119
+        right: 113
+        height: 2
+      - key: full.verify.check
+        value: 48
+        left: 118
+        right: 120
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 69
+        right: 121
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 111
+        right: 122
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: 124
+        right: 125
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 127
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 124
+        right: 128
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 130
+        right: 131
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 132
+        right: 128
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 134
+        right: 135
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: 136
+        right: 131
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 137
+        right: 128
+        height: 4
+      - key: full.archive.prepare
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 44
+        left: 139
+        right: 140
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 42
+        left: 143
+        right: 144
+        height: 2
+      - key: full.build.execute
+        value: 43
+        left: 142
+        right: 145
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: 141
+        right: 146
+        height: 4
+      - key: full.design.handoff
+        value: 28
+        left: 135
+        right: 131
+        height: 2
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: 149
+        right: 150
+        height: 2
+      - key: full.verify.run
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 46
+        left: null
+        right: 152
+        height: 2
+      - key: full.verify.check.evidence
+        value: 49
+        left: 151
+        right: 153
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 148
+        right: 154
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 147
+        right: 155
+        height: 5
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: 157
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 160
+        right: 161
+        height: 2
+      - key: full.open
+        value: 29
+        left: 159
+        right: 162
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 165
+        right: 166
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 164
+        right: 167
+        height: 3
+      - key: full.open
+        value: 29
+        left: 168
+        right: 162
+        height: 4
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 171
+        right: 172
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 175
+        height: 2
+      - key: full.open
+        value: 29
+        left: 173
+        right: 176
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 178
+        right: 179
+        height: 2
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 181
+        right: 182
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 180
+        right: 183
+        height: 3
+      - key: full.open
+        value: 29
+        left: 184
+        right: 176
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: 186
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: 188
+        right: 189
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 187
+        right: 190
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 176
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: 191
+        right: 192
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 194
+        right: 195
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 196
+        right: 190
+        height: 3
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: 198
+        height: 2
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 199
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 200
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 201
+        height: 5
+      - key: full.build.plan
+        value: 41
+        left: 188
+        right: 189
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 196
+        right: 203
+        height: 3
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 205
+        height: 2
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: 207
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 206
+        right: 208
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 209
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 204
+        right: 210
+        height: 5
+      - key: full.build.check
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 212
+        right: 195
+        height: 2
+      - key: full.build.execute
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 41
+        left: 214
+        right: 215
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 213
+        right: 216
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: 217
+        right: 210
+        height: 5
+      - key: full.build.check.evidence
+        value: 45
+        left: 212
+        right: 195
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 219
+        right: 216
+        height: 3
+      - key: full.verify.run
+        value: 47
+        left: 207
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 206
+        right: 221
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 222
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 220
+        right: 223
+        height: 5
+      - key: full.verify.report.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 47
+        left: 225
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 48
+        left: 206
+        right: 226
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 227
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 220
+        right: 228
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 57
+      - 63
+      - 73
+      - 78
+      - 83
+      - 89
+      - 95
+      - 100
+      - 103
+      - 107
+      - 112
+      - 117
+      - 123
+      - 126
+      - 129
+      - 133
+      - 138
+      - 156
+      - 158
+      - 163
+      - 169
+      - 170
+      - 177
+      - 185
+      - 193
+      - 202
+      - 211
+      - 218
+      - 224
+      - 229
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:11
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:13
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:14
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:16
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:18
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:19
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:21
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:22
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:26
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:28
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:4
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:5
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:7
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - repair-spec-validation-authority:9
+          - results
+        map: 28
+      - path:
+          - outputs
+        map: 29
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 30
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 31
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 32
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 29
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 36
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 37
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 38
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 39
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 40
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 41
+  storageHash: 4620f3b89e0426b500746a5318060377e0bd3a17717ad5466ef60c8193040193
+check_epoch: 6
