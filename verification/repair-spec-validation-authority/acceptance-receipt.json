@@ -1,9 +1,27 @@
 {
   "schemaVersion": 1,
   "candidate": {
-    "implementationCommit": "403015e01ac381423f2172c1d8948df2217894cf",
+    "implementationCommit": "9b19e3f72bf6d2283c74fc1af97dec6090149473",
     "version": "0.1.2",
-    "packageContentSha256": "0f619f84a4da7a1458cb58ac2c4e9549f83039a377ae9dfb6c85b1ff163b7256"
+    "packageContentSha256": "72b2cc877951f8aedaa5026ff75b17752a23a5798820beeb3571d5cb1e135fcc",
+    "completeRunPackage": {
+      "implementationCommit": "403015e01ac381423f2172c1d8948df2217894cf",
+      "packageContentSha256": "0f619f84a4da7a1458cb58ac2c4e9549f83039a377ae9dfb6c85b1ff163b7256"
+    },
+    "finalArchiveSha256": "d1d522a17b7e9d5b2a2fa027c0558424d89d7609aa90092043a1f34619639e86",
+    "finalPackageEquivalence": {
+      "fileCount": 487,
+      "identicalCount": 486,
+      "changes": [
+        {
+          "path": "third_party/comet/source-manifest.json",
+          "previousSha256": "235264a1aeaa9744d4eb7c5028b8135c7f59bd9aecabd4e4264e3a4ddd913292",
+          "finalSha256": "5cba40a69161636d500b163a2f1550e86c9d2ba0ab4848dc3880fffc6db9c8e1"
+        }
+      ]
+    },
+    "finalDoctor": "passed",
+    "terminalRecoveryOnFinalPackage": "passed"
   },
   "baseline": {
     "foreignValidationAccepted": true,

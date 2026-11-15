@@ -1,8 +1,8 @@
 # Specification validation authority
 
-Tested implementation commit: `403015e01ac381423f2172c1d8948df2217894cf`
+Tested implementation commit: `9b19e3f72bf6d2283c74fc1af97dec6090149473`
 
-Package content SHA-256: `0f619f84a4da7a1458cb58ac2c4e9549f83039a377ae9dfb6c85b1ff163b7256`
+Package content SHA-256: `72b2cc877951f8aedaa5026ff75b17752a23a5798820beeb3571d5cb1e135fcc`
 
 Package files: `487`
 
@@ -30,3 +30,9 @@ The five-repository experiment used an independent Workspace and two business ma
 - The complete configured check runs as the Comet Verify Guard command `npm.cmd run verify`. Its receipt records the overall result.
 
 The earlier damaged Run was retained as reproduction evidence. The installed acceptance started a fresh Run, then resumed that same Run through Archive. All three experimental PRs target the isolated acceptance branch. Product delivery and Release are separate from this experiment.
+
+## Final package and Verify recovery
+
+The first full Verify identified a stale Comet adoption checksum for the updated runtime file and a missing Windows Electron binary. The manifest now attests the exact committed source. The pinned Electron binary was prepared through the existing `npm run desktop:prepare` command. Focused provenance, installed-package, runtime tracer and desktop activation tests passed.
+
+The complete five-repository run used the earlier archive described above. The final archive has transport SHA-256 `d1d522a17b7e9d5b2a2fa027c0558424d89d7609aa90092043a1f34619639e86`. Across both installed archives, 486 of 487 files are byte-identical, including the Runtime bundle and Skills. The sole difference is the attestation in `third_party/comet/source-manifest.json`. The final package passed `doctor --run` and the four terminal recovery assertions with the same report, check counts and PRs. The [acceptance receipt](acceptance-receipt.json) records this comparison.
