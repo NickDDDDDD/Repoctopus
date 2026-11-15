@@ -44,6 +44,49 @@ function configuredSelection(
   return builtin ? runtimeSelection(id, builtin.config, builtin.identityConfig) : { id };
 }
 
+function skillProviderSelections(
+  productRoot: string,
+  workspaceRoot: string,
+  config: EffectiveProjectConfig,
+  teamPlugins: ReadonlyMap<string, TeamPluginConfig>,
+): CompositionPluginSelection[] {
+  const productConfig = {
+    config: { productRoot },
+    identityConfig: { productRoot: PRODUCT_ROOT_IDENTITY },
+  };
+  const builtinConfig = {
+    'skill-provider-matt': productConfig,
+    'skill-provider-lifecycle': productConfig,
+    'skill-provider-filesystem': {
+      config: { workspaceRoot },
+      identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    },
+  };
+  return (config.shared.skillProviders ?? DEFAULT_SKILL_PROVIDERS).map(({ id }) =>
+    configuredSelection(id, builtinConfig, teamPlugins),
+  );
+}
+
+function teamSkillSelection(
+  workspaceRoot: string,
+  config: EffectiveProjectConfig,
+): CompositionPluginSelection {
+  const bindings = config.shared.lifecycle?.skillBindings.bindings ?? [];
+  return runtimeSelection(
+    'team-skill-composition',
+    { workspaceRoot, bindings },
+    { workspaceRoot: WORKSPACE_ROOT_IDENTITY, bindings },
+  );
+}
+
+function consistencySkillSelection(productRoot: string): CompositionPluginSelection {
+  return runtimeSelection(
+    'skill-provider-consistency-method',
+    { productRoot },
+    { productRoot: PRODUCT_ROOT_IDENTITY },
+  );
+}
+
 function projectSelections(
   productRoot: string,
   workspaceRoot: string,
@@ -74,28 +117,13 @@ function projectSelections(
     repositoryId: specificationProvider.store.repositoryId,
   };
   const builtinConfig: Readonly<Record<string, BuiltinRuntimeConfig>> = {
-    'skill-provider-matt': {
-      config: { productRoot },
-      identityConfig: { productRoot: PRODUCT_ROOT_IDENTITY },
-    },
-    'skill-provider-lifecycle': {
-      config: { productRoot },
-      identityConfig: { productRoot: PRODUCT_ROOT_IDENTITY },
-    },
-    'skill-provider-filesystem': {
-      config: { workspaceRoot },
-      identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
-    },
     'specification-openspec': {
       config: { workspaceRoot: specificationRepository.resolvedPath, specificationRoot },
       identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY, specificationRoot },
     },
   };
-  const skillProviders = config.shared.skillProviders ?? DEFAULT_SKILL_PROVIDERS;
   const selectedProviders = [
-    ...skillProviders.map((provider) =>
-      configuredSelection(provider.id, builtinConfig, teamPlugins),
-    ),
+    ...skillProviderSelections(productRoot, workspaceRoot, config, teamPlugins),
     configuredSelection(specificationProvider.id, builtinConfig, teamPlugins),
   ];
   const selectedIds = new Set(selectedProviders.map((selection) => selection.id));
@@ -104,22 +132,8 @@ function projectSelections(
     { id: 'command-router' },
     { id: 'skill-registry' },
     ...selectedProviders,
-    runtimeSelection(
-      'team-skill-composition',
-      {
-        workspaceRoot,
-        bindings: config.shared.lifecycle?.skillBindings.bindings ?? [],
-      },
-      {
-        workspaceRoot: WORKSPACE_ROOT_IDENTITY,
-        bindings: config.shared.lifecycle?.skillBindings.bindings ?? [],
-      },
-    ),
-    runtimeSelection(
-      'skill-provider-consistency-method',
-      { productRoot },
-      { productRoot: PRODUCT_ROOT_IDENTITY },
-    ),
+    teamSkillSelection(workspaceRoot, config),
+    consistencySkillSelection(productRoot),
     { id: 'skill-command' },
     runtimeSelection(
       'specification-planning',
@@ -338,6 +352,40 @@ export function compileProjectComposition(
     'repoctopus-project',
     projectSelections(productRoot, workspaceRoot, config),
     BASE_REQUIRED_SERVICES,
+    config,
+    catalog,
+  );
+}
+
+export function compileSkillPreviewComposition(
+  productRoot: string,
+  workspaceRoot: string,
+  config: EffectiveProjectConfig,
+  catalog: ReadonlyMap<string, BuiltinPluginRegistration>,
+): CompiledComposition {
+  const external = config.shared.composition?.plugins ?? [];
+  if (external.length) {
+    throw new Error(
+      `composition.plugins: read-only Skill preview cannot load executable team plugins: ${external.map(({ id }) => id).join(', ')}`,
+    );
+  }
+  const providers = skillProviderSelections(productRoot, workspaceRoot, config, new Map());
+  for (const provider of providers) {
+    if (!DEFAULT_SKILL_PROVIDERS.some(({ id }) => id === provider.id)) {
+      throw new Error(`skillProviders: unsupported Provider for Skill preview: ${provider.id}`);
+    }
+  }
+  return compile(
+    'repoctopus-skill-preview',
+    [
+      { id: 'skill-registry' },
+      ...providers,
+      teamSkillSelection(workspaceRoot, config),
+      consistencySkillSelection(productRoot),
+      { id: 'lifecycle-definition-service' },
+      { id: 'lifecycle-definition-builtin' },
+    ],
+    ['teamSkillComposition', 'lifecycleDefinitions'],
     config,
     catalog,
   );

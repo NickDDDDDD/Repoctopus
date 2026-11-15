@@ -114,24 +114,52 @@ Runtime 在 change 开始时冻结并绑定有效组合身份，但只把当前 
 
 内置 Method Profile Registry 以 `id + version + digest` 固定已审核规则；每条规则同时绑定上游 source digest、适用 phase、官方 artifact kind，以及 `context`、`deterministic-validator`、`review-rubric` 或 `human-decision` enforcement。上下文装配只输出这些 Repoctopus-owned 规则，不读取或注入原始 `to-spec`/`to-tickets` 正文。即使项目或用户目录定义同名 Skill，lifecycle definition validation 也会在 Work 创建前拒绝它。
 
+## 预览工作流中的 Skill
+
+在已接入的 Workspace 根运行预览。终端按 Work 列出 Skill、Provider、来源、角色、位置和绑定。Build Execute 分别展示 `tdd` 和 `direct`。Build 重试的诊断 Skill 会标出装填条件。
+
+```powershell
+repoctopus.cmd skill preview --workspace .
+repoctopus.cmd skill preview --workspace . --json
+```
+
+`--json` 中的 `position` 从 0 开始，表示该 Work 的 Skill 装填位置。配置无效时命令返回非零退出码，错误输出会指出字段、绑定或 Skill。预览只读取配置和 Skill，实际 Work 领取时 Runtime 还会核对资源及包的大小。配置了可执行团队插件的 Workspace 会收到只读预览不可用的诊断。
+
 ## 提供项目 Skill
 
-平铺的 `<name>.md` 只提供正文。若旧版 Run 已冻结平铺 Skill 的共享目录摘要，升级后可能提示组合变化。用该 Run 原绑定的 Runtime 和原 Workspace Skill 目录状态完成待处理工作后，再按 Runtime 提示接入新版本。需要随当前 Action 交付相对资源时，将正文放在 `<name>/SKILL.md`，资源放在同一 Skill 目录内。
-
-在项目中创建 `.agents/skills/tdd/SKILL.md`：
+例如团队希望在 Build Check 加入 API 兼容性审查。创建 `.agents/skills/team-api-review/SKILL.md`。
 
 ```markdown
 ---
-name: tdd
-description: 团队的测试驱动开发方法
+name: team-api-review
+description: Review public API compatibility during Build Check.
 ---
 
-# TDD
+# API compatibility review
 
-先写一个能证明需求的失败测试，再写最少实现使其通过。
+Compare changed public endpoints and response fields with the current client contract.
+Report any breaking change with the affected endpoint and a file reference.
 ```
 
-再次执行 `skill get`，返回的 Provider 应为 `project-user-files`。要让该 Skill 进入团队生命周期，还必须在 `lifecycle.skillBindings` 中显式引用；同名文件不能替换 Action。正在运行的 Run 已经绑定旧版本时，Repoctopus 在同一 runId 上判断兼容性：摘要相同才继续，不兼容内容漂移返回只读诊断。
+将绑定合并到 Workspace 根的 `repoctopus.yaml`。已有 `bindings` 列表时，在列表中追加此条目。
+
+```yaml
+lifecycle:
+  skillBindings:
+    schemaVersion: 1
+    bindings:
+      - id: team-api-review
+        target: build.check
+        role: guidance
+        skill: team-api-review
+        order: 20
+```
+
+运行 `repoctopus.cmd skill preview --workspace .`，核对 `build.check` 下的 `team-api-review`、来源 `project-agents` 以及它在默认 `code-review` 之后的位置。将共享 YAML、Skill 正文和所需资源一起提交。既有 Workspace 可通过获批的引导刷新取得同样的本地示例。[刷新引导](project-onboarding.md#补齐或更新-workspace-引导)
+
+平铺的 `<name>.md` 只提供正文。若旧版 Run 已冻结平铺 Skill 的共享目录摘要，升级后可能提示组合变化。用该 Run 原绑定的 Runtime 和原 Workspace Skill 目录状态完成待处理工作后，再按 Runtime 提示接入新版本。需要随当前 Action 交付相对资源时，将正文放在 `<name>/SKILL.md`，资源放在同一 Skill 目录内。
+
+运行 `repoctopus.cmd skill get --workspace . --audience model --name team-api-review --json` 可查看这个 Skill 的正文和摘要。已启动的 Run 绑定了当时的 Skill 版本，恢复时会检查组合摘要。
 
 ## 投影到 IDE
 

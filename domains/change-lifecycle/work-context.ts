@@ -114,6 +114,21 @@ function methodContent(rules: readonly MethodRuleDefinition[]): string {
   return rules.map((rule) => `[${rule.enforcement}] ${rule.id}: ${rule.statement}`).join('\n');
 }
 
+export function assertAugmentationSkillProtocol(
+  name: string,
+  skill: { artifactProtocolOwner: boolean; artifactKinds: readonly string[] },
+  expectedArtifacts: readonly string[],
+): void {
+  if (skill.artifactProtocolOwner) {
+    throw new Error(`Augmentation Skill may not become an action owner: ${name}`);
+  }
+  if (skill.artifactKinds.some((kind) => expectedArtifacts.includes(kind))) {
+    throw new Error(
+      `Augmentation Skill conflicts with the Specification artifact protocol: ${name}`,
+    );
+  }
+}
+
 export function assembleWorkExecutionContext(input: {
   work: WorkDescriptor;
   runtimeContract: string;
@@ -232,16 +247,7 @@ export function assembleWorkExecutionContext(input: {
       input.augmentationSkills[index],
       `augmentation ${index + 1}`,
     );
-    if (augmentation.artifactProtocolOwner) {
-      throw new Error(
-        `Augmentation Skill may not become an action owner: ${augmentation.snapshot.name}`,
-      );
-    }
-    if (augmentation.artifactKinds.some((kind) => expectedArtifacts.includes(kind as never))) {
-      throw new Error(
-        `Augmentation Skill conflicts with the Specification artifact protocol: ${augmentation.snapshot.name}`,
-      );
-    }
+    assertAugmentationSkillProtocol(augmentation.snapshot.name, augmentation, expectedArtifacts);
     const compositionLayer = frozenSkillComposition.layers.filter(
       (candidate) => candidate.role !== 'action',
     )[index];

@@ -4,7 +4,20 @@ import { createRepoctopusBuiltinCatalog } from '../../plugins/builtin-catalog.js
 import { loadProjectConfig } from '../../platform/project-configuration/file-config.js';
 import { mergePluginCatalogs } from './descriptor.js';
 import { admitTeamPlugins, importTeamPlugins } from './team-plugins.js';
-import { compileProjectComposition } from './project-composition.js';
+import {
+  compileProjectComposition,
+  compileSkillPreviewComposition,
+} from './project-composition.js';
+
+export async function bootSkillPreviewComposition(
+  productRoot: string,
+  workspaceRoot: string,
+): Promise<RunningApp> {
+  const config = await loadProjectConfig(workspaceRoot);
+  const catalog = await createRepoctopusBuiltinCatalog(productRoot);
+  const composition = compileSkillPreviewComposition(productRoot, workspaceRoot, config, catalog);
+  return bootApp({ composition, catalog });
+}
 
 export async function bootBootstrapComposition(productRoot: string): Promise<RunningApp> {
   const catalog = await createRepoctopusBuiltinCatalog(productRoot);
