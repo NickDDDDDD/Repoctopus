@@ -21,14 +21,39 @@ Comet Classic 0.5.1 的 `classic-branch-binding.ts` 以已绑定 checkout 和分
 
 ## Decisions
 
-1. **同一输入分类。** Build Configure 通过当前组合的仓库输入策略与平台 Git 事实判断跟踪冲突。使用能识别 `runtime-output` 的现有规则，避免把团队允许跟踪的其他路径误报为本地状态。初次检查给出诊断，受保护的 Binding 接受会复核即将绑定的事实。
-2. **由 Runtime 证明纯清理。** Git 平台适配器读取 checkpoint HEAD 与当前 HEAD 的祖先关系、提交路径变化及当前 index/worktree。只在当前绑定 checkout 内判定，核对每个变化路径确实是原先跟踪、当前已经不再跟踪的运行时输出。读取不完整、混合变更、历史改写、分支变化及其他仓变化走现有阻断处理。Design 进一步确认可接受的历史形状和对既有 Evidence 依赖的处理。
-3. **复用现有 Build workspace checkpoint。** Cordis WorkflowRuns 统一 `resume` 与 `next` 的观察，在当前 Run 的受保护提交内复核绑定、Work 和 checkpoint。领域层只接受 Runtime 提供的结构化 Git 事实，按原恢复身份推进 workspace checkpoint。Engine 继续提供现有事务边界，Git adapter 负责检查仓库，Host Outcome 不增加 Git 权威。
-4. **保留原执行和依赖。** 执行结果未知时先处理原 invocation。清理不授予产品写权限。若某项已接受事实确实声明了变化的 Git 输入，按现有精确失效规则处理。重复 pull 采用已接受 checkpoint。
+### 1. 在 Build Configure 接受处复用输入策略
+
+`WorkflowRuns` 用当前 `RepositoryInputPolicies` 和已观察的 checkout 调用执行工作区 Git adapter。检查所有登记 checkout 的 Git index 与准备绑定的 HEAD，复用当前规则查询，仅报告在同一规则下以跟踪状态分类为 `conflict`、以非跟踪状态分类为 `runtime-output` 的路径。读取必须可区分缺失事实和没有冲突。诊断以稳定顺序给出仓库 ID、相对路径和总数，数量受限。现有 Evidence 输入策略和未跟踪本地输出的处理继续生效。
+
+在计算 Binding 候选前返回可重试诊断，保留原 Configure Work、Strategy 和当时已经提交的候选。当前 Host Outcome 接受与 Binding 持久化分两次写入。既有 Outcome 验证回调复查 HEAD 和 index，最终 `build-binding-accepted` 的受保护提交再复查一次，覆盖新候选和已经 terminalized 的候选路径。若并发变化触发既有过期提交拒绝，继续在原 Configure Work 通过现有入口补交候选，保持 Strategy。修复提交完成后重新观察同一 Run，重新计算候选的真实 HEAD。
+
+### 2. 只接纳同一 Workspace 的一笔纯清理提交
+
+首次自动恢复覆盖已绑定且当前 Work 为 `build.execute` 的 Run。使用最新 `BuildWorkspaceCheckpoint` 的 Workspace HEAD 作为旧 OID。新 HEAD 必须是该 OID 的单父直接子提交，当前分支、登记仓库、remote identity、checkout/worktree ownership 与 Binding 一致。其他登记仓库保持已接受 HEAD，所有 checkout 在判定时没有额外产品工作区变更。已有 protected branch 与 write scope 守卫继续执行。
+
+Git adapter 使用明确的两个 OID 和不做 rename 推断的 NUL 分隔路径记录，证明变化集合非空且全部为普通文件删除。每一路径必须满足同一 `runtime-output` 输入规则，原树存在跟踪条目，新树和当前 index 均不再跟踪它。工作树可保留同一规则下允许的本地输出。缺失 Git 对象、无法读取、合并、多个提交、混合清理、`.gitignore` 改动、分支或其他仓变化按已有 blocker 处理。仅用 Git 树比较而忽略中间提交会把已修改又还原的历史归并为纯清理，因此本轮使用直接子提交。
+
+### 3. 在原 Run 受保护提交内推进 checkpoint
+
+`resume` 与 `next` 复用 `recoverBoundBuildWorkspace`。只有当前 `build.execute` 尚未开始，或 Execution Authority 已确认原 attempt 未执行，并且规划授权仍有效，才尝试读取清理证明。存在活动 invocation、待处理提交或未知副作用时，保留相同调用的既有核对责任。Provider 暂时不可用时等待重观测。
+
+用物理 Git 事实通过现有 `advanceBuildWorkspaceCheckpoint` 生成候选，只给这笔受证实的 Workspace 进度授予范围。通过 Runtime Store 的同一个受保护提交检查 Run 版本、check epoch、Work、Binding、旧 checkpoint 与现有 blocker 归属，并重读所有相关 Git 与规划事实。提交采用 Build 内受管恢复转换，原子写入新 checkpoint、待执行 Work、清理接受事实及该入口拥有的 blocker 更新。其他恢复入口拥有的 blocker 继续交由原入口处理。Git 保持外部权威，提交结束后的再次漂移由下一个受保护入口检查。
+
+把采纳接入 `reconcileBoundWorkspace` 的构建恢复事务，使用专用、可验证的恢复事实。已有 blocker 时，事务必须在权威 trajectory 中确认它源于这一 Binding、旧 checkpoint、Work、当前 Workspace HEAD 组合对应的唯一 `unaccepted-head:<workspace>` 冲突。无关 blocker、缺少原冲突事实或后来观察到的新冲突均阻断。通用恢复 API 的全局 reconciliation 守卫继续生效。
+
+现有 Execute Work 的稳定输入包含 `workspaceCheckpointDigest`。因此保留 Run、Binding、Plan、Plan Evidence、当前 Package ID、审批和已接受 Completion，为同一尚待执行的包使用正常的 Execute Work 构造器生成绑定新 checkpoint 的 Work，并推进一次 check epoch。旧 Work 及已知未执行的 attempt 保留为历史，旧 packet 或提交无法承接新 Work。重复恢复沿已接受的 checkpoint 和新 Work 继续，无第二次接受记录。新 Work 的注册走已有持久生命周期事实的幂等恢复，任何在提交前后中断的进程都可从 checkpoint 恢复一次派发。
+
+Build Check 的证据原本绑定最终 checkpoint。本次选在待执行包边界更新进度，随后照常生成绑定新 checkpoint 的 Build Check 和 Verify。历史 Completion 保留其原采集 checkpoint。显式要求旧 Git 输入的验收由既有证据依赖校验处理。
+
+### 4. 验证原 Run 的版本边界和失败路径
+
+独立安装基线包和最终候选包，使用公开 CLI、独立三仓 Git checkout 和本地 bare remote。基线到第一个 Execute 后复现可验证的 `unaccepted-head`。候选验证新接入的防护、同一 Run 的恢复和后续包完成。已绑定样本通过现有精确前驱组合采纳验证，按实际受影响 protected plugin 的 code 与 descriptor 摘要登记直接前驱，核对 authority、state schema 和配置。若新增 Build 恢复转换改变定义摘要，也沿用已有定义采纳入口登记同一精确前驱，并验证可恢复当前 Build Work。没有精确前驱证明的候选保留现有阻断。覆盖既有已完成包后再清理的样本，核对新 Work 的包身份、旧 packet 拦截及重复 pull 的记录次数。
+
+领域和 Runtime 回归固定混合提交、旧 Run revision、重复接纳、工作区观测变化、原调用不明和提交 Journal 中断的行为。最终提交后从当前 checkpoint 继续 Execute、Build Check 和真实 Verify。
 
 ## Risks / Trade-offs
 
-- 误将混合提交归为清理会绕过 Build 写集。回归覆盖业务修改、普通文件删除、历史改写、其他仓漂移、未知执行与提交时观察变化。
-- 确保任一捕捉到的前置问题都能在原 Run 从新进程重试。冻结后的实验用有据的旧包与候选对比，沿用现有 Runtime 兼容性入口或受管夹具覆盖合法历史状态。
+- 误将混合提交归为清理会绕过 Build 写集，因此单独证明提交对象、Git index、活动 Work 及全部登记仓库的权限事实。
+- 采用专项进度接受可以保留已确认 Plan 和有效 Work。使用现有 Binding 重建适用于 checkout 身份改变，且会重建依赖旧 Binding 的后继工作。当前选择以 Git 证明和现有 checkpoint 事务限定影响。
 - 诊断在 CLI 给出必要路径，持久审计记录采用有界原因和 Git 身份，OpenTelemetry 按现有恢复事件验证，路径与 OID 不作为指标标签。
 - 如果实施观察与正式规格、Design 或接口权威发生冲突，在对应阶段复核后再继续。

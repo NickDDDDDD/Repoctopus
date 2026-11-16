@@ -2,7 +2,7 @@
 change_id: 413f4df6-0ab9-453f-b22d-d5ba700c172f
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/recover-runtime-output-cleanup
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+handoff_hash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: b113326519fd6c0a4ae1f10aee4f2038659937833120b2ce2a3f2d60b4334977
+  hash: 5f792a9061b9f303623cfc2ce726e65dff528868c846bd437e500285e4229e89
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,17 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 1
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-16
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+      handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
       isolation: worktree
       language: zh-CN
-      phase: open
+      phase: design
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -79,10 +80,18 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 1
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-456fe93af9443c83b25d560b553210aecae712d3eabca4b9a3b1f6c544294e46
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: recover-runtime-output-cleanup:1
         input:
           input:
@@ -92,25 +101,400 @@ run_checkpoint:
               ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
           outputs: {}
         inputHash: 730c18e77a0a555c57a3141b2a71b8d62c38e7545271ecee3f498fd0869fe465
+        outcome:
+          actionId: recover-runtime-output-cleanup:1
+          attempt: 1
+          claimToken: portable-456fe93af9443c83b25d560b553210aecae712d3eabca4b9a3b1f6c544294e46
+          inputHash: 730c18e77a0a555c57a3141b2a71b8d62c38e7545271ecee3f498fd0869fe465
+          outcomeId: 81a41a72-75b7-4b23-88e0-1b02c4b64bab
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 7815ccc8c3e7c854191e457769414c050cf3b733a298be5b86d7306269bbc0d4
+            outcomeId: 81a41a72-75b7-4b23-88e0-1b02c4b64bab
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: recover-runtime-output-cleanup
-        status: pending
+        status: succeeded
         stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-b73308a5437352d5521dfdc230f01553d94d064c2f6c70acc102a4b03b4bfa5d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:4
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-runtime-output-cleanup
+                  changeDir: openspec/changes/recover-runtime-output-cleanup
+                  workspaceBaseline:
+                    ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+                    ref: openspec/changes/recover-runtime-output-cleanup
+            full.open.evidence:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+              ref: openspec/changes/recover-runtime-output-cleanup
+        inputHash: 22c07d59a99ad6eb2a074fba954623d4901c474e3aee8c90b55a06a8c2918ea6
+        outcome:
+          actionId: recover-runtime-output-cleanup:4
+          attempt: 1
+          claimToken: portable-b73308a5437352d5521dfdc230f01553d94d064c2f6c70acc102a4b03b4bfa5d
+          inputHash: 22c07d59a99ad6eb2a074fba954623d4901c474e3aee8c90b55a06a8c2918ea6
+          outcomeId: recover-runtime-output-cleanup:4:1:executor-result
+          output:
+            contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2395f073c48b76393f249b2867cf185b2892499773e9bb61978b4a27866e2bca
+            outcomeId: recover-runtime-output-cleanup:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-a82f0ddeacd1298bc462b003f92a15ecfef4894a0ca4cbe0f447cbcd65f50c57
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:5
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-runtime-output-cleanup
+                  changeDir: openspec/changes/recover-runtime-output-cleanup
+                  workspaceBaseline:
+                    ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+                    ref: openspec/changes/recover-runtime-output-cleanup
+            full.open.evidence:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+              ref: openspec/changes/recover-runtime-output-cleanup
+            full.open.revalidate:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+        inputHash: 53c79ce015acb37d93acad2478ba108b6288e01a00a59d69512c237791a47f13
+        outcome:
+          actionId: recover-runtime-output-cleanup:5
+          attempt: 1
+          claimToken: portable-a82f0ddeacd1298bc462b003f92a15ecfef4894a0ca4cbe0f447cbcd65f50c57
+          inputHash: 53c79ce015acb37d93acad2478ba108b6288e01a00a59d69512c237791a47f13
+          outcomeId: 19f018c6-0aa6-4f14-a2f0-ae66e02a80a2
+          output:
+            handoffContext: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+            handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+            proposal: 在最终 Build Configure 绑定提交里复核登记仓 HEAD 和 index，报告输入策略判定的误跟踪运行时文件。已有 Build
+              Execute 在未开始或权威确认未执行时，可采纳同一 Workspace 最新已接受 HEAD 的单父直接子提交，Git
+              证明它只解除运行时文件的跟踪且其他仓和规划权威有效。通过受保护 workspace 恢复事务核对原 blocker，同一 Run
+              保留 Strategy、Binding、Plan、审批及有效完成事实，按新 checkpoint 为同一待执行包生成新 Work
+              并退役旧 packet。以精确前驱组合和定义采纳从真实基线安装包冷恢复，验证并发、拒绝混合提交、Build Check 和
+              Verify。delta spec 未改。
+            requirementsEvidence:
+              contentHash: a4644e3f6042f49f78394eee9e859829164493b80b4f9cac19d29c8812dd1456
+              ref: openspec/changes/recover-runtime-output-cleanup
+            sourceEvidence:
+              contentHash: f5ef236dd706db1e1b871ab8855b276c2a22193b90d7383478cc7f1fe1340d1d
+              ref: openspec/changes/recover-runtime-output-cleanup
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9c654e8b39196467be9c43f16daf41aca7a100404ab5e4e1f9c07837f2c35088
+            outcomeId: 19f018c6-0aa6-4f14-a2f0-ae66e02a80a2
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
       recover-runtime-output-cleanup:1:
         results: {}
         sequence: 1
-    waits: []
+      recover-runtime-output-cleanup:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-runtime-output-cleanup
+                  changeDir: openspec/changes/recover-runtime-output-cleanup
+                  workspaceBaseline:
+                    ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+                    ref: openspec/changes/recover-runtime-output-cleanup
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+              ref: openspec/changes/recover-runtime-output-cleanup
+        sequence: 4
+      recover-runtime-output-cleanup:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-runtime-output-cleanup
+                  changeDir: openspec/changes/recover-runtime-output-cleanup
+                  workspaceBaseline:
+                    ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+                    ref: openspec/changes/recover-runtime-output-cleanup
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+              ref: openspec/changes/recover-runtime-output-cleanup
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+        sequence: 5
+    waits:
+      - id: recover-runtime-output-cleanup:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+              ref: openspec/changes/recover-runtime-output-cleanup
+        proposalHash: 86c9cab559edcfa06680738395d7f566fc6249bbc4e09e55dceaaec25417ec4e
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+              ref: openspec/changes/recover-runtime-output-cleanup
+        decision:
+          id: classic-open-439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+          choice: approved
+          proposalHash: 86c9cab559edcfa06680738395d7f566fc6249bbc4e09e55dceaaec25417ec4e
+      - id: recover-runtime-output-cleanup:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+              handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+              proposal: 在最终 Build Configure 绑定提交里复核登记仓 HEAD 和 index，报告输入策略判定的误跟踪运行时文件。已有 Build
+                Execute 在未开始或权威确认未执行时，可采纳同一 Workspace 最新已接受 HEAD 的单父直接子提交，Git
+                证明它只解除运行时文件的跟踪且其他仓和规划权威有效。通过受保护 workspace 恢复事务核对原 blocker，同一 Run
+                保留 Strategy、Binding、Plan、审批及有效完成事实，按新 checkpoint 为同一待执行包生成新 Work
+                并退役旧 packet。以精确前驱组合和定义采纳从真实基线安装包冷恢复，验证并发、拒绝混合提交、Build Check 和
+                Verify。delta spec 未改。
+              requirementsEvidence:
+                contentHash: a4644e3f6042f49f78394eee9e859829164493b80b4f9cac19d29c8812dd1456
+                ref: openspec/changes/recover-runtime-output-cleanup
+              sourceEvidence:
+                contentHash: f5ef236dd706db1e1b871ab8855b276c2a22193b90d7383478cc7f1fe1340d1d
+                ref: openspec/changes/recover-runtime-output-cleanup
+        proposalHash: ac86760875f1f930196af5a22f6ec73ce2fb7cf858d42a64a3e5f523db9fc423
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+              handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+              proposal: 在最终 Build Configure 绑定提交里复核登记仓 HEAD 和 index，报告输入策略判定的误跟踪运行时文件。已有 Build
+                Execute 在未开始或权威确认未执行时，可采纳同一 Workspace 最新已接受 HEAD 的单父直接子提交，Git
+                证明它只解除运行时文件的跟踪且其他仓和规划权威有效。通过受保护 workspace 恢复事务核对原 blocker，同一 Run
+                保留 Strategy、Binding、Plan、审批及有效完成事实，按新 checkpoint 为同一待执行包生成新 Work
+                并退役旧 packet。以精确前驱组合和定义采纳从真实基线安装包冷恢复，验证并发、拒绝混合提交、Build Check 和
+                Verify。delta spec 未改。
+              requirementsEvidence:
+                contentHash: a4644e3f6042f49f78394eee9e859829164493b80b4f9cac19d29c8812dd1456
+                ref: openspec/changes/recover-runtime-output-cleanup
+              sourceEvidence:
+                contentHash: f5ef236dd706db1e1b871ab8855b276c2a22193b90d7383478cc7f1fe1340d1d
+                ref: openspec/changes/recover-runtime-output-cleanup
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-runtime-output-cleanup
+                  changeDir: openspec/changes/recover-runtime-output-cleanup
+                  workspaceBaseline:
+                    ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+                    ref: openspec/changes/recover-runtime-output-cleanup
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+              ref: openspec/changes/recover-runtime-output-cleanup
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+    evidenceWaits:
+      - id: recover-runtime-output-cleanup:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/recover-runtime-output-cleanup
+          contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+          submissionId: 7b426180-fa48-4d94-9185-5bed7367311e
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+          handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+          proposal: 在最终 Build Configure 绑定提交里复核登记仓 HEAD 和 index，报告输入策略判定的误跟踪运行时文件。已有 Build
+            Execute 在未开始或权威确认未执行时，可采纳同一 Workspace 最新已接受 HEAD 的单父直接子提交，Git
+            证明它只解除运行时文件的跟踪且其他仓和规划权威有效。通过受保护 workspace 恢复事务核对原 blocker，同一 Run 保留
+            Strategy、Binding、Plan、审批及有效完成事实，按新 checkpoint 为同一待执行包生成新 Work 并退役旧
+            packet。以精确前驱组合和定义采纳从真实基线安装包冷恢复，验证并发、拒绝混合提交、Build Check 和
+            Verify。delta spec 未改。
+          requirementsEvidence:
+            contentHash: a4644e3f6042f49f78394eee9e859829164493b80b4f9cac19d29c8812dd1456
+            ref: openspec/changes/recover-runtime-output-cleanup
+          sourceEvidence:
+            contentHash: f5ef236dd706db1e1b871ab8855b276c2a22193b90d7383478cc7f1fe1340d1d
+            ref: openspec/changes/recover-runtime-output-cleanup
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: recover-runtime-output-cleanup
+              changeDir: openspec/changes/recover-runtime-output-cleanup
+              workspaceBaseline:
+                ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+                ref: openspec/changes/recover-runtime-output-cleanup
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+          ref: openspec/changes/recover-runtime-output-cleanup
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: 94a4df55b1688cb4fabaea0e109130cda98bddd54853839deb265d9fcd3d6614
+  sourceRevision: 9
+  sourceHash: 34b1cdb6be5c473adc5b35256d8d453ee199d2775c50e2cf384c62d9efd9bb0e
+check_epoch: 1

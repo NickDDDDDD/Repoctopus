@@ -1,0 +1,16 @@
+{
+  "change": "recover-runtime-output-cleanup",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0",
+  "files": [
+    { "path": "openspec/changes/recover-runtime-output-cleanup/proposal.md", "sha256": "bf2b1a9a8e1a20e6a511d905e41e09d9e854e077eb17f1a5cd4f022597fbb75e" },
+    { "path": "openspec/changes/recover-runtime-output-cleanup/design.md", "sha256": "f4f34e5bc7f9d9ed5db37fc65f7f1085feed0c3c96b3b447fae75efea34c2360" },
+    { "path": "openspec/changes/recover-runtime-output-cleanup/tasks.md", "sha256": "1b694aa2aa4952f0609e99c5b853953bebb6c4b662a0baf5e606ac826783a2a2" },
+    { "path": "openspec/changes/recover-runtime-output-cleanup/.openspec.yaml", "sha256": "db997d460a2d6d123d14faf903215b90f63faf4e7e2dadacfdab82c07857e113" },
+    { "path": "openspec/changes/recover-runtime-output-cleanup/specs/change-lifecycle/spec.md", "sha256": "02e3040444a319bf22b2d67ab5de525086548c312e407e1bc931286328494218" }
+  ]
+}
