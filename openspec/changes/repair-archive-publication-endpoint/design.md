@@ -1,8 +1,14 @@
+---
+comet_change: repair-archive-publication-endpoint
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
 
-普通五仓验收的业务 PR 已创建两条，规格 Journal 已记录推送 OID。Run 卡在 `delivery.publish`，闭合收据尚未生成。另一条五仓返工 Run 已保留后端完成记录并重新通过 Verify，停在同一发布边界。验收使用真实 Git 仓、安装包 CLI 及隔离的本地 HTTPS 发布接口。
+普通五仓验收的业务 PR 已创建两条，规格 Journal 已记录推送 OID。Run 卡在 `delivery.publish`，`PublicationReceipt` 尚未生成。另一条五仓返工 Run 已保留后端完成记录并重新通过 Verify，停在同一发布边界。验收使用真实 Git 仓、安装包 CLI 及隔离的本地 HTTPS 发布接口。
 
 ## Goals / Non-Goals
 
