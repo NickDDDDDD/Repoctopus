@@ -1,3 +1,9 @@
+---
+comet_change: recover-runtime-output-cleanup
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
