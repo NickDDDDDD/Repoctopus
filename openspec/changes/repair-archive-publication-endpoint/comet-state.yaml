@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: af8bdebc-dd05-4d3d-a120-d9c17a19ed52
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 1fdd4a63e76ffc7a15d890690b2a825c6883dafc
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-16
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/repair-archive-publication-endpoint
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 4a5bc66cf2d602a4d706e1ec6e67434a2373c1a664e21fff4742a1ff16c7b5d9
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: repair-archive-publication-endpoint
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 2ca6e4a7908dc2ce31b8be0e0e49ed7856487486ce94bcd1b3bfcfab8489d00d
+    input:
+      change: repair-archive-publication-endpoint
+      changeDir: openspec/changes/repair-archive-publication-endpoint
+      workspaceBaseline:
+        ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 1fdd4a63e76ffc7a15d890690b2a825c6883dafc
+      boundBranch: codex/repair-archive-publication-endpoint
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-16
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: repair-archive-publication-endpoint:1
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 527e7775c949ca45a86bb065cc94f7d817b74e53333c42a458117c12e010d14e
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      repair-archive-publication-endpoint:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 599bae7be77a5ba9dcdf2b26eb757fcd399045ccf93eff88269fe55169e56075
