@@ -1,6 +1,6 @@
 # Archive publication policy verification
 
-Tested implementation commit: `83b012dc33184ba1da4732c6f528ed0706ca6026`
+Tested implementation commit: `c2612d496fbfd6802988c1bee0b83ef8e50a3fd8`
 
 Package content SHA-256: `2c364551bdd99a8f1aa221615de6fecf2848d76af3ee82db0dfe58956a7e1c3b`
 
@@ -17,6 +17,8 @@ WorkflowRuns passes the validated Delivery Policy to both publication paths. The
 Independent review found that explicit `--policy` and Workspace YAML could name different credentials. In the second RED run, the adapter sent the Workspace credential for both a policy that explicitly named a different reference and a policy that omitted the reference. Both tests pass after selecting credentials from the checked policy. A policy without an explicit reference uses the existing `GITHUB_TOKEN` default. The reviewer checked the fix and found no remaining blocking findings.
 
 33 focused checks passed, including the custom and default API cases, specification publication, the GitHub client and compatible-composition checks. Type checking, lint, architecture, upstream provenance and strict OpenSpec validation passed.
+
+During delivery, Linux Git showed that the fixture's directory-only ignore pattern left a POSIX symlink untracked. Commit `c2612d4` fixes the test fixture's pattern. The original full Windows Verify ran against the same packaged product at `83b012d`. The 33 focused Windows tests passed again with the portable fixture. The package content check binds this report to the delivery candidate.
 
 ## Installed Windows package acceptance
 
