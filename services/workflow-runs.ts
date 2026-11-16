@@ -7269,6 +7269,7 @@ export class WorkflowRuns extends Service {
                   title: `Archive specification: ${archive.changeId}`,
                   body: `Closes verified specification change ${archive.changeId}.`,
                 },
+                input.policy,
                 signal,
               ),
             signal,

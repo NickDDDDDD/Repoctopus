@@ -83,17 +83,19 @@ export class FileDeliveryProvider extends Delivery {
     );
   }
 
-  private domainV3(policy?: DeliveryPolicy): DeliveryServiceV3 {
+  private createMergeRequestAdapter(policy?: DeliveryPolicy): GitHubMergeRequestAdapter {
     const environment = this.config.environment ?? process.env;
-    const git = new GitDeliveryAdapter();
-    const mergeRequests = new GitHubMergeRequestAdapter(
+    return new GitHubMergeRequestAdapter(
       new EnvironmentCredentialProvider(environment, this.config.githubTokenVariable),
       policy?.publication.githubApiBaseUrl,
     );
+  }
+
+  private domainV3(policy?: DeliveryPolicy): DeliveryServiceV3 {
     return new DeliveryServiceV3(
       new FileDeliveryV3Store(this.config.workspaceRoot),
-      git,
-      mergeRequests,
+      new GitDeliveryAdapter(),
+      this.createMergeRequestAdapter(policy),
       new FileDeliveryEvidence(this.config.workspaceRoot),
       new FilePublicationJournalStore(this.config.workspaceRoot),
       this.ctx.compositionIdentity.current().compositionDigest,
@@ -262,15 +264,12 @@ export class FileDeliveryProvider extends Delivery {
 
   override publishSpecification(
     request: SpecificationPublicationRequest,
+    policy: DeliveryPolicy,
     signal?: AbortSignal,
   ): Promise<SpecificationPublicationResult> {
-    return this.operations.run({ cancellable: false, signal }, () => {
-      const environment = this.config.environment ?? process.env;
-      const mergeRequests = new GitHubMergeRequestAdapter(
-        new EnvironmentCredentialProvider(environment, this.config.githubTokenVariable),
-      );
-      return new SpecificationPublicationAdapter(mergeRequests).publish(request);
-    });
+    return this.operations.run({ cancellable: false, signal }, () =>
+      new SpecificationPublicationAdapter(this.createMergeRequestAdapter(policy)).publish(request),
+    );
   }
 
   refresh(
