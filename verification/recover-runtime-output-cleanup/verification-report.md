@@ -1,6 +1,6 @@
 # Runtime output cleanup recovery
 
-Tested implementation commit: `b6f000dfe43d23202457d6f07f50cc920b9c7008`
+Tested implementation commit: `5f3b33c2b5a6803d7b168398bde47d611b9b71e1`
 
 Package content SHA-256: `2fe3d77ba723d82c06ff08ddd6d4d8a87fee31c76a667cc2d42f3e50bec03896`
 
@@ -25,3 +25,5 @@ The 31 focused tests cover Git index and HEAD tracking, mixed commits, staged ch
 Independent review found that an existing blocker could acquire new provenance, and that a temporary Provider failure could be mistaken for a Git conflict. The final review confirmed the fixes, including the immutable Git blob used to reconstruct the task projection. Cleanup OIDs and proof digests stay on the trajectory. The lifecycle telemetry projection uses fixed transition and Work attributes and adds no path or OID labels.
 
 Comet runs the complete product checks with `npm.cmd run verify` and records its result in the same Change Run.
+
+The first complete check found an older direct-predecessor expectation in the compatibility test and one transient Open journal read failure in the existing protected-branch acceptance test. The five changed plugin expectations now match the precise baseline identified by the installed-package experiment. The eight compatibility tests and the isolated protected-branch case passed on rerun. The packaged implementation remains at `b6f000dfe43d23202457d6f07f50cc920b9c7008`. The later commit changes only the test fixture, and the package content digest above also verifies that commit.
