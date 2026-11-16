@@ -2,6 +2,8 @@
 comet_change: repair-archive-publication-endpoint
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-17-repair-archive-publication-endpoint
+status: final
 ---
 
 # Design

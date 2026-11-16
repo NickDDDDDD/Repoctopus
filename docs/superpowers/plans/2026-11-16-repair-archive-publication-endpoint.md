@@ -2,6 +2,7 @@
 change: repair-archive-publication-endpoint
 design-doc: openspec/changes/repair-archive-publication-endpoint/design.md
 base-ref: 1fdd4a63e76ffc7a15d890690b2a825c6883dafc
+archived-with: 2026-11-17-repair-archive-publication-endpoint
 ---
 
 # Archive 发布策略实施计划
