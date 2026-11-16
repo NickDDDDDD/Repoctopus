@@ -22,6 +22,12 @@ export interface ExecutionCheckoutFacts {
   worktreeId: string | null;
 }
 
+export interface ExpectedTaskProjection {
+  path: string;
+  rawDigest: `sha256:${string}`;
+  matchesCommittedDocument(document: string): boolean;
+}
+
 export interface BindExecutionWorkspaceInput {
   intent: ExecutionWorkspaceIntent;
   project: ProjectSnapshot;
@@ -139,6 +145,15 @@ export abstract class ExecutionWorkspaceService extends Service {
     ancestor: string,
     descendant: string,
   ): Promise<boolean>;
+
+  abstract readTrackedInputs(checkoutPath: string, head: string): Promise<readonly string[]>;
+  abstract isCheckoutClean(checkoutPath: string): Promise<boolean>;
+  abstract observeCleanupCommit(
+    checkoutPath: string,
+    previousHead: string,
+    head: string,
+    expectedTasks?: () => Promise<ExpectedTaskProjection | undefined>,
+  ): Promise<readonly string[] | null>;
 
   async bind(input: BindExecutionWorkspaceInput): Promise<ExecutionWorkspaceBinding> {
     return bindExecutionWorkspace(input, (checkoutPath) => this.inspect(checkoutPath));

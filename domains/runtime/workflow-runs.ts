@@ -4,7 +4,13 @@ import { decide, recordOutcome, startRun } from '../engine/loop.js';
 import type { ActionOutcome, EngineAction, RunState, RunTriggerSnapshot } from '../engine/types.js';
 import { hashProjectSnapshot, reconcileProjectSnapshots } from '../project/snapshot.js';
 import { hashWorkflowDefinition } from '../workflow-contract/hash.js';
-import type { BuildWorkspaceRecovery } from './build-workspace-recovery.js';
+import {
+  advanceRuntimeOutputCleanupCheckpoint,
+  canAcceptBuildRuntimeCleanup,
+  isRuntimeOutputCleanupConflict,
+  type BuildWorkspaceRecovery,
+  type RuntimeOutputCleanupProof,
+} from './build-workspace-recovery.js';
 import type { EvidenceWorkspaceRecovery } from './evidence-workspace-recovery.js';
 import type { ProjectReconciliation, ProjectSnapshot } from '../project/types.js';
 import type {
@@ -41,6 +47,7 @@ import {
   type ChangeLifecycleObservation,
   type ChangeLifecycleSnapshot,
   type ChangeLifecycleState,
+  type WorkDescriptor,
 } from '../change-lifecycle/transition.js';
 import type { RecoveryDecision } from './recovery.js';
 import {
@@ -67,6 +74,12 @@ export interface StartWorkflowRunOptions {
 }
 
 export type IdempotentStartWorkflowRunOptions = StartWorkflowRunOptions & { runId: string };
+
+interface BuildRuntimeOutputCleanup {
+  proof: RuntimeOutputCleanupProof;
+  work: WorkDescriptor;
+  reobserve: (state: RunState) => Promise<void>;
+}
 
 export interface IdempotentStartWorkflowRunResult {
   disposition: 'started' | 'resumed';
@@ -1190,8 +1203,13 @@ export class WorkflowRunCoordinator {
   async reconcileBuildWorkspace(
     runId: string,
     observation: BuildWorkspaceRecovery,
-  ): Promise<RuntimeResult<ResumeView & { reconciliation: ProjectReconciliation }>> {
-    return this.reconcileBoundWorkspace(runId, observation, 'buildWorkspaceRecovery');
+    cleanup?: BuildRuntimeOutputCleanup,
+  ): Promise<
+    RuntimeResult<
+      ResumeView & { reconciliation: ProjectReconciliation; reissuedWork?: WorkDescriptor }
+    >
+  > {
+    return this.reconcileBoundWorkspace(runId, observation, 'buildWorkspaceRecovery', cleanup);
   }
 
   async reconcileEvidenceWorkspace(
@@ -1205,10 +1223,19 @@ export class WorkflowRunCoordinator {
     runId: string,
     observation: BuildWorkspaceRecovery | EvidenceWorkspaceRecovery,
     recoveryKind: 'buildWorkspaceRecovery' | 'evidenceWorkspaceRecovery',
-  ): Promise<RuntimeResult<ResumeView & { reconciliation: ProjectReconciliation }>> {
-    const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+    cleanup?: BuildRuntimeOutputCleanup,
+  ): Promise<
+    RuntimeResult<
+      ResumeView & { reconciliation: ProjectReconciliation; reissuedWork?: WorkDescriptor }
+    >
+  > {
+    const result = await this.store.commitGuarded<{
+      blocked: boolean;
+      reissuedWork?: WorkDescriptor;
+    }>(runId, async ({ state, trajectory }) => {
       this.assertWritableComposition(state);
-      const protocol = state.changeLifecycle?.buildProtocol;
+      const lifecycle = state.changeLifecycle;
+      const protocol = lifecycle?.buildProtocol;
       if (
         state.stateVersion !== observation.expectedStateVersion ||
         ('phase' in observation
@@ -1226,8 +1253,92 @@ export class WorkflowRunCoordinator {
         ['recovery.reconciled', 'run.resumed'].includes(entry.type),
       );
       const previousRecovery = previous?.data[recoveryKind] as
-        | { observationDigest: string; ownsBlocker: boolean }
+        | (Pick<
+            BuildWorkspaceRecovery,
+            'observationDigest' | 'bindingId' | 'checkpointDigest' | 'conflicts'
+          > & {
+            ownsBlocker: boolean;
+          })
         | undefined;
+      const workspace = state.trigger?.facts.targetBranch as { repositoryId?: string } | undefined;
+      const cleanupConflict =
+        recoveryKind === 'buildWorkspaceRecovery' &&
+        lifecycle?.currentWork?.kind === 'build.execute' &&
+        workspace?.repositoryId !== undefined &&
+        isRuntimeOutputCleanupConflict(observation, workspace.repositoryId);
+      const ownsCleanupConflict =
+        !state.reconciliationRequired ||
+        (cleanupConflict &&
+          previous?.type === 'recovery.reconciled' &&
+          previousRecovery?.ownsBlocker === true &&
+          previousRecovery.bindingId === observation.bindingId &&
+          previousRecovery.checkpointDigest === observation.checkpointDigest &&
+          previousRecovery.observationDigest === observation.observationDigest &&
+          isRuntimeOutputCleanupConflict(previousRecovery, workspace.repositoryId!));
+      if (
+        cleanup &&
+        lifecycle &&
+        cleanupConflict &&
+        cleanup.proof.repositoryId === workspace?.repositoryId &&
+        canAcceptBuildRuntimeCleanup(state) &&
+        ownsCleanupConflict
+      ) {
+        await cleanup.reobserve(state);
+        const workspaceCheckpoint = advanceRuntimeOutputCleanupCheckpoint(
+          protocol.workspaceCheckpoint,
+          cleanup.proof,
+        );
+        const reduced = evolveChangeLifecycle({
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          current: { ...lifecycle, status: state.status },
+          observation: {
+            kind: 'runtime-output-cleanup-observed',
+            workspaceCheckpoint,
+            work: cleanup.work,
+          },
+        });
+        if (!reduced.fact)
+          throw new Error('Runtime output cleanup requires a lifecycle transition');
+        const retirement = retireMismatchedExecution(
+          state,
+          reduced.snapshot,
+          'runtime-output-cleanup-observed',
+        );
+        const { status, ...changeLifecycle } = reduced.snapshot;
+        const timestamp = this.clock().toISOString();
+        const nextState: RunState = {
+          ...retirement.state,
+          status,
+          changeLifecycle,
+          reconciliationRequired: false,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: event({
+            eventId: stableEventId(
+              runId,
+              reduced.fact.transitionId,
+              String(reduced.fact.revision),
+              cleanup.proof.digest,
+            ),
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: 'change.lifecycle.transitioned',
+            state: nextState,
+            data: {
+              changeLifecycleTransition: reduced.fact,
+              observationKind: 'runtime-output-cleanup-observed',
+              runtimeOutputCleanup: cleanup.proof,
+              ...(retirement.fact ? { executionRetirement: retirement.fact } : {}),
+            },
+          }),
+          value: { blocked: false, reissuedWork: cleanup.work },
+        };
+      }
+      // A newer checkout observation cannot acquire the authority of an existing blocker.
+      if (cleanupConflict && !ownsCleanupConflict) return { value: { blocked: true } };
       const matchingSnapshotConflict =
         previousRecovery === undefined &&
         previous?.type === 'recovery.reconciled' &&
@@ -1238,11 +1349,28 @@ export class WorkflowRunCoordinator {
         matchingSnapshotConflict;
       const requiresReconciliation =
         observation.conflicts.length > 0 || (state.reconciliationRequired && !ownedBlocker);
+      const work = recoveryKind === 'buildWorkspaceRecovery' ? lifecycle?.currentWork : null;
+      const cleanupTransition =
+        work && trajectory.findLast((entry) => entry.type === 'change.lifecycle.transitioned');
+      const transition =
+        cleanupTransition &&
+        (cleanupTransition.data.changeLifecycleTransition as
+          | { transitionId: string; workId: string | null }
+          | undefined);
+      const value = {
+        blocked: requiresReconciliation,
+        ...(!requiresReconciliation &&
+        work &&
+        transition?.transitionId === 'build.runtime-output-cleanup-accepted' &&
+        transition.workId === work.workId
+          ? { reissuedWork: work }
+          : {}),
+      };
       if (
         previousRecovery?.observationDigest === observation.observationDigest &&
         state.reconciliationRequired === requiresReconciliation
       ) {
-        return { value: requiresReconciliation };
+        return { value };
       }
       const timestamp = this.clock().toISOString();
       const nextState = {
@@ -1272,10 +1400,10 @@ export class WorkflowRunCoordinator {
             },
           },
         }),
-        value: requiresReconciliation,
+        value,
       };
     });
-    const diagnostics: RuntimeDiagnostic[] = result
+    const diagnostics: RuntimeDiagnostic[] = result.blocked
       ? [
           {
             level: 'warning',
@@ -1288,7 +1416,8 @@ export class WorkflowRunCoordinator {
     return {
       value: {
         ...(await this.status(runId)),
-        reconciliation: { ...observation.reconciliation, requiresReconciliation: result },
+        reconciliation: { ...observation.reconciliation, requiresReconciliation: result.blocked },
+        ...(result.reissuedWork ? { reissuedWork: result.reissuedWork } : {}),
       },
       diagnostics,
     };

@@ -1095,6 +1095,7 @@ export type BuildProtocolObservation =
       approvedAuthorizationEnvelopeDigest?: Digest;
     }
   | { kind: 'plan-rejected' }
+  | { kind: 'runtime-output-cleanup-observed'; workspaceCheckpoint: BuildWorkspaceCheckpoint }
   | {
       kind: 'package-completed';
       completion: PackageCompletionEvidence;
@@ -1286,6 +1287,20 @@ export function advanceBuildProtocol(
       binding: observation.binding,
       bindingHistory: [...state.bindingHistory, observation.binding],
       workspaceCheckpoint: createBuildWorkspaceCheckpoint(observation.binding),
+      revision: state.revision + 1,
+    });
+  }
+  if (observation.kind === 'runtime-output-cleanup-observed') {
+    if (
+      state.currentAction !== 'execute' ||
+      !state.workspaceCheckpoint ||
+      observation.workspaceCheckpoint.revision !== state.workspaceCheckpoint.revision + 1
+    ) {
+      throw new Error('Runtime output cleanup requires the next Execute workspace checkpoint');
+    }
+    return deepFreeze({
+      ...state,
+      workspaceCheckpoint: observation.workspaceCheckpoint,
       revision: state.revision + 1,
     });
   }

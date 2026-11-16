@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   advanceBuildProtocol,
@@ -12,8 +12,14 @@ import {
 import { createChangeLifecycleSnapshot } from '../domains/change-lifecycle/definition.js';
 import { BUILTIN_CHANGE_LIFECYCLE_DEFINITION } from '../domains/change-lifecycle/definition.js';
 import { createLifecyclePhaseWork } from '../domains/change-lifecycle/phase-work.js';
+import { createBuildActionWork } from '../domains/change-lifecycle/build-work.js';
 import { startRun } from '../domains/engine/loop.js';
-import { classifyBuildWorkspaceRecovery } from '../domains/runtime/build-workspace-recovery.js';
+import {
+  canAcceptBuildRuntimeCleanup,
+  classifyBuildWorkspaceRecovery,
+  type RuntimeOutputCleanupProof,
+} from '../domains/runtime/build-workspace-recovery.js';
+import type { WorkExecutionCheckpoint } from '../domains/work-execution/types.js';
 import { classifyEvidenceWorkspaceRecovery } from '../domains/runtime/evidence-workspace-recovery.js';
 import { verificationInputFixture } from './helpers/evidence-inputs.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
@@ -305,6 +311,191 @@ describe('Build workspace recovery', () => {
       classifyBuildWorkspaceRecovery(structuredClone(input)),
     );
   });
+});
+
+describe('Runtime output cleanup checkpoint', () => {
+  async function cleanupFixture() {
+    const f = fixture();
+    const runId = f.state.runId;
+    const digest = `sha256:${'e'.repeat(64)}` as const;
+    const skill = verificationInputFixture(runId).skills[0]!;
+    const protocol = f.state.changeLifecycle!.buildProtocol!;
+    const workspace = 'worker';
+    const proof: RuntimeOutputCleanupProof = {
+      repositoryId: workspace,
+      priorHead: 'b'.repeat(40),
+      head: 'c'.repeat(40),
+      policyDigest: digest,
+      deletedCount: 1,
+      digest,
+    };
+    const work = (checkEpoch: number, head: string) =>
+      createBuildActionWork({
+        runId,
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        kind: 'build.execute',
+        checkEpoch,
+        actionSkill: { ...skill, name: 'repoctopus-build-execute' },
+        augmentationSkills: [{ ...skill, name: 'tdd' }],
+        compositionDigest: f.state.composition.compositionDigest,
+        projectConfigDigest: digest,
+        projectSnapshotDigest: f.previous.digest,
+        workspaceRepositoryId: workspace,
+        repositoryIds: ['app', workspace],
+        strategyId: protocol.strategy.strategyId,
+        bindingId: protocol.binding!.bindingId,
+        executionMode: 'autonomous',
+        tddMode: 'tdd',
+        planId: 'plan-accepted',
+        planRevision: 1,
+        packageId: 'package-app',
+        writeScopes: [{ repositoryId: 'app', paths: ['README.md'] }],
+        stableInput: { head },
+      });
+    const oldWork = work(1, proof.priorHead);
+    const newWork = work(2, proof.head);
+    const trigger = {
+      schemaVersion: 1 as const,
+      kind: 'test-change',
+      identityDigest: digest,
+      facts: { targetBranch: { repositoryId: workspace } },
+    };
+    const changeLifecycle = {
+      ...f.state.changeLifecycle!,
+      checkEpoch: 1,
+      currentWork: oldWork,
+      buildProtocol: { ...protocol, currentAction: 'execute' as const },
+    };
+    const root = await temporaryDirectory('repoctopus-runtime-output-checkpoint-');
+    cleanup.push(root);
+    let interrupt = false;
+    const store = new FileRuntimeStore(root, {
+      afterJournalWritten(journal) {
+        if (interrupt && journal.event.data.runtimeOutputCleanup) {
+          interrupt = false;
+          throw new Error('interrupted after journal');
+        }
+      },
+    });
+    const makeRuntime = (port: FileRuntimeStore) =>
+      new WorkflowRunCoordinator(port, { async export() {} }, compositionFixture());
+    const runtime = makeRuntime(store);
+    await runtime.start({
+      runId,
+      workflow: workflowFixture(),
+      projectSnapshot: f.previous,
+      trigger,
+      changeLifecycle: { ...changeLifecycle, status: 'running' },
+    });
+    const observe = async (branch = 'feature/recovery') =>
+      classifyBuildWorkspaceRecovery({
+        ...f,
+        state: await store.loadRun(runId),
+        observed: createExecutionWorkspaceBinding({
+          intent: f.intent,
+          repositories: f.observed.repositories.map((repository) =>
+            repository.repositoryId === workspace
+              ? { ...repository, branch, head: proof.head }
+              : repository,
+          ),
+        }),
+      });
+    return {
+      runId,
+      store,
+      runtime,
+      observe,
+      proof,
+      oldWork,
+      newWork,
+      interrupt: () => {
+        interrupt = true;
+      },
+      makeRuntime: () => makeRuntime(new FileRuntimeStore(root)),
+    };
+  }
+
+  it('keeps an unrelated blocker across repeated pulls', async () => {
+    const f = await cleanupFixture();
+    const before = await f.observe('unrelated/branch');
+    await f.runtime.reconcileBuildWorkspace(f.runId, before);
+    const reobserve = vi.fn(async () => {});
+    const cleanup = { proof: f.proof, work: f.newWork, reobserve };
+    for (let pull = 0; pull < 2; pull++) {
+      const result = await f.runtime.reconcileBuildWorkspace(f.runId, await f.observe(), cleanup);
+      expect(result.value.state.reconciliationRequired).toBe(true);
+      expect(result.value.state.changeLifecycle?.currentWork?.workId).toBe(f.oldWork.workId);
+    }
+    expect(reobserve).not.toHaveBeenCalled();
+    const last = (await f.store.loadTrajectory(f.runId)).at(-1)!;
+    expect(last.data.buildWorkspaceRecovery).toMatchObject({
+      observationDigest: before.observationDigest,
+      conflicts: before.conflicts,
+      ownsBlocker: true,
+    });
+  });
+
+  it('accepts the exact owned conflict once despite concurrent pulls and rejects a stale observation', async () => {
+    const f = await cleanupFixture();
+    await f.runtime.reconcileBuildWorkspace(f.runId, await f.observe());
+    const observation = await f.observe();
+    const reobserve = vi.fn(async () => {});
+    const cleanup = { proof: f.proof, work: f.newWork, reobserve };
+    const results = await Promise.allSettled([
+      f.runtime.reconcileBuildWorkspace(f.runId, observation, cleanup),
+      f.makeRuntime().reconcileBuildWorkspace(f.runId, observation, cleanup),
+    ]);
+    expect(results.map((result) => result.status).sort()).toEqual(['fulfilled', 'rejected']);
+    expect(reobserve).toHaveBeenCalledTimes(1);
+    await expect(f.runtime.reconcileBuildWorkspace(f.runId, observation, cleanup)).rejects.toThrow(
+      /stale/u,
+    );
+    const after = await f.store.loadRun(f.runId);
+    expect(after.reconciliationRequired).toBe(false);
+    expect(after.changeLifecycle?.currentWork).toEqual(f.newWork);
+    expect(after.changeLifecycle?.buildProtocol?.workspaceCheckpoint?.repositories).toContainEqual({
+      repositoryId: 'worker',
+      branchRef: 'feature/recovery',
+      headRevision: f.proof.head,
+    });
+  });
+
+  it('retains the old Work if external facts change and fully replays a journaled acceptance', async () => {
+    const f = await cleanupFixture();
+    const observation = await f.observe();
+    const candidate = { proof: f.proof, work: f.newWork };
+    const before = await f.store.loadRun(f.runId);
+    await expect(
+      f.runtime.reconcileBuildWorkspace(f.runId, observation, {
+        ...candidate,
+        reobserve: () => Promise.reject(new Error('Git changed during proof')),
+      }),
+    ).rejects.toThrow('Git changed during proof');
+    expect(await f.store.loadRun(f.runId)).toEqual(before);
+    f.interrupt();
+    await expect(
+      f.runtime.reconcileBuildWorkspace(f.runId, observation, {
+        ...candidate,
+        reobserve: async () => {},
+      }),
+    ).rejects.toThrow('interrupted after journal');
+    await f.store.recover(f.runId);
+    const result = await f.makeRuntime().reconcileBuildWorkspace(f.runId, await f.observe());
+    expect(result.value.reissuedWork).toEqual(f.newWork);
+    expect(result.value.state.reconciliationRequired).toBe(false);
+    const events = await f.store.loadTrajectory(f.runId);
+    expect(events.filter((event) => event.data.runtimeOutputCleanup)).toHaveLength(1);
+  });
+
+  it.each(['claimed', 'invoking', 'submitted', 'unknown'] as const)(
+    'does not replace a Work with %s execution',
+    async (status) => {
+      const f = await cleanupFixture();
+      const state = await f.store.loadRun(f.runId);
+      state.workExecution = { status } as WorkExecutionCheckpoint;
+      expect(canAcceptBuildRuntimeCleanup(state)).toBe(false);
+    },
+  );
 });
 
 describe('Evidence workspace recovery', () => {

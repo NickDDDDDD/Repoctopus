@@ -110,6 +110,10 @@ Build Configure 的 Human Decision 冻结 execution mode、TDD mode、standard r
 
 Execution Binding 是 Configure 时冻结的授权基线：repository、branch、isolation、worktree owner 与 Host identity 不会因正常开发 commit 改写。Runtime 另行维护 `BuildWorkspaceCheckpoint` 作为逐 Package 的 Git 进度；Runner 负责在授权 write scope 内 commit/push，Runtime 独立观察 HEAD、证明 fast-forward，并原子接受 Package Completion 与下一 checkpoint。Host 的 Package/Check result 不上报 repository digest。未授权仓变化、历史重写或 identity drift 都会 fail closed；Build Check 只接受与最终 checkpoint 精确一致的 workspace。
 
+如果 Configure 返回 `change.build-tracked-runtime-output`，查看诊断中的仓库和相对路径，把对应的运行时文件从 Git 跟踪中移除，确认忽略规则仍覆盖这些本地文件，然后提交并推送。用原 Run ID 执行 `repoctopus run next --run <run-id>`，Runtime 重新检查 Git index 和 HEAD 后继续 Configure。
+
+如果已经进入 Build Execute，`repoctopus run resume --run <run-id>` 和 `repoctopus run next --run <run-id>` 都能核对一笔纯清理提交。把删除跟踪与业务、规划或配置改动放在不同的提交里。Runtime 只接纳同一 Workspace 分支上紧接已接受 checkpoint 的一笔纯清理提交，并为同一待执行包更新 checkpoint 和 Work。已有完成记录和 Runtime 生成的任务勾选一并保留。其他 Git 冲突继续走原恢复入口，原调用仍有未知结果时先核对该调用。
+
 Plan 因可写仓仍在受保护分支而拒绝时，Runner 负责创建、切换并 push finding 指出的 source branches；Runtime 不代做 Git 操作。随后使用普通 `run next` 或 `run resume`：两者消费同一个 authorized-rebind classifier，只在 rejected candidate、write scopes、旧 Binding、保护策略和 branch-only diff 精确匹配时返回 Configure。若曾被旧恢复路径误写 `reconciliationRequired`，也只有相同授权摘要可以撤销该投影；不要手改 Run Store、恢复旧 checkout 或新建 Change Run。
 
 ### 恢复 Design 返工

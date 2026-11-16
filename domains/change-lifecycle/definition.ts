@@ -55,6 +55,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
   version: '4.10.0',
+  compatibleDigests: ['sha256:4f22c8eb4559307b8995f91ff832c0a3d8aea6501b28f0b4abb4321d000929e3'],
   phases: [
     {
       phase: 'open',
@@ -518,6 +519,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'running' },
       trigger: 'task-outcome-validated',
+      requiredValidatorProfile: 'build.package-valid',
+    },
+    {
+      id: 'build.runtime-output-cleanup-accepted',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'running' },
+      trigger: 'runtime-output-cleanup-observed',
       requiredValidatorProfile: 'build.package-valid',
     },
     {

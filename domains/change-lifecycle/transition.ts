@@ -558,6 +558,11 @@ export type ChangeLifecycleObservation =
       work: WorkDescriptor;
     }
   | {
+      kind: 'runtime-output-cleanup-observed';
+      workspaceCheckpoint: BuildWorkspaceCheckpoint;
+      work: WorkDescriptor;
+    }
+  | {
       kind: 'build-package-completed';
       completion: PackageCompletionEvidence;
       retentionInvalidation?: BuildInvalidation;
@@ -1604,6 +1609,34 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         buildProtocol,
+      },
+    });
+  }
+  if (observation.kind === 'runtime-output-cleanup-observed') {
+    const protocol = current.buildProtocol;
+    const work = current.currentWork;
+    if (
+      !protocol ||
+      work?.kind !== 'build.execute' ||
+      observation.work.kind !== work.kind ||
+      observation.work.bindingId !== work.bindingId ||
+      observation.work.planId !== work.planId ||
+      observation.work.planRevision !== work.planRevision ||
+      observation.work.packageId !== work.packageId ||
+      observation.work.workId === work.workId ||
+      observation.work.checkEpoch !== current.checkEpoch + 1
+    ) {
+      throw new Error('Runtime output cleanup must reissue the same pending Build package');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.runtime-output-cleanup-accepted',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol: advanceBuildProtocol(protocol, observation),
       },
     });
   }

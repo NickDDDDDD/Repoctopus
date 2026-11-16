@@ -1,13 +1,147 @@
 import { realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { promisify } from 'node:util';
 
-import type { ExecutionCheckoutFacts } from '../../services/execution-workspace.js';
+import type {
+  ExecutionCheckoutFacts,
+  ExpectedTaskProjection,
+} from '../../services/execution-workspace.js';
 import { execute } from '../process/execute.js';
+import { readFileRaceSafe } from '../filesystem/race-safe-read.js';
 import { normalizeRemoteIdentity } from './remote-identity.js';
 
 const execFileAsync = promisify(execFile);
+const objectId = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/u;
+
+function assertObjectId(value: string): void {
+  if (!objectId.test(value)) throw new Error('Execution workspace requires an exact Git object ID');
+}
+
+async function readGitRecords(checkoutPath: string, args: readonly string[]): Promise<string[]> {
+  const { stdout } = await execute(
+    'git',
+    ['--no-replace-objects', '--no-optional-locks', ...args],
+    {
+      cwd: checkoutPath,
+    },
+  );
+  if (stdout === '') return [];
+  if (!stdout.endsWith('\0')) throw new Error('Incomplete Git execution workspace observation');
+  return stdout.slice(0, -1).split('\0');
+}
+
+export async function readTrackedExecutionInputs(
+  checkoutPath: string,
+  head: string,
+): Promise<string[]> {
+  assertObjectId(head);
+  const [index, tree] = await Promise.all([
+    readGitRecords(checkoutPath, ['ls-files', '--cached', '-z']),
+    readGitRecords(checkoutPath, ['ls-tree', '--full-tree', '-r', '--name-only', '-z', head]),
+  ]);
+  if ((await git(checkoutPath, ['rev-parse', 'HEAD'])) !== head) {
+    throw new Error('Execution checkout HEAD changed while reading its Git index and tree');
+  }
+  return [...new Set([...index, ...tree])].sort();
+}
+
+export async function observeExecutionCleanupCommit(
+  checkoutPath: string,
+  previous: string,
+  head: string,
+  expectedTasks?: () => Promise<ExpectedTaskProjection | undefined>,
+): Promise<string[] | null> {
+  assertObjectId(previous);
+  assertObjectId(head);
+  const commit = await git(checkoutPath, ['--no-replace-objects', 'cat-file', '-p', head]);
+  const parents = commit
+    ?.split('\n\n', 1)[0]
+    ?.split('\n')
+    .filter((line) => line.startsWith('parent '));
+  if (parents?.length !== 1 || parents[0] !== `parent ${previous}`) return null;
+  const liveHead = await git(checkoutPath, ['rev-parse', 'HEAD']);
+  if (liveHead !== head) return null;
+  const [changes, tracked] = await Promise.all([
+    readGitRecords(checkoutPath, [
+      'diff-tree',
+      '--no-commit-id',
+      '--no-renames',
+      '--no-abbrev',
+      '--ignore-submodules=none',
+      '-r',
+      '--raw',
+      '-z',
+      previous,
+      head,
+      '--',
+    ]),
+    readTrackedExecutionInputs(checkoutPath, head),
+  ]);
+  if (changes.length === 0 || changes.length % 2 !== 0) return null;
+  const currentlyTracked = new Set(tracked);
+  const deleted: string[] = [];
+  for (let index = 0; index < changes.length; index += 2) {
+    const metadata = changes[index]!;
+    const relativePath = changes[index + 1]!;
+    if (
+      !/^:100(?:644|755) 000000 [a-f0-9]+ 0+ D$/u.test(metadata) ||
+      !relativePath ||
+      relativePath.includes('�') ||
+      currentlyTracked.has(relativePath)
+    ) {
+      return null;
+    }
+    deleted.push(relativePath);
+  }
+  const clean = await isExecutionCheckoutClean(
+    checkoutPath,
+    expectedTasks ? { head, loadTasks: expectedTasks } : undefined,
+  );
+  return clean && (await git(checkoutPath, ['rev-parse', 'HEAD'])) === head ? deleted.sort() : null;
+}
+
+export async function isExecutionCheckoutClean(
+  checkoutPath: string,
+  projection?: { head: string; loadTasks: () => Promise<ExpectedTaskProjection | undefined> },
+): Promise<boolean> {
+  const readStatus = () =>
+    readGitRecords(checkoutPath, [
+      'status',
+      '--porcelain=v1',
+      '--untracked-files=all',
+      '--ignore-submodules=none',
+      '-z',
+    ]);
+  const readIndex = () => readGitRecords(checkoutPath, ['ls-files', '-v', '-z']);
+  const [status, index] = await Promise.all([readStatus(), readIndex()]);
+  // Git status can hide local edits for skip-worktree and assume-unchanged entries.
+  if (index.some((entry) => /^[Sa-z]/u.test(entry))) return false;
+  if (status.length === 0) return true;
+  if (!projection || status.length !== 1 || !status[0]?.startsWith(' M ')) return false;
+  const expectedTasks = await projection.loadTasks();
+  if (!expectedTasks || status[0] !== ` M ${expectedTasks.path}`) return false;
+  const [{ stdout }, contents] = await Promise.all([
+    execute(
+      'git',
+      ['--no-replace-objects', 'cat-file', 'blob', `${projection.head}:${expectedTasks.path}`],
+      {
+        cwd: checkoutPath,
+      },
+    ),
+    readFileRaceSafe(path.join(checkoutPath, expectedTasks.path), 4 * 1024 * 1024, {
+      bigint: true,
+    }),
+  ]);
+  const digest = `sha256:${createHash('sha256').update(contents.bytes).digest('hex')}`;
+  if (digest !== expectedTasks.rawDigest || !expectedTasks.matchesCommittedDocument(stdout))
+    return false;
+  return (
+    (await readStatus()).join('\0') === status[0] &&
+    !(await readIndex()).some((entry) => /^[Sa-z]/u.test(entry))
+  );
+}
 
 async function git(
   checkoutPath: string,

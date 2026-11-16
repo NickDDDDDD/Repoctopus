@@ -1,0 +1,3389 @@
+# comet-execution: managed-run
+change_id: 413f4df6-0ab9-453f-b22d-d5ba700c172f
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: b6a33525a3db152eaa8b2547cf930a1d2f0f7391
+design_doc: openspec/changes/archive/2026-11-16-recover-runtime-output-cleanup/design.md
+plan: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/recover-runtime-output-cleanup.md
+branch_status: pending
+created_at: 2026-11-16
+verified_at: 2026-11-16
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/recover-runtime-output-cleanup
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-16-recover-runtime-output-cleanup/.comet/handoff/design-context.json
+handoff_hash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: f7ea8857b42c7d8fc45220d7a32c97a7d7c57fb4b666c2ceb2e047da647d99f7
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: recover-runtime-output-cleanup
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: bbf259797abd3eee49bdc08540b2d1e1943dd3c085a3c30790dffb1103c01054
+    input:
+      change: recover-runtime-output-cleanup
+      changeDir: openspec/changes/recover-runtime-output-cleanup
+      workspaceBaseline:
+        ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: b6a33525a3db152eaa8b2547cf930a1d2f0f7391
+      boundBranch: codex/recover-runtime-output-cleanup
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 8
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-16
+      designDoc: openspec/changes/archive/2026-11-16-recover-runtime-output-cleanup/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-16-recover-runtime-output-cleanup/.comet/handoff/design-context.json
+      handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/recover-runtime-output-cleanup.md
+      verifiedAt: 2026-11-16
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 32
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-456fe93af9443c83b25d560b553210aecae712d3eabca4b9a3b1f6c544294e46
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:1
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 730c18e77a0a555c57a3141b2a71b8d62c38e7545271ecee3f498fd0869fe465
+        outcome:
+          actionId: recover-runtime-output-cleanup:1
+          attempt: 1
+          claimToken: portable-456fe93af9443c83b25d560b553210aecae712d3eabca4b9a3b1f6c544294e46
+          inputHash: 730c18e77a0a555c57a3141b2a71b8d62c38e7545271ecee3f498fd0869fe465
+          outcomeId: 81a41a72-75b7-4b23-88e0-1b02c4b64bab
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7815ccc8c3e7c854191e457769414c050cf3b733a298be5b86d7306269bbc0d4
+            outcomeId: 81a41a72-75b7-4b23-88e0-1b02c4b64bab
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-b73308a5437352d5521dfdc230f01553d94d064c2f6c70acc102a4b03b4bfa5d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:4
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 22c07d59a99ad6eb2a074fba954623d4901c474e3aee8c90b55a06a8c2918ea6
+        outcome:
+          actionId: recover-runtime-output-cleanup:4
+          attempt: 1
+          claimToken: portable-b73308a5437352d5521dfdc230f01553d94d064c2f6c70acc102a4b03b4bfa5d
+          inputHash: 22c07d59a99ad6eb2a074fba954623d4901c474e3aee8c90b55a06a8c2918ea6
+          outcomeId: recover-runtime-output-cleanup:4:1:executor-result
+          output:
+            contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2395f073c48b76393f249b2867cf185b2892499773e9bb61978b4a27866e2bca
+            outcomeId: recover-runtime-output-cleanup:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-a82f0ddeacd1298bc462b003f92a15ecfef4894a0ca4cbe0f447cbcd65f50c57
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:5
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 53c79ce015acb37d93acad2478ba108b6288e01a00a59d69512c237791a47f13
+        outcome:
+          actionId: recover-runtime-output-cleanup:5
+          attempt: 1
+          claimToken: portable-a82f0ddeacd1298bc462b003f92a15ecfef4894a0ca4cbe0f447cbcd65f50c57
+          inputHash: 53c79ce015acb37d93acad2478ba108b6288e01a00a59d69512c237791a47f13
+          outcomeId: 19f018c6-0aa6-4f14-a2f0-ae66e02a80a2
+          output:
+            handoffContext: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+            handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+            proposal: 在最终 Build Configure 绑定提交里复核登记仓 HEAD 和 index，报告输入策略判定的误跟踪运行时文件。已有 Build
+              Execute 在未开始或权威确认未执行时，可采纳同一 Workspace 最新已接受 HEAD 的单父直接子提交，Git
+              证明它只解除运行时文件的跟踪且其他仓和规划权威有效。通过受保护 workspace 恢复事务核对原 blocker，同一 Run
+              保留 Strategy、Binding、Plan、审批及有效完成事实，按新 checkpoint 为同一待执行包生成新 Work
+              并退役旧 packet。以精确前驱组合和定义采纳从真实基线安装包冷恢复，验证并发、拒绝混合提交、Build Check 和
+              Verify。delta spec 未改。
+            requirementsEvidence:
+              contentHash: a4644e3f6042f49f78394eee9e859829164493b80b4f9cac19d29c8812dd1456
+              ref: openspec/changes/recover-runtime-output-cleanup
+            sourceEvidence:
+              contentHash: f5ef236dd706db1e1b871ab8855b276c2a22193b90d7383478cc7f1fe1340d1d
+              ref: openspec/changes/recover-runtime-output-cleanup
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9c654e8b39196467be9c43f16daf41aca7a100404ab5e4e1f9c07837f2c35088
+            outcomeId: 19f018c6-0aa6-4f14-a2f0-ae66e02a80a2
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-55135e20b7a7b5793e6af251d952fb737c2a5e9c7014965c8558828fed8e13dd
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:7
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 0170a61f6672d343ccbdd0d2fe91bde4707379b13d977244fb2384fdc3b09fe9
+        outcome:
+          actionId: recover-runtime-output-cleanup:7
+          attempt: 1
+          claimToken: portable-55135e20b7a7b5793e6af251d952fb737c2a5e9c7014965c8558828fed8e13dd
+          inputHash: 0170a61f6672d343ccbdd0d2fe91bde4707379b13d977244fb2384fdc3b09fe9
+          outcomeId: 4d6068df-3a07-4456-aa3b-48719eb34c97
+          output:
+            designDoc: openspec/changes/recover-runtime-output-cleanup/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b72b63f1a962baea107e3957bf121ffb22fd0440891c321ca67b3ed28c8a53dc
+            outcomeId: 4d6068df-3a07-4456-aa3b-48719eb34c97
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c2a756efc9324af7b326f92e9a972f35fb9b046df8a6e0dd7339f3330636c782
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:9
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: cb1120b3b1bfc744aa3b95be1c18848e65ad71430b416ea5fb90b9e0f63cbd89
+        outcome:
+          actionId: recover-runtime-output-cleanup:9
+          attempt: 1
+          claimToken: portable-c2a756efc9324af7b326f92e9a972f35fb9b046df8a6e0dd7339f3330636c782
+          inputHash: cb1120b3b1bfc744aa3b95be1c18848e65ad71430b416ea5fb90b9e0f63cbd89
+          outcomeId: fdf18259-4161-433e-914f-66859ed26d36
+          output:
+            boundBranch: codex/recover-runtime-output-cleanup
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c9dbacc6f6ff72309be0d73a68c406b0bf6aa649b99d95299f83b8e1f43ee73b
+            outcomeId: fdf18259-4161-433e-914f-66859ed26d36
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-f0e5bb2929103912fd87810392f976a0bf97d983a21cd3a5476ed1a9e263766a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:11
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: c71c78bc85fc67a892402534d460b1d5c24ff0ce51931a08b62b43c9e96862ce
+        outcome:
+          actionId: recover-runtime-output-cleanup:11
+          attempt: 1
+          claimToken: portable-f0e5bb2929103912fd87810392f976a0bf97d983a21cd3a5476ed1a9e263766a
+          inputHash: c71c78bc85fc67a892402534d460b1d5c24ff0ce51931a08b62b43c9e96862ce
+          outcomeId: 1528d732-400e-4663-a823-5f5849ea58ae
+          output:
+            designEvidence:
+              contentHash: b0ee0ff2b0852986b15f2d53ce874fa99d8c9ac7fc12a0c74723e1d036e037d2
+              ref: openspec/changes/recover-runtime-output-cleanup/design.md
+            plan: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+            planEvidence:
+              contentHash: 5e5f4df4b84f1e9d53838fd0f92be4bf606ff896cd1bd9e6bb87dd965a289ccd
+              ref: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+            taskRevision: 1b694aa2aa4952f0609e99c5b853953bebb6c4b662a0baf5e606ac826783a2a2
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 84789896182df9e8add862bf76cb350db72f75bfcb7e3e92c3e5664665eb83aa
+            outcomeId: 1528d732-400e-4663-a823-5f5849ea58ae
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-recover-runtime-output-cleanup-20261116
+          token: portable-0aefb32bee2a24db7ed25af434d3688d6c4c72bada8fac6ff22880e10b6ff813
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:13
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 280272c2df1546bcb491613cc68f2d7340df3aa21ba5b8ce0f470a56fcf68721
+        outcome:
+          actionId: recover-runtime-output-cleanup:13
+          attempt: 1
+          claimToken: portable-0aefb32bee2a24db7ed25af434d3688d6c4c72bada8fac6ff22880e10b6ff813
+          inputHash: 280272c2df1546bcb491613cc68f2d7340df3aa21ba5b8ce0f470a56fcf68721
+          outcomeId: f5081580-14fd-48a0-919a-0518a61b4af4
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 178985f8e146df592a877ae8040e6f2fdf75d8776a392949fd5d8ca023003abe
+            outcomeId: f5081580-14fd-48a0-919a-0518a61b4af4
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-65670ad4e6476ace5bec0a8c394a0b16003d8fce78f0bb9a3cf00442d63b3e11
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:14
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: db6a8c8c2591278424ffd856f726b9dfe61a6e2f3efa1cab9dd88d11cc191a21
+        outcome:
+          actionId: recover-runtime-output-cleanup:14
+          attempt: 1
+          claimToken: portable-65670ad4e6476ace5bec0a8c394a0b16003d8fce78f0bb9a3cf00442d63b3e11
+          inputHash: db6a8c8c2591278424ffd856f726b9dfe61a6e2f3efa1cab9dd88d11cc191a21
+          outcomeId: e4f51d44-05be-493b-bb35-ae14f6b970b2
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 7b7c50f9be9fa2695324aa01ed7e55c136674b8a7c465b7699ae87db22da5a9d
+            cwd: .
+            environment: 3fd58a1a48ff760ff20a977ed96f2f3229e9b1053f1ee47d08194c3c6704b225
+            exitCode: 0
+            inputAfter: 2b0b2c30e613d5b3112940e2058de353a608e334ff4910bb00827abd6994af46
+            inputBefore: 2b0b2c30e613d5b3112940e2058de353a608e334ff4910bb00827abd6994af46
+            manifestHash: 8bf43f41c406ddac3f613ff330771c6cc2d86a3684b1583ca1e8c06def5eaaf8
+            manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/4ed8f780-14f4-479f-aad2-dd1ff5413036.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/3d006d77-0d38-4e8e-8f1f-b5a143ecda92.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fc5feedacf2085afee11ba5e0ec6fa85d9720476c8750801fc62aa8d8e4230f4
+            outcomeId: e4f51d44-05be-493b-bb35-ae14f6b970b2
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-087841575b481a2741ed5f0592bd1529c5cfb81c220602817c510e3d40d1b705
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:16
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: b0b107924e478477dd5d4bbdae211cd0f5fa92c63a1011aee0f19319000bf60f
+        outcome:
+          actionId: recover-runtime-output-cleanup:16
+          attempt: 1
+          claimToken: portable-087841575b481a2741ed5f0592bd1529c5cfb81c220602817c510e3d40d1b705
+          inputHash: b0b107924e478477dd5d4bbdae211cd0f5fa92c63a1011aee0f19319000bf60f
+          outcomeId: 7b070daf-b744-4894-9432-10f72ff135fb
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/recover-runtime-output-cleanup.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3411c7ab0d6f77b31654ea943ea0f50a7d661b938e3b160a64e8206b0f500d8b
+            outcomeId: 7b070daf-b744-4894-9432-10f72ff135fb
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-b744beadfd6d6533db7abc517f93eb41cab0be21d6fe9e40b9a49062d7768a38
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:18
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: e1b1096d8911fb6d9dbdfcce6a58c9f1fc6ca74da9b283d2e89e773f1d6216ef
+        outcome:
+          actionId: recover-runtime-output-cleanup:18
+          attempt: 1
+          claimToken: portable-b744beadfd6d6533db7abc517f93eb41cab0be21d6fe9e40b9a49062d7768a38
+          inputHash: e1b1096d8911fb6d9dbdfcce6a58c9f1fc6ca74da9b283d2e89e773f1d6216ef
+          outcomeId: e6bc671e-4fb4-485f-8685-386ffb4fc6f9
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 24469eca558bf32a16af3d3344d72bbb40b86a9264829c8ae22f312a4ba89119
+            cwd: .
+            deliveryInputs: {}
+            environment: 2e4f66a9d382bdda67ca0ff539f21d6c224c9015b27eedbb96c8f076bfad1cf3
+            exitCode: 1
+            inputAfter: 2b53558e819dd75d132999facc54d228d610204e940c3b260c842fc5405ef4cb
+            inputBefore: 2b53558e819dd75d132999facc54d228d610204e940c3b260c842fc5405ef4cb
+            manifestHash: 5dd00cf152df748899dcbef5ee4f52d975bd3f7d7ddde23921dda943c755777d
+            manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/219d4900-2cf6-4e2f-bc8b-44ebe6742467.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/c390764a-fd93-4c3c-9513-d5e5869b6975.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 71dd33f6054af366079c4d673fa141298cff7512a98ccffc1a1069903fd2354d
+            outcomeId: e6bc671e-4fb4-485f-8685-386ffb4fc6f9
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-f5685d4a61194bb2131cf4f302d61f2e3a1d16c3cb33896657d4f73020436eee
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:19
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 1ea19c12cda108984b8d0213e57254cef8c5849c18618bf54dfb20eb9f99b27e
+        outcome:
+          actionId: recover-runtime-output-cleanup:19
+          attempt: 1
+          claimToken: portable-f5685d4a61194bb2131cf4f302d61f2e3a1d16c3cb33896657d4f73020436eee
+          inputHash: 1ea19c12cda108984b8d0213e57254cef8c5849c18618bf54dfb20eb9f99b27e
+          outcomeId: 2af75176-0cc0-4c23-8ec7-e02c7c808d4f
+          output:
+            designEvidence:
+              contentHash: b0ee0ff2b0852986b15f2d53ce874fa99d8c9ac7fc12a0c74723e1d036e037d2
+              ref: openspec/changes/recover-runtime-output-cleanup/design.md
+            plan: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+            planEvidence:
+              contentHash: 5e5f4df4b84f1e9d53838fd0f92be4bf606ff896cd1bd9e6bb87dd965a289ccd
+              ref: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+            taskRevision: 1b694aa2aa4952f0609e99c5b853953bebb6c4b662a0baf5e606ac826783a2a2
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d52e5ccf3449b5f6a47ceb92b7a39bc4be5009091d9599f141eca3b3c6edcf2a
+            outcomeId: 2af75176-0cc0-4c23-8ec7-e02c7c808d4f
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-recover-runtime-output-cleanup-20261116-verify-retry
+          token: portable-19941852e0168b789b35bca97c83cd743d40727fdb4e55202d13db77d0d59f9f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:21
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 1ea19c12cda108984b8d0213e57254cef8c5849c18618bf54dfb20eb9f99b27e
+        outcome:
+          actionId: recover-runtime-output-cleanup:21
+          attempt: 1
+          claimToken: portable-19941852e0168b789b35bca97c83cd743d40727fdb4e55202d13db77d0d59f9f
+          inputHash: 1ea19c12cda108984b8d0213e57254cef8c5849c18618bf54dfb20eb9f99b27e
+          outcomeId: 111218e3-729c-40d5-875f-d44c752242a6
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2012ed9e1c9d5cbd486747884765d09518282723b34d8222e8a670e675b09749
+            outcomeId: 111218e3-729c-40d5-875f-d44c752242a6
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-0b583c719df2ee6f7d47f53b07c97526c69fdf795db9a18bc80d2986766ad50f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:22
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 1ea19c12cda108984b8d0213e57254cef8c5849c18618bf54dfb20eb9f99b27e
+        outcome:
+          actionId: recover-runtime-output-cleanup:22
+          attempt: 1
+          claimToken: portable-0b583c719df2ee6f7d47f53b07c97526c69fdf795db9a18bc80d2986766ad50f
+          inputHash: 1ea19c12cda108984b8d0213e57254cef8c5849c18618bf54dfb20eb9f99b27e
+          outcomeId: 9e81d1f5-d5dc-4db3-ace8-8882bfcacff2
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 20d3c41683ad62d799102399858f770ddfcd3adc9fb894b3741514d7cfe94f4b
+            cwd: .
+            environment: 3fd58a1a48ff760ff20a977ed96f2f3229e9b1053f1ee47d08194c3c6704b225
+            exitCode: 0
+            inputAfter: 00577656d75f5fe98cdef38f41052e7026a65a1adb4b3998bf3cdcee4e426869
+            inputBefore: 00577656d75f5fe98cdef38f41052e7026a65a1adb4b3998bf3cdcee4e426869
+            manifestHash: 53d6fc675d60eb11261b22e2679808315e400bfd1283ccc8b32ec0d98a637cda
+            manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/f38c82b4-13bd-49a3-b6a2-be75cccdd9fd.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/5ad80fbe-421a-482e-b1ad-c15e91555b73.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 651a7507c80a67a075e7954c9bb5415d058a88cb15c092c30402a81f93ed02f7
+            outcomeId: 9e81d1f5-d5dc-4db3-ace8-8882bfcacff2
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-fc9b3b8584e9d8b7dcce138be6dbc310499c74f5ba219a693e2ae5e8b86c3673
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:24
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 1c51f0bcab81bdc782caa155b7a9ca7cafd81c1a478781f1ee349342023520e0
+        outcome:
+          actionId: recover-runtime-output-cleanup:24
+          attempt: 1
+          claimToken: portable-fc9b3b8584e9d8b7dcce138be6dbc310499c74f5ba219a693e2ae5e8b86c3673
+          inputHash: 1c51f0bcab81bdc782caa155b7a9ca7cafd81c1a478781f1ee349342023520e0
+          outcomeId: 68258836-7a64-45de-83c2-6fcfa368b1bc
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/recover-runtime-output-cleanup.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3b6c0f3921a29e709d5b5562d89fa556f4d5dd327e32f4008f44953ef5b7d585
+            outcomeId: 68258836-7a64-45de-83c2-6fcfa368b1bc
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-594163be98ae7b872696e206d076440297bcd6bb577bb5ec52cb60de3d8c8972
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:26
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: fea9b43c59578e995652b144546bc3c1fcae25aebb7ab0479e1e263e8c663ac0
+        outcome:
+          actionId: recover-runtime-output-cleanup:26
+          attempt: 1
+          claimToken: portable-594163be98ae7b872696e206d076440297bcd6bb577bb5ec52cb60de3d8c8972
+          inputHash: fea9b43c59578e995652b144546bc3c1fcae25aebb7ab0479e1e263e8c663ac0
+          outcomeId: d878ca42-12f8-4947-a4d3-f7434f8a7ffa
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: 62f3c6ee95a8abeae34f8917d7980c4bfd4bfad0b8c8747b0b2cbd7600cb2d2a
+            cwd: .
+            deliveryInputs: {}
+            environment: 2e4f66a9d382bdda67ca0ff539f21d6c224c9015b27eedbb96c8f076bfad1cf3
+            exitCode: 0
+            inputAfter: 4a4230e1582a7b4f3d4df8bf02a950563e6f0071cd89a5e1ed31197a57213c30
+            inputBefore: 4a4230e1582a7b4f3d4df8bf02a950563e6f0071cd89a5e1ed31197a57213c30
+            manifestHash: 53d6fc675d60eb11261b22e2679808315e400bfd1283ccc8b32ec0d98a637cda
+            manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/5b0ae666-7fb0-4522-b531-28e0a41947ca.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/15b878a0-5b8b-4a41-a538-81145ae5aa7e.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b3958089d6507778562a81aac16dd17c8f8461fb3e248fba08f07ec4240e2fab
+            outcomeId: d878ca42-12f8-4947-a4d3-f7434f8a7ffa
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-24948fc209a406e838035ee0f9c70d12b0f263a9d0ae0e6c455f94a863b44e44
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:28
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 94cf143b23aa2b0498907fb0d522c175dcdc3ec5c07c224c59e18144665fb59d
+        outcome:
+          actionId: recover-runtime-output-cleanup:28
+          attempt: 1
+          claimToken: portable-24948fc209a406e838035ee0f9c70d12b0f263a9d0ae0e6c455f94a863b44e44
+          inputHash: 94cf143b23aa2b0498907fb0d522c175dcdc3ec5c07c224c59e18144665fb59d
+          outcomeId: d3a0c8e3-ffa0-4032-a212-e82af29ed72d
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档 recover-runtime-output-cleanup，将 Build Configure 跟踪检查和同一 Run
+              的纯清理恢复两条要求合并进 change-lifecycle 主规格。交付已验证的 c790699 后续提交 f4be0c6，7
+              项任务已完成，完整 Verify 为 1270 项通过、4 项跳过。推送
+              codex/recover-runtime-output-cleanup，创建目标为 origin/main 的 PR，CI
+              通过后合入。
+            targetBranch: codex/recover-runtime-output-cleanup
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 30d2fb51f97c63de9c5017f819ebece61f875bacd4b0f3c9f13261a8d7feb2ab
+            outcomeId: d3a0c8e3-ffa0-4032-a212-e82af29ed72d
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-5f3ac1d27868e969103ccb7fd641cf0b3c950193b4f5e1fd088e9ba04abd7912
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:30
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 2ec0159ab199ab552c770bd4ec21dfcbebed09050441f813cf202dc9afdf5860
+        outcome:
+          actionId: recover-runtime-output-cleanup:30
+          attempt: 1
+          claimToken: portable-5f3ac1d27868e969103ccb7fd641cf0b3c950193b4f5e1fd088e9ba04abd7912
+          inputHash: 2ec0159ab199ab552c770bd4ec21dfcbebed09050441f813cf202dc9afdf5860
+          outcomeId: d6ff6662-a52c-4615-b56a-115c74bae4d3
+          output:
+            baseCommit: f4be0c610ec32bba8e385d5b4fd04e257e14949d
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/recover-runtime-output-cleanup
+            verifiedBranch: codex/recover-runtime-output-cleanup
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7e200b083c96d11b919f6e6d169dd72571469cbd0d9be9db41add4c620176980
+            outcomeId: d6ff6662-a52c-4615-b56a-115c74bae4d3
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-5de737953ea11981ff1b2cb62878033d7dbef7aea514de302c4ff2723a32f43b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-runtime-output-cleanup:31
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: ab80cddbfa11717e5ce224adb9802f00bdd746bbefc9cb82ba0adf1fc3981230
+        outcome:
+          actionId: recover-runtime-output-cleanup:31
+          artifacts:
+            - sha256: 1ec36b8c5d4e266a2b6ca59196d3f265fbf0af82afebc55dd28cff77e22b7e29
+              uri: openspec/changes/archive/2026-11-16-recover-runtime-output-cleanup/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-5de737953ea11981ff1b2cb62878033d7dbef7aea514de302c4ff2723a32f43b
+          inputHash: ab80cddbfa11717e5ce224adb9802f00bdd746bbefc9cb82ba0adf1fc3981230
+          outcomeId: 31a88d19-cc83-4b87-a713-4a77885fc00d
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-16-recover-runtime-output-cleanup
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7e36e3d37a0e63162397f76383851ec6ab5453f4d271ed7d8e45c5688ae7619b
+            outcomeId: 31a88d19-cc83-4b87-a713-4a77885fc00d
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: recover-runtime-output-cleanup:32
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: c2c7ebd5f5f0868d8dd2ec199d44a378fbb660a7eb110adf0063f1517d7a02cf
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      recover-runtime-output-cleanup:1:
+        results: {}
+        sequence: 1
+      recover-runtime-output-cleanup:11:
+        results: {}
+        sequence: 11
+      recover-runtime-output-cleanup:13:
+        results: {}
+        sequence: 13
+      recover-runtime-output-cleanup:14:
+        results: {}
+        sequence: 14
+      recover-runtime-output-cleanup:16:
+        results: {}
+        sequence: 16
+      recover-runtime-output-cleanup:18:
+        results: {}
+        sequence: 18
+      recover-runtime-output-cleanup:19:
+        results: {}
+        sequence: 19
+      recover-runtime-output-cleanup:21:
+        results: {}
+        sequence: 21
+      recover-runtime-output-cleanup:22:
+        results: {}
+        sequence: 22
+      recover-runtime-output-cleanup:24:
+        results: {}
+        sequence: 24
+      recover-runtime-output-cleanup:26:
+        results: {}
+        sequence: 26
+      recover-runtime-output-cleanup:28:
+        results: {}
+        sequence: 28
+      recover-runtime-output-cleanup:30:
+        results: {}
+        sequence: 30
+      recover-runtime-output-cleanup:31:
+        results: {}
+        sequence: 31
+      recover-runtime-output-cleanup:32:
+        results: {}
+        sequence: 32
+      recover-runtime-output-cleanup:4:
+        results: {}
+        sequence: 4
+      recover-runtime-output-cleanup:5:
+        results: {}
+        sequence: 5
+      recover-runtime-output-cleanup:7:
+        results: {}
+        sequence: 7
+      recover-runtime-output-cleanup:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: recover-runtime-output-cleanup:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+              ref: openspec/changes/recover-runtime-output-cleanup
+        proposalHash: 86c9cab559edcfa06680738395d7f566fc6249bbc4e09e55dceaaec25417ec4e
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+          choice: approved
+          proposalHash: 86c9cab559edcfa06680738395d7f566fc6249bbc4e09e55dceaaec25417ec4e
+      - id: recover-runtime-output-cleanup:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+              handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+              proposal: 在最终 Build Configure 绑定提交里复核登记仓 HEAD 和 index，报告输入策略判定的误跟踪运行时文件。已有 Build
+                Execute 在未开始或权威确认未执行时，可采纳同一 Workspace 最新已接受 HEAD 的单父直接子提交，Git
+                证明它只解除运行时文件的跟踪且其他仓和规划权威有效。通过受保护 workspace 恢复事务核对原 blocker，同一 Run
+                保留 Strategy、Binding、Plan、审批及有效完成事实，按新 checkpoint 为同一待执行包生成新 Work
+                并退役旧 packet。以精确前驱组合和定义采纳从真实基线安装包冷恢复，验证并发、拒绝混合提交、Build Check 和
+                Verify。delta spec 未改。
+              requirementsEvidence:
+                contentHash: a4644e3f6042f49f78394eee9e859829164493b80b4f9cac19d29c8812dd1456
+                ref: openspec/changes/recover-runtime-output-cleanup
+              sourceEvidence:
+                contentHash: f5ef236dd706db1e1b871ab8855b276c2a22193b90d7383478cc7f1fe1340d1d
+                ref: openspec/changes/recover-runtime-output-cleanup
+        proposalHash: ac86760875f1f930196af5a22f6ec73ce2fb7cf858d42a64a3e5f523db9fc423
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-ac86760875f1f930196af5a22f6ec73ce2fb7cf858d42a64a3e5f523db9fc423-approved
+          choice: approved
+          proposalHash: ac86760875f1f930196af5a22f6ec73ce2fb7cf858d42a64a3e5f523db9fc423
+      - id: recover-runtime-output-cleanup:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.build.configure:
+              boundBranch: codex/recover-runtime-output-cleanup
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: e77425da98ca6377ae432f6c8b22b041d3121f7f884e963bb0b96693658fa315
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 54d2833f-4eab-48ac-9307-93a41a5c1acd
+          choice: approved
+          proposalHash: e77425da98ca6377ae432f6c8b22b041d3121f7f884e963bb0b96693658fa315
+      - id: recover-runtime-output-cleanup:29
+        stepId: full.archive.confirm
+        sequence: 29
+        status: resolved
+        proposal:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 recover-runtime-output-cleanup，将 Build Configure 跟踪检查和同一 Run
+                的纯清理恢复两条要求合并进 change-lifecycle 主规格。交付已验证的 c790699 后续提交 f4be0c6，7
+                项任务已完成，完整 Verify 为 1270 项通过、4 项跳过。推送
+                codex/recover-runtime-output-cleanup，创建目标为 origin/main 的 PR，CI
+                通过后合入。
+              targetBranch: codex/recover-runtime-output-cleanup
+        proposalHash: 8208a3fb18c7fe2ff2727397076ce402a07ac8fedd729a4fe6a7449652e00b74
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-8208a3fb18c7fe2ff2727397076ce402a07ac8fedd729a4fe6a7449652e00b74-pr
+          choice: pr
+          proposalHash: 8208a3fb18c7fe2ff2727397076ce402a07ac8fedd729a4fe6a7449652e00b74
+    evidenceWaits:
+      - id: recover-runtime-output-cleanup:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/recover-runtime-output-cleanup
+          contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+          submissionId: 7b426180-fa48-4d94-9185-5bed7367311e
+      - id: recover-runtime-output-cleanup:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/recover-runtime-output-cleanup/design.md
+          contentHash: b0ee0ff2b0852986b15f2d53ce874fa99d8c9ac7fc12a0c74723e1d036e037d2
+          submissionId: 07a97f47-71cd-4779-92aa-d153de0e0851
+      - id: recover-runtime-output-cleanup:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+          contentHash: 5e5f4df4b84f1e9d53838fd0f92be4bf606ff896cd1bd9e6bb87dd965a289ccd
+          submissionId: a452f683-39b8-464b-88c8-6131e974dc61
+      - id: recover-runtime-output-cleanup:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/3d006d77-0d38-4e8e-8f1f-b5a143ecda92.log
+          contentHash: 7b7c50f9be9fa2695324aa01ed7e55c136674b8a7c465b7699ae87db22da5a9d
+          submissionId: befa4ae3-4733-4025-8cad-be5ff1144ea9
+      - id: recover-runtime-output-cleanup:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/recover-runtime-output-cleanup.md
+          contentHash: 39a4a21965733f1f8994a5e76c6fb4dfe472a2fc8399d728d9e0ef0fc2c35ed7
+          submissionId: d10d2fe7-5fd2-4432-9ea7-5a4a1bc9f2a2
+      - id: recover-runtime-output-cleanup:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+          contentHash: 5e5f4df4b84f1e9d53838fd0f92be4bf606ff896cd1bd9e6bb87dd965a289ccd
+          submissionId: 3e09cf2a-efa1-4f10-8ad8-723b90b5c588
+      - id: recover-runtime-output-cleanup:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/5ad80fbe-421a-482e-b1ad-c15e91555b73.log
+          contentHash: 20d3c41683ad62d799102399858f770ddfcd3adc9fb894b3741514d7cfe94f4b
+          submissionId: 1f89a8e7-1782-4160-9017-fe8ce15f23be
+      - id: recover-runtime-output-cleanup:25
+        stepId: full.verify.report.evidence
+        sequence: 25
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/recover-runtime-output-cleanup.md
+          contentHash: 6223016581b3e08147e79174c63e245b7dc2f4c726f0b6bbfa51a29a35b94d50
+          submissionId: 712740ab-49e6-4426-aff1-8039638261c8
+      - id: recover-runtime-output-cleanup:27
+        stepId: full.verify.check.evidence
+        sequence: 27
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/15b878a0-5b8b-4a41-a538-81145ae5aa7e.log
+          contentHash: 62f3c6ee95a8abeae34f8917d7980c4bfd4bfad0b8c8747b0b2cbd7600cb2d2a
+          submissionId: 2562a6ed-1835-44b5-a85e-5abe8ce2667d
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 50
+  sourceHash: 7ae9a804e94615ce7b2afb1aef77aca8e4422fd87f599e8ad13ec29ff03922ba
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+              ref: openspec/changes/recover-runtime-output-cleanup
+      - contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+        ref: openspec/changes/recover-runtime-output-cleanup
+      - contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+      - choice: approved
+        proposal:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+              handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+              proposal: 在最终 Build Configure 绑定提交里复核登记仓 HEAD 和 index，报告输入策略判定的误跟踪运行时文件。已有 Build
+                Execute 在未开始或权威确认未执行时，可采纳同一 Workspace 最新已接受 HEAD 的单父直接子提交，Git
+                证明它只解除运行时文件的跟踪且其他仓和规划权威有效。通过受保护 workspace 恢复事务核对原 blocker，同一 Run
+                保留 Strategy、Binding、Plan、审批及有效完成事实，按新 checkpoint 为同一待执行包生成新 Work
+                并退役旧 packet。以精确前驱组合和定义采纳从真实基线安装包冷恢复，验证并发、拒绝混合提交、Build Check 和
+                Verify。delta spec 未改。
+              requirementsEvidence:
+                contentHash: a4644e3f6042f49f78394eee9e859829164493b80b4f9cac19d29c8812dd1456
+                ref: openspec/changes/recover-runtime-output-cleanup
+              sourceEvidence:
+                contentHash: f5ef236dd706db1e1b871ab8855b276c2a22193b90d7383478cc7f1fe1340d1d
+                ref: openspec/changes/recover-runtime-output-cleanup
+      - handoffContext: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+        handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+        proposal: 在最终 Build Configure 绑定提交里复核登记仓 HEAD 和 index，报告输入策略判定的误跟踪运行时文件。已有 Build
+          Execute 在未开始或权威确认未执行时，可采纳同一 Workspace 最新已接受 HEAD 的单父直接子提交，Git
+          证明它只解除运行时文件的跟踪且其他仓和规划权威有效。通过受保护 workspace 恢复事务核对原 blocker，同一 Run 保留
+          Strategy、Binding、Plan、审批及有效完成事实，按新 checkpoint 为同一待执行包生成新 Work 并退役旧
+          packet。以精确前驱组合和定义采纳从真实基线安装包冷恢复，验证并发、拒绝混合提交、Build Check 和 Verify。delta
+          spec 未改。
+        requirementsEvidence:
+          contentHash: a4644e3f6042f49f78394eee9e859829164493b80b4f9cac19d29c8812dd1456
+          ref: openspec/changes/recover-runtime-output-cleanup
+        sourceEvidence:
+          contentHash: f5ef236dd706db1e1b871ab8855b276c2a22193b90d7383478cc7f1fe1340d1d
+          ref: openspec/changes/recover-runtime-output-cleanup
+      - designDoc: openspec/changes/recover-runtime-output-cleanup/design.md
+      - contentHash: b0ee0ff2b0852986b15f2d53ce874fa99d8c9ac7fc12a0c74723e1d036e037d2
+        ref: openspec/changes/recover-runtime-output-cleanup/design.md
+      - boundBranch: codex/recover-runtime-output-cleanup
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.build.configure:
+              boundBranch: codex/recover-runtime-output-cleanup
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: b0ee0ff2b0852986b15f2d53ce874fa99d8c9ac7fc12a0c74723e1d036e037d2
+          ref: openspec/changes/recover-runtime-output-cleanup/design.md
+        plan: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+        planEvidence:
+          contentHash: 5e5f4df4b84f1e9d53838fd0f92be4bf606ff896cd1bd9e6bb87dd965a289ccd
+          ref: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+        taskRevision: 1b694aa2aa4952f0609e99c5b853953bebb6c4b662a0baf5e606ac826783a2a2
+      - contentHash: 5e5f4df4b84f1e9d53838fd0f92be4bf606ff896cd1bd9e6bb87dd965a289ccd
+        ref: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 7b7c50f9be9fa2695324aa01ed7e55c136674b8a7c465b7699ae87db22da5a9d
+        cwd: .
+        environment: 3fd58a1a48ff760ff20a977ed96f2f3229e9b1053f1ee47d08194c3c6704b225
+        exitCode: 0
+        inputAfter: 2b0b2c30e613d5b3112940e2058de353a608e334ff4910bb00827abd6994af46
+        inputBefore: 2b0b2c30e613d5b3112940e2058de353a608e334ff4910bb00827abd6994af46
+        manifestHash: 8bf43f41c406ddac3f613ff330771c6cc2d86a3684b1583ca1e8c06def5eaaf8
+        manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/4ed8f780-14f4-479f-aad2-dd1ff5413036.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/3d006d77-0d38-4e8e-8f1f-b5a143ecda92.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 7b7c50f9be9fa2695324aa01ed7e55c136674b8a7c465b7699ae87db22da5a9d
+        ref: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/3d006d77-0d38-4e8e-8f1f-b5a143ecda92.log
+      - contentHash: 39a4a21965733f1f8994a5e76c6fb4dfe472a2fc8399d728d9e0ef0fc2c35ed7
+        ref: docs/superpowers/reports/recover-runtime-output-cleanup.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/recover-runtime-output-cleanup.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 24469eca558bf32a16af3d3344d72bbb40b86a9264829c8ae22f312a4ba89119
+        cwd: .
+        deliveryInputs: {}
+        environment: 2e4f66a9d382bdda67ca0ff539f21d6c224c9015b27eedbb96c8f076bfad1cf3
+        exitCode: 1
+        inputAfter: 2b53558e819dd75d132999facc54d228d610204e940c3b260c842fc5405ef4cb
+        inputBefore: 2b53558e819dd75d132999facc54d228d610204e940c3b260c842fc5405ef4cb
+        manifestHash: 5dd00cf152df748899dcbef5ee4f52d975bd3f7d7ddde23921dda943c755777d
+        manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/219d4900-2cf6-4e2f-bc8b-44ebe6742467.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/c390764a-fd93-4c3c-9513-d5e5869b6975.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 20d3c41683ad62d799102399858f770ddfcd3adc9fb894b3741514d7cfe94f4b
+        cwd: .
+        environment: 3fd58a1a48ff760ff20a977ed96f2f3229e9b1053f1ee47d08194c3c6704b225
+        exitCode: 0
+        inputAfter: 00577656d75f5fe98cdef38f41052e7026a65a1adb4b3998bf3cdcee4e426869
+        inputBefore: 00577656d75f5fe98cdef38f41052e7026a65a1adb4b3998bf3cdcee4e426869
+        manifestHash: 53d6fc675d60eb11261b22e2679808315e400bfd1283ccc8b32ec0d98a637cda
+        manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/f38c82b4-13bd-49a3-b6a2-be75cccdd9fd.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/5ad80fbe-421a-482e-b1ad-c15e91555b73.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 20d3c41683ad62d799102399858f770ddfcd3adc9fb894b3741514d7cfe94f4b
+        ref: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/5ad80fbe-421a-482e-b1ad-c15e91555b73.log
+      - contentHash: 6223016581b3e08147e79174c63e245b7dc2f4c726f0b6bbfa51a29a35b94d50
+        ref: docs/superpowers/reports/recover-runtime-output-cleanup.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: 62f3c6ee95a8abeae34f8917d7980c4bfd4bfad0b8c8747b0b2cbd7600cb2d2a
+        cwd: .
+        deliveryInputs: {}
+        environment: 2e4f66a9d382bdda67ca0ff539f21d6c224c9015b27eedbb96c8f076bfad1cf3
+        exitCode: 0
+        inputAfter: 4a4230e1582a7b4f3d4df8bf02a950563e6f0071cd89a5e1ed31197a57213c30
+        inputBefore: 4a4230e1582a7b4f3d4df8bf02a950563e6f0071cd89a5e1ed31197a57213c30
+        manifestHash: 53d6fc675d60eb11261b22e2679808315e400bfd1283ccc8b32ec0d98a637cda
+        manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/5b0ae666-7fb0-4522-b531-28e0a41947ca.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/15b878a0-5b8b-4a41-a538-81145ae5aa7e.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 62f3c6ee95a8abeae34f8917d7980c4bfd4bfad0b8c8747b0b2cbd7600cb2d2a
+        ref: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/15b878a0-5b8b-4a41-a538-81145ae5aa7e.log
+      - choice: pr
+        proposal:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 recover-runtime-output-cleanup，将 Build Configure 跟踪检查和同一 Run
+                的纯清理恢复两条要求合并进 change-lifecycle 主规格。交付已验证的 c790699 后续提交 f4be0c6，7
+                项任务已完成，完整 Verify 为 1270 项通过、4 项跳过。推送
+                codex/recover-runtime-output-cleanup，创建目标为 origin/main 的 PR，CI
+                通过后合入。
+              targetBranch: codex/recover-runtime-output-cleanup
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档 recover-runtime-output-cleanup，将 Build Configure 跟踪检查和同一 Run
+          的纯清理恢复两条要求合并进 change-lifecycle 主规格。交付已验证的 c790699 后续提交 f4be0c6，7
+          项任务已完成，完整 Verify 为 1270 项通过、4 项跳过。推送
+          codex/recover-runtime-output-cleanup，创建目标为 origin/main 的 PR，CI 通过后合入。
+        targetBranch: codex/recover-runtime-output-cleanup
+      - baseCommit: f4be0c610ec32bba8e385d5b4fd04e257e14949d
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/recover-runtime-output-cleanup
+        verifiedBranch: codex/recover-runtime-output-cleanup
+      - archiveDirectory: openspec/changes/archive/2026-11-16-recover-runtime-output-cleanup
+      - sequence: 9
+        value:
+          boundBranch: codex/recover-runtime-output-cleanup
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: recover-runtime-output-cleanup
+              changeDir: openspec/changes/recover-runtime-output-cleanup
+              workspaceBaseline:
+                ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+            outputs:
+              full.build.configure:
+                boundBranch: codex/recover-runtime-output-cleanup
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: recover-runtime-output-cleanup
+              changeDir: openspec/changes/recover-runtime-output-cleanup
+              workspaceBaseline:
+                ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+                handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+                proposal: 在最终 Build Configure 绑定提交里复核登记仓 HEAD 和 index，报告输入策略判定的误跟踪运行时文件。已有 Build
+                  Execute 在未开始或权威确认未执行时，可采纳同一 Workspace 最新已接受 HEAD 的单父直接子提交，Git
+                  证明它只解除运行时文件的跟踪且其他仓和规划权威有效。通过受保护 workspace 恢复事务核对原 blocker，同一
+                  Run 保留 Strategy、Binding、Plan、审批及有效完成事实，按新 checkpoint
+                  为同一待执行包生成新 Work 并退役旧
+                  packet。以精确前驱组合和定义采纳从真实基线安装包冷恢复，验证并发、拒绝混合提交、Build Check 和
+                  Verify。delta spec 未改。
+                requirementsEvidence:
+                  contentHash: a4644e3f6042f49f78394eee9e859829164493b80b4f9cac19d29c8812dd1456
+                  ref: openspec/changes/recover-runtime-output-cleanup
+                sourceEvidence:
+                  contentHash: f5ef236dd706db1e1b871ab8855b276c2a22193b90d7383478cc7f1fe1340d1d
+                  ref: openspec/changes/recover-runtime-output-cleanup
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/recover-runtime-output-cleanup/design.md
+      - sequence: 8
+        value:
+          contentHash: b0ee0ff2b0852986b15f2d53ce874fa99d8c9ac7fc12a0c74723e1d036e037d2
+          ref: openspec/changes/recover-runtime-output-cleanup/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/recover-runtime-output-cleanup/.comet/handoff/design-context.json
+          handoffHash: 4e117f96421f89f7c6e43781c1b28379607cccddb874d45c71d36bc2ea3447a0
+          proposal: 在最终 Build Configure 绑定提交里复核登记仓 HEAD 和 index，报告输入策略判定的误跟踪运行时文件。已有 Build
+            Execute 在未开始或权威确认未执行时，可采纳同一 Workspace 最新已接受 HEAD 的单父直接子提交，Git
+            证明它只解除运行时文件的跟踪且其他仓和规划权威有效。通过受保护 workspace 恢复事务核对原 blocker，同一 Run 保留
+            Strategy、Binding、Plan、审批及有效完成事实，按新 checkpoint 为同一待执行包生成新 Work 并退役旧
+            packet。以精确前驱组合和定义采纳从真实基线安装包冷恢复，验证并发、拒绝混合提交、Build Check 和
+            Verify。delta spec 未改。
+          requirementsEvidence:
+            contentHash: a4644e3f6042f49f78394eee9e859829164493b80b4f9cac19d29c8812dd1456
+            ref: openspec/changes/recover-runtime-output-cleanup
+          sourceEvidence:
+            contentHash: f5ef236dd706db1e1b871ab8855b276c2a22193b90d7383478cc7f1fe1340d1d
+            ref: openspec/changes/recover-runtime-output-cleanup
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: recover-runtime-output-cleanup
+              changeDir: openspec/changes/recover-runtime-output-cleanup
+              workspaceBaseline:
+                ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+                ref: openspec/changes/recover-runtime-output-cleanup
+      - sequence: 2
+        value:
+          contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+          ref: openspec/changes/recover-runtime-output-cleanup
+      - sequence: 4
+        value:
+          contentHash: 439f61e4f92235b55b7266f10cc72622235246bc60a14e9d47805d4c4b0ced9c
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: b0ee0ff2b0852986b15f2d53ce874fa99d8c9ac7fc12a0c74723e1d036e037d2
+            ref: openspec/changes/recover-runtime-output-cleanup/design.md
+          plan: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+          planEvidence:
+            contentHash: 5e5f4df4b84f1e9d53838fd0f92be4bf606ff896cd1bd9e6bb87dd965a289ccd
+            ref: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+          taskRevision: 1b694aa2aa4952f0609e99c5b853953bebb6c4b662a0baf5e606ac826783a2a2
+      - sequence: 12
+        value:
+          contentHash: 5e5f4df4b84f1e9d53838fd0f92be4bf606ff896cd1bd9e6bb87dd965a289ccd
+          ref: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 7b7c50f9be9fa2695324aa01ed7e55c136674b8a7c465b7699ae87db22da5a9d
+          cwd: .
+          environment: 3fd58a1a48ff760ff20a977ed96f2f3229e9b1053f1ee47d08194c3c6704b225
+          exitCode: 0
+          inputAfter: 2b0b2c30e613d5b3112940e2058de353a608e334ff4910bb00827abd6994af46
+          inputBefore: 2b0b2c30e613d5b3112940e2058de353a608e334ff4910bb00827abd6994af46
+          manifestHash: 8bf43f41c406ddac3f613ff330771c6cc2d86a3684b1583ca1e8c06def5eaaf8
+          manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/4ed8f780-14f4-479f-aad2-dd1ff5413036.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/3d006d77-0d38-4e8e-8f1f-b5a143ecda92.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 7b7c50f9be9fa2695324aa01ed7e55c136674b8a7c465b7699ae87db22da5a9d
+          ref: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/3d006d77-0d38-4e8e-8f1f-b5a143ecda92.log
+      - sequence: 17
+        value:
+          contentHash: 39a4a21965733f1f8994a5e76c6fb4dfe472a2fc8399d728d9e0ef0fc2c35ed7
+          ref: docs/superpowers/reports/recover-runtime-output-cleanup.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/recover-runtime-output-cleanup.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 24469eca558bf32a16af3d3344d72bbb40b86a9264829c8ae22f312a4ba89119
+          cwd: .
+          deliveryInputs: {}
+          environment: 2e4f66a9d382bdda67ca0ff539f21d6c224c9015b27eedbb96c8f076bfad1cf3
+          exitCode: 1
+          inputAfter: 2b53558e819dd75d132999facc54d228d610204e940c3b260c842fc5405ef4cb
+          inputBefore: 2b53558e819dd75d132999facc54d228d610204e940c3b260c842fc5405ef4cb
+          manifestHash: 5dd00cf152df748899dcbef5ee4f52d975bd3f7d7ddde23921dda943c755777d
+          manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/219d4900-2cf6-4e2f-bc8b-44ebe6742467.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/c390764a-fd93-4c3c-9513-d5e5869b6975.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: b0ee0ff2b0852986b15f2d53ce874fa99d8c9ac7fc12a0c74723e1d036e037d2
+            ref: openspec/changes/recover-runtime-output-cleanup/design.md
+          plan: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+          planEvidence:
+            contentHash: 5e5f4df4b84f1e9d53838fd0f92be4bf606ff896cd1bd9e6bb87dd965a289ccd
+            ref: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+          taskRevision: 1b694aa2aa4952f0609e99c5b853953bebb6c4b662a0baf5e606ac826783a2a2
+      - sequence: 20
+        value:
+          contentHash: 5e5f4df4b84f1e9d53838fd0f92be4bf606ff896cd1bd9e6bb87dd965a289ccd
+          ref: docs/superpowers/plans/2026-11-16-recover-runtime-output-cleanup.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 20d3c41683ad62d799102399858f770ddfcd3adc9fb894b3741514d7cfe94f4b
+          cwd: .
+          environment: 3fd58a1a48ff760ff20a977ed96f2f3229e9b1053f1ee47d08194c3c6704b225
+          exitCode: 0
+          inputAfter: 00577656d75f5fe98cdef38f41052e7026a65a1adb4b3998bf3cdcee4e426869
+          inputBefore: 00577656d75f5fe98cdef38f41052e7026a65a1adb4b3998bf3cdcee4e426869
+          manifestHash: 53d6fc675d60eb11261b22e2679808315e400bfd1283ccc8b32ec0d98a637cda
+          manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/f38c82b4-13bd-49a3-b6a2-be75cccdd9fd.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/5ad80fbe-421a-482e-b1ad-c15e91555b73.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 23
+        value:
+          contentHash: 20d3c41683ad62d799102399858f770ddfcd3adc9fb894b3741514d7cfe94f4b
+          ref: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/5ad80fbe-421a-482e-b1ad-c15e91555b73.log
+      - sequence: 25
+        value:
+          contentHash: 6223016581b3e08147e79174c63e245b7dc2f4c726f0b6bbfa51a29a35b94d50
+          ref: docs/superpowers/reports/recover-runtime-output-cleanup.md
+      - sequence: 24
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/recover-runtime-output-cleanup.md
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: 62f3c6ee95a8abeae34f8917d7980c4bfd4bfad0b8c8747b0b2cbd7600cb2d2a
+          cwd: .
+          deliveryInputs: {}
+          environment: 2e4f66a9d382bdda67ca0ff539f21d6c224c9015b27eedbb96c8f076bfad1cf3
+          exitCode: 0
+          inputAfter: 4a4230e1582a7b4f3d4df8bf02a950563e6f0071cd89a5e1ed31197a57213c30
+          inputBefore: 4a4230e1582a7b4f3d4df8bf02a950563e6f0071cd89a5e1ed31197a57213c30
+          manifestHash: 53d6fc675d60eb11261b22e2679808315e400bfd1283ccc8b32ec0d98a637cda
+          manifestRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/5b0ae666-7fb0-4522-b531-28e0a41947ca.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/15b878a0-5b8b-4a41-a538-81145ae5aa7e.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 27
+        value:
+          contentHash: 62f3c6ee95a8abeae34f8917d7980c4bfd4bfad0b8c8747b0b2cbd7600cb2d2a
+          ref: .comet/runtime/classic-sdk-checks/3a729e511c4b4c14055118ac03e102e2d28da07915773723e9040800808ae733/15b878a0-5b8b-4a41-a538-81145ae5aa7e.log
+      - sequence: 29
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: recover-runtime-output-cleanup
+              changeDir: openspec/changes/recover-runtime-output-cleanup
+              workspaceBaseline:
+                ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档 recover-runtime-output-cleanup，将 Build Configure 跟踪检查和同一 Run
+                  的纯清理恢复两条要求合并进 change-lifecycle 主规格。交付已验证的 c790699 后续提交
+                  f4be0c6，7 项任务已完成，完整 Verify 为 1270 项通过、4 项跳过。推送
+                  codex/recover-runtime-output-cleanup，创建目标为 origin/main 的 PR，CI
+                  通过后合入。
+                targetBranch: codex/recover-runtime-output-cleanup
+      - sequence: 28
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档 recover-runtime-output-cleanup，将 Build Configure 跟踪检查和同一 Run
+            的纯清理恢复两条要求合并进 change-lifecycle 主规格。交付已验证的 c790699 后续提交 f4be0c6，7
+            项任务已完成，完整 Verify 为 1270 项通过、4 项跳过。推送
+            codex/recover-runtime-output-cleanup，创建目标为 origin/main 的 PR，CI
+            通过后合入。
+          targetBranch: codex/recover-runtime-output-cleanup
+      - sequence: 30
+        value:
+          baseCommit: f4be0c610ec32bba8e385d5b4fd04e257e14949d
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/recover-runtime-output-cleanup
+          verifiedBranch: codex/recover-runtime-output-cleanup
+      - sequence: 31
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-16-recover-runtime-output-cleanup
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.verify.report.evidence
+        value: 20
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 54
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 55
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 56
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 59
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 21
+        left: 58
+        right: 60
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 61
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 62
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 24
+        left: 64
+        right: 65
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 19
+        left: 66
+        right: 67
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 68
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 69
+        right: 62
+        height: 5
+      - key: full.archive.preflight
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: 71
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 72
+        right: 65
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 67
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 73
+        right: 74
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 75
+        right: 62
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 26
+        left: 77
+        right: 78
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 79
+        right: 65
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 80
+        right: 74
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 81
+        right: 62
+        height: 5
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 84
+        height: 2
+      - key: full.design.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 86
+        right: 87
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: 89
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 90
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 85
+        right: 91
+        height: 4
+      - key: full.build.plan
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 38
+        left: 93
+        right: 94
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 95
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 96
+        right: 91
+        height: 4
+      - key: full.build.execute
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 83
+        right: 98
+        height: 2
+      - key: full.build.plan.evidence
+        value: 38
+        left: null
+        right: 94
+        height: 2
+      - key: full.build.plan
+        value: 37
+        left: 99
+        right: 100
+        height: 3
+      - key: full.design.document
+        value: 30
+        left: 101
+        right: 91
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 103
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 105
+        right: 98
+        height: 3
+      - key: full.build.plan
+        value: 37
+        left: 106
+        right: 100
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 91
+        height: 5
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 42
+        left: null
+        right: 110
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 111
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 112
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 113
+        height: 5
+      - key: full.verify.check
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 42
+        left: 115
+        right: 110
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 116
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 107
+        right: 118
+        height: 5
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: 94
+        height: 2
+      - key: full.build.plan
+        value: 45
+        left: 106
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 121
+        right: 118
+        height: 5
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 105
+        right: 123
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 124
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 125
+        right: 118
+        height: 5
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: 127
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 128
+        right: 123
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 129
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 118
+        height: 5
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 115
+        right: 132
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 134
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 135
+        height: 5
+      - key: full.open.revalidate
+        value: 36
+        left: 109
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 138
+        right: 132
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 137
+        right: 139
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 88
+        right: 140
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 130
+        right: 141
+        height: 5
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 55
+        left: 143
+        right: 144
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 104
+        right: 123
+        height: 2
+      - key: full.build.check.evidence
+        value: 49
+        left: 145
+        right: 146
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 147
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 148
+        right: 141
+        height: 5
+      - key: full.archive.preflight
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: 150
+        height: 2
+      - key: full.archive.prepare
+        value: 55
+        left: 151
+        right: 144
+        height: 3
+      - key: full.build.plan
+        value: 45
+        left: 146
+        right: 120
+        height: 3
+      - key: full.build.check.evidence
+        value: 49
+        left: 152
+        right: 153
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 154
+        right: 141
+        height: 5
+      - key: full.archive.confirm
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 57
+        left: 156
+        right: 157
+        height: 2
+      - key: full.archive.prepare
+        value: 55
+        left: 158
+        right: 144
+        height: 3
+      - key: full.build.check.evidence
+        value: 49
+        left: 159
+        right: 153
+        height: 4
+      - key: full.design.document
+        value: 30
+        left: 160
+        right: 141
+        height: 5
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 34
+        left: 162
+        right: 163
+        height: 2
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: 165
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 162
+        right: 166
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: 168
+        right: 169
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: 170
+        right: 166
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: 172
+        right: 173
+        height: 2
+      - key: full.design.handoff
+        value: 32
+        left: 174
+        right: 169
+        height: 3
+      - key: full.open.confirm
+        value: 34
+        left: 175
+        right: 166
+        height: 4
+      - key: full.open.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 33
+        left: null
+        right: 177
+        height: 2
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 180
+        right: 181
+        height: 2
+      - key: full.open
+        value: 33
+        left: 179
+        right: 182
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: 185
+        right: 186
+        height: 2
+      - key: full.design.confirm
+        value: 29
+        left: 184
+        right: 187
+        height: 3
+      - key: full.open
+        value: 33
+        left: 188
+        right: 182
+        height: 4
+      - key: full.archive.prepare
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 48
+        left: 190
+        right: 191
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: null
+        right: 194
+        height: 2
+      - key: full.build.execute
+        value: 47
+        left: 193
+        right: 195
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: 192
+        right: 196
+        height: 4
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 180
+        right: 198
+        height: 2
+      - key: full.verify.check.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 50
+        left: 200
+        right: 201
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 199
+        right: 202
+        height: 3
+      - key: full.open
+        value: 33
+        left: 187
+        right: 203
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 197
+        right: 204
+        height: 5
+      - key: full.open
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 30
+        left: 207
+        right: 208
+        height: 2
+      - key: full.open.confirm
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 211
+        height: 2
+      - key: full.open
+        value: 33
+        left: 209
+        right: 212
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 28
+        left: 214
+        right: 215
+        height: 2
+      - key: full.design.document
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 31
+        left: 217
+        right: 218
+        height: 2
+      - key: full.design.confirm
+        value: 29
+        left: 216
+        right: 219
+        height: 3
+      - key: full.open
+        value: 33
+        left: 220
+        right: 212
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: 222
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 37
+        left: 224
+        right: 225
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 223
+        right: 226
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 212
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: 227
+        right: 228
+        height: 4
+      - key: full.build.check
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 230
+        right: 231
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 232
+        right: 226
+        height: 3
+      - key: full.verify.run
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: 234
+        height: 2
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 235
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 236
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 233
+        right: 237
+        height: 5
+      - key: full.build.plan
+        value: 45
+        left: 224
+        right: 225
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 232
+        right: 239
+        height: 3
+      - key: full.open.revalidate
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 35
+        left: 210
+        right: 241
+        height: 2
+      - key: full.verify.report.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 43
+        left: 243
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 44
+        left: 242
+        right: 244
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 245
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 240
+        right: 246
+        height: 5
+      - key: full.build.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 41
+        left: 248
+        right: 231
+        height: 2
+      - key: full.build.execute
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 45
+        left: 250
+        right: 251
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 249
+        right: 252
+        height: 3
+      - key: full.design.confirm
+        value: 29
+        left: 253
+        right: 246
+        height: 5
+      - key: full.build.check.evidence
+        value: 49
+        left: 248
+        right: 231
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: 255
+        right: 252
+        height: 3
+      - key: full.verify.run
+        value: 51
+        left: 243
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 44
+        left: 242
+        right: 257
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 258
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 256
+        right: 259
+        height: 5
+      - key: full.verify.report.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 51
+        left: 261
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 52
+        left: 242
+        right: 262
+        height: 3
+      - key: full.open
+        value: 33
+        left: 219
+        right: 263
+        height: 4
+      - key: full.design.confirm
+        value: 29
+        left: 256
+        right: 264
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 57
+      - 63
+      - 70
+      - 76
+      - 82
+      - 92
+      - 97
+      - 102
+      - 108
+      - 114
+      - 119
+      - 122
+      - 126
+      - 131
+      - 136
+      - 142
+      - 149
+      - 155
+      - 161
+      - 164
+      - 167
+      - 171
+      - 176
+      - 178
+      - 183
+      - 189
+      - 205
+      - 206
+      - 213
+      - 221
+      - 229
+      - 238
+      - 247
+      - 254
+      - 260
+      - 265
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:11
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:13
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:14
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:16
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:18
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:19
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:21
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:22
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:24
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:26
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:28
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:30
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:31
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:32
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:4
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:5
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:7
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - recover-runtime-output-cleanup:9
+          - results
+        map: 34
+      - path:
+          - outputs
+        map: 30
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 35
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 36
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 37
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 38
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 39
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 40
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 41
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 42
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 43
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 44
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 45
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 46
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 47
+  storageHash: 03f3e68d950c66a1bc4d8b01bc3f4c7a1f16248461e8bbb62495791dc73e0088
+check_epoch: 8

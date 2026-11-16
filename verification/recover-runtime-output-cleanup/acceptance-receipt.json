@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "platform": "Windows, actual npm package and independent CLI processes",
+  "implementationCommit": "b6f000dfe43d23202457d6f07f50cc920b9c7008",
+  "archiveSha256": "bf4443c24f55211267495ffc5385a89915882c038fb79d6cdf148ccf43bdc600",
+  "baseline": {
+    "commit": "b6a33525a3db152eaa8b2547cf930a1d2f0f7391",
+    "reproduction": {
+      "runId": "change-agent-lab-v010-workspace-qa-recovery-93-f4e5a2ee2ffd5811",
+      "originalHead": "5ac56930ce84262217a17cf87585b1522cd1c8be",
+      "current": "faa4b5bbf1a6ef5e29437c3ac171e3fd912f3f4d",
+      "fixture": ".repoctopus/scratch/legacy-test-output.json",
+      "observations": [
+        {
+          "entrypoint": "resume",
+          "diagnostics": [
+            {
+              "level": "warning",
+              "code": "runtime.project-changed",
+              "message": "Build workspace recovery blocked: unaccepted-head:agent-lab-v010-workspace"
+            }
+          ]
+        },
+        {
+          "entrypoint": "next",
+          "diagnostics": [
+            {
+              "level": "warning",
+              "code": "runtime.project-changed",
+              "message": "Build workspace recovery blocked: unaccepted-head:agent-lab-v010-workspace"
+            },
+            {
+              "level": "warning",
+              "code": "runtime.continuation.reconciliation-required",
+              "message": "Committed continuation requires reconciliation (project-drift)"
+            }
+          ]
+        }
+      ],
+      "workId": "build.execute:0a1d0160c4d1"
+    },
+    "workReconcile": [
+      {
+        "level": "error",
+        "code": "cli.command-failed",
+        "message": "Run has no Host invocation requiring reconciliation"
+      }
+    ]
+  },
+  "configure": {
+    "runId": "change-agent-lab-v010-workspace-qa-recovery-93-f4e5a2ee2ffd5811",
+    "diagnostic": [
+      {
+        "level": "warning",
+        "code": "change.build-tracked-runtime-output",
+        "message": "Build Configure found 1 tracked Runtime output path(s): \"agent-lab-v010-workspace\":\".repoctopus/scratch/legacy-test-output.json\". Remove these paths from Git tracking, keep them ignored locally, and retry this Run."
+      }
+    ],
+    "originalWork": "build.configure:04a927b819f7",
+    "originalSubmission": "submitted",
+    "originalBinding": null,
+    "originalCheckpoint": null,
+    "nextWork": "build.plan",
+    "acceptedBinding": "execution-binding:8296baad94703c9f9624e35e"
+  },
+  "sameRunRecovery": {
+    "runId": "change-agent-lab-v010-workspace-qa-recovery-93-f4e5a2ee2ffd5811",
+    "oldWork": "build.execute:f15e12bdd20b",
+    "newWork": "build.execute:c52d2f5ea7ab",
+    "oldEpoch": 9,
+    "newEpoch": 10,
+    "packageId": "work-package:d28d7ef79efdd35c44f43d65",
+    "planId": "build-plan:1138151db77dd2fa5443657b",
+    "planEvidence": "plan-evidence:d759dca29bbc5fabc95375b0",
+    "bindingId": "execution-binding:f62f6673f60a5af3391b4321",
+    "planningDigest": "sha256:deb8866256c32ed7867956591457f757e335256bf5139b2596f6aa72588477b9",
+    "openApprovalDigest": "sha256:9c5ffc20a50e3ee7525e0b069a01e0206afe094204aab8ec636d5a65e0cc297f",
+    "firstCompletion": "package-completion:1b11108713f98aa03f877a8d",
+    "oldCheckpoint": "sha256:e1a3913656281a4ae8427d46a78fa7324f71d6f3ac7a6adbcabbe770661426f4",
+    "newCheckpoint": "sha256:b348300cc1830534ff0c5cbe09f9eb981208c6902284440c549fa823f6bbfd5c",
+    "proof": {
+      "repositoryId": "agent-lab-v010-workspace",
+      "priorHead": "831e358602a3a5f71275b871deed40c81fae28ae",
+      "head": "442b701596c3a3da0c521cc80f18c417ec1972c9",
+      "policyDigest": "sha256:d4954b1039c0bfb05183c20db3f3746c60afb571855ad17d20bb2c7ac11b9e28",
+      "deletedCount": 1,
+      "digest": "sha256:425feb1cf26b132501bdb42a659cec59ba020667c499d43520f98a1befe0672e"
+    },
+    "acceptedTransitionCount": 1,
+    "coldEntryPoints": ["resume", "next"],
+    "verifyGate": "satisfied",
+    "verifyAttempt": "verify-f2c7a07b47d60b74c8a631875e8d532f3de4a332efd97b2faa15a1e848cefcd5",
+    "evidenceBundles": ["b71f32cceb720205fbc918d43a4a91653a5a9e52f92494a261ce39c5a4bbebe4"],
+    "executionCounts": {
+      "packages": {
+        "web-front": 1,
+        "backend": 1
+      },
+      "verify": {
+        "web-front": 1,
+        "backend": 1
+      }
+    }
+  },
+  "mixedCleanupGuard": {
+    "testedOnIntermediateCandidate": true,
+    "repeatedColdPulls": [
+      {
+        "phase": "build",
+        "epoch": 8,
+        "workId": "build.execute:bb6a28da89e4",
+        "continuation": "reconcile",
+        "diagnosticCodes": ["runtime.project-changed"]
+      },
+      {
+        "phase": "build",
+        "epoch": 8,
+        "workId": "build.execute:bb6a28da89e4",
+        "continuation": "reconcile",
+        "diagnosticCodes": [
+          "runtime.project-changed",
+          "runtime.continuation.reconciliation-required"
+        ]
+      },
+      {
+        "phase": "build",
+        "epoch": 8,
+        "workId": "build.execute:bb6a28da89e4",
+        "continuation": "reconcile",
+        "diagnosticCodes": [
+          "runtime.project-changed",
+          "runtime.continuation.reconciliation-required"
+        ]
+      }
+    ]
+  }
+}
