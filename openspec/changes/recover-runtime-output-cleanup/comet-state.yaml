@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 413f4df6-0ab9-453f-b22d-d5ba700c172f
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: b6a33525a3db152eaa8b2547cf930a1d2f0f7391
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-16
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/recover-runtime-output-cleanup
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: b113326519fd6c0a4ae1f10aee4f2038659937833120b2ce2a3f2d60b4334977
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: recover-runtime-output-cleanup
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: bbf259797abd3eee49bdc08540b2d1e1943dd3c085a3c30790dffb1103c01054
+    input:
+      change: recover-runtime-output-cleanup
+      changeDir: openspec/changes/recover-runtime-output-cleanup
+      workspaceBaseline:
+        ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: b6a33525a3db152eaa8b2547cf930a1d2f0f7391
+      boundBranch: codex/recover-runtime-output-cleanup
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-16
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: recover-runtime-output-cleanup:1
+        input:
+          input:
+            change: recover-runtime-output-cleanup
+            changeDir: openspec/changes/recover-runtime-output-cleanup
+            workspaceBaseline:
+              ref: 633f2db2-3ea8-4e19-a140-edf389750b8d
+          outputs: {}
+        inputHash: 730c18e77a0a555c57a3141b2a71b8d62c38e7545271ecee3f498fd0869fe465
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-runtime-output-cleanup
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      recover-runtime-output-cleanup:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 94a4df55b1688cb4fabaea0e109130cda98bddd54853839deb265d9fcd3d6614
