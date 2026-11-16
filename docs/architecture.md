@@ -85,6 +85,8 @@ Change Run 的 checkout 准备属于 Runner：Runner 先建立并公开 source b
 
 Execution Binding 只回答“哪个 Host 可以在哪些 checkout/branch 上执行”，初始 HEAD 是授权基线而不是永远不变的完成版本。Build Protocol 以 Runtime-owned workspace checkpoint 记录实际进度：每个 Package 只能让其 write scope 对应仓库保持不变或 fast-forward，其他仓库必须保持精确 HEAD；合法进度不会触发 Configure，也不会清空 Plan。Build Check 冻结最新 checkpoint，并在接收审查结果前重新观察所有仓库。这样既允许正常 commit/push，又不会把并发修改或历史重写吸收到 Package Evidence。
 
+Build Configure 在冻结 Binding 前按仓库输入策略检查所有登记 checkout 的 Git index 和 HEAD。已绑定的 Run 可以在两个包之间接纳同一 Workspace 的一笔纯运行时输出清理提交。Runtime 从 Git 对象确认直接前驱与删除范围，并复核当前执行、已批准规划和各仓 checkout。若工作树还留有已接受包生成的 Tasks 勾选，Runtime 用 Provider 指定的文件和受管完成事实核对字节。受保护事务一次写入 checkpoint、同包的新 Work 和接受记录，并只清理由同一 Git 冲突产生的 blocker。
+
 ## 受管 Work Execution、Action Intent 与 Receipt
 
 外部副作用不能占用 Run 锁。`run next` 是 Runner 发起的 pull-based 入口，Runtime 根据当前 lifecycle snapshot 选择 Work；Host 和 Agent 都不能指定目标 phase、Work 或 Skill。执行链路为：

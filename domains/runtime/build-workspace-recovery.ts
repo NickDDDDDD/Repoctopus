@@ -1,6 +1,14 @@
 import { createHash } from 'node:crypto';
 
-import type { ExecutionWorkspaceBinding } from '../change-lifecycle/build-protocol.js';
+import {
+  advanceBuildWorkspaceCheckpoint,
+  type BuildWorkspaceCheckpoint,
+  type ExecutionWorkspaceBinding,
+} from '../change-lifecycle/build-protocol.js';
+import {
+  classifyRepositoryInput,
+  type CompiledRepositoryInputPolicy,
+} from '../evidence/repository-input-policy.js';
 import type { RunState } from '../engine/types.js';
 import { reconcileProjectSnapshots } from '../project/snapshot.js';
 import type { ProjectReconciliation, ProjectSnapshot } from '../project/types.js';
@@ -13,6 +21,85 @@ export interface BuildWorkspaceRecovery {
   observationDigest: string;
   conflicts: readonly string[];
   reconciliation: ProjectReconciliation;
+}
+
+export interface RuntimeOutputCleanupProof {
+  repositoryId: string;
+  priorHead: string;
+  head: string;
+  policyDigest: `sha256:${string}`;
+  deletedCount: number;
+  digest: `sha256:${string}`;
+}
+
+export function isTrackedRuntimeOutput(
+  policy: CompiledRepositoryInputPolicy,
+  relativePath: string,
+): boolean {
+  return (
+    !relativePath.includes('\\') &&
+    classifyRepositoryInput(policy, relativePath, true).kind === 'conflict' &&
+    classifyRepositoryInput(policy, relativePath, false).kind === 'runtime-output'
+  );
+}
+
+export function canAcceptBuildRuntimeCleanup(state: RunState): boolean {
+  return (
+    state.status === 'running' &&
+    state.changeLifecycle?.phase === 'build' &&
+    state.changeLifecycle.currentWork?.kind === 'build.execute' &&
+    state.changeLifecycle.buildProtocol?.currentAction === 'execute' &&
+    !state.changeLifecycle.waitCondition &&
+    !state.changeLifecycle.blocker &&
+    (!state.workExecution ||
+      (state.workExecution.status === 'not-executed' &&
+        state.workExecution.workId === state.changeLifecycle.currentWork.workId &&
+        state.workExecution.checkEpoch === state.changeLifecycle.checkEpoch &&
+        !state.workExecution.pendingSubmission))
+  );
+}
+
+export function advanceRuntimeOutputCleanupCheckpoint(
+  checkpoint: BuildWorkspaceCheckpoint,
+  proof: RuntimeOutputCleanupProof,
+): BuildWorkspaceCheckpoint {
+  const previous = checkpoint.repositories.find(
+    ({ repositoryId }) => repositoryId === proof.repositoryId,
+  );
+  if (
+    !previous ||
+    previous.headRevision !== proof.priorHead ||
+    proof.head === proof.priorHead ||
+    !Number.isSafeInteger(proof.deletedCount) ||
+    proof.deletedCount <= 0
+  ) {
+    throw new Error('Runtime output cleanup does not match the accepted workspace checkpoint');
+  }
+  return advanceBuildWorkspaceCheckpoint({
+    current: checkpoint,
+    observed: checkpoint.repositories.map((repository) =>
+      repository.repositoryId === proof.repositoryId
+        ? { ...repository, headRevision: proof.head }
+        : repository,
+    ),
+    writableRepositoryIds: [proof.repositoryId],
+    relations: Object.fromEntries(
+      checkpoint.repositories.map(({ repositoryId }) => [
+        repositoryId,
+        repositoryId === proof.repositoryId ? 'fast-forward' : 'unchanged',
+      ]),
+    ),
+  });
+}
+
+export function isRuntimeOutputCleanupConflict(
+  observation: Pick<BuildWorkspaceRecovery, 'conflicts'>,
+  repositoryId: string,
+): boolean {
+  return (
+    observation.conflicts?.length === 1 &&
+    observation.conflicts[0] === `unaccepted-head:${repositoryId}`
+  );
 }
 
 export function classifyBuildWorkspaceRecovery(input: {
