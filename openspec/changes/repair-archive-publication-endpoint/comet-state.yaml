@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 507413eecc6e7efd946c68e41a4cbcd8d0c84ec4fa4f986c6a107a9fd00e9840
+  hash: 348f39dcfe654ca2bba86303736614d51802669546215a4b6bc4653e2360463f
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 13
+    sequence: 14
     actions:
       - attempt: 1
         claim:
@@ -602,6 +602,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-archive-endpoint-build-261116
+          token: portable-4abc37d0684989154245658d4538e6252e2e9be6aa248444226517d99b03603d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: repair-archive-publication-endpoint:13
         input:
           input:
@@ -714,16 +723,152 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
         inputHash: 090c1aa1935d5e46a27522eeb9700162d05ab859a7d2a74e3c8b40c9449495f7
+        outcome:
+          actionId: repair-archive-publication-endpoint:13
+          attempt: 1
+          claimToken: portable-4abc37d0684989154245658d4538e6252e2e9be6aa248444226517d99b03603d
+          inputHash: 090c1aa1935d5e46a27522eeb9700162d05ab859a7d2a74e3c8b40c9449495f7
+          outcomeId: 2d18d550-dc93-47aa-abe2-5e8f86d5cfee
+          output:
+            event: build-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 90584d01e44f64478dc5440c4c8d11e86623a75d972972aa1a8dcd17917b4939
+            outcomeId: 2d18d550-dc93-47aa-abe2-5e8f86d5cfee
         reconciliations: []
         ref: comet-build
         requiredCapabilities: []
         retry: manual
         runId: repair-archive-publication-endpoint
-        status: pending
+        status: succeeded
         stepId: full.build.execute
         type: invoke_skill
+      - attempt: 1
+        id: repair-archive-publication-endpoint:14
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs:
+            full.build.configure:
+              boundBranch: codex/repair-archive-publication-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-archive-publication-endpoint
+                  changeDir: openspec/changes/repair-archive-publication-endpoint
+                  workspaceBaseline:
+                    ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/repair-archive-publication-endpoint
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: fd701253c6c16d215d33f7c0d965841e2272e00e404cad59a7c0116b28649fe5
+                ref: openspec/changes/repair-archive-publication-endpoint/design.md
+              plan: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+              planEvidence:
+                contentHash: 92f842ba35bc8323ce245d02d3fe0e4dfee05a52ab74cab9c702c38515bbfd76
+                ref: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+              taskRevision: 4c338259a139e6cbe6436a5b10120cd4ccf6fba3f97fb419c3e370f6014e177d
+            full.build.plan.evidence:
+              contentHash: 92f842ba35bc8323ce245d02d3fe0e4dfee05a52ab74cab9c702c38515bbfd76
+              ref: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-archive-publication-endpoint
+                  changeDir: openspec/changes/repair-archive-publication-endpoint
+                  workspaceBaseline:
+                    ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-archive-publication-endpoint/.comet/handoff/design-context.json
+                    handoffHash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+                    proposal: 参考固定 Comet Classic 的已批准交付目标和同一 Run 恢复。Runtime 通过冻结策略摘要校验后，把同一份必填
+                      DeliveryPolicy 传给业务与规格发布。Delivery 复用 GitHub 客户端构造，API
+                      目标取自策略，凭据由 Workspace
+                      装配，此次核对的是客户端请求基址。以原候选包的精确直接前驱采纳新实现，保留审批、Bundle、Closure 和
+                      Journal。用原两条五仓 Run 复验，普通轮复用两个已创建业务 PR 和规格分支 OID，只补一个规格
+                      PR，返工轮完成三项发布，两条冷恢复均返回 completed。覆盖配置漂移拒绝与真实副作用次数。当前 delta
+                      spec 可直接覆盖方案。
+                    requirementsEvidence:
+                      contentHash: 33f80502d9d1976ac9818af62deee7d74ce681c6a0405526705ed59d7b74d367
+                      ref: openspec/changes/repair-archive-publication-endpoint
+                    sourceEvidence:
+                      contentHash: 8c23f2b3aa7b5e3768e9991dda44d7a07e3fb32deed7504238a7442db2676de1
+                      ref: openspec/changes/repair-archive-publication-endpoint
+            full.design.document:
+              designDoc: openspec/changes/repair-archive-publication-endpoint/design.md
+            full.design.evidence:
+              contentHash: fd701253c6c16d215d33f7c0d965841e2272e00e404cad59a7c0116b28649fe5
+              ref: openspec/changes/repair-archive-publication-endpoint/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/repair-archive-publication-endpoint/.comet/handoff/design-context.json
+              handoffHash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+              proposal: 参考固定 Comet Classic 的已批准交付目标和同一 Run 恢复。Runtime 通过冻结策略摘要校验后，把同一份必填
+                DeliveryPolicy 传给业务与规格发布。Delivery 复用 GitHub 客户端构造，API 目标取自策略，凭据由
+                Workspace 装配，此次核对的是客户端请求基址。以原候选包的精确直接前驱采纳新实现，保留审批、Bundle、Closure
+                和 Journal。用原两条五仓 Run 复验，普通轮复用两个已创建业务 PR 和规格分支 OID，只补一个规格
+                PR，返工轮完成三项发布，两条冷恢复均返回 completed。覆盖配置漂移拒绝与真实副作用次数。当前 delta spec
+                可直接覆盖方案。
+              requirementsEvidence:
+                contentHash: 33f80502d9d1976ac9818af62deee7d74ce681c6a0405526705ed59d7b74d367
+                ref: openspec/changes/repair-archive-publication-endpoint
+              sourceEvidence:
+                contentHash: 8c23f2b3aa7b5e3768e9991dda44d7a07e3fb32deed7504238a7442db2676de1
+                ref: openspec/changes/repair-archive-publication-endpoint
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-archive-publication-endpoint
+                  changeDir: openspec/changes/repair-archive-publication-endpoint
+                  workspaceBaseline:
+                    ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+                    ref: openspec/changes/repair-archive-publication-endpoint
+            full.open.evidence:
+              contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+              ref: openspec/changes/repair-archive-publication-endpoint
+            full.open.revalidate:
+              contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+        inputHash: 6c960b898fa608fd871ec08db1fb9ff4e941f891fa1f4411e4df50dd26ba4421
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: pending
+        stepId: full.build.check
+        type: call_tool
     actionContexts:
       repair-archive-publication-endpoint:1:
         results: {}
@@ -972,6 +1117,140 @@ run_checkpoint:
             value:
               contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
         sequence: 13
+      repair-archive-publication-endpoint:14:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/repair-archive-publication-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-archive-publication-endpoint
+                  changeDir: openspec/changes/repair-archive-publication-endpoint
+                  workspaceBaseline:
+                    ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/repair-archive-publication-endpoint
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: fd701253c6c16d215d33f7c0d965841e2272e00e404cad59a7c0116b28649fe5
+                ref: openspec/changes/repair-archive-publication-endpoint/design.md
+              plan: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+              planEvidence:
+                contentHash: 92f842ba35bc8323ce245d02d3fe0e4dfee05a52ab74cab9c702c38515bbfd76
+                ref: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+              taskRevision: 4c338259a139e6cbe6436a5b10120cd4ccf6fba3f97fb419c3e370f6014e177d
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 92f842ba35bc8323ce245d02d3fe0e4dfee05a52ab74cab9c702c38515bbfd76
+              ref: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-archive-publication-endpoint
+                  changeDir: openspec/changes/repair-archive-publication-endpoint
+                  workspaceBaseline:
+                    ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/repair-archive-publication-endpoint/.comet/handoff/design-context.json
+                    handoffHash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+                    proposal: 参考固定 Comet Classic 的已批准交付目标和同一 Run 恢复。Runtime 通过冻结策略摘要校验后，把同一份必填
+                      DeliveryPolicy 传给业务与规格发布。Delivery 复用 GitHub 客户端构造，API
+                      目标取自策略，凭据由 Workspace
+                      装配，此次核对的是客户端请求基址。以原候选包的精确直接前驱采纳新实现，保留审批、Bundle、Closure 和
+                      Journal。用原两条五仓 Run 复验，普通轮复用两个已创建业务 PR 和规格分支 OID，只补一个规格
+                      PR，返工轮完成三项发布，两条冷恢复均返回 completed。覆盖配置漂移拒绝与真实副作用次数。当前 delta
+                      spec 可直接覆盖方案。
+                    requirementsEvidence:
+                      contentHash: 33f80502d9d1976ac9818af62deee7d74ce681c6a0405526705ed59d7b74d367
+                      ref: openspec/changes/repair-archive-publication-endpoint
+                    sourceEvidence:
+                      contentHash: 8c23f2b3aa7b5e3768e9991dda44d7a07e3fb32deed7504238a7442db2676de1
+                      ref: openspec/changes/repair-archive-publication-endpoint
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/repair-archive-publication-endpoint/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: fd701253c6c16d215d33f7c0d965841e2272e00e404cad59a7c0116b28649fe5
+              ref: openspec/changes/repair-archive-publication-endpoint/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/repair-archive-publication-endpoint/.comet/handoff/design-context.json
+              handoffHash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+              proposal: 参考固定 Comet Classic 的已批准交付目标和同一 Run 恢复。Runtime 通过冻结策略摘要校验后，把同一份必填
+                DeliveryPolicy 传给业务与规格发布。Delivery 复用 GitHub 客户端构造，API 目标取自策略，凭据由
+                Workspace 装配，此次核对的是客户端请求基址。以原候选包的精确直接前驱采纳新实现，保留审批、Bundle、Closure
+                和 Journal。用原两条五仓 Run 复验，普通轮复用两个已创建业务 PR 和规格分支 OID，只补一个规格
+                PR，返工轮完成三项发布，两条冷恢复均返回 completed。覆盖配置漂移拒绝与真实副作用次数。当前 delta spec
+                可直接覆盖方案。
+              requirementsEvidence:
+                contentHash: 33f80502d9d1976ac9818af62deee7d74ce681c6a0405526705ed59d7b74d367
+                ref: openspec/changes/repair-archive-publication-endpoint
+              sourceEvidence:
+                contentHash: 8c23f2b3aa7b5e3768e9991dda44d7a07e3fb32deed7504238a7442db2676de1
+                ref: openspec/changes/repair-archive-publication-endpoint
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: repair-archive-publication-endpoint
+                  changeDir: openspec/changes/repair-archive-publication-endpoint
+                  workspaceBaseline:
+                    ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+                    ref: openspec/changes/repair-archive-publication-endpoint
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+              ref: openspec/changes/repair-archive-publication-endpoint
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+        sequence: 14
       repair-archive-publication-endpoint:4:
         results:
           full.open:
@@ -1695,6 +1974,10 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
+      full.build.execute:
+        sequence: 13
+        value:
+          event: build-complete
       full.build.plan:
         sequence: 11
         value:
@@ -1795,6 +2078,6 @@ run_checkpoint:
           contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
     children: []
     lineage: []
-  sourceRevision: 19
-  sourceHash: eb938510af6e7073b81f7e4e55833face5810e2242b842ba89939aaa29bd8e81
+  sourceRevision: 21
+  sourceHash: 6fccb80174f07b627a19af8eab13e01fa18b99d0a01aa6aed8bcfb47885c6a97
 check_epoch: 2

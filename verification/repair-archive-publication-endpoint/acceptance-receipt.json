@@ -1,0 +1,1020 @@
+{
+  "schemaVersion": 1,
+  "platform": "Windows",
+  "fixture": "Actual five-repository Git checkouts, local smart HTTP bare remotes, loopback HTTPS GitHub-compatible fixture, temporary fixture credential",
+  "endpoint": "https://127.0.0.1:53037/api",
+  "preexistingSpecificationOid": "0d3009d641b2fd60f402509b51714684a3f8ba42",
+  "retainedBackendCompletion": "package-completion:0144915e8bdda6efaca96086",
+  "normal": {
+    "round": "normal",
+    "runId": "change-agent-lab-v010-workspace-qa-stability-normal-261116-4f6e7d17788a9685",
+    "status": "completed",
+    "target": "acceptance/qa-stability-normal-261116",
+    "receipts": [
+      {
+        "repository": "backend",
+        "url": "https://github-fixture.localhost/normal/backend/pull/1",
+        "number": 1,
+        "oid": "50481fcc34945b0c6a43e66d9f840382530db6a0"
+      },
+      {
+        "repository": "web-front",
+        "url": "https://github-fixture.localhost/normal/web-front/pull/2",
+        "number": 2,
+        "oid": "cd7a8c102c95d7ba7d19b3e6bd0fe21ae2285ec3"
+      },
+      {
+        "repository": "agent-lab-v010-workspace",
+        "url": "https://github-fixture.localhost/normal/agent-lab-v010-workspace/pull/3",
+        "number": 3,
+        "oid": "0d3009d641b2fd60f402509b51714684a3f8ba42"
+      }
+    ],
+    "archived": [
+      "openspec/changes/archive/2026-11-16-qa-stability-normal-261116/design.md",
+      "openspec/changes/archive/2026-11-16-qa-stability-normal-261116/proposal.md",
+      "openspec/changes/archive/2026-11-16-qa-stability-normal-261116/specs/qa-stability-normal-261116-markers/spec.md",
+      "openspec/changes/archive/2026-11-16-qa-stability-normal-261116/tasks.md"
+    ],
+    "recoveries": ["resume", "next", "next", "resume"],
+    "runtimeFilesUnchanged": {
+      "run.json": "sha256:29cc63ec85b1ba72f94c0e63f6270ca5eb9c1ab7c6a4249f179e138d95751d66",
+      "checkpoint.json": "sha256:35c6e8f00c872824af1557faa6b3d223d40098e54ecd34fbc287cebc2ab23af9",
+      "trajectory.jsonl": "sha256:52da3bb82b748f1f990f3dd0d6a6c335f6dd7144e36c011f252debf50634a6b5"
+    },
+    "executions": {
+      "packages": {
+        "web-front": 1,
+        "backend": 1
+      },
+      "verify": {
+        "web-front": 1,
+        "backend": 1
+      }
+    },
+    "planId": "build-plan:8d3438950f7a0d70859c28bf",
+    "completionIds": [
+      "package-completion:6556c776754388205d813e22",
+      "package-completion:748a7a82e07517beb4d87366"
+    ],
+    "evidenceBundleIds": ["89ab958e505f945d6a43a5b912a5e4bb7b85ecf16dfd6393447d4a022a3c0ccb"],
+    "closureId": "sha256:60ef9c122520a883bb2fadb2603fd598d4c4d5709173e80e0633e5b9c7e17317",
+    "closureAndVerifyFactsPreserved": true,
+    "createRequests": [
+      {
+        "service": "api",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "pulls"
+      }
+    ],
+    "gitWriteRequests": [],
+    "apiRequestCount": 24
+  },
+  "repair": {
+    "round": "repair",
+    "runId": "change-agent-lab-v010-workspace-qa-stability-repair-261116-41f5cb199976e697",
+    "status": "completed",
+    "target": "acceptance/qa-stability-repair-261116",
+    "receipts": [
+      {
+        "repository": "backend",
+        "url": "https://github-fixture.localhost/repair/backend/pull/4",
+        "number": 4,
+        "oid": "296e0a27a7a72e0e3847f59c54fcc2d54810e82a"
+      },
+      {
+        "repository": "web-front",
+        "url": "https://github-fixture.localhost/repair/web-front/pull/5",
+        "number": 5,
+        "oid": "2d9181aead267172c28ec8ba65ddbedc538e997d"
+      },
+      {
+        "repository": "agent-lab-v010-workspace",
+        "url": "https://github-fixture.localhost/repair/agent-lab-v010-workspace/pull/6",
+        "number": 6,
+        "oid": "344e05b7ae728c6fe57456e6227ff8ccd60b6d90"
+      }
+    ],
+    "archived": [
+      "openspec/changes/archive/2026-11-16-qa-stability-repair-261116/design.md",
+      "openspec/changes/archive/2026-11-16-qa-stability-repair-261116/proposal.md",
+      "openspec/changes/archive/2026-11-16-qa-stability-repair-261116/specs/qa-stability-repair-261116-markers/spec.md",
+      "openspec/changes/archive/2026-11-16-qa-stability-repair-261116/tasks.md"
+    ],
+    "recoveries": ["resume", "next", "next", "resume"],
+    "runtimeFilesUnchanged": {
+      "run.json": "sha256:3c66104bdab5c2b7ca0497224c7d59656f4d0b7f1c87e2af301d329b5518ce5d",
+      "checkpoint.json": "sha256:60e4eae2ab8367e99f8192915254c5e9075a8f6cb25f7bf862de9dcf5b5be7a0",
+      "trajectory.jsonl": "sha256:70d660bc4bbacb6c0a536a8e3ee248652bb817b1258b17f050119b7ae00db8a2"
+    },
+    "executions": {
+      "packages": {
+        "web-front": 2,
+        "backend": 1
+      },
+      "verify": {
+        "web-front": 2,
+        "backend": 1
+      }
+    },
+    "planId": "build-plan:b54cf93893495c6bdbd87c36",
+    "completionIds": [
+      "package-completion:0144915e8bdda6efaca96086",
+      "package-completion:e42733632d9f32f9d46606be"
+    ],
+    "evidenceBundleIds": ["49e8f8abb48a8ab6f9ee86e4dc6ca0c5242e188008cf6272d1b8f9bed9d530ae"],
+    "closureId": "sha256:d0ef234a347dac8298991a6b8ff2f4e14d9d7af00699cf340d9aedb1e3947942",
+    "closureAndVerifyFactsPreserved": true,
+    "createRequests": [
+      {
+        "service": "api",
+        "method": "POST",
+        "owner": "repair",
+        "repo": "backend",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "POST",
+        "owner": "repair",
+        "repo": "web-front",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "POST",
+        "owner": "repair",
+        "repo": "agent-lab-v010-workspace",
+        "route": "pulls"
+      }
+    ],
+    "gitWriteRequests": [
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "repair",
+        "repo": "agent-lab-v010-workspace",
+        "route": "git-receive-pack"
+      }
+    ],
+    "apiRequestCount": 28
+  },
+  "ingress": [
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "backend",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "backend",
+      "route": "pulls/1"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "backend",
+      "route": "commits/50481fcc34945b0c6a43e66d9f840382530db6a0/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "backend",
+      "route": "pulls/1/reviews"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "web-front",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "web-front",
+      "route": "pulls/2"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "web-front",
+      "route": "commits/cd7a8c102c95d7ba7d19b3e6bd0fe21ae2285ec3/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "web-front",
+      "route": "pulls/2/reviews"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "backend",
+      "route": "pulls/1"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "backend",
+      "route": "commits/50481fcc34945b0c6a43e66d9f840382530db6a0/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "backend",
+      "route": "pulls/1/reviews"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "web-front",
+      "route": "pulls/2"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "web-front",
+      "route": "commits/cd7a8c102c95d7ba7d19b3e6bd0fe21ae2285ec3/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "web-front",
+      "route": "pulls/2/reviews"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "POST",
+      "owner": "normal",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls/3"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "agent-lab-v010-workspace",
+      "route": "commits/0d3009d641b2fd60f402509b51714684a3f8ba42/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls/3/reviews"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls/3"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "agent-lab-v010-workspace",
+      "route": "commits/0d3009d641b2fd60f402509b51714684a3f8ba42/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "normal",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls/3/reviews"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "backend",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "backend",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "POST",
+      "owner": "repair",
+      "repo": "backend",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "backend",
+      "route": "pulls/4"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "backend",
+      "route": "commits/296e0a27a7a72e0e3847f59c54fcc2d54810e82a/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "backend",
+      "route": "pulls/4/reviews"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "web-front",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "web-front",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "POST",
+      "owner": "repair",
+      "repo": "web-front",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "web-front",
+      "route": "pulls/5"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "web-front",
+      "route": "commits/2d9181aead267172c28ec8ba65ddbedc538e997d/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "web-front",
+      "route": "pulls/5/reviews"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "backend",
+      "route": "pulls/4"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "backend",
+      "route": "commits/296e0a27a7a72e0e3847f59c54fcc2d54810e82a/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "backend",
+      "route": "pulls/4/reviews"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "web-front",
+      "route": "pulls/5"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "web-front",
+      "route": "commits/2d9181aead267172c28ec8ba65ddbedc538e997d/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "web-front",
+      "route": "pulls/5/reviews"
+    },
+    {
+      "service": "git",
+      "method": "POST",
+      "owner": "repair",
+      "repo": "agent-lab-v010-workspace",
+      "route": "git-receive-pack"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "POST",
+      "owner": "repair",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls/6"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "agent-lab-v010-workspace",
+      "route": "commits/344e05b7ae728c6fe57456e6227ff8ccd60b6d90/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls/6/reviews"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls/6"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "agent-lab-v010-workspace",
+      "route": "commits/344e05b7ae728c6fe57456e6227ff8ccd60b6d90/status"
+    },
+    {
+      "service": "api",
+      "method": "GET",
+      "owner": "repair",
+      "repo": "agent-lab-v010-workspace",
+      "route": "pulls/6/reviews"
+    }
+  ],
+  "recoveryPackage": {
+    "commit": "e74d8cd373607a46dc16cda54c7138bb9b3ccb40",
+    "filename": "repoctopus-0.1.2.tgz",
+    "transportSha256": "259e458b94d8c36c77aac565f43ba57fa3378e7d9e5e259aa2418ae0efc2133b",
+    "sha256": "72c423ab0568cb6aab7c6ffc5ecd715098d75d8264cfe08ee5186adcdfd976dc",
+    "files": 487,
+    "bytes": 6575960
+  },
+  "finalPackage": {
+    "commit": "83b012dc33184ba1da4732c6f528ed0706ca6026",
+    "filename": "repoctopus-0.1.2.tgz",
+    "transportSha256": "5b23c75db04649786a239c85206e9089263bb146f3f4acfecb2375fc86ddd2b4",
+    "sha256": "2c364551bdd99a8f1aa221615de6fecf2848d76af3ee82db0dfe58956a7e1c3b",
+    "files": 487,
+    "bytes": 6576162
+  },
+  "finalPackageTerminal": {
+    "repair": {
+      "round": "repair",
+      "runId": "change-agent-lab-v010-workspace-qa-stability-repair-261116-41f5cb199976e697",
+      "status": "completed",
+      "target": "acceptance/qa-stability-repair-261116",
+      "receipts": [
+        {
+          "repository": "backend",
+          "url": "https://github-fixture.localhost/repair/backend/pull/4",
+          "number": 4,
+          "oid": "296e0a27a7a72e0e3847f59c54fcc2d54810e82a"
+        },
+        {
+          "repository": "web-front",
+          "url": "https://github-fixture.localhost/repair/web-front/pull/5",
+          "number": 5,
+          "oid": "2d9181aead267172c28ec8ba65ddbedc538e997d"
+        },
+        {
+          "repository": "agent-lab-v010-workspace",
+          "url": "https://github-fixture.localhost/repair/agent-lab-v010-workspace/pull/6",
+          "number": 6,
+          "oid": "344e05b7ae728c6fe57456e6227ff8ccd60b6d90"
+        }
+      ],
+      "archived": [
+        "openspec/changes/archive/2026-11-16-qa-stability-repair-261116/design.md",
+        "openspec/changes/archive/2026-11-16-qa-stability-repair-261116/proposal.md",
+        "openspec/changes/archive/2026-11-16-qa-stability-repair-261116/specs/qa-stability-repair-261116-markers/spec.md",
+        "openspec/changes/archive/2026-11-16-qa-stability-repair-261116/tasks.md"
+      ],
+      "recoveries": ["resume", "next", "next", "resume"],
+      "runtimeFilesUnchanged": {
+        "run.json": "sha256:3c66104bdab5c2b7ca0497224c7d59656f4d0b7f1c87e2af301d329b5518ce5d",
+        "checkpoint.json": "sha256:60e4eae2ab8367e99f8192915254c5e9075a8f6cb25f7bf862de9dcf5b5be7a0",
+        "trajectory.jsonl": "sha256:70d660bc4bbacb6c0a536a8e3ee248652bb817b1258b17f050119b7ae00db8a2"
+      },
+      "executions": {
+        "packages": {
+          "web-front": 2,
+          "backend": 1
+        },
+        "verify": {
+          "web-front": 2,
+          "backend": 1
+        }
+      }
+    },
+    "normal": {
+      "round": "normal",
+      "runId": "change-agent-lab-v010-workspace-qa-stability-normal-261116-4f6e7d17788a9685",
+      "status": "completed",
+      "target": "acceptance/qa-stability-normal-261116",
+      "receipts": [
+        {
+          "repository": "backend",
+          "url": "https://github-fixture.localhost/normal/backend/pull/1",
+          "number": 1,
+          "oid": "50481fcc34945b0c6a43e66d9f840382530db6a0"
+        },
+        {
+          "repository": "web-front",
+          "url": "https://github-fixture.localhost/normal/web-front/pull/2",
+          "number": 2,
+          "oid": "cd7a8c102c95d7ba7d19b3e6bd0fe21ae2285ec3"
+        },
+        {
+          "repository": "agent-lab-v010-workspace",
+          "url": "https://github-fixture.localhost/normal/agent-lab-v010-workspace/pull/3",
+          "number": 3,
+          "oid": "0d3009d641b2fd60f402509b51714684a3f8ba42"
+        }
+      ],
+      "archived": [
+        "openspec/changes/archive/2026-11-16-qa-stability-normal-261116/design.md",
+        "openspec/changes/archive/2026-11-16-qa-stability-normal-261116/proposal.md",
+        "openspec/changes/archive/2026-11-16-qa-stability-normal-261116/specs/qa-stability-normal-261116-markers/spec.md",
+        "openspec/changes/archive/2026-11-16-qa-stability-normal-261116/tasks.md"
+      ],
+      "recoveries": ["resume", "next", "next", "resume"],
+      "runtimeFilesUnchanged": {
+        "run.json": "sha256:29cc63ec85b1ba72f94c0e63f6270ca5eb9c1ab7c6a4249f179e138d95751d66",
+        "checkpoint.json": "sha256:35c6e8f00c872824af1557faa6b3d223d40098e54ecd34fbc287cebc2ab23af9",
+        "trajectory.jsonl": "sha256:52da3bb82b748f1f990f3dd0d6a6c335f6dd7144e36c011f252debf50634a6b5"
+      },
+      "executions": {
+        "packages": {
+          "web-front": 1,
+          "backend": 1
+        },
+        "verify": {
+          "web-front": 1,
+          "backend": 1
+        }
+      }
+    },
+    "ingressUnchanged": true
+  },
+  "explicitPolicyRun": {
+    "round": "normal",
+    "runId": "change-agent-lab-v010-workspace-qa-credential-normal-261116-44f5a53fe13ac263",
+    "status": "completed",
+    "target": "acceptance/qa-credential-normal-261116",
+    "receipts": [
+      {
+        "repository": "backend",
+        "url": "https://github-fixture.localhost/normal/backend/pull/1",
+        "number": 1,
+        "oid": "f9793efca7deb0b9e91cf5e59ff95661aef4f743"
+      },
+      {
+        "repository": "web-front",
+        "url": "https://github-fixture.localhost/normal/web-front/pull/2",
+        "number": 2,
+        "oid": "d1742a2c17382d960dad6e10f72830d194805d9b"
+      },
+      {
+        "repository": "agent-lab-v010-workspace",
+        "url": "https://github-fixture.localhost/normal/agent-lab-v010-workspace/pull/3",
+        "number": 3,
+        "oid": "2242461335da3ac61ccc2f845a5f4e095a76e841"
+      }
+    ],
+    "archived": [
+      "openspec/changes/archive/2026-11-16-qa-credential-normal-261116/design.md",
+      "openspec/changes/archive/2026-11-16-qa-credential-normal-261116/proposal.md",
+      "openspec/changes/archive/2026-11-16-qa-credential-normal-261116/specs/qa-credential-normal-261116-markers/spec.md",
+      "openspec/changes/archive/2026-11-16-qa-credential-normal-261116/tasks.md"
+    ],
+    "recoveries": ["resume", "next", "next", "resume"],
+    "runtimeFilesUnchanged": {
+      "run.json": "sha256:1b9b3f5ae44a24c8e30f4539ef068375fc18deff3df51c2e927ba3851312d0c8",
+      "checkpoint.json": "sha256:7648091e0287679840954de369e67be3c5bcf6bfde47aeffb81c7ad0e0210e71",
+      "trajectory.jsonl": "sha256:a50b2304cf08f451447faa9742531ab51312c1648821112f31c3e16c57194b40"
+    },
+    "executions": {
+      "packages": {
+        "web-front": 1,
+        "backend": 1
+      },
+      "verify": {
+        "web-front": 1,
+        "backend": 1
+      }
+    },
+    "endpoint": "https://127.0.0.1:57146/api",
+    "approvedCredentialReference": "REPOCTOPUS_FIXTURE_POLICY_TOKEN",
+    "workspaceCredentialReference": "REPOCTOPUS_GITHUB_TOKEN",
+    "ingress": [
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "web-design",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "web-plugin",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "web-design",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "web-plugin",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "pulls/1"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "commits/f9793efca7deb0b9e91cf5e59ff95661aef4f743/status"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "pulls/1/reviews"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "pulls/2"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "commits/d1742a2c17382d960dad6e10f72830d194805d9b/status"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "pulls/2/reviews"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "pulls/1"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "commits/f9793efca7deb0b9e91cf5e59ff95661aef4f743/status"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "backend",
+        "route": "pulls/1/reviews"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "pulls/2"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "commits/d1742a2c17382d960dad6e10f72830d194805d9b/status"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "web-front",
+        "route": "pulls/2/reviews"
+      },
+      {
+        "service": "git",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "git-receive-pack"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "POST",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "pulls/3"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "commits/2242461335da3ac61ccc2f845a5f4e095a76e841/status"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "pulls/3/reviews"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "pulls/3"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "commits/2242461335da3ac61ccc2f845a5f4e095a76e841/status"
+      },
+      {
+        "service": "api",
+        "method": "GET",
+        "owner": "normal",
+        "repo": "agent-lab-v010-workspace",
+        "route": "pulls/3/reviews"
+      }
+    ]
+  }
+}
