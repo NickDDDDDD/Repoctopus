@@ -2,6 +2,7 @@
 change: repair-spec-validation-authority
 design-doc: openspec/changes/repair-spec-validation-authority/design.md
 base-ref: c375eb9
+archived-with: 2026-11-16-repair-spec-validation-authority
 ---
 
 # 规格校验权威修复实施计划

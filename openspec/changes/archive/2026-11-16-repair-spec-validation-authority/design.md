@@ -2,6 +2,8 @@
 comet_change: repair-spec-validation-authority
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-16-repair-spec-validation-authority
+status: final
 ---
 
 # Design
