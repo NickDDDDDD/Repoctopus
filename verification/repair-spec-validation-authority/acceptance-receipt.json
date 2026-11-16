@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "candidate": {
+    "implementationCommit": "9b19e3f72bf6d2283c74fc1af97dec6090149473",
+    "version": "0.1.2",
+    "packageContentSha256": "72b2cc877951f8aedaa5026ff75b17752a23a5798820beeb3571d5cb1e135fcc",
+    "completeRunPackage": {
+      "implementationCommit": "403015e01ac381423f2172c1d8948df2217894cf",
+      "packageContentSha256": "0f619f84a4da7a1458cb58ac2c4e9549f83039a377ae9dfb6c85b1ff163b7256"
+    },
+    "finalArchiveSha256": "d1d522a17b7e9d5b2a2fa027c0558424d89d7609aa90092043a1f34619639e86",
+    "finalPackageEquivalence": {
+      "fileCount": 487,
+      "identicalCount": 486,
+      "changes": [
+        {
+          "path": "third_party/comet/source-manifest.json",
+          "previousSha256": "235264a1aeaa9744d4eb7c5028b8135c7f59bd9aecabd4e4264e3a4ddd913292",
+          "finalSha256": "5cba40a69161636d500b163a2f1550e86c9d2ba0ab4848dc3880fffc6db9c8e1"
+        }
+      ]
+    },
+    "finalDoctor": "passed",
+    "terminalRecoveryOnFinalPackage": "passed"
+  },
+  "baseline": {
+    "foreignValidationAccepted": true,
+    "beforeVersion": 15,
+    "afterVersion": 16,
+    "persistedChange": "legacy-foreign"
+  },
+  "runId": "change-agent-lab-v010-workspace-qa-spec-auth-b-261116-1956b44cf47d71de",
+  "open": {
+    "rejectedDiagnostics": [
+      {
+        "level": "warning",
+        "code": "openspec.issue.1",
+        "message": "Section \"## Missing purpose\" is not carried into the main spec by archive. Move it into a requirement, or into proposal.md or design.md.",
+        "artifactId": "qa-spec-auth-b-261116-markers/spec.md"
+      }
+    ],
+    "durableHashesUnchanged": {
+      "run.json": "sha256:02d8dc57105a921d18ccaba21b86f27a1d4534f87e9ba17e96f430149eda5f8c",
+      "checkpoint.json": "sha256:240bea447371b02a443f2c4db736ae6332e62976234ecc4e343e38cad752ac63",
+      "trajectory.jsonl": "sha256:b1e8a31d97b1f4ae7f15dd61738b2564484f7a80d16dcd51a8b2a75b5ea2ccd3"
+    },
+    "resumedWorkId": "change-agent-lab-v010-workspace-qa-spec-auth-b-261116-1956b44cf47d71de:change.intake:8b420d498600eb50",
+    "validDigest": "sha256:fbf78e021d08c8b60e8d089ea5cee8aa5bb788a6b461474dbacbd378235bf32f"
+  },
+  "design": {
+    "validDigest": "sha256:6293a661e9a8c6076e6abca1062e143667111b927877a0f5aada3f4422959ecb"
+  },
+  "verify": {
+    "gate": "satisfied",
+    "attemptId": "verify-263dc426734a6a49ce6c879dc5e4be0b76759845078b587a2a998e4225e05d65",
+    "bundleIds": ["ebfa0773a99655eb85e88d7679342ec756a8c4275d0ed793c76ad5e48317df94"],
+    "planId": "build-plan:7af606777dbdb66a504c5bad",
+    "completionIds": [
+      "package-completion:2c54d08dfcba934fc63837f5",
+      "package-completion:cebb1173249f6fa0bd30e5b1"
+    ]
+  },
+  "archive": {
+    "target": "acceptance/qa-spec-auth-b-261116",
+    "archivedArtifacts": [
+      "openspec/changes/archive/2026-11-16-qa-spec-auth-b-261116/design.md",
+      "openspec/changes/archive/2026-11-16-qa-spec-auth-b-261116/proposal.md",
+      "openspec/changes/archive/2026-11-16-qa-spec-auth-b-261116/specs/qa-spec-auth-b-261116-markers/spec.md",
+      "openspec/changes/archive/2026-11-16-qa-spec-auth-b-261116/tasks.md"
+    ],
+    "publicationReceipts": [
+      {
+        "repository": "backend",
+        "number": 12,
+        "oid": "6bba5115234bddb3dcadf3d9d212e3859e6eedc8"
+      },
+      {
+        "repository": "web-front",
+        "number": 16,
+        "oid": "f7215995536ce963dba021612cc836e988f3afde"
+      },
+      {
+        "repository": "agent-lab-v010-workspace",
+        "number": 10,
+        "oid": "ac3224345ff65278ee6192bf64f37a751213f568"
+      }
+    ],
+    "completed": true,
+    "coldRecoveryOrder": ["resume", "next", "next", "resume"],
+    "terminalDurableHashesUnchanged": {
+      "run.json": "sha256:886897146e38f098c8234f17d6a390cc94677d6db6fb65b09f1d2bbdbfec66e7",
+      "checkpoint.json": "sha256:9d62b5bcbe48b60cfb4d4c5f8d5899b1462d92b22854fc6abdf84a485f614fe5",
+      "trajectory.jsonl": "sha256:bc1859cca573237f3294f5bdab2c194381209c1baa12b4d62ace259afe7b0546"
+    },
+    "executions": {
+      "packages": {
+        "web-front": 1,
+        "backend": 1
+      },
+      "verify": {
+        "web-front": 1,
+        "backend": 1
+      }
+    }
+  }
+}

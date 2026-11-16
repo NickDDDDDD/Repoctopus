@@ -11,7 +11,10 @@ import {
   recordSpecificationApprovalDecision,
   requestSpecificationApproval,
 } from '../domains/specification/planning-approval.js';
-import type { SpecificationApprovalState } from '../domains/specification/types.js';
+import type {
+  SpecificationApprovalState,
+  SpecificationValidation,
+} from '../domains/specification/types.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import {
   compositionFixture,
@@ -54,6 +57,16 @@ function fixture(
     storeId: 'team',
     repositoryId: 'workspace',
   } as const;
+  const validation = {
+    apiVersion: 'repoctopus.specification/v1alpha1',
+    kind: 'SpecificationValidation',
+    changeId: 'sample',
+    provider,
+    strict: true,
+    valid: true,
+    validationDigest: hash('b'),
+    diagnostics: [] as SpecificationValidation['diagnostics'],
+  } as const;
   const snapshot = createPlanningSnapshot({
     change: structuredClone({
       ...change,
@@ -61,16 +74,7 @@ function fixture(
       affectedCapabilities: [...change.affectedCapabilities],
       retiredCapabilities: [],
     }),
-    validation: {
-      apiVersion: 'repoctopus.specification/v1alpha1',
-      kind: 'SpecificationValidation',
-      changeId: 'sample',
-      provider,
-      strict: true,
-      valid: true,
-      validationDigest: hash('b'),
-      diagnostics: [],
-    },
+    validation,
     schema: specificationSchemaFixture(provider),
     specificationRoot: root,
     approvalPhase: phase === 'design' ? 'design' : 'open',
@@ -132,7 +136,7 @@ function fixture(
     return Promise.resolve();
   });
   const status = vi.fn(() => Promise.resolve(approval));
-  const assertCurrentProposal = vi.fn(async () => {});
+  const assertCurrentProposal = vi.fn(() => Promise.resolve({ approval, validation }));
   const service = new LifecycleHumanDecisions({
     store: {
       recover: () => Promise.resolve(false),

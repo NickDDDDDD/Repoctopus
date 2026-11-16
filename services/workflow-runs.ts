@@ -64,9 +64,7 @@ import type {
   SpecificationApprovalDecisionResponse,
   SpecificationApprovalState,
   ChangeBranchReference,
-  SpecificationClosurePlan,
   SpecificationChange,
-  SpecificationUsageSnapshot,
   SpecificationValidation,
 } from '../domains/specification/types.js';
 import { bindOperationOwnership, type OperationOwnership } from './operation-ownership.js';
@@ -257,10 +255,20 @@ export interface ExecuteArchiveDeliveryResult {
     | 'intent-corrected'
     | 'definition-recovered'
     | 'planning-revision-required'
+    | 'planning-observation-unavailable'
     | 'published';
   publication: ArchivePublicationResult | null;
   receipt: PublicationReceipt | null;
   run: RunStatusView;
+}
+
+function planningObservationUnavailableError(error: unknown): boolean {
+  return Boolean(
+    error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    error.code === 'runtime.planning-observation-unavailable',
+  );
 }
 
 function deliveryBranchRoute(branch: DeliveryIntentV3['changeBranch']) {
@@ -1061,29 +1069,79 @@ export class WorkflowRuns extends Service {
     });
   }
 
-  bindSpecification(
-    runId: string,
-    validation: SpecificationValidation,
-    signal?: AbortSignal,
-  ): Promise<SpecificationUsageSnapshot> {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.coordinator.bindSpecification(runId, {
-        schemaVersion: 1,
-        changeId: validation.changeId,
-        provider: structuredClone(validation.provider),
-        validationDigest: validation.validationDigest,
-      }),
-    );
+  async assertSpecificationChange(runId: string, changeId: string): Promise<void> {
+    const { state } = await this.ctx.runStore.inspect(runId);
+    const identity = state?.changeLifecycle?.identity;
+    if (
+      identity?.runId !== runId ||
+      identity.changeId !== changeId ||
+      identity.workspaceId !== this.projectInput?.workspaceId
+    ) {
+      throw Object.assign(
+        new Error(
+          'Specification validation requires the Change owned by the selected Workspace Run',
+        ),
+        {
+          code: 'specification.run-change-mismatch',
+        },
+      );
+    }
   }
 
-  bindSpecificationClosurePlan(
-    runId: string,
-    plan: SpecificationClosurePlan,
+  private specificationGateAcceptance(
+    lifecycle: ChangeLifecycleState,
+    phase: 'open' | 'design',
+    assessment: DesignGateAssessment,
     signal?: AbortSignal,
-  ): Promise<SpecificationUsageSnapshot> {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.coordinator.bindSpecificationClosurePlan(runId, plan),
-    );
+    expectedTasks?: readonly SpecificationTask[],
+  ) {
+    const { validation, approval } = assessment;
+    if (!validation?.strict || !validation.valid || !approval?.decision?.approvalHash) {
+      throw new Error('Approved planning requires strictly valid Provider evidence');
+    }
+    const { requestId, proposalHash } = approval.decisionRequest;
+    const approvalHash = approval.decision.approvalHash;
+    return {
+      specificationAcceptance: {
+        expectedRevision: lifecycle.revision,
+        expectedCheckEpoch: lifecycle.checkEpoch,
+        expectedWorkId: lifecycle.currentWork?.workId ?? null,
+        expectedWaitId: lifecycle.waitCondition?.waitId ?? null,
+        snapshot: {
+          schemaVersion: 1 as const,
+          changeId: validation.changeId,
+          provider: validation.provider,
+          validationDigest: validation.validationDigest,
+        },
+      },
+      reobserve: async () => {
+        signal?.throwIfAborted();
+        const current = await this.ctx.specificationPlanning.assertCurrentProposal(
+          lifecycle.identity.changeId,
+          phase,
+          requestId,
+          proposalHash,
+          approval.snapshot.changeBranch,
+        );
+        if (
+          current.approval.status !== 'approved' ||
+          current.approval.decision?.approvalHash !== approvalHash ||
+          current.validation.validationDigest !== validation.validationDigest
+        ) {
+          throw new Error('Approved Specification evidence changed before phase acceptance');
+        }
+        if (expectedTasks) {
+          const currentTasks = await this.ctx.specification.tasks(
+            lifecycle.identity.changeId,
+            signal,
+          );
+          if (canonicalJson(currentTasks.tasks) !== canonicalJson(expectedTasks)) {
+            throw new Error('Design task projection changed before phase acceptance');
+          }
+        }
+        signal?.throwIfAborted();
+      },
+    };
   }
 
   private async assessChangePlanning(
@@ -1304,31 +1362,57 @@ export class WorkflowRuns extends Service {
       projectConfigDigest: base.projectConfigDigest,
       workspaceRepositoryId: base.workspaceRepositoryId,
     };
+    const buildStrategyDigest = this.buildStrategy(state, lifecycle).semanticDigest;
     try {
       const observation = await this.ctx.specificationPlanning.observeAuthority({
         changeId: lifecycle.identity.changeId,
         approvalPhase: 'design',
         expectedPlanningDigest: lifecycle.planningDigest,
-        buildStrategyDigest: this.buildStrategy(state, lifecycle).semanticDigest,
+        buildStrategyDigest,
         ...(signal ? { signal } : {}),
       });
       return { ...observation, ...context };
     } catch (error) {
+      signal?.throwIfAborted();
       const reason = error instanceof Error ? error.message : 'Planning semantic inspection failed';
       return {
-        status: 'invalid',
+        status: 'unavailable',
         observationKind: 'unknown',
-        invalidationKind: 'semantic',
-        planningDigest: `sha256:${createHash('sha256')
-          .update(canonicalJson({ kind: 'planning-semantic-inspection-failed', reason }))
-          .digest('hex')}`,
-        reasonCode: 'strict-validation-failed',
+        invalidationKind: null,
+        planningDigest: lifecycle.planningDigest,
+        reasonCode: 'observation-unavailable',
         reason,
         evidenceDigests: [],
         snapshot: null,
         ...context,
       };
     }
+  }
+
+  private async planningObservationUnavailable(
+    runId: string,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    const view = await this.coordinator.status(runId);
+    return {
+      value: {
+        ...view,
+        continuation: {
+          schemaVersion: 2,
+          continuation: 'reobserve',
+          reason: 'evidence-observation-unavailable',
+          workId: view.changeLifecycle?.currentWork?.workId ?? null,
+          checkEpoch: view.changeLifecycle?.checkEpoch ?? null,
+          attempt: view.state.workExecution?.attempt ?? null,
+        },
+      },
+      diagnostics: [
+        {
+          level: 'warning',
+          code: 'runtime.planning-observation-unavailable',
+          message: 'Planning authority is unavailable; retry observation on the same Run',
+        },
+      ],
+    };
   }
 
   private async returnToDesignForPlanningRevision(
@@ -1343,8 +1427,8 @@ export class WorkflowRuns extends Service {
     if (!['build', 'verify', 'archive'].includes(lifecycle.phase)) {
       throw new Error(`Planning revision is not valid from ${lifecycle.phase}`);
     }
-    if (!observation.invalidationKind) {
-      throw new Error('Authorized planning cannot trigger a Design revision');
+    if (observation.status !== 'invalid') {
+      throw new Error('Design revision requires confirmed planning invalidation');
     }
     const skills = await this.resolveLifecycleWorkSkills(
       'specification.plan',
@@ -1373,9 +1457,7 @@ export class WorkflowRuns extends Service {
     const reasonCode =
       observation.invalidationKind === 'approval-authority'
         ? 'approval-authority-changed'
-        : observation.observationKind === 'unknown'
-          ? 'validation-observation-changed'
-          : 'design-changed';
+        : 'design-changed';
     const revised = await this.classifyAndApplyRecovery({
       state,
       lifecycle,
@@ -1920,6 +2002,11 @@ export class WorkflowRuns extends Service {
     if (!this.projectInput)
       throw new Error('Build recovery requires current project observation configuration');
     const current = await this.ctx.project.snapshot(this.projectInput);
+    const planning =
+      lifecycle.currentWork?.kind === 'build.plan'
+        ? await this.observeChangePlanning(state, lifecycle)
+        : null;
+    if (planning?.status === 'unavailable') return this.planningObservationUnavailable(runId);
     const authorization = await this.authorizedProtectedBranchRebind(state, lifecycle, current);
     if (authorization) {
       const base = await this.loadChangePlanningBase(state, lifecycle, 'design');
@@ -1951,10 +2038,6 @@ export class WorkflowRuns extends Service {
           ? error.code
           : 'checkout-observation-failed';
     }
-    const planning =
-      lifecycle.currentWork?.kind === 'build.plan'
-        ? await this.observeChangePlanning(state, lifecycle)
-        : null;
     const publication = await this.approvedVerificationConfigPublication(state, observed, previous);
     const classified = classifyBuildWorkspaceRecovery({
       ...(publication ? { verificationConfigPublication: publication } : {}),
@@ -2024,6 +2107,14 @@ export class WorkflowRuns extends Service {
       throw new Error(`Evidence workspace authority changed: ${authority.conflicts.join(', ')}`);
     if (checkPlanning) {
       const planning = await this.observeChangePlanning(state, lifecycle, signal);
+      if (planning.status === 'unavailable') {
+        throw Object.assign(
+          new Error('Planning authority is unavailable during protected acceptance'),
+          {
+            code: 'runtime.planning-observation-unavailable',
+          },
+        );
+      }
       if (planning.status !== 'authorized')
         throw new Error('Evidence planning authority changed during protected acceptance');
     }
@@ -2151,9 +2242,8 @@ export class WorkflowRuns extends Service {
       return complete();
     try {
       const planning = await this.observeChangePlanning(latest, active, signal);
+      if (planning.status === 'unavailable') return this.planningObservationUnavailable(runId);
       if (planning.status === 'invalid') {
-        if (planning.observationKind === 'unknown')
-          throw new Error('Planning Provider observation is unavailable');
         const revised = await this.returnToDesignForPlanningRevision(
           latest,
           active,
@@ -2812,30 +2902,28 @@ export class WorkflowRuns extends Service {
       for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
         await this.coordinator.bindSkill(state.runId, skill);
       }
-      if (assessment.validation) {
-        await this.coordinator.bindSpecification(state.runId, {
-          schemaVersion: 1,
-          changeId: assessment.validation.changeId,
-          provider: structuredClone(assessment.validation.provider),
-          validationDigest: assessment.validation.validationDigest,
-        });
-      }
     }
-    const advanced = await this.coordinator.acceptChangeObservation(state.runId, {
-      kind: 'open-gate',
-      result: assessment.status,
-      reason: assessment.reason,
-      evidenceIds: assessment.evidenceDigests,
-      inputDigest,
-      ...((assessment.status === 'waiting' || assessment.status === 'approved') &&
-      assessment.approval
-        ? {
-            requestId: assessment.approval.decisionRequest.requestId,
-            proposalDigest: assessment.approval.decisionRequest.proposalHash,
-          }
-        : {}),
-      ...(designWork ? { work: designWork } : {}),
-    });
+    const advanced = await this.coordinator.acceptChangeObservation(
+      state.runId,
+      {
+        kind: 'open-gate',
+        result: assessment.status,
+        reason: assessment.reason,
+        evidenceIds: assessment.evidenceDigests,
+        inputDigest,
+        ...((assessment.status === 'waiting' || assessment.status === 'approved') &&
+        assessment.approval
+          ? {
+              requestId: assessment.approval.decisionRequest.requestId,
+              proposalDigest: assessment.approval.decisionRequest.proposalHash,
+            }
+          : {}),
+        ...(designWork ? { work: designWork } : {}),
+      },
+      assessment.status === 'approved'
+        ? this.specificationGateAcceptance(lifecycle, 'open', assessment, signal)
+        : undefined,
+    );
     if (designWork)
       await this.ctx.workExecutionAuthority.recordWorkCreated(state.runId, designWork);
     return { ...advanced, value: await this.coordinator.status(state.runId) };
@@ -2855,6 +2943,7 @@ export class WorkflowRuns extends Service {
     if (
       workspaceRecovery &&
       (workspaceRecovery.value.state.reconciliationRequired ||
+        workspaceRecovery.value.continuation?.continuation === 'reobserve' ||
         workspaceRecovery.value.changeLifecycle?.phase !== 'build' ||
         workspaceRecovery.value.changeLifecycle?.currentWork?.kind === 'build.configure')
     )
@@ -2900,11 +2989,14 @@ export class WorkflowRuns extends Service {
         await this.ctx.workExecutionAuthority.recordContinuation(runId, continuation);
       return {
         diagnostics: verified.diagnostics,
-        value: await this.coordinator.status(runId),
+        value:
+          verified.value.run.continuation?.continuation === 'reobserve'
+            ? verified.value.run
+            : await this.coordinator.status(runId),
       };
     }
     const beforeNext = await this.ctx.runStore.loadRun(runId);
-    const result: RuntimeResult<RunStatusView> = await this.operations.run(
+    const operation = this.operations.run<RuntimeResult<RunStatusView>>(
       { cancellable: false, signal },
       async () => {
         const state = await this.ctx.runStore.loadRun(runId);
@@ -2986,6 +3078,22 @@ export class WorkflowRuns extends Service {
           let completedBuildDispatch = false;
           if (dispatchable) {
             const lifecycle = state.changeLifecycle;
+            if (lifecycle.phase === 'build' && work.kind !== 'build.plan') {
+              const planning = await this.observeChangePlanning(state, lifecycle, signal);
+              if (planning.status === 'unavailable')
+                return this.planningObservationUnavailable(runId);
+              if (planning.status === 'invalid') {
+                return this.returnToDesignForPlanningRevision(
+                  state,
+                  lifecycle,
+                  planning,
+                  planning.projectSnapshot,
+                  planning.projectConfigDigest,
+                  planning.workspaceRepositoryId,
+                  signal,
+                );
+              }
+            }
             if (
               lifecycle.phase === 'build' &&
               (classifiedContinuation.reason === 'host-not-executed' ||
@@ -3183,6 +3291,8 @@ export class WorkflowRuns extends Service {
               ? await this.assessChangePlanning(current, lifecycle, 'design', signal)
               : await (async () => {
                   const observed = await this.observeChangePlanning(current, lifecycle, signal);
+                  if (observed.status === 'unavailable')
+                    return this.planningObservationUnavailable(runId);
                   if (observed.status === 'invalid') {
                     return this.returnToDesignForPlanningRevision(
                       current,
@@ -3207,6 +3317,13 @@ export class WorkflowRuns extends Service {
                 })();
           if ('value' in evaluated) return evaluated;
           let assessment = evaluated.assessment;
+          if (
+            lifecycle.phase === 'design' &&
+            assessment.status === 'blocked' &&
+            !assessment.observation
+          ) {
+            return this.planningObservationUnavailable(runId);
+          }
           const { projectSnapshot, projectConfigDigest, workspaceRepositoryId } = evaluated;
           if (
             lifecycle.phase === 'build' &&
@@ -5154,14 +5271,6 @@ export class WorkflowRuns extends Service {
               };
             }
           }
-          if (assessment.status === 'approved' && assessment.validation && build) {
-            await this.coordinator.bindSpecification(runId, {
-              schemaVersion: 1,
-              changeId: assessment.validation.changeId,
-              provider: structuredClone(assessment.validation.provider),
-              validationDigest: assessment.validation.validationDigest,
-            });
-          }
           const inputDigest =
             assessment.snapshot?.planningManifestDigest ??
             assessment.validation?.validationDigest ??
@@ -5200,23 +5309,35 @@ export class WorkflowRuns extends Service {
               continuation: assessment.status === 'waiting' ? 'ask' : 'execute',
             });
           }
-          const advanced = await this.coordinator.acceptChangeObservation(runId, {
-            kind: 'design-gate',
-            result: assessment.status,
-            reason: assessment.reason,
-            evidenceIds: assessment.evidenceDigests,
-            inputDigest,
-            ...((assessment.status === 'waiting' || assessment.status === 'approved') &&
-            assessment.approval
-              ? {
-                  requestId: assessment.approval.decisionRequest.requestId,
-                  proposalDigest: assessment.approval.decisionRequest.proposalHash,
-                }
-              : {}),
-            ...(assessment.status === 'approved' && build
-              ? { tasks: build.tasks, work: build.work, buildProtocol: build.protocol }
-              : {}),
-          });
+          const advanced = await this.coordinator.acceptChangeObservation(
+            runId,
+            {
+              kind: 'design-gate',
+              result: assessment.status,
+              reason: assessment.reason,
+              evidenceIds: assessment.evidenceDigests,
+              inputDigest,
+              ...((assessment.status === 'waiting' || assessment.status === 'approved') &&
+              assessment.approval
+                ? {
+                    requestId: assessment.approval.decisionRequest.requestId,
+                    proposalDigest: assessment.approval.decisionRequest.proposalHash,
+                  }
+                : {}),
+              ...(assessment.status === 'approved' && build
+                ? { tasks: build.tasks, work: build.work, buildProtocol: build.protocol }
+                : {}),
+            },
+            assessment.status === 'approved'
+              ? this.specificationGateAcceptance(
+                  lifecycle,
+                  'design',
+                  assessment,
+                  signal,
+                  build?.tasks,
+                )
+              : undefined,
+          );
           if (advanced.value.state.changeLifecycle?.currentWork) {
             await this.ctx.workExecutionAuthority.recordWorkCreated(
               runId,
@@ -5241,6 +5362,17 @@ export class WorkflowRuns extends Service {
         };
       },
     );
+    const result = await operation.catch((error: unknown) => {
+      if (planningObservationUnavailableError(error))
+        return this.planningObservationUnavailable(runId);
+      throw error;
+    });
+    if (
+      result.diagnostics.some(
+        (diagnostic) => diagnostic.code === 'runtime.planning-observation-unavailable',
+      )
+    )
+      return result;
     const afterNext = await this.ctx.runStore.loadRun(runId);
     const beforeWait = beforeNext.changeLifecycle?.waitCondition;
     const afterWait = afterNext.changeLifecycle?.waitCondition;
@@ -5519,6 +5651,7 @@ export class WorkflowRuns extends Service {
     bundleId: string | null,
     reason: string,
     continuation: Awaited<ReturnType<WorkflowRuns['createVerifyFailureContinuation']>>,
+    signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
     const evidenceIds = [attemptId, ...(bundleId ? [bundleId] : [])];
     if (result === 'implementation-failure') {
@@ -5547,6 +5680,7 @@ export class WorkflowRuns extends Service {
           evidenceIds,
         },
         reobserve: async (latest) => {
+          await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal);
           const facts = await this.ctx.evidenceCoordinator.verifyRepairFacts(latest, attemptId);
           const latestProtocol = latest.changeLifecycle!.buildProtocol!;
           const invalidation = createBuildInvalidation({
@@ -5593,6 +5727,7 @@ export class WorkflowRuns extends Service {
         verificationInput: continuation.verificationInput,
         evidenceIds,
       },
+      reobserve: (latest) => this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal),
     });
   }
 
@@ -5605,7 +5740,8 @@ export class WorkflowRuns extends Service {
       if (
         observed &&
         (observed.value.state.reconciliationRequired ||
-          observed.value.continuation?.continuation === 'reobserve')
+          observed.value.continuation?.continuation === 'reobserve' ||
+          observed.value.changeLifecycle?.phase !== 'verify')
       ) {
         return {
           value: {
@@ -5767,6 +5903,31 @@ export class WorkflowRuns extends Service {
             'The original Evidence Attempt contains an uncertain node result',
           );
         }
+        const planning = await this.observeChangePlanning(state, lifecycle, signal);
+        if (planning.status === 'unavailable') {
+          return this.preserveUnsettledVerify(
+            input.runId,
+            attemptId,
+            gate.bundleId,
+            planning.reason,
+            'reobserve',
+          );
+        }
+        if (planning.status === 'invalid') {
+          const revised = await this.returnToDesignForPlanningRevision(
+            state,
+            lifecycle,
+            planning,
+            planning.projectSnapshot,
+            planning.projectConfigDigest,
+            planning.workspaceRepositoryId,
+            signal,
+          );
+          return {
+            value: { attemptId, bundleId: gate.bundleId, gate: 'blocked', run: revised.value },
+            diagnostics: revised.diagnostics,
+          };
+        }
         const rejected = rejectVerifyGate({
           runId: input.runId,
           lifecycle: current,
@@ -5805,7 +5966,20 @@ export class WorkflowRuns extends Service {
           rejected.bundleId,
           rejected.reason,
           continuation,
-        );
+          signal,
+        ).catch((error: unknown) => {
+          if (planningObservationUnavailableError(error)) return null;
+          throw error;
+        });
+        if (!fallback) {
+          return this.preserveUnsettledVerify(
+            input.runId,
+            attemptId,
+            rejected.bundleId,
+            'Planning authority is unavailable during protected Verify recovery',
+            'reobserve',
+          );
+        }
         await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, continuation.work);
         return {
           value: {
@@ -5824,33 +5998,47 @@ export class WorkflowRuns extends Service {
         attemptId,
         checkEpoch,
       });
-      const advanced = await this.coordinator.acceptChangeObservation(
-        input.runId,
-        {
-          kind: 'verify-gate-satisfied',
-          ...accepted,
-        },
-        {
-          reobserve: async (latest) => {
-            if (
-              latest.changeLifecycle?.currentWork?.workId !== accepted.workId ||
-              latest.reconciliationRequired
-            )
-              throw new Error('Verify acceptance authority changed');
-            await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal);
-            const gate = await this.ctx.evidenceCoordinator.evaluate({
-              workflowRunId: input.runId,
-              workflowActionId: accepted.workId,
-              workflowStepId: 'verify',
-              checkEpoch,
-              profileId: current.verificationInput!.evidenceProfile.id,
-              attemptId,
-            });
-            if (gate.status !== 'satisfied')
-              throw new Error('Verify inputs changed before the protected acceptance commit');
+      const advanced = await this.coordinator
+        .acceptChangeObservation(
+          input.runId,
+          {
+            kind: 'verify-gate-satisfied',
+            ...accepted,
           },
-        },
-      );
+          {
+            reobserve: async (latest) => {
+              if (
+                latest.changeLifecycle?.currentWork?.workId !== accepted.workId ||
+                latest.reconciliationRequired
+              )
+                throw new Error('Verify acceptance authority changed');
+              await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal);
+              const gate = await this.ctx.evidenceCoordinator.evaluate({
+                workflowRunId: input.runId,
+                workflowActionId: accepted.workId,
+                workflowStepId: 'verify',
+                checkEpoch,
+                profileId: current.verificationInput!.evidenceProfile.id,
+                attemptId,
+              });
+              if (gate.status !== 'satisfied')
+                throw new Error('Verify inputs changed before the protected acceptance commit');
+            },
+          },
+        )
+        .catch((error: unknown) => {
+          if (planningObservationUnavailableError(error)) return null;
+          throw error;
+        });
+      if (!advanced) {
+        return this.preserveUnsettledVerify(
+          input.runId,
+          attemptId,
+          accepted.bundleId,
+          'Planning authority is unavailable during protected acceptance',
+          'reobserve',
+        );
+      }
       return {
         value: {
           attemptId,
@@ -5978,7 +6166,8 @@ export class WorkflowRuns extends Service {
     input: PrepareArchiveDeliveryInput,
     signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
-    return this.archiveOperation(input.runId, signal, async () => {
+    return this.archiveOperation<RuntimeResult<RunStatusView>>(input.runId, signal, async () => {
+      await this.assertSpecificationChange(input.runId, input.intent.changeId);
       const recovery = await this.recoverEvidenceWorkspace(input.runId, signal);
       if (
         recovery &&
@@ -6007,6 +6196,16 @@ export class WorkflowRuns extends Service {
       ) {
         throw new Error(`Change Run is not ready to plan Archive Delivery: ${input.runId}`);
       }
+      const replacing = lifecycle.currentWork !== null;
+      if (
+        replacing &&
+        ((state.workExecution && ['invoking', 'unknown'].includes(state.workExecution.status)) ||
+          (await this.ctx.specification.closureExecutionStarted(lifecycle.identity.changeId)))
+      ) {
+        throw new Error(
+          'Archive has a started or uncertain original execution; reconcile it before replacing preflight',
+        );
+      }
       if (!evidence.bundle || !evidence.bundle.verificationReport) {
         throw new Error('Archive Delivery requires a completed formal verification report');
       }
@@ -6023,34 +6222,17 @@ export class WorkflowRuns extends Service {
           'Archive preflight requires the Bundle accepted for the current immutable Verification Input',
         );
       }
-      const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
-      const specificationRoot = state.trigger?.facts.specificationRoot as
-        | { repositoryId?: unknown }
-        | undefined;
-      if (
-        !lifecycle.planningDigest ||
-        typeof projectConfigDigest !== 'string' ||
-        !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
-        typeof specificationRoot?.repositoryId !== 'string'
-      ) {
-        throw new Error('Archive planning authority identities are missing');
-      }
-      const planningAuthority = await this.ctx.specificationPlanning.observeAuthority({
-        changeId: lifecycle.identity.changeId,
-        approvalPhase: 'design',
-        changeBranch: input.intent.changeBranch,
-        expectedPlanningDigest: lifecycle.planningDigest,
-        buildStrategyDigest: this.buildStrategy(state, lifecycle).semanticDigest,
-        ...(signal ? { signal } : {}),
-      });
+      const planningAuthority = await this.observeChangePlanning(state, lifecycle, signal);
+      if (planningAuthority.status === 'unavailable')
+        return this.planningObservationUnavailable(input.runId);
       if (planningAuthority.status === 'invalid') {
         return this.returnToDesignForPlanningRevision(
           state,
           lifecycle,
           planningAuthority,
           projectSnapshot,
-          projectConfigDigest as `sha256:${string}`,
-          specificationRoot.repositoryId,
+          planningAuthority.projectConfigDigest,
+          planningAuthority.workspaceRepositoryId,
           signal,
         );
       }
@@ -6084,18 +6266,8 @@ export class WorkflowRuns extends Service {
           input.intent,
         ),
       });
-      const replacing = lifecycle.currentWork !== null;
       if (replacing && lifecycle.archiveDeliveryInput?.digest === archiveInput.digest)
         return { value: await this.coordinator.status(input.runId), diagnostics: [] };
-      if (
-        replacing &&
-        ((state.workExecution && ['invoking', 'unknown'].includes(state.workExecution.status)) ||
-          (await this.ctx.specification.closureExecutionStarted(lifecycle.identity.changeId)))
-      ) {
-        throw new Error(
-          'Archive has a started or uncertain original execution; reconcile it before replacing preflight',
-        );
-      }
       const repositoryIds = Array.isArray(state.trigger?.facts.repositoryIds)
         ? state.trigger.facts.repositoryIds.filter(
             (repositoryId): repositoryId is string => typeof repositoryId === 'string',
@@ -6151,6 +6323,9 @@ export class WorkflowRuns extends Service {
       );
       await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, work);
       return { ...created, value: await this.coordinator.status(input.runId) };
+    }).catch((error: unknown) => {
+      if (!planningObservationUnavailableError(error)) throw error;
+      return this.planningObservationUnavailable(input.runId);
     });
   }
 
@@ -6225,553 +6400,598 @@ export class WorkflowRuns extends Service {
     input: ExecuteArchiveDeliveryInput,
     signal?: AbortSignal,
   ): Promise<RuntimeResult<ExecuteArchiveDeliveryResult>> {
-    return this.archiveOperation(input.runId, signal, async () => {
-      await this.coordinator.recoverChangeLifecycleDefinition(input.runId);
-      const state = await this.ctx.runStore.loadRun(input.runId);
-      const lifecycle = state.changeLifecycle;
-      if (state.reconciliationRequired)
-        throw new Error('Archive execution requires workspace reconciliation');
-      await this.assertEvidenceWorkspaceAuthorityCurrent(state, signal, false);
-      if (
-        lifecycle &&
-        state.status === 'running' &&
-        lifecycle.phase === 'archive' &&
-        lifecycle.currentWork === null &&
-        lifecycle.archiveDeliveryInput &&
-        lifecycle.specificationClosure &&
-        !lifecycle.publicationReceipt
-      ) {
-        const skills = await this.resolveLifecycleWorkSkills(
-          'delivery.publish',
-          signal,
-          [],
-          input.runId,
-        );
-        const restoredWork = createDeliveryPublishWork({
-          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-          checkEpoch: lifecycle.checkEpoch + 1,
-          archive: lifecycle.archiveDeliveryInput,
-          closure: lifecycle.specificationClosure,
-          actionSkill: skills.actionSkill,
-          skillComposition: skills.skillComposition,
-          workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
-          repositoryIds: input.project.repositories.map((repository) => repository.id),
-        });
-        await this.coordinator.bindSkill(input.runId, skills.actionSkill);
-        const restored = await this.coordinator.acceptChangeObservation(input.runId, {
-          kind: 'archive-work-restored',
-          work: restoredWork,
-          reason: 'Compatible lifecycle definition upgrade restored interrupted Archive Work',
-        });
-        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, restoredWork);
-        return {
-          value: {
-            stage: 'definition-recovered',
-            publication: null,
-            receipt: null,
-            run: await this.coordinator.status(input.runId),
-          },
-          diagnostics: [
-            ...restored.diagnostics,
-            {
-              level: 'warning',
-              code: 'change.archive-work-restored',
-              message:
-                'Archive publication Work was rebuilt after an explicitly compatible definition upgrade',
-            },
-          ],
-        };
-      }
-      const archive = lifecycle?.archiveDeliveryInput;
-      const workKind = lifecycle?.currentWork?.kind;
-      if (
-        !lifecycle ||
-        state.status !== 'running' ||
-        lifecycle.phase !== 'archive' ||
-        !['specification.close', 'delivery.publish'].includes(workKind ?? '') ||
-        !archive
-      ) {
-        throw new Error(`Change Run has no active Archive Delivery Work: ${input.runId}`);
-      }
-      if (workKind === 'specification.close') {
-        const intent: DeliveryIntentV3 = {
-          schemaVersion: 3,
-          changeId: archive.changeId,
-          changeBranch: archive.changeBranch,
-          businessDeliveries: archive.businessDeliveries,
-          ...(archive.businessSplitReason
-            ? { businessSplitReason: archive.businessSplitReason }
-            : {}),
-        };
-        const checkpoint = createArchivePublicationCheckpoint(
-          await this.ctx.project.snapshot(this.projectInput!),
-          intent,
-        );
-        if (checkpoint.digest !== archive.publicationCheckpoint.digest)
-          throw new Error(
-            'Archive publication checkpoint changed; re-prepare preflight when its original execution has not started',
-          );
-        if (!(await this.ctx.specification.closureExecutionStarted(archive.changeId))) {
-          const reverify = await this.reverifyArchiveIfFingerprintChanged(
-            input.runId,
-            state,
-            lifecycle,
-            signal,
-          );
-          if (reverify) {
-            return {
-              value: {
-                stage: 'reverify-required',
-                publication: null,
-                receipt: null,
-                run: reverify.value,
-              },
-              diagnostics: reverify.diagnostics,
-            };
-          }
-        }
-      }
-      if (deliveryPolicyDigest(input.policy) !== archive.publicationPolicyDigest) {
-        throw new Error('Archive Delivery policy changed after Work planning');
-      }
-      const currentWork = lifecycle.currentWork!;
-      const execution = state.workExecution;
-      const reconcilingExternalPublication =
-        execution?.status === 'unknown' &&
-        execution.unknownKind === 'external-side-effect' &&
-        execution.continuation === 'reconcile';
-      if (
-        !execution ||
-        execution.workId !== currentWork.workId ||
-        (!['outcome', 'validated'].includes(execution.status) && !reconcilingExternalPublication) ||
-        execution.actionOutcome?.status !== 'succeeded' ||
-        execution.hostOutcome?.status !== 'succeeded' ||
-        execution.hostOutcome.invocationId !== execution.hostInvocation?.invocationId ||
-        !execution.receiptId
-      ) {
-        throw new Error('Archive Work requires a succeeded managed Host Outcome');
-      }
-      if (execution.status === 'outcome') {
-        const validator = this.ctx.lifecycleValidators.resolve(currentWork.validatorProfile.id);
-        const validation = await validator.validate({
-          profileId: currentWork.validatorProfile.id,
-          work: currentWork,
-          fact: {
-            receiptId: execution.receiptId,
-            hostInvocationId: execution.hostInvocation.invocationId,
-            result: 'host-succeeded',
-          },
-        });
-        if (!validation.accepted) {
-          throw new Error(`Archive Validator rejected: ${validation.diagnostic}`);
-        }
-        await this.ctx.workExecutionAuthority.markValidated({
-          intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
-          validatorId: currentWork.validatorProfile.id,
-          continuation: 'execute',
-        });
-      }
-      const targetBaselineDigest = `sha256:${createHash('sha256')
-        .update(archive.changeBranch.remoteOid)
-        .digest('hex')}` as const;
-      let closure = lifecycle.specificationClosure;
-      if (workKind === 'specification.close') {
-        closure = await this.withArchiveEffectAuthority(
-          state,
-          async () => {
-            const plan = await this.ctx.specification.prepareClosure({
-              expectedSourceOid: archive.publicationCheckpoint.repositories.find(
-                (repo) => repo.repositoryId === archive.changeBranch.repositoryId,
-              )!.head,
-              changeId: archive.changeId,
-              mergeFactsDigest: archive.digest,
-              targetBaselineDigest,
-              ...(signal ? { signal } : {}),
-            });
-            return this.ctx.specification.close(plan, signal);
-          },
-          signal,
-        );
-        const skills = await this.resolveLifecycleWorkSkills(
-          'delivery.publish',
-          signal,
-          [],
-          input.runId,
-        );
-        const publishWork = createDeliveryPublishWork({
-          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-          checkEpoch: lifecycle.checkEpoch + 1,
-          archive,
-          closure,
-          actionSkill: skills.actionSkill,
-          skillComposition: skills.skillComposition,
-          workspaceRepositoryId: archive.changeBranch.repositoryId,
-          repositoryIds: input.project.repositories.map((repository) => repository.id),
-        });
-        await this.coordinator.bindSkill(input.runId, skills.actionSkill);
-        const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
-          kind: 'archive-specification-closed',
-          closure,
-          work: publishWork,
-        });
-        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, publishWork);
-        return {
-          value: {
-            stage: 'specification-closed',
-            publication: null,
-            receipt: null,
-            run: await this.coordinator.status(input.runId),
-          },
-          diagnostics: advanced.diagnostics,
-        };
-      }
-      if (!closure) {
-        throw new Error('Archive Delivery Work is missing its Specification Closure Receipt');
-      }
-      const verificationCompositionDigest = lifecycle.verificationInput?.compositionDigest;
-      if (!verificationCompositionDigest) {
-        throw new Error('Archive Delivery is missing its Verification composition identity');
-      }
-      const intent: DeliveryIntentV3 = {
-        schemaVersion: 3,
-        changeId: archive.changeId,
-        changeBranch: structuredClone(archive.changeBranch),
-        businessDeliveries: structuredClone(archive.businessDeliveries),
-        ...(archive.businessSplitReason
-          ? { businessSplitReason: structuredClone(archive.businessSplitReason) }
-          : {}),
-      };
-      const planningApproval = await this.ctx.specificationPlanning.status(
-        lifecycle.identity.changeId,
-        'design',
-      );
-      const planningCompositionDigest = archive.planningCompositionDigest;
-      if (!planningCompositionDigest) {
-        throw new Error('Archive Delivery is missing its planning composition identity');
-      }
-      const executionContext = this.archiveExecutionContext(state);
-      try {
-        await this.ctx.delivery.validateArchiveIntent(
-          intent,
-          input.policy,
-          executionContext,
-          signal,
-        );
-      } catch (error) {
+    return this.archiveOperation<RuntimeResult<ExecuteArchiveDeliveryResult>>(
+      input.runId,
+      signal,
+      async () => {
+        await this.coordinator.recoverChangeLifecycleDefinition(input.runId);
+        const state = await this.ctx.runStore.loadRun(input.runId);
+        const lifecycle = state.changeLifecycle;
+        if (state.reconciliationRequired)
+          throw new Error('Archive execution requires workspace reconciliation');
+        await this.assertEvidenceWorkspaceAuthorityCurrent(state, signal, false);
         if (
-          !planningApproval ||
-          planningApproval.status !== 'approved' ||
-          planningApproval.decision?.decision !== 'approve' ||
-          planningApproval.snapshot.changeId !== lifecycle.identity.changeId ||
-          canonicalJson(deliveryBranchRoute(archive.changeBranch)) !==
-            canonicalJson(deliveryBranchRoute(planningApproval.snapshot.changeBranch)) ||
-          (archive.changeBranch.remoteOid === closure.candidate.baseOid &&
-            archive.changeBranch.remoteIdentity ===
-              planningApproval.snapshot.changeBranch.remoteIdentity)
+          lifecycle &&
+          state.status === 'running' &&
+          lifecycle.phase === 'archive' &&
+          lifecycle.currentWork === null &&
+          lifecycle.archiveDeliveryInput &&
+          lifecycle.specificationClosure &&
+          !lifecycle.publicationReceipt
         ) {
-          throw error;
-        }
-        const normalizeCorrection = (candidate: DeliveryIntentV3) => ({
-          ...candidate,
-          changeBranch: {
-            ...candidate.changeBranch,
-            remoteIdentity: '<corrected>',
-            remoteOid: '<corrected>',
-          },
-        });
-        const correctedIntent: DeliveryIntentV3 = {
-          ...intent,
-          changeBranch: {
-            ...structuredClone(intent.changeBranch),
-            remoteIdentity: planningApproval.snapshot.changeBranch.remoteIdentity,
-            remoteOid: closure.candidate.baseOid,
-          },
-        };
-        if (
-          canonicalJson(normalizeCorrection(intent)) !==
-          canonicalJson(normalizeCorrection(correctedIntent))
-        ) {
-          throw new Error(
-            'Archive intent correction may change only the approved Change branch remote identity and OID',
-            {
-              cause: error,
-            },
-          );
-        }
-        try {
-          await this.ctx.delivery.validateArchiveIntent(
-            correctedIntent,
-            input.policy,
-            executionContext,
-            signal,
-          );
-        } catch (correctedError) {
-          const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
-          const specificationRoot = state.trigger?.facts.specificationRoot as
-            | { repositoryId?: unknown }
-            | undefined;
-          if (
-            typeof projectConfigDigest !== 'string' ||
-            !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
-            typeof specificationRoot?.repositoryId !== 'string'
-          ) {
-            throw new Error('Archive planning repair identities are missing', {
-              cause: correctedError,
-            });
-          }
           const skills = await this.resolveLifecycleWorkSkills(
-            'specification.plan',
+            'delivery.publish',
             signal,
             [],
             input.runId,
           );
-          const designWork = createLifecyclePhaseWork({
-            runId: input.runId,
-            checkEpoch: lifecycle.checkEpoch + 1,
-            changeId: lifecycle.identity.changeId,
+          const restoredWork = createDeliveryPublishWork({
             definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-            kind: 'specification.plan',
+            checkEpoch: lifecycle.checkEpoch + 1,
+            archive: lifecycle.archiveDeliveryInput,
+            closure: lifecycle.specificationClosure,
             actionSkill: skills.actionSkill,
-            augmentationSkills: skills.augmentationSkills,
             skillComposition: skills.skillComposition,
-            compositionDigest: state.composition.compositionDigest,
-            projectSnapshotDigest: state.projectSnapshotDigest,
-            projectConfigDigest: projectConfigDigest as `sha256:${string}`,
-            workspaceRepositoryId: specificationRoot.repositoryId,
+            workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
             repositoryIds: input.project.repositories.map((repository) => repository.id),
           });
-          for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
-            await this.coordinator.bindSkill(input.runId, skill);
-          }
-          const revised = await this.classifyAndApplyRecovery({
-            state,
-            lifecycle,
-            observationId: this.recoveryObservationId('archive-planning', {
-              archiveDigest: archive.digest,
-              closureId: closure.closureId,
-              planningDigest: planningApproval.snapshot.digest,
-            }),
-            layers: {
-              planning: {
-                status: 'drift',
-                reasonCode: 'design-changed',
-                changedIdentities: ['planning-semantic'],
-              },
-            },
-            materialization: {
-              work: designWork,
-              inputDigest: planningApproval.snapshot.digest,
-              evidenceIds: [archive.digest, closure.closureId, planningApproval.snapshot.digest],
-            },
+          await this.coordinator.bindSkill(input.runId, skills.actionSkill);
+          const restored = await this.coordinator.acceptChangeObservation(input.runId, {
+            kind: 'archive-work-restored',
+            work: restoredWork,
+            reason: 'Compatible lifecycle definition upgrade restored interrupted Archive Work',
           });
-          await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, designWork);
+          await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, restoredWork);
           return {
             value: {
-              stage: 'planning-revision-required',
+              stage: 'definition-recovered',
               publication: null,
               receipt: null,
               run: await this.coordinator.status(input.runId),
             },
             diagnostics: [
-              ...revised.diagnostics,
+              ...restored.diagnostics,
               {
                 level: 'warning',
-                code: 'change.archive-planning-drift',
+                code: 'change.archive-work-restored',
                 message:
-                  'Archive returned to Design because the approved Change branch drifted before remote publication',
+                  'Archive publication Work was rebuilt after an explicitly compatible definition upgrade',
               },
             ],
           };
         }
-        const correctedArchive = createArchiveDeliveryInput({
-          runId: input.runId,
-          changeId: archive.changeId,
-          verificationInputDigest: archive.verificationInputDigest,
-          acceptedEvidenceBundleIds: state.acceptedEvidenceBundleIds,
-          evidenceBundleId: archive.evidenceBundleId,
-          verificationReport: archive.verificationReport,
-          intent: correctedIntent,
-          policy: input.policy,
-          planningCompositionDigest,
-          evidenceCompositionDigest:
-            archive.evidenceCompositionDigest ??
-            (verificationCompositionDigest as `sha256:${string}`),
-          publicationCheckpoint: archive.publicationCheckpoint,
-        });
-        const skills = await this.resolveLifecycleWorkSkills(
-          'delivery.publish',
-          signal,
-          [],
-          input.runId,
-        );
-        const correctedWork = createDeliveryPublishWork({
-          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-          checkEpoch: lifecycle.checkEpoch + 1,
-          archive: correctedArchive,
-          closure,
-          actionSkill: skills.actionSkill,
-          skillComposition: skills.skillComposition,
-          workspaceRepositoryId: correctedArchive.changeBranch.repositoryId,
-          repositoryIds: input.project.repositories.map((repository) => repository.id),
-        });
-        await this.coordinator.bindSkill(input.runId, skills.actionSkill);
-        const corrected = await this.coordinator.acceptChangeObservation(input.runId, {
-          kind: 'archive-intent-corrected',
-          priorArchiveInputDigest: archive.digest,
-          archiveInput: correctedArchive,
-          closure,
-          work: correctedWork,
-          reason:
-            error instanceof Error
-              ? error.message
-              : 'Archive planning approval rejected the frozen Change branch OID',
-        });
-        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, correctedWork);
-        return {
-          value: {
-            stage: 'intent-corrected',
-            publication: null,
-            receipt: null,
-            run: await this.coordinator.status(input.runId),
-          },
-          diagnostics: [
-            ...corrected.diagnostics,
-            {
-              level: 'warning',
-              code: 'change.archive-intent-corrected',
-              message:
-                'Archive Change branch remote identity and OID were rebound to the approved closure baseline before publication',
-            },
-          ],
-        };
-      }
-      let publication: ArchivePublicationResult;
-      let receipt: PublicationReceipt;
-      try {
-        publication = await this.withArchiveEffectAuthority(
-          state,
-          (execution) =>
-            this.ctx.delivery.publishArchive(
-              {
-                runId: input.runId,
-                project: input.project,
-                intent,
-                policy: input.policy,
-                reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
-                evidenceBundleIds: [archive.evidenceBundleId],
-                expectedRepositoryHeads: Object.fromEntries(
-                  archive.publicationCheckpoint.repositories.map((repo) => [
-                    repo.repositoryId,
-                    repo.head,
-                  ]),
-                ),
-                execution,
-                evidenceCompositionDigest:
-                  archive.evidenceCompositionDigest ??
-                  (verificationCompositionDigest as `sha256:${string}`),
-              },
-              signal,
-            ),
-          signal,
-        );
-        const verifiedAt = new Date().toISOString();
-        const businessItems: PublicationReceiptItem[] = archive.businessDeliveries.map(
-          (delivery) => {
-            const mergeRequestReceipt = publication.receipts.find(
-              (item) => item.deliveryId === delivery.deliveryId && item.mergeRequest,
-            );
-            const pushReceipt = publication.receipts.find(
-              (item) => item.deliveryId === delivery.deliveryId && item.remoteOid,
-            );
-            if (!mergeRequestReceipt?.mergeRequest || !pushReceipt?.remoteOid) {
-              throw new Error(`Business publication Receipt is incomplete: ${delivery.deliveryId}`);
-            }
-            return {
-              publicationId: `business:${delivery.deliveryId}`,
-              role: 'business',
-              deliveryId: delivery.deliveryId,
-              repositoryId: delivery.repositoryId,
-              remoteIdentity:
-                input.project.repositories.find(
-                  (repository) => repository.id === delivery.repositoryId,
-                )?.remoteIdentity ??
-                (() => {
-                  throw new Error(
-                    `Repository remote identity is missing: ${delivery.repositoryId}`,
-                  );
-                })(),
-              remote: input.policy.publication.remote,
-              sourceBranch: delivery.sourceBranch,
-              targetBranch: delivery.targetBranch,
-              publishedOid: pushReceipt.remoteOid,
-              mergeRequest: mergeRequestReceipt.mergeRequest,
-              provenance: mergeRequestReceipt.provenance ?? 'recovered',
-              verifiedAt,
-            };
-          },
-        );
-        const specification = await this.withArchiveEffectAuthority(
-          state,
-          () =>
-            this.ctx.delivery.publishSpecification(
-              {
-                changeId: archive.changeId,
-                runId: lifecycle.identity.runId,
-                workspaceRoot: input.project.root,
-                changeBranch: archive.changeBranch,
-                closure,
-                remote: input.policy.publication.remote,
-                title: `Archive specification: ${archive.changeId}`,
-                body: `Closes verified specification change ${archive.changeId}.`,
-              },
-              signal,
-            ),
-          signal,
-        );
-        receipt = createPublicationReceipt({
-          apiVersion: PUBLICATION_RECEIPT_API_VERSION,
-          kind: 'PublicationReceipt',
-          schemaVersion: 2,
-          changeId: archive.changeId,
-          runId: input.runId,
-          deliverySnapshotDigest: publication.snapshot.digest as `sha256:${string}`,
-          verificationInputDigest: archive.verificationInputDigest,
-          evidenceBundleIds: [archive.evidenceBundleId],
-          specificationClosure: { closureId: closure.closureId, planDigest: closure.planDigest },
-          items: [...businessItems, specification.item],
-        });
-      } catch (error) {
-        if (error instanceof PublicationResultUnknownError) {
-          await this.ctx.workExecutionAuthority.markExternalSideEffectUnknown(
-            await this.ctx.workExecutionAuthority.loadIntent(input.runId),
-            error.stage,
+        const archive = lifecycle?.archiveDeliveryInput;
+        const workKind = lifecycle?.currentWork?.kind;
+        if (
+          !lifecycle ||
+          state.status !== 'running' ||
+          lifecycle.phase !== 'archive' ||
+          !['specification.close', 'delivery.publish'].includes(workKind ?? '') ||
+          !archive
+        ) {
+          throw new Error(`Change Run has no active Archive Delivery Work: ${input.runId}`);
+        }
+        if (workKind === 'specification.close') {
+          const intent: DeliveryIntentV3 = {
+            schemaVersion: 3,
+            changeId: archive.changeId,
+            changeBranch: archive.changeBranch,
+            businessDeliveries: archive.businessDeliveries,
+            ...(archive.businessSplitReason
+              ? { businessSplitReason: archive.businessSplitReason }
+              : {}),
+          };
+          const checkpoint = createArchivePublicationCheckpoint(
+            await this.ctx.project.snapshot(this.projectInput!),
+            intent,
           );
-        } else if (error instanceof PublicationNotAppliedError) {
-          await this.ctx.workExecutionAuthority.recordExternalSideEffectNotApplied(
+          if (checkpoint.digest !== archive.publicationCheckpoint.digest)
+            throw new Error(
+              'Archive publication checkpoint changed; re-prepare preflight when its original execution has not started',
+            );
+          if (!(await this.ctx.specification.closureExecutionStarted(archive.changeId))) {
+            const planning = await this.observeChangePlanning(state, lifecycle, signal);
+            if (planning.status !== 'authorized') {
+              const unavailable = planning.status === 'unavailable';
+              const observed = unavailable
+                ? await this.planningObservationUnavailable(input.runId)
+                : await this.returnToDesignForPlanningRevision(
+                    state,
+                    lifecycle,
+                    planning,
+                    planning.projectSnapshot,
+                    planning.projectConfigDigest,
+                    planning.workspaceRepositoryId,
+                    signal,
+                  );
+              return {
+                value: {
+                  stage: unavailable
+                    ? 'planning-observation-unavailable'
+                    : 'planning-revision-required',
+                  publication: null,
+                  receipt: null,
+                  run: observed.value,
+                },
+                diagnostics: observed.diagnostics,
+              };
+            }
+            const reverify = await this.reverifyArchiveIfFingerprintChanged(
+              input.runId,
+              state,
+              lifecycle,
+              signal,
+            );
+            if (reverify) {
+              return {
+                value: {
+                  stage: 'reverify-required',
+                  publication: null,
+                  receipt: null,
+                  run: reverify.value,
+                },
+                diagnostics: reverify.diagnostics,
+              };
+            }
+          }
+        }
+        if (deliveryPolicyDigest(input.policy) !== archive.publicationPolicyDigest) {
+          throw new Error('Archive Delivery policy changed after Work planning');
+        }
+        const currentWork = lifecycle.currentWork!;
+        const execution = state.workExecution;
+        const reconcilingExternalPublication =
+          execution?.status === 'unknown' &&
+          execution.unknownKind === 'external-side-effect' &&
+          execution.continuation === 'reconcile';
+        if (
+          !execution ||
+          execution.workId !== currentWork.workId ||
+          (!['outcome', 'validated'].includes(execution.status) &&
+            !reconcilingExternalPublication) ||
+          execution.actionOutcome?.status !== 'succeeded' ||
+          execution.hostOutcome?.status !== 'succeeded' ||
+          execution.hostOutcome.invocationId !== execution.hostInvocation?.invocationId ||
+          !execution.receiptId
+        ) {
+          throw new Error('Archive Work requires a succeeded managed Host Outcome');
+        }
+        if (execution.status === 'outcome') {
+          const validator = this.ctx.lifecycleValidators.resolve(currentWork.validatorProfile.id);
+          const validation = await validator.validate({
+            profileId: currentWork.validatorProfile.id,
+            work: currentWork,
+            fact: {
+              receiptId: execution.receiptId,
+              hostInvocationId: execution.hostInvocation.invocationId,
+              result: 'host-succeeded',
+            },
+          });
+          if (!validation.accepted) {
+            throw new Error(`Archive Validator rejected: ${validation.diagnostic}`);
+          }
+          await this.ctx.workExecutionAuthority.markValidated({
+            intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+            validatorId: currentWork.validatorProfile.id,
+            continuation: 'execute',
+          });
+        }
+        const targetBaselineDigest = `sha256:${createHash('sha256')
+          .update(archive.changeBranch.remoteOid)
+          .digest('hex')}` as const;
+        let closure = lifecycle.specificationClosure;
+        if (workKind === 'specification.close') {
+          closure = await this.withArchiveEffectAuthority(
+            state,
+            async () => {
+              const plan = await this.ctx.specification.prepareClosure({
+                expectedSourceOid: archive.publicationCheckpoint.repositories.find(
+                  (repo) => repo.repositoryId === archive.changeBranch.repositoryId,
+                )!.head,
+                changeId: archive.changeId,
+                mergeFactsDigest: archive.digest,
+                targetBaselineDigest,
+                ...(signal ? { signal } : {}),
+              });
+              return this.ctx.specification.close(plan, signal);
+            },
+            signal,
+          );
+          const skills = await this.resolveLifecycleWorkSkills(
+            'delivery.publish',
+            signal,
+            [],
+            input.runId,
+          );
+          const publishWork = createDeliveryPublishWork({
+            definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+            checkEpoch: lifecycle.checkEpoch + 1,
+            archive,
+            closure,
+            actionSkill: skills.actionSkill,
+            skillComposition: skills.skillComposition,
+            workspaceRepositoryId: archive.changeBranch.repositoryId,
+            repositoryIds: input.project.repositories.map((repository) => repository.id),
+          });
+          await this.coordinator.bindSkill(input.runId, skills.actionSkill);
+          const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
+            kind: 'archive-specification-closed',
+            closure,
+            work: publishWork,
+          });
+          await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, publishWork);
+          return {
+            value: {
+              stage: 'specification-closed',
+              publication: null,
+              receipt: null,
+              run: await this.coordinator.status(input.runId),
+            },
+            diagnostics: advanced.diagnostics,
+          };
+        }
+        if (!closure) {
+          throw new Error('Archive Delivery Work is missing its Specification Closure Receipt');
+        }
+        const verificationCompositionDigest = lifecycle.verificationInput?.compositionDigest;
+        if (!verificationCompositionDigest) {
+          throw new Error('Archive Delivery is missing its Verification composition identity');
+        }
+        const intent: DeliveryIntentV3 = {
+          schemaVersion: 3,
+          changeId: archive.changeId,
+          changeBranch: structuredClone(archive.changeBranch),
+          businessDeliveries: structuredClone(archive.businessDeliveries),
+          ...(archive.businessSplitReason
+            ? { businessSplitReason: structuredClone(archive.businessSplitReason) }
+            : {}),
+        };
+        const planningApproval = await this.ctx.specificationPlanning.status(
+          lifecycle.identity.changeId,
+          'design',
+        );
+        const planningCompositionDigest = archive.planningCompositionDigest;
+        if (!planningCompositionDigest) {
+          throw new Error('Archive Delivery is missing its planning composition identity');
+        }
+        const executionContext = this.archiveExecutionContext(state);
+        try {
+          await this.ctx.delivery.validateArchiveIntent(
+            intent,
+            input.policy,
+            executionContext,
+            signal,
+          );
+        } catch (error) {
+          if (
+            !planningApproval ||
+            planningApproval.status !== 'approved' ||
+            planningApproval.decision?.decision !== 'approve' ||
+            planningApproval.snapshot.changeId !== lifecycle.identity.changeId ||
+            canonicalJson(deliveryBranchRoute(archive.changeBranch)) !==
+              canonicalJson(deliveryBranchRoute(planningApproval.snapshot.changeBranch)) ||
+            (archive.changeBranch.remoteOid === closure.candidate.baseOid &&
+              archive.changeBranch.remoteIdentity ===
+                planningApproval.snapshot.changeBranch.remoteIdentity)
+          ) {
+            throw error;
+          }
+          const normalizeCorrection = (candidate: DeliveryIntentV3) => ({
+            ...candidate,
+            changeBranch: {
+              ...candidate.changeBranch,
+              remoteIdentity: '<corrected>',
+              remoteOid: '<corrected>',
+            },
+          });
+          const correctedIntent: DeliveryIntentV3 = {
+            ...intent,
+            changeBranch: {
+              ...structuredClone(intent.changeBranch),
+              remoteIdentity: planningApproval.snapshot.changeBranch.remoteIdentity,
+              remoteOid: closure.candidate.baseOid,
+            },
+          };
+          if (
+            canonicalJson(normalizeCorrection(intent)) !==
+            canonicalJson(normalizeCorrection(correctedIntent))
+          ) {
+            throw new Error(
+              'Archive intent correction may change only the approved Change branch remote identity and OID',
+              {
+                cause: error,
+              },
+            );
+          }
+          try {
+            await this.ctx.delivery.validateArchiveIntent(
+              correctedIntent,
+              input.policy,
+              executionContext,
+              signal,
+            );
+          } catch (correctedError) {
+            const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
+            const specificationRoot = state.trigger?.facts.specificationRoot as
+              | { repositoryId?: unknown }
+              | undefined;
+            if (
+              typeof projectConfigDigest !== 'string' ||
+              !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+              typeof specificationRoot?.repositoryId !== 'string'
+            ) {
+              throw new Error('Archive planning repair identities are missing', {
+                cause: correctedError,
+              });
+            }
+            const skills = await this.resolveLifecycleWorkSkills(
+              'specification.plan',
+              signal,
+              [],
+              input.runId,
+            );
+            const designWork = createLifecyclePhaseWork({
+              runId: input.runId,
+              checkEpoch: lifecycle.checkEpoch + 1,
+              changeId: lifecycle.identity.changeId,
+              definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+              kind: 'specification.plan',
+              actionSkill: skills.actionSkill,
+              augmentationSkills: skills.augmentationSkills,
+              skillComposition: skills.skillComposition,
+              compositionDigest: state.composition.compositionDigest,
+              projectSnapshotDigest: state.projectSnapshotDigest,
+              projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+              workspaceRepositoryId: specificationRoot.repositoryId,
+              repositoryIds: input.project.repositories.map((repository) => repository.id),
+            });
+            for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+              await this.coordinator.bindSkill(input.runId, skill);
+            }
+            const revised = await this.classifyAndApplyRecovery({
+              state,
+              lifecycle,
+              observationId: this.recoveryObservationId('archive-planning', {
+                archiveDigest: archive.digest,
+                closureId: closure.closureId,
+                planningDigest: planningApproval.snapshot.digest,
+              }),
+              layers: {
+                planning: {
+                  status: 'drift',
+                  reasonCode: 'design-changed',
+                  changedIdentities: ['planning-semantic'],
+                },
+              },
+              materialization: {
+                work: designWork,
+                inputDigest: planningApproval.snapshot.digest,
+                evidenceIds: [archive.digest, closure.closureId, planningApproval.snapshot.digest],
+              },
+            });
+            await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, designWork);
+            return {
+              value: {
+                stage: 'planning-revision-required',
+                publication: null,
+                receipt: null,
+                run: await this.coordinator.status(input.runId),
+              },
+              diagnostics: [
+                ...revised.diagnostics,
+                {
+                  level: 'warning',
+                  code: 'change.archive-planning-drift',
+                  message:
+                    'Archive returned to Design because the approved Change branch drifted before remote publication',
+                },
+              ],
+            };
+          }
+          const correctedArchive = createArchiveDeliveryInput({
+            runId: input.runId,
+            changeId: archive.changeId,
+            verificationInputDigest: archive.verificationInputDigest,
+            acceptedEvidenceBundleIds: state.acceptedEvidenceBundleIds,
+            evidenceBundleId: archive.evidenceBundleId,
+            verificationReport: archive.verificationReport,
+            intent: correctedIntent,
+            policy: input.policy,
+            planningCompositionDigest,
+            evidenceCompositionDigest:
+              archive.evidenceCompositionDigest ??
+              (verificationCompositionDigest as `sha256:${string}`),
+            publicationCheckpoint: archive.publicationCheckpoint,
+          });
+          const skills = await this.resolveLifecycleWorkSkills(
+            'delivery.publish',
+            signal,
+            [],
+            input.runId,
+          );
+          const correctedWork = createDeliveryPublishWork({
+            definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+            checkEpoch: lifecycle.checkEpoch + 1,
+            archive: correctedArchive,
+            closure,
+            actionSkill: skills.actionSkill,
+            skillComposition: skills.skillComposition,
+            workspaceRepositoryId: correctedArchive.changeBranch.repositoryId,
+            repositoryIds: input.project.repositories.map((repository) => repository.id),
+          });
+          await this.coordinator.bindSkill(input.runId, skills.actionSkill);
+          const corrected = await this.coordinator.acceptChangeObservation(input.runId, {
+            kind: 'archive-intent-corrected',
+            priorArchiveInputDigest: archive.digest,
+            archiveInput: correctedArchive,
+            closure,
+            work: correctedWork,
+            reason:
+              error instanceof Error
+                ? error.message
+                : 'Archive planning approval rejected the frozen Change branch OID',
+          });
+          await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, correctedWork);
+          return {
+            value: {
+              stage: 'intent-corrected',
+              publication: null,
+              receipt: null,
+              run: await this.coordinator.status(input.runId),
+            },
+            diagnostics: [
+              ...corrected.diagnostics,
+              {
+                level: 'warning',
+                code: 'change.archive-intent-corrected',
+                message:
+                  'Archive Change branch remote identity and OID were rebound to the approved closure baseline before publication',
+              },
+            ],
+          };
+        }
+        let publication: ArchivePublicationResult;
+        let receipt: PublicationReceipt;
+        try {
+          publication = await this.withArchiveEffectAuthority(
+            state,
+            (execution) =>
+              this.ctx.delivery.publishArchive(
+                {
+                  runId: input.runId,
+                  project: input.project,
+                  intent,
+                  policy: input.policy,
+                  reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
+                  evidenceBundleIds: [archive.evidenceBundleId],
+                  expectedRepositoryHeads: Object.fromEntries(
+                    archive.publicationCheckpoint.repositories.map((repo) => [
+                      repo.repositoryId,
+                      repo.head,
+                    ]),
+                  ),
+                  execution,
+                  evidenceCompositionDigest:
+                    archive.evidenceCompositionDigest ??
+                    (verificationCompositionDigest as `sha256:${string}`),
+                },
+                signal,
+              ),
+            signal,
+          );
+          const verifiedAt = new Date().toISOString();
+          const businessItems: PublicationReceiptItem[] = archive.businessDeliveries.map(
+            (delivery) => {
+              const mergeRequestReceipt = publication.receipts.find(
+                (item) => item.deliveryId === delivery.deliveryId && item.mergeRequest,
+              );
+              const pushReceipt = publication.receipts.find(
+                (item) => item.deliveryId === delivery.deliveryId && item.remoteOid,
+              );
+              if (!mergeRequestReceipt?.mergeRequest || !pushReceipt?.remoteOid) {
+                throw new Error(
+                  `Business publication Receipt is incomplete: ${delivery.deliveryId}`,
+                );
+              }
+              return {
+                publicationId: `business:${delivery.deliveryId}`,
+                role: 'business',
+                deliveryId: delivery.deliveryId,
+                repositoryId: delivery.repositoryId,
+                remoteIdentity:
+                  input.project.repositories.find(
+                    (repository) => repository.id === delivery.repositoryId,
+                  )?.remoteIdentity ??
+                  (() => {
+                    throw new Error(
+                      `Repository remote identity is missing: ${delivery.repositoryId}`,
+                    );
+                  })(),
+                remote: input.policy.publication.remote,
+                sourceBranch: delivery.sourceBranch,
+                targetBranch: delivery.targetBranch,
+                publishedOid: pushReceipt.remoteOid,
+                mergeRequest: mergeRequestReceipt.mergeRequest,
+                provenance: mergeRequestReceipt.provenance ?? 'recovered',
+                verifiedAt,
+              };
+            },
+          );
+          const specification = await this.withArchiveEffectAuthority(
+            state,
+            () =>
+              this.ctx.delivery.publishSpecification(
+                {
+                  changeId: archive.changeId,
+                  runId: lifecycle.identity.runId,
+                  workspaceRoot: input.project.root,
+                  changeBranch: archive.changeBranch,
+                  closure,
+                  remote: input.policy.publication.remote,
+                  title: `Archive specification: ${archive.changeId}`,
+                  body: `Closes verified specification change ${archive.changeId}.`,
+                },
+                signal,
+              ),
+            signal,
+          );
+          receipt = createPublicationReceipt({
+            apiVersion: PUBLICATION_RECEIPT_API_VERSION,
+            kind: 'PublicationReceipt',
+            schemaVersion: 2,
+            changeId: archive.changeId,
+            runId: input.runId,
+            deliverySnapshotDigest: publication.snapshot.digest as `sha256:${string}`,
+            verificationInputDigest: archive.verificationInputDigest,
+            evidenceBundleIds: [archive.evidenceBundleId],
+            specificationClosure: { closureId: closure.closureId, planDigest: closure.planDigest },
+            items: [...businessItems, specification.item],
+          });
+        } catch (error) {
+          if (error instanceof PublicationResultUnknownError) {
+            await this.ctx.workExecutionAuthority.markExternalSideEffectUnknown(
+              await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+              error.stage,
+            );
+          } else if (error instanceof PublicationNotAppliedError) {
+            await this.ctx.workExecutionAuthority.recordExternalSideEffectNotApplied(
+              await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+              error.stage,
+              error.reason,
+            );
+          }
+          throw error;
+        }
+        if (reconcilingExternalPublication) {
+          await this.ctx.workExecutionAuthority.markExternalSideEffectObserved(
             await this.ctx.workExecutionAuthority.loadIntent(input.runId),
-            error.stage,
-            error.reason,
           );
         }
-        throw error;
-      }
-      if (reconcilingExternalPublication) {
-        await this.ctx.workExecutionAuthority.markExternalSideEffectObserved(
-          await this.ctx.workExecutionAuthority.loadIntent(input.runId),
-        );
-      }
-      const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'archive-publication-receipt-accepted',
-        receipt,
-      });
+        const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'archive-publication-receipt-accepted',
+          receipt,
+        });
+        return {
+          value: {
+            stage: 'published',
+            publication,
+            receipt,
+            run: advanced.value,
+          },
+          diagnostics: advanced.diagnostics,
+        };
+      },
+    ).catch(async (error: unknown) => {
+      if (!planningObservationUnavailableError(error)) throw error;
+      const retry = await this.planningObservationUnavailable(input.runId);
       return {
         value: {
-          stage: 'published',
-          publication,
-          receipt,
-          run: advanced.value,
+          stage: 'planning-observation-unavailable',
+          publication: null,
+          receipt: null,
+          run: retry.value,
         },
-        diagnostics: advanced.diagnostics,
+        diagnostics: retry.diagnostics,
       };
     });
   }

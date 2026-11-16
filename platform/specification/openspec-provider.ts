@@ -10,6 +10,7 @@ import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
 import type { SpecificationFileIdentity } from '../../domains/specification/closure-journal.js';
 import {
   SPECIFICATION_API_VERSION,
+  SpecificationChangeMissingError,
   type SpecificationArtifact,
   type SpecificationChange,
   type SpecificationClosurePlan,
@@ -232,7 +233,9 @@ async function exists(file: string): Promise<boolean> {
   try {
     await access(file);
     return true;
-  } catch {
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code !== 'ENOENT' && code !== 'ENOTDIR') throw error;
     return false;
   }
 }
@@ -361,6 +364,37 @@ export class OpenSpecProvider extends Specification {
       },
     );
     if (result.exitCode !== 0) {
+      const change =
+        args[0] === 'show'
+          ? args[1]
+          : args.includes('--change')
+            ? args[args.indexOf('--change') + 1]
+            : undefined;
+      if (change) {
+        let findings: unknown;
+        try {
+          const payload = parseJson<{ status?: unknown }>(result.stdout, args[0]!);
+          findings = payload.status;
+        } catch {
+          // A subprocess or transport error has no authoritative specification finding.
+        }
+        if (
+          Array.isArray(findings) &&
+          findings.some((finding: { code?: unknown; severity?: unknown; message?: unknown }) => {
+            const { code, severity, message } = finding ?? {};
+            return (
+              severity === 'error' &&
+              typeof message === 'string' &&
+              ((code === 'change_error' &&
+                (message.startsWith(`Change '${change}' not found`) ||
+                  message.startsWith('No changes exist'))) ||
+                (code === 'show_error' && message.startsWith(`Change "${change}" not found at `)))
+            );
+          })
+        ) {
+          throw new SpecificationChangeMissingError(change);
+        }
+      }
       const diagnostic = result.stderr.trim() || result.stdout.trim() || 'no diagnostic';
       throw new Error(`OpenSpec ${args.join(' ')} failed: ${diagnostic}`);
     }
@@ -696,7 +730,12 @@ export class OpenSpecProvider extends Specification {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      if (phase !== 'open' || !/change .* not found|no changes exist/iu.test(message)) throw error;
+      if (
+        !(error instanceof SpecificationChangeMissingError && ['open', 'design'].includes(phase)) &&
+        !(phase === 'open' && /change .* not found|no changes exist/iu.test(message))
+      ) {
+        throw error;
+      }
       const bootstrapArtifacts = [
         { id: 'proposal', kind: 'proposal' },
         { id: 'specs', kind: 'delta-specs' },
@@ -990,6 +1029,8 @@ export class OpenSpecProvider extends Specification {
           );
         }
       } catch (error) {
+        options.signal?.throwIfAborted();
+        if ((error as NodeJS.ErrnoException).code) throw error;
         valid = false;
         findings.push({
           code: 'repoctopus.planning-authority-invalid',

@@ -397,7 +397,12 @@ describe('managed Change execution production composition', () => {
                     relativePath: 'openspec/changes/managed-blackbox/specs/managed-demo/spec.md',
                     artifactKind: 'delta-specs',
                     content:
-                      '# Managed Demo Delta\n\n## Purpose\n\nProve that Runtime-authoritative Work execution delivers complete context to one managed Host before any guarded operation can produce completion evidence.\n\n## ADDED Requirements\n\n### Requirement: Managed execution\n\nThe Runtime MUST authorize every managed write.\n\n#### Scenario: Host writes\n\n- **WHEN** the Host receives a packet\n- **THEN** the guarded operation succeeds\n',
+                      '# Managed Demo Delta\n\n## Purpose\n\nProve that Runtime-authoritative Work execution delivers complete context to one managed Host before any guarded operation can produce completion evidence.\n\n## ADDED Requirements\n\n### Requirement: Managed execution\n\nThe Runtime MUST authorize every managed write.\n\n#### Scenario: Host writes\n\n- **WHEN** the Host receives a packet\n- **THEN** the guarded operation succeeds\n'.replace(
+                        'Prove that Runtime-authoritative',
+                        derivedCloseDrift && packet.work.kind === 'specification.plan'
+                          ? 'Demonstrate that Runtime-authoritative'
+                          : 'Prove that Runtime-authoritative',
+                      ),
                   },
                 ];
               }
@@ -1076,16 +1081,15 @@ describe('managed Change execution production composition', () => {
           .spyOn(application.context.project, 'changeBranch')
           .mockRejectedValueOnce(new Error('simulated transient remote lookup failure'))
           .mockImplementation(originalChangeBranch);
-        const blocked = await next();
-        expect(blocked.value).toMatchObject({
-          changeLifecycle: {
-            phase: 'design',
-            status: 'blocked',
-            currentWork: null,
-          },
-          continuation: { reason: 'transition-pending' },
-        });
-        expect((await status()).state.workExecution).toBeUndefined();
+        const beforeUnavailable = await status();
+        const deferredDesign = await next();
+        expect(deferredDesign.value.continuation?.continuation).toBe('reobserve');
+        expect(deferredDesign.value.state.changeLifecycle).toEqual(
+          beforeUnavailable.state.changeLifecycle,
+        );
+        expect(deferredDesign.value.state.workExecution).toEqual(
+          beforeUnavailable.state.workExecution,
+        );
         transientDesignFailure.mockRestore();
 
         if (!multiRepository && executionMode === 'autonomous') {
@@ -1163,10 +1167,30 @@ describe('managed Change execution production composition', () => {
           },
           actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
         });
-        expect((await next()).value.changeLifecycle).toMatchObject({
+        const enterBuild = await next();
+        expect(enterBuild.value.changeLifecycle).toMatchObject({
           phase: 'build',
           currentWork: { kind: 'build.configure' },
         });
+        if (derivedCloseDrift) {
+          expect(enterBuild.value.state.specificationUsageSnapshot?.validationDigest).not.toBe(
+            designWork.value.state.specificationUsageSnapshot?.validationDigest,
+          );
+          const invocations = capture.invocations.length;
+          const unavailableProvider = vi
+            .spyOn(application.context.specification, 'inspect')
+            .mockRejectedValueOnce(new Error('Provider temporarily offline'));
+          const unavailable = await next();
+          expect(unavailable.value.continuation?.continuation).toBe('reobserve');
+          expect(unavailable.diagnostics).toContainEqual(
+            expect.objectContaining({ code: 'runtime.planning-observation-unavailable' }),
+          );
+          expect(unavailable.value.state.changeLifecycle).toEqual(
+            enterBuild.value.state.changeLifecycle,
+          );
+          expect(capture.invocations).toHaveLength(invocations);
+          unavailableProvider.mockRestore();
+        }
         await next();
         const configurationInvocation = capture.invocations.findLast(
           (entry) => entry.packet.work.kind === 'build.configure',
@@ -2309,6 +2333,22 @@ describe('managed Change execution production composition', () => {
             : {}),
         };
         vi.spyOn(application.context.delivery, 'validateArchiveIntent').mockResolvedValue();
+        if (derivedCloseDrift) {
+          const before = await application.context.runStore.inspect(runId);
+          await expect(
+            application.context.workflowRuns.prepareArchiveDelivery({
+              runId,
+              attemptId: acceptedAttemptId!,
+              intent: {
+                ...intent,
+                changeId: 'another-change',
+                changeBranch: { ...intent.changeBranch, targetBranch: 'another-target' },
+              },
+              policy,
+            }),
+          ).rejects.toMatchObject({ code: 'specification.run-change-mismatch' });
+          expect(await application.context.runStore.inspect(runId)).toEqual(before);
+        }
         const preparedArchive = await application.context.commandRouter.execute<
           { runId: string; attemptId: string; intent: DeliveryIntentV3; policy: DeliveryPolicy },
           RuntimeResult<RunStatusView>
@@ -2330,6 +2370,29 @@ describe('managed Change execution production composition', () => {
         );
         await next();
         if (derivedCloseDrift) {
+          const original = await status();
+          const noClosure = vi.spyOn(application.context.specification, 'prepareClosure');
+          const unavailableProvider = vi
+            .spyOn(application.context.specification, 'inspect')
+            .mockRejectedValueOnce(new Error('Provider temporarily offline'));
+          const deferred = await application.context.workflowRuns.executeArchiveDelivery({
+            runId,
+            project,
+            policy,
+            executor: {
+              actorId: 'managed-test-user',
+              runnerId: 'managed-test-runner',
+              source: 'runner',
+              authenticated: true,
+            },
+          });
+          expect(deferred.value.stage).toBe('planning-observation-unavailable');
+          expect(deferred.value.run.continuation?.continuation).toBe('reobserve');
+          expect(deferred.value.run.state.changeLifecycle).toEqual(original.state.changeLifecycle);
+          expect(deferred.value.run.state.workExecution).toEqual(original.state.workExecution);
+          expect(noClosure).not.toHaveBeenCalled();
+          unavailableProvider.mockRestore();
+          noClosure.mockRestore();
           const before = await application.context.evidenceCoordinator.plan('verify', runId);
           await writeFile(path.join(appRepository, 'evidence-dist', 'value.txt'), 'tampered');
           const after = await application.context.evidenceCoordinator.plan('verify', runId);

@@ -899,51 +899,117 @@ describe('Repoctopus runtime', () => {
     ).rejects.toThrow('Skill drift detected');
   });
 
-  it('binds one Specification authority and rejects a changed validation snapshot', async () => {
+  it('commits approved Specification evidence with the transition and rejects a stale observation', async () => {
     const workspace = await temporaryDirectory('repoctopus-specification-binding-');
     cleanup.push(workspace);
     const store = new FileRuntimeStore(workspace);
-    const runtime = new WorkflowRunCoordinator(store, { async export() {} }, compositionFixture());
+    const composition = compositionFixture();
+    const project = projectFixture({ projectId: 'team' });
+    const runId = 'run-specification-binding';
+    const changeId = 'change-one';
+    const runtime = new WorkflowRunCoordinator(store, { async export() {} }, composition);
+    const hash = (value: string): `sha256:${string}` => `sha256:${value.repeat(64)}`;
+    const provider = {
+      id: 'openspec',
+      version: '1.14.3',
+      protocolVersion: 'repoctopus.specification/v1alpha1',
+    } as const;
+    const design = createLifecyclePhaseWork({
+      runId,
+      checkEpoch: 1,
+      changeId,
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'specification.plan',
+      actionSkill: {
+        schemaVersion: 1,
+        name: 'repoctopus-design-change',
+        provider: 'repoctopus-lifecycle',
+        invocation: { modelInvocable: true, userInvocable: false },
+        contentDigest: hash('1'),
+        resourceManifestDigest: hash('2'),
+      },
+      augmentationSkills: [
+        {
+          schemaVersion: 1,
+          name: 'codebase-design',
+          provider: 'matt-builtins',
+          invocation: { modelInvocable: true, userInvocable: true },
+          contentDigest: hash('4'),
+          resourceManifestDigest: hash('5'),
+        },
+      ],
+      compositionDigest: composition.compositionDigest,
+      projectSnapshotDigest: project.digest,
+      projectConfigDigest: hash('3'),
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace'],
+    });
     await runtime.start({
       workflow: workflowFixture(),
-      projectSnapshot: projectFixture(),
-      runId: 'run-specification-binding',
-    });
-    const snapshot = {
-      schemaVersion: 1 as const,
-      changeId: 'change-one',
-      provider: {
-        id: 'openspec',
-        version: '1.14.3',
-        protocolVersion: 'repoctopus.specification/v1alpha1' as const,
+      projectSnapshot: project,
+      runId,
+      changeLifecycle: {
+        ...createChangeLifecycleSnapshot({ identity: { workspaceId: 'team', changeId, runId } }),
+        workspaceIntent: createExecutionWorkspaceIntent({
+          workspaceId: 'team',
+          changeId,
+          isolation: 'branch',
+        }),
       },
-      validationDigest: `sha256:${'d'.repeat(64)}` as const,
-    };
-    await runtime.bindSpecification('run-specification-binding', snapshot);
-    await runtime.bindSpecification('run-specification-binding', snapshot);
-    const closure = {
-      changeId: snapshot.changeId,
-      provider: snapshot.provider,
-      planDigest: `sha256:${'f'.repeat(64)}` as const,
-    };
-    await runtime.bindSpecificationClosurePlan('run-specification-binding', closure);
-    await runtime.bindSpecificationClosurePlan('run-specification-binding', closure);
-    expect((await store.loadRun('run-specification-binding')).specificationUsageSnapshot).toEqual({
-      ...snapshot,
-      closurePlanDigest: closure.planDigest,
     });
-    expect(
-      (await store.loadCheckpoint('run-specification-binding')).specificationUsageSnapshot,
-    ).toEqual({ ...snapshot, closurePlanDigest: closure.planDigest });
-    expect(
-      (await store.loadTrajectory('run-specification-binding')).map((event) => event.type),
-    ).toEqual(['run.started', 'specification.bound', 'specification.closure-planned']);
+    const initial = await store.loadRun(runId);
+    const snapshot = { schemaVersion: 1, changeId, provider, validationDigest: hash('d') } as const;
+    const observation = {
+      kind: 'open-gate',
+      result: 'approved',
+      reason: 'approved Open evidence',
+      requestId: 'open-request',
+      proposalDigest: hash('c'),
+      inputDigest: hash('a'),
+      evidenceIds: [snapshot.validationDigest],
+      work: design,
+    } as const;
+    const authority = {
+      expectedRevision: initial.changeLifecycle!.revision,
+      expectedCheckEpoch: initial.changeLifecycle!.checkEpoch,
+      expectedWorkId: null,
+      expectedWaitId: null,
+      snapshot,
+    };
     await expect(
-      runtime.bindSpecification('run-specification-binding', {
-        ...snapshot,
-        validationDigest: `sha256:${'e'.repeat(64)}`,
+      runtime.acceptChangeObservation(runId, observation, {
+        specificationAcceptance: authority,
+        reobserve: () => Promise.reject(new Error('Provider became unavailable before commit')),
       }),
-    ).rejects.toThrow('Specification drift detected');
+    ).rejects.toThrow('Provider became unavailable before commit');
+    expect(await store.loadRun(runId)).toEqual(initial);
+
+    await expect(
+      runtime.acceptChangeObservation(runId, observation, {
+        specificationAcceptance: { ...authority, expectedRevision: authority.expectedRevision + 1 },
+        reobserve: async () => {},
+      }),
+    ).rejects.toThrow(/stale/i);
+    expect(await store.loadRun(runId)).toEqual(initial);
+
+    await Promise.all([
+      runtime.acceptChangeObservation(runId, observation, {
+        specificationAcceptance: authority,
+        reobserve: async () => {},
+      }),
+      runtime.acceptChangeObservation(runId, observation, {
+        specificationAcceptance: authority,
+        reobserve: async () => {},
+      }),
+    ]);
+    expect((await store.loadRun(runId)).changeLifecycle?.phase).toBe('design');
+    expect((await store.loadCheckpoint(runId)).specificationUsageSnapshot).toEqual(snapshot);
+    const trajectory = await store.loadTrajectory(runId);
+    expect(trajectory.map((event) => event.type)).toEqual([
+      'run.started',
+      'change.lifecycle.transitioned',
+    ]);
+    expect(trajectory[1]?.data.specificationAcceptance).toEqual(snapshot);
   });
 
   it('records compatible composition changes and blocks incompatible writes while keeping reads', async () => {

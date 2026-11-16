@@ -83,19 +83,13 @@ const plugin = ((context: Context) => {
       async execute({ input, signal }) {
         const { changeId, strict, runId } = input as Input;
         if (!changeId?.trim()) throw new Error('Specification change id is required');
-        const validation = await context.specification.validate(changeId, {
-          strict: strict !== false,
-          signal,
-        });
-        const workflowRuns = runId ? context.get('workflowRuns') : undefined;
-        if (runId && !workflowRuns) {
-          throw new Error('Workflow Run capability is required to bind Specification validation');
+        if (runId) {
+          const workflowRuns = context.get('workflowRuns');
+          if (!workflowRuns)
+            throw new Error('Workflow Run capability is required to check the Change Run');
+          await workflowRuns.assertSpecificationChange(runId, changeId);
         }
-        const runSnapshot =
-          runId && workflowRuns
-            ? await workflowRuns.bindSpecification(runId, validation, signal)
-            : undefined;
-        return { ...validation, ...(runSnapshot ? { runSnapshot } : {}) };
+        return context.specification.validate(changeId, { strict: strict !== false, signal });
       },
     }),
   );
@@ -107,21 +101,13 @@ const plugin = ((context: Context) => {
         if (!changeId?.trim() || !mergeFactsDigest || !targetBaselineDigest) {
           throw new Error('Closure preparation requires change and both input digests');
         }
-        const plan = await context.specification.prepareClosure({
+        if (runId) throw new Error('Use the managed Archive entry point for a Change Run');
+        return context.specification.prepareClosure({
           changeId,
           mergeFactsDigest,
           targetBaselineDigest,
           signal,
         });
-        const workflowRuns = runId ? context.get('workflowRuns') : undefined;
-        if (runId && !workflowRuns) {
-          throw new Error('Workflow Run capability is required to bind a closure plan');
-        }
-        const runSnapshot =
-          runId && workflowRuns
-            ? await workflowRuns.bindSpecificationClosurePlan(runId, plan, signal)
-            : undefined;
-        return { ...plan, ...(runSnapshot ? { runSnapshot } : {}) };
       },
     }),
   );

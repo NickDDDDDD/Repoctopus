@@ -15,6 +15,7 @@ import {
 } from '../domains/change-lifecycle/archive-input.js';
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import { createLifecyclePhaseWork } from '../domains/change-lifecycle/phase-work.js';
+import { createExecutionWorkspaceIntent } from '../domains/change-lifecycle/build-protocol.js';
 import {
   BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
   createChangeLifecycleSnapshot,
@@ -47,6 +48,12 @@ import { runCli } from './e2e/cli.js';
 
 const cleanup: string[] = [];
 const git = promisify(execFile);
+const archiveBuildPreference = {
+  schemaVersion: 1,
+  executionMode: 'autonomous',
+  tddMode: 'tdd',
+  reviewMode: 'standard',
+};
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 async function recordHistoricalReconciliation(
@@ -1299,6 +1306,16 @@ describe('Archive publication terminal lifecycle', () => {
         if (!archiveDefinition) throw new Error('Expected Archive Skill');
         const boundArchiveSkill = await snapshotSkillDefinition(archiveDefinition);
         const { preflight, closure } = archiveState();
+        vi.spyOn(app.context.specificationPlanning, 'observeAuthority').mockResolvedValue({
+          status: 'authorized',
+          observationKind: 'same',
+          invalidationKind: null,
+          planningDigest: preflight.planningDigest!,
+          reasonCode: 'authorized',
+          reason: 'Fixture has an unchanged approved design',
+          evidenceDigests: [],
+          snapshot: null,
+        });
         const coordinateProject = projectFixture({
           root: workspace,
           repositories: preflight.archiveDeliveryInput!.publicationCheckpoint.repositories.map(
@@ -1343,10 +1360,16 @@ describe('Archive publication terminal lifecycle', () => {
             facts: {
               projectConfigDigest: digest('5'),
               specificationRoot: { repositoryId: 'workspace' },
+              targetBranch: { repositoryId: 'workspace', remote: 'origin', targetBranch: 'main' },
+              buildStrategyPreference: archiveBuildPreference,
             },
           },
           changeLifecycle: {
             ...preflight,
+            workspaceIntent: createExecutionWorkspaceIntent({
+              ...preflight.identity,
+              isolation: 'branch',
+            }),
             currentWork: { ...preflight.currentWork!, actionSkill: boundArchiveSkill },
           },
         });
@@ -1482,6 +1505,16 @@ describe('Archive publication terminal lifecycle', () => {
       if (!archiveDefinition) throw new Error('Expected Archive Skill');
       const boundArchiveSkill = await snapshotSkillDefinition(archiveDefinition);
       const { preflight, closure } = archiveState();
+      vi.spyOn(app.context.specificationPlanning, 'observeAuthority').mockResolvedValue({
+        status: 'authorized',
+        observationKind: 'same',
+        invalidationKind: null,
+        planningDigest: preflight.planningDigest!,
+        reasonCode: 'authorized',
+        reason: 'Fixture has an unchanged approved design',
+        evidenceDigests: [],
+        snapshot: null,
+      });
       const coordinateProject = projectFixture({
         root: workspace,
         repositories: preflight.archiveDeliveryInput!.publicationCheckpoint.repositories.map(
@@ -1519,8 +1552,22 @@ describe('Archive publication terminal lifecycle', () => {
         workflow: workflowFixture(),
         projectSnapshot: project,
         runId: preflight.identity.runId,
+        trigger: {
+          schemaVersion: 1,
+          kind: 'change',
+          identityDigest: digest('4'),
+          facts: {
+            projectConfigDigest: digest('5'),
+            targetBranch: { repositoryId: 'workspace', remote: 'origin', targetBranch: 'main' },
+            buildStrategyPreference: archiveBuildPreference,
+          },
+        },
         changeLifecycle: {
           ...preflight,
+          workspaceIntent: createExecutionWorkspaceIntent({
+            ...preflight.identity,
+            isolation: 'branch',
+          }),
           currentWork: {
             ...preflight.currentWork!,
             actionSkill: boundArchiveSkill,
