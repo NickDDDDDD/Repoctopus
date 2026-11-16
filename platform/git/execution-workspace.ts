@@ -51,7 +51,7 @@ export async function observeExecutionCleanupCommit(
   checkoutPath: string,
   previous: string,
   head: string,
-  expectedTasks?: ExpectedTaskProjection,
+  expectedTasks?: () => Promise<ExpectedTaskProjection | undefined>,
 ): Promise<string[] | null> {
   assertObjectId(previous);
   assertObjectId(head);
@@ -63,7 +63,7 @@ export async function observeExecutionCleanupCommit(
   if (parents?.length !== 1 || parents[0] !== `parent ${previous}`) return null;
   const liveHead = await git(checkoutPath, ['rev-parse', 'HEAD']);
   if (liveHead !== head) return null;
-  const [changes, clean, tracked] = await Promise.all([
+  const [changes, tracked] = await Promise.all([
     readGitRecords(checkoutPath, [
       'diff-tree',
       '--no-commit-id',
@@ -77,10 +77,9 @@ export async function observeExecutionCleanupCommit(
       head,
       '--',
     ]),
-    isExecutionCheckoutClean(checkoutPath, expectedTasks),
     readTrackedExecutionInputs(checkoutPath, head),
   ]);
-  if (!clean || changes.length === 0 || changes.length % 2 !== 0) return null;
+  if (changes.length === 0 || changes.length % 2 !== 0) return null;
   const currentlyTracked = new Set(tracked);
   const deleted: string[] = [];
   for (let index = 0; index < changes.length; index += 2) {
@@ -96,38 +95,52 @@ export async function observeExecutionCleanupCommit(
     }
     deleted.push(relativePath);
   }
-  return deleted.sort();
+  const clean = await isExecutionCheckoutClean(
+    checkoutPath,
+    expectedTasks ? { head, loadTasks: expectedTasks } : undefined,
+  );
+  return clean && (await git(checkoutPath, ['rev-parse', 'HEAD'])) === head ? deleted.sort() : null;
 }
 
 export async function isExecutionCheckoutClean(
   checkoutPath: string,
-  expectedTasks?: ExpectedTaskProjection,
+  projection?: { head: string; loadTasks: () => Promise<ExpectedTaskProjection | undefined> },
 ): Promise<boolean> {
-  const [status, index] = await Promise.all([
+  const readStatus = () =>
     readGitRecords(checkoutPath, [
       'status',
       '--porcelain=v1',
       '--untracked-files=all',
       '--ignore-submodules=none',
       '-z',
-    ]),
-    readGitRecords(checkoutPath, ['ls-files', '-v', '-z']),
-  ]);
+    ]);
+  const readIndex = () => readGitRecords(checkoutPath, ['ls-files', '-v', '-z']);
+  const [status, index] = await Promise.all([readStatus(), readIndex()]);
   // Git status can hide local edits for skip-worktree and assume-unchanged entries.
   if (index.some((entry) => /^[Sa-z]/u.test(entry))) return false;
   if (status.length === 0) return true;
-  if (!expectedTasks || status.length !== 1 || status[0] !== ` M ${expectedTasks.path}`)
-    return false;
+  if (!projection || status.length !== 1 || !status[0]?.startsWith(' M ')) return false;
+  const expectedTasks = await projection.loadTasks();
+  if (!expectedTasks || status[0] !== ` M ${expectedTasks.path}`) return false;
   const [{ stdout }, contents] = await Promise.all([
-    execute('git', ['--no-replace-objects', 'cat-file', 'blob', `:${expectedTasks.path}`], {
-      cwd: checkoutPath,
-    }),
+    execute(
+      'git',
+      ['--no-replace-objects', 'cat-file', 'blob', `${projection.head}:${expectedTasks.path}`],
+      {
+        cwd: checkoutPath,
+      },
+    ),
     readFileRaceSafe(path.join(checkoutPath, expectedTasks.path), 4 * 1024 * 1024, {
       bigint: true,
     }),
   ]);
   const digest = `sha256:${createHash('sha256').update(contents.bytes).digest('hex')}`;
-  return digest === expectedTasks.rawDigest && expectedTasks.matchesCommittedDocument(stdout);
+  if (digest !== expectedTasks.rawDigest || !expectedTasks.matchesCommittedDocument(stdout))
+    return false;
+  return (
+    (await readStatus()).join('\0') === status[0] &&
+    !(await readIndex()).some((entry) => /^[Sa-z]/u.test(entry))
+  );
 }
 
 async function git(

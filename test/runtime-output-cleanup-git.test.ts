@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 
 import {
   observeExecutionCleanupCommit,
@@ -96,11 +96,17 @@ it('allows only the exact unstaged projection of an accepted task', async () => 
   await git('rm', '--cached', '--', runtimeFile);
   await git('commit', '-m', 'untrack only the fixture output');
   const head = await git('rev-parse', 'HEAD');
-  const expected = {
-    path: taskPath,
-    rawDigest: `sha256:${createHash('sha256').update(projected).digest('hex')}` as const,
-    matchesCommittedDocument: (document: string) => document === baseline,
-  };
+  const expected = vi.fn(() =>
+    Promise.resolve({
+      path: taskPath,
+      rawDigest: `sha256:${createHash('sha256').update(projected).digest('hex')}` as const,
+      matchesCommittedDocument: (document: string) => document === baseline,
+    }),
+  );
+  expect(await observeExecutionCleanupCommit(checkout, previous, head, expected)).toEqual([
+    runtimeFile,
+  ]);
+  expect(expected).not.toHaveBeenCalled();
   await writeFile(path.join(checkout, taskPath), projected);
   expect(await observeExecutionCleanupCommit(checkout, previous, head, expected)).toEqual([
     runtimeFile,

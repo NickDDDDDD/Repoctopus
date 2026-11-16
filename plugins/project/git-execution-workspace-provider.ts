@@ -42,7 +42,7 @@ export class GitExecutionWorkspaceProvider extends ExecutionWorkspaceService {
     checkoutPath: string,
     previousHead: string,
     head: string,
-    expectedTasks?: ExpectedTaskProjection,
+    expectedTasks?: () => Promise<ExpectedTaskProjection | undefined>,
   ): Promise<readonly string[] | null> {
     return observeExecutionCleanupCommit(checkoutPath, previousHead, head, expectedTasks);
   }

@@ -312,6 +312,8 @@ class BuildConfigureObservationError extends Error {
   }
 }
 
+class RuntimeOutputCleanupPlanningUnavailable extends Error {}
+
 export class WorkflowRuns extends Service {
   static inject = [
     'actionDispatcher',
@@ -1718,38 +1720,48 @@ export class WorkflowRuns extends Service {
               ),
           ),
       );
-      const taskProjection = completedTasks?.length
-        ? await this.ctx.specification.evidenceProjection(lifecycle.identity.changeId)
-        : undefined;
-      const taskFile =
-        taskProjection?.root.repositoryId === repositoryId
-          ? taskProjection.files.find((file) => file.artifactId === 'tasks')
-          : undefined;
+      let taskProjectionDigest: `sha256:${string}` | null = null;
       const deleted = await this.ctx.executionWorkspace.observeCleanupCommit(
         workspace.checkoutPath,
         prior.headRevision,
         workspace.head,
-        taskFile && completedTasks
-          ? {
-              path: taskFile.path,
-              rawDigest: taskFile.rawDigest,
-              matchesCommittedDocument: (document) => {
-                let projected = document;
-                for (const task of completedTasks) {
-                  projected = completeSpecificationTaskDocument({
-                    changeId: lifecycle.identity.changeId,
-                    taskId: task.taskId,
-                    taskRevision: task.taskRevision,
-                    document: projected,
-                  }).document;
-                }
-                const projections = [projected, projected.replace(/(?<!\r)\n/gu, '\r\n')];
-                return projections.some(
-                  (text) =>
-                    `sha256:${createHash('sha256').update(text).digest('hex')}` ===
-                    taskFile.rawDigest,
-                );
-              },
+        completedTasks?.length
+          ? async () => {
+              const projection = await this.ctx.specification
+                .evidenceProjection(lifecycle.identity.changeId)
+                .catch((cause: unknown) => {
+                  throw new RuntimeOutputCleanupPlanningUnavailable(
+                    'Could not observe the current Tasks projection',
+                    { cause },
+                  );
+                });
+              const taskFile =
+                projection.root.repositoryId === repositoryId
+                  ? projection.files.find((file) => file.artifactId === 'tasks')
+                  : undefined;
+              if (!taskFile) return undefined;
+              taskProjectionDigest = taskFile.rawDigest;
+              return {
+                path: taskFile.path,
+                rawDigest: taskFile.rawDigest,
+                matchesCommittedDocument: (document) => {
+                  let projected = document;
+                  for (const task of completedTasks) {
+                    projected = completeSpecificationTaskDocument({
+                      changeId: lifecycle.identity.changeId,
+                      taskId: task.taskId,
+                      taskRevision: task.taskRevision,
+                      document: projected,
+                    }).document;
+                  }
+                  const projections = [projected, projected.replace(/(?<!\r)\n/gu, '\r\n')];
+                  return projections.some(
+                    (text) =>
+                      `sha256:${createHash('sha256').update(text).digest('hex')}` ===
+                      taskFile.rawDigest,
+                  );
+                },
+              };
             }
           : undefined,
       );
@@ -1777,12 +1789,13 @@ export class WorkflowRuns extends Service {
             canonicalJson({
               ...stable,
               deleted,
-              taskProjectionDigest: taskFile?.rawDigest ?? null,
+              taskProjectionDigest,
             }),
           )
           .digest('hex')}`,
       };
-    } catch {
+    } catch (error) {
+      if (error instanceof RuntimeOutputCleanupPlanningUnavailable) throw error;
       // Missing Git facts leave the normal unaccepted HEAD blocker in place.
       return null;
     }
@@ -2221,23 +2234,30 @@ export class WorkflowRuns extends Service {
         : {}),
     });
     const target = state.trigger?.facts.targetBranch as { repositoryId?: string } | undefined;
-    const proof =
-      target?.repositoryId &&
-      (await this.observeRuntimeOutputCleanup(state, classified, observed, target.repositoryId));
-    const cleanupPlanning = proof ? await this.observeChangePlanning(state, lifecycle) : null;
-    if (cleanupPlanning?.status === 'unavailable')
-      return this.planningObservationUnavailable(runId);
-    const cleanup =
-      proof && cleanupPlanning?.status === 'authorized'
-        ? this.prepareRuntimeOutputCleanup(
-            state,
-            classified,
-            previous,
-            proof,
-            cleanupPlanning.projectConfigDigest,
-          )
-        : undefined;
-    let result = await this.coordinator.reconcileBuildWorkspace(runId, classified, cleanup);
+    let result;
+    try {
+      const proof = target?.repositoryId
+        ? await this.observeRuntimeOutputCleanup(state, classified, observed, target.repositoryId)
+        : null;
+      const cleanupPlanning = proof ? await this.observeChangePlanning(state, lifecycle) : null;
+      if (cleanupPlanning?.status === 'unavailable')
+        return this.planningObservationUnavailable(runId);
+      const cleanup =
+        proof && cleanupPlanning?.status === 'authorized'
+          ? this.prepareRuntimeOutputCleanup(
+              state,
+              classified,
+              previous,
+              proof,
+              cleanupPlanning.projectConfigDigest,
+            )
+          : undefined;
+      result = await this.coordinator.reconcileBuildWorkspace(runId, classified, cleanup);
+    } catch (error) {
+      if (error instanceof RuntimeOutputCleanupPlanningUnavailable)
+        return this.planningObservationUnavailable(runId);
+      throw error;
+    }
     if (result.value.reissuedWork) {
       await this.ctx.workExecutionAuthority.recordWorkCreated(runId, result.value.reissuedWork);
     }
@@ -2334,6 +2354,8 @@ export class WorkflowRuns extends Service {
       work,
       reobserve: async (latest: RunState) => {
         const planning = await this.observeChangePlanning(latest, latest.changeLifecycle!);
+        if (planning.status === 'unavailable')
+          throw new RuntimeOutputCleanupPlanningUnavailable(planning.reason);
         if (planning.status !== 'authorized')
           throw new Error(
             'Runtime output cleanup requires current planning approval; retry this Run',

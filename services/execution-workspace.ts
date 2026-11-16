@@ -152,7 +152,7 @@ export abstract class ExecutionWorkspaceService extends Service {
     checkoutPath: string,
     previousHead: string,
     head: string,
-    expectedTasks?: ExpectedTaskProjection,
+    expectedTasks?: () => Promise<ExpectedTaskProjection | undefined>,
   ): Promise<readonly string[] | null>;
 
   async bind(input: BindExecutionWorkspaceInput): Promise<ExecutionWorkspaceBinding> {
