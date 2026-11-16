@@ -78,6 +78,11 @@ const policy: DeliveryPolicy = {
     mrBodyTemplate: '{{verificationReport}}',
   },
 };
+const workspaceCredential = {
+  provider: 'environment',
+  variable: 'ARCHIVE_WORKSPACE_TOKEN',
+} as const;
+const policyCredential = { provider: 'environment', variable: 'ARCHIVE_POLICY_TOKEN' } as const;
 
 async function fixture(integrated = false) {
   const root = await temporaryDirectory('repoctopus-archive-execution-context-');
@@ -147,6 +152,14 @@ async function fixture(integrated = false) {
         { id: 'workspace', path: '.' },
         ...(integrated ? [{ id: 'business', path: '../business' }] : []),
       ],
+      ...(integrated
+        ? {
+            delivery: {
+              checkpoint: policy.checkpoint,
+              publication: { ...policy.publication, apiCredential: workspaceCredential },
+            },
+          }
+        : {}),
       profiles: [
         {
           id: 'verify',
@@ -272,10 +285,17 @@ async function fixture(integrated = false) {
 
 describe('Archive current execution composition', () => {
   async function resumePublicationOnApi(githubApiBaseUrl: string) {
-    vi.stubEnv('GITHUB_TOKEN', 'archive-fixture-token');
+    const custom = githubApiBaseUrl !== policy.publication.githubApiBaseUrl;
+    vi.stubEnv('GITHUB_TOKEN', 'default-fixture-token');
+    vi.stubEnv(workspaceCredential.variable, 'workspace-fixture-token');
+    vi.stubEnv(policyCredential.variable, 'policy-fixture-token');
     const approvedPolicy = {
       ...policy,
-      publication: { ...policy.publication, githubApiBaseUrl },
+      publication: {
+        ...policy.publication,
+        githubApiBaseUrl,
+        ...(custom ? { apiCredential: policyCredential } : {}),
+      },
     };
     const {
       app: initialApp,
@@ -534,9 +554,6 @@ describe('Archive current execution composition', () => {
           .slice(url.pathname.indexOf('/repos/') + '/repos/'.length)
           .split('/');
         expect(owner).toBe('team');
-        expect(new Headers(init?.headers).get('Authorization')).toBe(
-          'Bearer archive-fixture-token',
-        );
         if (route === 'commits') return Response.json({ state: 'success' });
         if (detail === 'reviews') return Response.json([{ state: 'APPROVED' }]);
         if (number) return Response.json(requests.get(Number(number)));
@@ -685,6 +702,13 @@ describe('Archive current execution composition', () => {
       const expectedPaths = ['business', 'workspace'].map(
         (repositoryId) => `${githubApiBaseUrl}/repos/team/${repositoryId}/pulls`,
       );
+      const expectedAuthorization = custom
+        ? 'Bearer policy-fixture-token'
+        : 'Bearer default-fixture-token';
+      const authorizations = fetchFixture.mock.calls.map(([, init]) =>
+        new Headers(init?.headers).get('Authorization'),
+      );
+      expect([...new Set(authorizations)]).toEqual([expectedAuthorization]);
       expect(created().map(([input]) => fetchUrl(input).href)).toEqual(expectedPaths);
       const requestUrls = fetchFixture.mock.calls.map(([input]) => fetchUrl(input).href);
       for (const endpoint of expectedPaths) {

@@ -85,8 +85,11 @@ export class FileDeliveryProvider extends Delivery {
 
   private createMergeRequestAdapter(policy?: DeliveryPolicy): GitHubMergeRequestAdapter {
     const environment = this.config.environment ?? process.env;
+    const tokenVariable = policy
+      ? policy.publication.apiCredential?.variable
+      : this.config.githubTokenVariable;
     return new GitHubMergeRequestAdapter(
-      new EnvironmentCredentialProvider(environment, this.config.githubTokenVariable),
+      new EnvironmentCredentialProvider(environment, tokenVariable),
       policy?.publication.githubApiBaseUrl,
     );
   }

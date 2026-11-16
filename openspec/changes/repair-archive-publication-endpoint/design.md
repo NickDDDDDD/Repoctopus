@@ -22,6 +22,8 @@ canonical_spec: openspec
 
 Archive Runtime 已比较当前 `DeliveryPolicy` 的摘要与冻结输入。规格发布端口接收这份策略，其 GitHub 客户端复用业务发布的 API 与凭据选择。MR URL 继续用于确定仓库和编号。发布集合、Closure、Work 和 Journal 的数据结构沿用现有实现。
 
+CLI 允许以 `--policy` 替换 Workspace 的发布策略。该选项与 Workspace 默认策略使用同一套摘要核验和客户端构造。显式策略的 API 地址及凭据引用均来自这份策略，省略凭据引用时使用 GitHub 适配器的 `GITHUB_TOKEN` 默认值。
+
 受影响的受保护实现采用当前既有组合采纳机制，逐项核对直接前驱的代码、描述符和状态契约。验收保持两个原 Run 与原配置，先核对已创建的两个业务 PR 和规格分支 OID，再继续执行。
 
 ### 策略传递与客户端构造
