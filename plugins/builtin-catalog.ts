@@ -1204,9 +1204,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: { delivery: '2|3' },
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:e788833a2a494d3fc300e4c795597c7e629cefc705fd98d1b594c8192d58e13b',
+          codeDigest: 'sha256:be5891af24c9b1d0e978a1a83a0587f1bcb2edbbe6e8d5b2fbee3ba1996b71b9',
           descriptorDigest:
-            'sha256:1cbfdf734f2ff047f21df1c22b6061781f13485cc23aa4818683a1efa8ac6445',
+            'sha256:d1e88beb9de8336b33f4a5acd3c08c3ccb6547f5701dc7eba490cf5e132087a5',
         },
       ],
     },
@@ -1264,9 +1264,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: { run: '1' },
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:d2b19db357e008f6fac3a0412479de8185b53117ea8d0e1ecc42650961ad2ff5',
+          codeDigest: 'sha256:5cec3c3022b3f17125739492a4b823b4d22c87d0601f96effe554d99a6274455',
           descriptorDigest:
-            'sha256:af1dac068089e28eeeaf0aa7d71fe078cc8130b4b87aeeda57876de2f25a06ab',
+            'sha256:b688e2f1af6be41b4eb522eb2c0e63bd7c411d4ec12d2bd93bf64a41d9395818',
         },
       ],
     },

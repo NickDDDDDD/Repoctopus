@@ -20,9 +20,7 @@ import { createEvidenceBundle } from '../domains/evidence/gate.js';
 import { FileEvidenceStore } from '../platform/evidence/file-evidence-store.js';
 import { FilePublicationJournalStore } from '../platform/delivery/file-publication-journal-store.js';
 import { GitSpecificationCheckoutManager } from '../platform/git/specification-checkout.js';
-import { GitHubMergeRequestAdapter } from '../platform/github/merge-request.js';
 import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
-import type { MergeRequestStatus } from '../domains/delivery/types.js';
 import { snapshotSkillDefinition } from '../platform/skill/snapshot.js';
 import { evidenceInputDigest } from '../domains/evidence/input-snapshot.js';
 import {
@@ -59,6 +57,7 @@ const cleanup: string[] = [];
 afterEach(async () => {
   vi.restoreAllMocks();
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
   await Promise.all(cleanup.splice(0).map(removeTemporaryDirectory));
 });
 const digest = (value: string) => `sha256:${value.repeat(64)}` as const;
@@ -79,24 +78,40 @@ const policy: DeliveryPolicy = {
     mrBodyTemplate: '{{verificationReport}}',
   },
 };
+const workspaceCredential = {
+  provider: 'environment',
+  variable: 'ARCHIVE_WORKSPACE_TOKEN',
+} as const;
+const policyCredential = { provider: 'environment', variable: 'ARCHIVE_POLICY_TOKEN' } as const;
 
 async function fixture(integrated = false) {
   const root = await temporaryDirectory('repoctopus-archive-execution-context-');
   cleanup.push(root);
-  const remote = path.join(root, 'remote.git');
-  await mkdir(remote);
+  const fixtureHost = path.join(root, 'github-fixture');
+  const remote = integrated
+    ? path.join(fixtureHost, 'team', 'workspace.git')
+    : path.join(root, 'remote.git');
+  await mkdir(remote, { recursive: true });
   await git('git', ['init', '--bare'], { cwd: remote });
   const workspace = await createGitRepository(
     root,
     'workspace',
-    integrated ? '../remote.git' : remote,
+    integrated ? 'github-fixture/team/workspace.git' : remote,
   );
   let business: string | undefined;
   if (integrated) {
-    const businessRemote = path.join(root, 'business.git');
+    const businessRemote = path.join(fixtureHost, 'team', 'business.git');
     await mkdir(businessRemote);
     await git('git', ['init', '--bare'], { cwd: businessRemote });
-    business = await createGitRepository(root, 'business', '../business.git');
+    business = await createGitRepository(root, 'business', 'github-fixture/team/business.git');
+    for (const checkout of [workspace, business]) {
+      await symlink(
+        fixtureHost,
+        path.join(checkout, 'github-fixture'),
+        process.platform === 'win32' ? 'junction' : 'dir',
+      );
+    }
+    await writeFile(path.join(business, '.git', 'info', 'exclude'), '/github-fixture\n');
     await git('git', ['push', '-u', 'origin', 'main'], { cwd: business });
     await git('git', ['switch', '-c', 'feature/archive-context'], { cwd: business });
     await writeFile(path.join(business, 'README.md'), '# Delivered business change\n');
@@ -111,7 +126,6 @@ async function fixture(integrated = false) {
     ]) {
       vi.stubEnv(key, environment[key]);
     }
-    await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
     const active = path.join(workspace, 'openspec/changes/archive-context');
     await mkdir(path.join(active, 'specs/archive-context'), { recursive: true });
     await writeFile(path.join(active, 'proposal.md'), '# Why\n\nRecover Archive publication.\n');
@@ -127,7 +141,7 @@ async function fixture(integrated = false) {
   }
   await git('git', ['push', '-u', 'origin', 'main'], { cwd: workspace });
   await git('git', ['switch', '-c', 'spec/archive-context'], { cwd: workspace });
-  await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
+  await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n/github-fixture\n');
   await writeFile(
     path.join(workspace, 'repoctopus.yaml'),
     JSON.stringify({
@@ -138,6 +152,14 @@ async function fixture(integrated = false) {
         { id: 'workspace', path: '.' },
         ...(integrated ? [{ id: 'business', path: '../business' }] : []),
       ],
+      ...(integrated
+        ? {
+            delivery: {
+              checkpoint: policy.checkpoint,
+              publication: { ...policy.publication, apiCredential: workspaceCredential },
+            },
+          }
+        : {}),
       profiles: [
         {
           id: 'verify',
@@ -262,8 +284,28 @@ async function fixture(integrated = false) {
 }
 
 describe('Archive current execution composition', () => {
-  it('adopts A into B through the real Runtime and resumes the original publication Journal after a lost MR response', async () => {
-    const { app: initialApp, intent, store, approved, workspace, business } = await fixture(true);
+  async function resumePublicationOnApi(githubApiBaseUrl: string) {
+    const custom = githubApiBaseUrl !== policy.publication.githubApiBaseUrl;
+    vi.stubEnv('GITHUB_TOKEN', 'default-fixture-token');
+    vi.stubEnv(workspaceCredential.variable, 'workspace-fixture-token');
+    vi.stubEnv(policyCredential.variable, 'policy-fixture-token');
+    const approvedPolicy = {
+      ...policy,
+      publication: {
+        ...policy.publication,
+        githubApiBaseUrl,
+        ...(custom ? { apiCredential: policyCredential } : {}),
+      },
+    };
+    const {
+      app: initialApp,
+      intent,
+      store,
+      approved,
+      workspace,
+      business,
+      root,
+    } = await fixture(true);
     let app = initialApp;
     const runId = 'run-archive-context';
     try {
@@ -419,7 +461,7 @@ describe('Archive current execution composition', () => {
           size: 64,
         },
         intent,
-        policy,
+        policy: approvedPolicy,
         planningCompositionDigest: before.compositionDigest,
         evidenceCompositionDigest: before.compositionDigest,
         publicationCheckpoint: createArchivePublicationCheckpoint(project, intent),
@@ -441,12 +483,10 @@ describe('Archive current execution composition', () => {
         'closure-contract',
         intent.changeBranch.remoteOid,
       );
-      // Both real checkouts resolve the same fixture-relative file transport.
-      // A junction needs no Windows symlink privilege and is contained in the
-      // temporary fixture; neither Git nor publication ports are replaced.
+      // Git uses a local directory with a GitHub-shaped identity for the real MR adapter.
       await symlink(
-        path.join(workspace, '..', 'remote.git'),
-        path.join(candidate.root, '..', 'remote.git'),
+        path.join(root, 'github-fixture'),
+        path.join(candidate.root, 'github-fixture'),
         process.platform === 'win32' ? 'junction' : 'dir',
       );
       const active = 'openspec/changes/archive-context/proposal.md';
@@ -489,71 +529,86 @@ describe('Archive current execution composition', () => {
       await runtime.bindSkill(runId, actionSkill);
       const frozen = await app.context.runStore.loadRun(runId);
 
-      // Only the external MR port is simulated. Git, Provider checks, Evidence,
-      // guarded Runtime execution and both durable publication journals are real.
-      const requests = new Map<number, MergeRequestStatus>();
-      let observable = false;
-      vi.spyOn(GitHubMergeRequestAdapter.prototype, 'findAll').mockImplementation((request) =>
-        Promise.resolve(
-          (observable ? [...requests.values()] : [])
-            .filter(
-              (entry) =>
-                entry.repositoryId === request.repositoryId &&
-                entry.sourceBranch === request.sourceBranch &&
-                entry.targetBranch === request.targetBranch,
-            )
-            .map(({ provider, repositoryId, number, url }) => ({
-              provider,
-              repositoryId,
-              number,
-              url,
-            })),
-        ),
-      );
-      vi.spyOn(GitHubMergeRequestAdapter.prototype, 'status').mockImplementation((identity) => {
-        const status = requests.get(identity.number);
-        if (!status) throw new Error('Unknown external MR fixture');
-        return Promise.resolve(status);
-      });
+      // Stub HTTP at the transport boundary so the adapter still chooses its API base.
+      const requests = new Map<
+        number,
+        {
+          number: number;
+          html_url: string;
+          title: string;
+          body: string;
+          state: 'open';
+          merged_at: null;
+          merge_commit_sha: null;
+          head: { ref: string; sha: string };
+          base: { ref: string };
+        }
+      >();
       let loseResponse = true;
-      const create = vi
-        .spyOn(GitHubMergeRequestAdapter.prototype, 'create')
-        .mockImplementation(async (request) => {
-          const repository = project.repositories.find(
-            (entry) => entry.id === request.repositoryId,
-          )!;
-          const result = await git(
-            'git',
-            ['ls-remote', '--heads', 'origin', `refs/heads/${request.sourceBranch}`],
-            { cwd: repository.path },
+      let observable = false;
+      const fetchUrl = (input: Parameters<typeof fetch>[0]) =>
+        new URL(input instanceof Request ? input.url : input);
+      const fetchFixture = vi.fn<typeof fetch>(async (input, init) => {
+        const url = fetchUrl(input);
+        const [owner, repositoryId, route, number, detail] = url.pathname
+          .slice(url.pathname.indexOf('/repos/') + '/repos/'.length)
+          .split('/');
+        expect(owner).toBe('team');
+        if (route === 'commits') return Response.json({ state: 'success' });
+        if (detail === 'reviews') return Response.json([{ state: 'APPROVED' }]);
+        if (number) return Response.json(requests.get(Number(number)));
+        const existing = (observable ? [...requests.values()] : []).filter((entry) =>
+          new URL(entry.html_url).pathname.startsWith(`/team/${repositoryId}/`),
+        );
+        if (init?.method !== 'POST') {
+          return Response.json(
+            existing.filter(
+              (entry) =>
+                url.searchParams.get('head') === `team:${entry.head.ref}` &&
+                url.searchParams.get('base') === entry.base.ref,
+            ),
           );
-          const number = requests.size + 1;
-          const identity = {
-            provider: 'github' as const,
-            repositoryId: request.repositoryId,
-            number,
-            url: `https://github.com/team/${request.repositoryId}/pull/${number}`,
-          };
-          requests.set(number, {
-            ...identity,
-            sourceBranch: request.sourceBranch,
-            targetBranch: request.targetBranch,
-            headCommit: result.stdout.trim().split(/\s/u)[0]!,
-            title: request.title,
-            body: request.body,
-            state: 'open',
-            ci: 'passed',
-            review: 'approved',
-            conversationsResolved: true,
-            mergeCommit: null,
-            mergedAt: null,
-          });
-          if (loseResponse) {
-            loseResponse = false;
-            throw new Error('External MR response lost after application');
-          }
-          return identity;
-        });
+        }
+        if (typeof init.body !== 'string') throw new Error('Expected a JSON PR creation request');
+        const payload = JSON.parse(init.body) as {
+          head: string;
+          base: string;
+          title: string;
+          body: string;
+        };
+        const repository = project.repositories.find((entry) => entry.id === repositoryId)!;
+        const result = await git(
+          'git',
+          ['ls-remote', '--heads', 'origin', `refs/heads/${payload.head}`],
+          { cwd: repository.path },
+        );
+        const pullNumber = requests.size + 1;
+        const pull = {
+          number: pullNumber,
+          html_url: `https://github.com/team/${repositoryId}/pull/${pullNumber}`,
+          title: payload.title,
+          body: payload.body,
+          state: 'open' as const,
+          merged_at: null,
+          merge_commit_sha: null,
+          head: { ref: payload.head, sha: result.stdout.trim().split(/\s/u)[0]! },
+          base: { ref: payload.base },
+        };
+        requests.set(pullNumber, pull);
+        if (loseResponse) {
+          loseResponse = false;
+          throw new Error('External MR response lost after application');
+        }
+        return Response.json(pull, { status: 201 });
+      });
+      vi.stubGlobal('fetch', fetchFixture);
+      const remoteRefs = () =>
+        Promise.all(
+          [workspace, business!].map(
+            async (cwd) => (await git('git', ['ls-remote', '--heads', 'origin'], { cwd })).stdout,
+          ),
+        );
+      const created = () => fetchFixture.mock.calls.filter(([, init]) => init?.method === 'POST');
       const executor = {
         actorId: 'contract-operator',
         runnerId: 'contract-runner',
@@ -588,11 +643,29 @@ describe('Archive current execution composition', () => {
       const adopted = await app.context.runStore.loadRun(runId);
       expect(adopted.composition.compositionDigest).toBe(current.compositionDigest);
       expect(adopted.changeLifecycle).toEqual(frozen.changeLifecycle);
+      const beforeDrift = await remoteRefs();
       await expect(
         app.context.workflowRuns.executeArchiveDelivery({
           runId,
           project,
-          policy,
+          policy: {
+            ...approvedPolicy,
+            publication: {
+              ...approvedPolicy.publication,
+              githubApiBaseUrl: 'https://other.example.test/api/v3',
+            },
+          },
+          executor,
+          attempt: 1,
+        }),
+      ).rejects.toThrow('Archive Delivery policy changed after Work planning');
+      expect(await remoteRefs()).toEqual(beforeDrift);
+      expect(fetchFixture).not.toHaveBeenCalled();
+      await expect(
+        app.context.workflowRuns.executeArchiveDelivery({
+          runId,
+          project,
+          policy: approvedPolicy,
           executor,
           attempt: 1,
         }),
@@ -611,7 +684,7 @@ describe('Archive current execution composition', () => {
       const recovered = await app.context.workflowRuns.executeArchiveDelivery({
         runId,
         project,
-        policy,
+        policy: approvedPolicy,
         executor,
         attempt: 2,
       });
@@ -626,15 +699,38 @@ describe('Archive current execution composition', () => {
       const settledJournal = await new FilePublicationJournalStore(workspace).load(runId);
       expect(settledJournal?.items[0]?.operationId).toBe(journal?.items[0]?.operationId);
       expect(settledJournal?.items[0]?.status).toBe('published');
-      expect(create).toHaveBeenCalledTimes(2); // one business MR + one specification MR
+      const expectedPaths = ['business', 'workspace'].map(
+        (repositoryId) => `${githubApiBaseUrl}/repos/team/${repositoryId}/pulls`,
+      );
+      const expectedAuthorization = custom
+        ? 'Bearer policy-fixture-token'
+        : 'Bearer default-fixture-token';
+      const authorizations = fetchFixture.mock.calls.map(([, init]) =>
+        new Headers(init?.headers).get('Authorization'),
+      );
+      expect([...new Set(authorizations)]).toEqual([expectedAuthorization]);
+      expect(created().map(([input]) => fetchUrl(input).href)).toEqual(expectedPaths);
+      const requestUrls = fetchFixture.mock.calls.map(([input]) => fetchUrl(input).href);
+      for (const endpoint of expectedPaths) {
+        expect(requestUrls.some((url) => url.startsWith(`${endpoint}?state=all&`))).toBe(true);
+      }
+      expect(
+        requestUrls.filter((url) => !url.startsWith(`${githubApiBaseUrl}/repos/team/`)),
+      ).toEqual([]);
       const terminal = await app.context.workflowRuns.resume({ runId });
       expect(terminal.value.state).toEqual(completed);
       expect(await new FilePublicationJournalStore(workspace).load(runId)).toEqual(settledJournal);
-      expect(create).toHaveBeenCalledTimes(2);
+      expect(created()).toHaveLength(2);
     } finally {
       await app.close();
     }
-  }, 60_000);
+  }
+
+  it.each(['https://ghe.example.test/api/v3', 'https://api.github.com'])(
+    'adopts A into B and resumes publication on the approved API %s after a lost MR response',
+    resumePublicationOnApi,
+    60_000,
+  );
 
   it('accepts the actual execution context without changing the original Planning approval', async () => {
     const { app, intent, store, approved } = await fixture();

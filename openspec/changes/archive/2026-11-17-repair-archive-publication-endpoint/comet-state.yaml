@@ -1,0 +1,2604 @@
+# comet-execution: managed-run
+change_id: af8bdebc-dd05-4d3d-a120-d9c17a19ed52
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 1fdd4a63e76ffc7a15d890690b2a825c6883dafc
+design_doc: openspec/changes/archive/2026-11-17-repair-archive-publication-endpoint/design.md
+plan: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/repair-archive-publication-endpoint.md
+branch_status: pending
+created_at: 2026-11-16
+verified_at: 2026-11-16
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/repair-archive-publication-endpoint
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-17-repair-archive-publication-endpoint/.comet/handoff/design-context.json
+handoff_hash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: ed0b59e62bc4ed02a2b15525f4d329de93036af6b97efec7be9de45029f4f67c
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: repair-archive-publication-endpoint
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 2ca6e4a7908dc2ce31b8be0e0e49ed7856487486ce94bcd1b3bfcfab8489d00d
+    input:
+      change: repair-archive-publication-endpoint
+      changeDir: openspec/changes/repair-archive-publication-endpoint
+      workspaceBaseline:
+        ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 1fdd4a63e76ffc7a15d890690b2a825c6883dafc
+      boundBranch: codex/repair-archive-publication-endpoint
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 6
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-16
+      designDoc: openspec/changes/archive/2026-11-17-repair-archive-publication-endpoint/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-17-repair-archive-publication-endpoint/.comet/handoff/design-context.json
+      handoffHash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/repair-archive-publication-endpoint.md
+      verifiedAt: 2026-11-16
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 24
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-24b4702eb6b9885d12d35a65dd1d2a677d54b187e8753d37ba68378f3f9e5270
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:1
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 527e7775c949ca45a86bb065cc94f7d817b74e53333c42a458117c12e010d14e
+        outcome:
+          actionId: repair-archive-publication-endpoint:1
+          attempt: 1
+          claimToken: portable-24b4702eb6b9885d12d35a65dd1d2a677d54b187e8753d37ba68378f3f9e5270
+          inputHash: 527e7775c949ca45a86bb065cc94f7d817b74e53333c42a458117c12e010d14e
+          outcomeId: 89b6e60e-80bc-4b15-bd8b-ff5fbefb14c1
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d91f696d87582dbfce49715e832900f6b9a40b65765672a5aaead7af0b347741
+            outcomeId: 89b6e60e-80bc-4b15-bd8b-ff5fbefb14c1
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-8402f1467c9f2bac644ee7552ffe58fc81fac5643d44e7f3df060af32da5e3a1
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:4
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 579dfb9024014f0077399976e88bfc8af41ca5acb8cea2d32ae02a4a850aa569
+        outcome:
+          actionId: repair-archive-publication-endpoint:4
+          attempt: 1
+          claimToken: portable-8402f1467c9f2bac644ee7552ffe58fc81fac5643d44e7f3df060af32da5e3a1
+          inputHash: 579dfb9024014f0077399976e88bfc8af41ca5acb8cea2d32ae02a4a850aa569
+          outcomeId: repair-archive-publication-endpoint:4:1:executor-result
+          output:
+            contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fea33382904253bb0877ba9974fed25befe06cc56873e7871b5da434e35d2941
+            outcomeId: repair-archive-publication-endpoint:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-4666c969fffadc5810464845b2e929497bb0ed58cc3cb80298b8bb7129adc261
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:5
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 10e81e352a0bb4727a32fc4682159050228badd617a483878ba94c95ef1b5ef8
+        outcome:
+          actionId: repair-archive-publication-endpoint:5
+          attempt: 1
+          claimToken: portable-4666c969fffadc5810464845b2e929497bb0ed58cc3cb80298b8bb7129adc261
+          inputHash: 10e81e352a0bb4727a32fc4682159050228badd617a483878ba94c95ef1b5ef8
+          outcomeId: 66229f82-5948-4808-9948-35928c1882f1
+          output:
+            handoffContext: openspec/changes/repair-archive-publication-endpoint/.comet/handoff/design-context.json
+            handoffHash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+            proposal: 参考固定 Comet Classic 的已批准交付目标和同一 Run 恢复。Runtime 通过冻结策略摘要校验后，把同一份必填
+              DeliveryPolicy 传给业务与规格发布。Delivery 复用 GitHub 客户端构造，API 目标取自策略，凭据由
+              Workspace 装配，此次核对的是客户端请求基址。以原候选包的精确直接前驱采纳新实现，保留审批、Bundle、Closure 和
+              Journal。用原两条五仓 Run 复验，普通轮复用两个已创建业务 PR 和规格分支 OID，只补一个规格
+              PR，返工轮完成三项发布，两条冷恢复均返回 completed。覆盖配置漂移拒绝与真实副作用次数。当前 delta spec
+              可直接覆盖方案。
+            requirementsEvidence:
+              contentHash: 33f80502d9d1976ac9818af62deee7d74ce681c6a0405526705ed59d7b74d367
+              ref: openspec/changes/repair-archive-publication-endpoint
+            sourceEvidence:
+              contentHash: 8c23f2b3aa7b5e3768e9991dda44d7a07e3fb32deed7504238a7442db2676de1
+              ref: openspec/changes/repair-archive-publication-endpoint
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7786ff4f33effd012497b5afdb43e7c610077e07bd64dac9ff2ba955bc811405
+            outcomeId: 66229f82-5948-4808-9948-35928c1882f1
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-5e0a8ec3f0ace570fa074819b1495a17f8f40298d33219f0a23b9b59ee79032a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:7
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 71fb93b9132b2e2068f2e5f0bbca4315db89f7388a8d5f1be4cb1679d7da7c4e
+        outcome:
+          actionId: repair-archive-publication-endpoint:7
+          attempt: 1
+          claimToken: portable-5e0a8ec3f0ace570fa074819b1495a17f8f40298d33219f0a23b9b59ee79032a
+          inputHash: 71fb93b9132b2e2068f2e5f0bbca4315db89f7388a8d5f1be4cb1679d7da7c4e
+          outcomeId: 2a314953-02f6-4349-a09c-bf7c7aa6d565
+          output:
+            designDoc: openspec/changes/repair-archive-publication-endpoint/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3eea72acc485b6b5f081472955fe106b890e02155425a4fd48889157a04841f8
+            outcomeId: 2a314953-02f6-4349-a09c-bf7c7aa6d565
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-76d577ac68411d78132b0fd09b76ee715e99c312e77f252540bab315127a7532
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:9
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 10cecf580bed8d8b76580753a24d5f9fbfa1eac1c7b2c8f1039bdc8fbe6ec806
+        outcome:
+          actionId: repair-archive-publication-endpoint:9
+          attempt: 1
+          claimToken: portable-76d577ac68411d78132b0fd09b76ee715e99c312e77f252540bab315127a7532
+          inputHash: 10cecf580bed8d8b76580753a24d5f9fbfa1eac1c7b2c8f1039bdc8fbe6ec806
+          outcomeId: 66bba4a4-901f-47e3-afb5-b4c339ec6dbd
+          output:
+            boundBranch: codex/repair-archive-publication-endpoint
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7c93d88d0cb67e3b3032d4e01b8c82717d64f223b0f5468e897ca66888ac2aa6
+            outcomeId: 66bba4a4-901f-47e3-afb5-b4c339ec6dbd
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-28501c644b4b712ffd0fdef7ca5164453076d8ab1c2731bfd5c8af8b6386bae8
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:11
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: c371690e31abe000cc9fd5862f68764c5eb7893151d50b5faef4d12cce8aeb48
+        outcome:
+          actionId: repair-archive-publication-endpoint:11
+          attempt: 1
+          claimToken: portable-28501c644b4b712ffd0fdef7ca5164453076d8ab1c2731bfd5c8af8b6386bae8
+          inputHash: c371690e31abe000cc9fd5862f68764c5eb7893151d50b5faef4d12cce8aeb48
+          outcomeId: e2d65664-4b74-4d51-b61c-1ce402d94d90
+          output:
+            designEvidence:
+              contentHash: fd701253c6c16d215d33f7c0d965841e2272e00e404cad59a7c0116b28649fe5
+              ref: openspec/changes/repair-archive-publication-endpoint/design.md
+            plan: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+            planEvidence:
+              contentHash: 92f842ba35bc8323ce245d02d3fe0e4dfee05a52ab74cab9c702c38515bbfd76
+              ref: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+            taskRevision: 4c338259a139e6cbe6436a5b10120cd4ccf6fba3f97fb419c3e370f6014e177d
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: eb547d8b59216be458f71ab1662b0a524b15ade509005367ff562be527e9c08e
+            outcomeId: e2d65664-4b74-4d51-b61c-1ce402d94d90
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-archive-endpoint-build-261116
+          token: portable-4abc37d0684989154245658d4538e6252e2e9be6aa248444226517d99b03603d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:13
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 090c1aa1935d5e46a27522eeb9700162d05ab859a7d2a74e3c8b40c9449495f7
+        outcome:
+          actionId: repair-archive-publication-endpoint:13
+          attempt: 1
+          claimToken: portable-4abc37d0684989154245658d4538e6252e2e9be6aa248444226517d99b03603d
+          inputHash: 090c1aa1935d5e46a27522eeb9700162d05ab859a7d2a74e3c8b40c9449495f7
+          outcomeId: 2d18d550-dc93-47aa-abe2-5e8f86d5cfee
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 90584d01e44f64478dc5440c4c8d11e86623a75d972972aa1a8dcd17917b4939
+            outcomeId: 2d18d550-dc93-47aa-abe2-5e8f86d5cfee
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-07effbc2c61a543d0ec5ec843999e29f7b9d48eea564735e5e9fc4358ef04250
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:14
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 6c960b898fa608fd871ec08db1fb9ff4e941f891fa1f4411e4df50dd26ba4421
+        outcome:
+          actionId: repair-archive-publication-endpoint:14
+          attempt: 1
+          claimToken: portable-07effbc2c61a543d0ec5ec843999e29f7b9d48eea564735e5e9fc4358ef04250
+          inputHash: 6c960b898fa608fd871ec08db1fb9ff4e941f891fa1f4411e4df50dd26ba4421
+          outcomeId: 99a11a7c-6c2e-4c1c-9211-dc6f72635e61
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: fb88d093629406f62dfed2e9012bf3447acf332acbe930597ea7b3c8758d4bbf
+            cwd: .
+            environment: 73204a8cdc0d0166b799d9f4a3ae2a0d33bf9bcd9749a7919116c018ea7a9f14
+            exitCode: 0
+            inputAfter: 37cb870cf388ad0bb7ebe4cca98f1dda38aa9ddacc96ce3b15bab5ead11082b0
+            inputBefore: 37cb870cf388ad0bb7ebe4cca98f1dda38aa9ddacc96ce3b15bab5ead11082b0
+            manifestHash: 170590a115d54079302a3cbde6c3d4722eec0d421cc0fd4d14cd9e2d7d747ea9
+            manifestRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/8e0c01aa-8f44-419a-b8fd-9ae046636948.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/78ce2b00-3da7-4bbd-8998-a52849d61675.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6d3013f171a8a3c636641bf51a4efa830b7ac2ede52581c2ccce3d0a39648571
+            outcomeId: 99a11a7c-6c2e-4c1c-9211-dc6f72635e61
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-24d9b35a9d857aa8d3a421340915d532af1936f0e73c85df56f0b95a785eeffe
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:16
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 9654fc31e16bdde020dfa4bc5be5b14aa62d15e10f39493836b37f3a98ac4216
+        outcome:
+          actionId: repair-archive-publication-endpoint:16
+          attempt: 1
+          claimToken: portable-24d9b35a9d857aa8d3a421340915d532af1936f0e73c85df56f0b95a785eeffe
+          inputHash: 9654fc31e16bdde020dfa4bc5be5b14aa62d15e10f39493836b37f3a98ac4216
+          outcomeId: b3d014c4-908b-40d0-8414-0761f811de4b
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/repair-archive-publication-endpoint.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bf1ff26c459f8b6f5ff388048fbb07731f04a3d784ac44c7d17dec3b9f1738fb
+            outcomeId: b3d014c4-908b-40d0-8414-0761f811de4b
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-671be1cd7aa9857ba643de48c864a5b1cd62e152ee9e96b41c16053b3dd44381
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:18
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: e901573e312c004ee1acc549c84e667e8b2904aac003b5e2c41baf6816b093b5
+        outcome:
+          actionId: repair-archive-publication-endpoint:18
+          attempt: 1
+          claimToken: portable-671be1cd7aa9857ba643de48c864a5b1cd62e152ee9e96b41c16053b3dd44381
+          inputHash: e901573e312c004ee1acc549c84e667e8b2904aac003b5e2c41baf6816b093b5
+          outcomeId: ed9922f9-ee57-4568-9849-5efaea0b80a2
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 464a6efa69110486f1d30c0c8248f243d3fa537ae40c4791678768dc30f7e668
+            cwd: .
+            deliveryInputs: {}
+            environment: 4e48ac2b3457ed2aaaf79203293f78732c73df5f7a69d5b6adc61c1d0503e52c
+            exitCode: 0
+            inputAfter: 08e72f30192653fc49dde641927e51b743f9e7eb1668126e0bf89ce683f66204
+            inputBefore: 08e72f30192653fc49dde641927e51b743f9e7eb1668126e0bf89ce683f66204
+            manifestHash: 47e3a96d1eede9ad30ca3170debd17aecaf9317aa115c7b745b1d309b65508ce
+            manifestRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/263ffb32-d4c8-4472-9e5a-36d1ff8589e4.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/f69cc272-605b-4b32-a547-61e1916ca40f.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1f97afcd7024a7e52572b5f868f476282026265658bd6858a6de13a62d0e4ef8
+            outcomeId: ed9922f9-ee57-4568-9849-5efaea0b80a2
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c50e52c2aa067c7ed4e253fb7a2ff0f5c0732fc74ade7cd27606aa2547f47a65
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:20
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 1dc37b11385178ce35ec8c5b1098214bf5e27744921098e1ff592a8ff679b1e2
+        outcome:
+          actionId: repair-archive-publication-endpoint:20
+          attempt: 1
+          claimToken: portable-c50e52c2aa067c7ed4e253fb7a2ff0f5c0732fc74ade7cd27606aa2547f47a65
+          inputHash: 1dc37b11385178ce35ec8c5b1098214bf5e27744921098e1ff592a8ff679b1e2
+          outcomeId: 4a5f22d0-de9b-4dd0-b19c-88f238327ea6
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 将已验证的 Archive 发布策略要求并入 delivery-governance 主规格，归档本 Change，从当前分支创建目标为
+              origin/main 的 PR，CI 通过后合入。此次交付只涉及 Repoctopus 源码、规格和验收记录。
+            targetBranch: codex/repair-archive-publication-endpoint
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 616591d7049db5e0ad4d19a3c2a85c501bd4fc98bf4193d34da76a001e0e28ac
+            outcomeId: 4a5f22d0-de9b-4dd0-b19c-88f238327ea6
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-5c342a86baf94f48e9e600ccc7c42d6c2c9761d00b1f81b2a882824e45c89dac
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:22
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 4b521908e9ecccbc2c66c0f99c85304552c2f53fbbc0d87759ab48cb2cdda4a6
+        outcome:
+          actionId: repair-archive-publication-endpoint:22
+          attempt: 1
+          claimToken: portable-5c342a86baf94f48e9e600ccc7c42d6c2c9761d00b1f81b2a882824e45c89dac
+          inputHash: 4b521908e9ecccbc2c66c0f99c85304552c2f53fbbc0d87759ab48cb2cdda4a6
+          outcomeId: 7073d349-b005-4346-9f73-3d2d1af92adb
+          output:
+            baseCommit: 3797d973607415fda610ac5c29ac93b9fd8db693
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/repair-archive-publication-endpoint
+            verifiedBranch: codex/repair-archive-publication-endpoint
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8d0f3d0f621f5f1bab1bd3eed1f123eff700e4ab48bfdc7bf093bdac1674322f
+            outcomeId: 7073d349-b005-4346-9f73-3d2d1af92adb
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-96e7c04b42b83d59e1ed192fab4304b0e26183c2a11c87aa1212a0491c0d16cf
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: repair-archive-publication-endpoint:23
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: c0f8501b95661abc3b48c4977a9205224131049e92492a5967d0dbb3f25f728f
+        outcome:
+          actionId: repair-archive-publication-endpoint:23
+          artifacts:
+            - sha256: 121e7fa658d75f65b9b50ca85a1f93ed8162abb88789a993b6b88e3c5869b6b9
+              uri: openspec/changes/archive/2026-11-17-repair-archive-publication-endpoint/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-96e7c04b42b83d59e1ed192fab4304b0e26183c2a11c87aa1212a0491c0d16cf
+          inputHash: c0f8501b95661abc3b48c4977a9205224131049e92492a5967d0dbb3f25f728f
+          outcomeId: 884cc459-9d46-4eba-b1eb-518537a44e8d
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-17-repair-archive-publication-endpoint
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 007592e8f713c071d300ae7051602a4bfd1cd0d42e7bbc69f9f4da770adcdcd9
+            outcomeId: 884cc459-9d46-4eba-b1eb-518537a44e8d
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: repair-archive-publication-endpoint:24
+        input:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs: {}
+        inputHash: 1d40ad606202d641c71f98a299f87e4d0ae5e2e5db023c3d40139262537bde0f
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: repair-archive-publication-endpoint
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      repair-archive-publication-endpoint:1:
+        results: {}
+        sequence: 1
+      repair-archive-publication-endpoint:11:
+        results: {}
+        sequence: 11
+      repair-archive-publication-endpoint:13:
+        results: {}
+        sequence: 13
+      repair-archive-publication-endpoint:14:
+        results: {}
+        sequence: 14
+      repair-archive-publication-endpoint:16:
+        results: {}
+        sequence: 16
+      repair-archive-publication-endpoint:18:
+        results: {}
+        sequence: 18
+      repair-archive-publication-endpoint:20:
+        results: {}
+        sequence: 20
+      repair-archive-publication-endpoint:22:
+        results: {}
+        sequence: 22
+      repair-archive-publication-endpoint:23:
+        results: {}
+        sequence: 23
+      repair-archive-publication-endpoint:24:
+        results: {}
+        sequence: 24
+      repair-archive-publication-endpoint:4:
+        results: {}
+        sequence: 4
+      repair-archive-publication-endpoint:5:
+        results: {}
+        sequence: 5
+      repair-archive-publication-endpoint:7:
+        results: {}
+        sequence: 7
+      repair-archive-publication-endpoint:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: repair-archive-publication-endpoint:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+              ref: openspec/changes/repair-archive-publication-endpoint
+        proposalHash: eff3b07bc2f493719d89a71bd1e41e4aaac4b682cb11fc4b18fae9f436b2a278
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+          choice: approved
+          proposalHash: eff3b07bc2f493719d89a71bd1e41e4aaac4b682cb11fc4b18fae9f436b2a278
+      - id: repair-archive-publication-endpoint:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/repair-archive-publication-endpoint/.comet/handoff/design-context.json
+              handoffHash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+              proposal: 参考固定 Comet Classic 的已批准交付目标和同一 Run 恢复。Runtime 通过冻结策略摘要校验后，把同一份必填
+                DeliveryPolicy 传给业务与规格发布。Delivery 复用 GitHub 客户端构造，API 目标取自策略，凭据由
+                Workspace 装配，此次核对的是客户端请求基址。以原候选包的精确直接前驱采纳新实现，保留审批、Bundle、Closure
+                和 Journal。用原两条五仓 Run 复验，普通轮复用两个已创建业务 PR 和规格分支 OID，只补一个规格
+                PR，返工轮完成三项发布，两条冷恢复均返回 completed。覆盖配置漂移拒绝与真实副作用次数。当前 delta spec
+                可直接覆盖方案。
+              requirementsEvidence:
+                contentHash: 33f80502d9d1976ac9818af62deee7d74ce681c6a0405526705ed59d7b74d367
+                ref: openspec/changes/repair-archive-publication-endpoint
+              sourceEvidence:
+                contentHash: 8c23f2b3aa7b5e3768e9991dda44d7a07e3fb32deed7504238a7442db2676de1
+                ref: openspec/changes/repair-archive-publication-endpoint
+        proposalHash: e04482f9227d71e0850cdf681d27f2f543f978a611f96a9e75e8848743548561
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-e04482f9227d71e0850cdf681d27f2f543f978a611f96a9e75e8848743548561-approved
+          choice: approved
+          proposalHash: e04482f9227d71e0850cdf681d27f2f543f978a611f96a9e75e8848743548561
+      - id: repair-archive-publication-endpoint:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs:
+            full.build.configure:
+              boundBranch: codex/repair-archive-publication-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 81244191766141a54e5446f559985bf3fe086c121277c3f8a66873eb67771582
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 789e9626-2040-421c-bce1-e6507fe01297
+          choice: approved
+          proposalHash: 81244191766141a54e5446f559985bf3fe086c121277c3f8a66873eb67771582
+      - id: repair-archive-publication-endpoint:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 将已验证的 Archive 发布策略要求并入 delivery-governance 主规格，归档本 Change，从当前分支创建目标为
+                origin/main 的 PR，CI 通过后合入。此次交付只涉及 Repoctopus 源码、规格和验收记录。
+              targetBranch: codex/repair-archive-publication-endpoint
+        proposalHash: 8c0a8a10362c56489f04f5978e1bf54721f4d201970b63d3543105bb6ae700a1
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-8c0a8a10362c56489f04f5978e1bf54721f4d201970b63d3543105bb6ae700a1-pr
+          choice: pr
+          proposalHash: 8c0a8a10362c56489f04f5978e1bf54721f4d201970b63d3543105bb6ae700a1
+    evidenceWaits:
+      - id: repair-archive-publication-endpoint:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/repair-archive-publication-endpoint
+          contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+          submissionId: b093f287-c558-4700-af73-343499fb36ec
+      - id: repair-archive-publication-endpoint:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/repair-archive-publication-endpoint/design.md
+          contentHash: fd701253c6c16d215d33f7c0d965841e2272e00e404cad59a7c0116b28649fe5
+          submissionId: 8feda508-37db-45e5-a43c-7f68f3e77779
+      - id: repair-archive-publication-endpoint:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+          contentHash: 92f842ba35bc8323ce245d02d3fe0e4dfee05a52ab74cab9c702c38515bbfd76
+          submissionId: f906c72e-99f4-482d-8f8e-d240bf0fee82
+      - id: repair-archive-publication-endpoint:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/78ce2b00-3da7-4bbd-8998-a52849d61675.log
+          contentHash: fb88d093629406f62dfed2e9012bf3447acf332acbe930597ea7b3c8758d4bbf
+          submissionId: 5637f234-43c1-4c43-8dd7-20c26f21e158
+      - id: repair-archive-publication-endpoint:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/repair-archive-publication-endpoint.md
+          contentHash: 524b7561203c999f4b6ebb317956779d7fbdec8f53cc4f6c433f78e9e94a5033
+          submissionId: a50438a5-9ff3-402a-924d-8ec86b9f8ece
+      - id: repair-archive-publication-endpoint:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/f69cc272-605b-4b32-a547-61e1916ca40f.log
+          contentHash: 464a6efa69110486f1d30c0c8248f243d3fa537ae40c4791678768dc30f7e668
+          submissionId: 12579141-b466-4d89-b58d-dfd226abcd62
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 37
+  sourceHash: 5dc1e7c5cd54ada52be1d971af96ef52982bcad28c5f3b97f7ca1552a60d6f06
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+              ref: openspec/changes/repair-archive-publication-endpoint
+      - contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+        ref: openspec/changes/repair-archive-publication-endpoint
+      - contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+      - choice: approved
+        proposal:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/repair-archive-publication-endpoint/.comet/handoff/design-context.json
+              handoffHash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+              proposal: 参考固定 Comet Classic 的已批准交付目标和同一 Run 恢复。Runtime 通过冻结策略摘要校验后，把同一份必填
+                DeliveryPolicy 传给业务与规格发布。Delivery 复用 GitHub 客户端构造，API 目标取自策略，凭据由
+                Workspace 装配，此次核对的是客户端请求基址。以原候选包的精确直接前驱采纳新实现，保留审批、Bundle、Closure
+                和 Journal。用原两条五仓 Run 复验，普通轮复用两个已创建业务 PR 和规格分支 OID，只补一个规格
+                PR，返工轮完成三项发布，两条冷恢复均返回 completed。覆盖配置漂移拒绝与真实副作用次数。当前 delta spec
+                可直接覆盖方案。
+              requirementsEvidence:
+                contentHash: 33f80502d9d1976ac9818af62deee7d74ce681c6a0405526705ed59d7b74d367
+                ref: openspec/changes/repair-archive-publication-endpoint
+              sourceEvidence:
+                contentHash: 8c23f2b3aa7b5e3768e9991dda44d7a07e3fb32deed7504238a7442db2676de1
+                ref: openspec/changes/repair-archive-publication-endpoint
+      - handoffContext: openspec/changes/repair-archive-publication-endpoint/.comet/handoff/design-context.json
+        handoffHash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+        proposal: 参考固定 Comet Classic 的已批准交付目标和同一 Run 恢复。Runtime 通过冻结策略摘要校验后，把同一份必填
+          DeliveryPolicy 传给业务与规格发布。Delivery 复用 GitHub 客户端构造，API 目标取自策略，凭据由
+          Workspace 装配，此次核对的是客户端请求基址。以原候选包的精确直接前驱采纳新实现，保留审批、Bundle、Closure 和
+          Journal。用原两条五仓 Run 复验，普通轮复用两个已创建业务 PR 和规格分支 OID，只补一个规格
+          PR，返工轮完成三项发布，两条冷恢复均返回 completed。覆盖配置漂移拒绝与真实副作用次数。当前 delta spec
+          可直接覆盖方案。
+        requirementsEvidence:
+          contentHash: 33f80502d9d1976ac9818af62deee7d74ce681c6a0405526705ed59d7b74d367
+          ref: openspec/changes/repair-archive-publication-endpoint
+        sourceEvidence:
+          contentHash: 8c23f2b3aa7b5e3768e9991dda44d7a07e3fb32deed7504238a7442db2676de1
+          ref: openspec/changes/repair-archive-publication-endpoint
+      - designDoc: openspec/changes/repair-archive-publication-endpoint/design.md
+      - contentHash: fd701253c6c16d215d33f7c0d965841e2272e00e404cad59a7c0116b28649fe5
+        ref: openspec/changes/repair-archive-publication-endpoint/design.md
+      - boundBranch: codex/repair-archive-publication-endpoint
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs:
+            full.build.configure:
+              boundBranch: codex/repair-archive-publication-endpoint
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: fd701253c6c16d215d33f7c0d965841e2272e00e404cad59a7c0116b28649fe5
+          ref: openspec/changes/repair-archive-publication-endpoint/design.md
+        plan: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+        planEvidence:
+          contentHash: 92f842ba35bc8323ce245d02d3fe0e4dfee05a52ab74cab9c702c38515bbfd76
+          ref: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+        taskRevision: 4c338259a139e6cbe6436a5b10120cd4ccf6fba3f97fb419c3e370f6014e177d
+      - contentHash: 92f842ba35bc8323ce245d02d3fe0e4dfee05a52ab74cab9c702c38515bbfd76
+        ref: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: fb88d093629406f62dfed2e9012bf3447acf332acbe930597ea7b3c8758d4bbf
+        cwd: .
+        environment: 73204a8cdc0d0166b799d9f4a3ae2a0d33bf9bcd9749a7919116c018ea7a9f14
+        exitCode: 0
+        inputAfter: 37cb870cf388ad0bb7ebe4cca98f1dda38aa9ddacc96ce3b15bab5ead11082b0
+        inputBefore: 37cb870cf388ad0bb7ebe4cca98f1dda38aa9ddacc96ce3b15bab5ead11082b0
+        manifestHash: 170590a115d54079302a3cbde6c3d4722eec0d421cc0fd4d14cd9e2d7d747ea9
+        manifestRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/8e0c01aa-8f44-419a-b8fd-9ae046636948.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/78ce2b00-3da7-4bbd-8998-a52849d61675.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: fb88d093629406f62dfed2e9012bf3447acf332acbe930597ea7b3c8758d4bbf
+        ref: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/78ce2b00-3da7-4bbd-8998-a52849d61675.log
+      - contentHash: 524b7561203c999f4b6ebb317956779d7fbdec8f53cc4f6c433f78e9e94a5033
+        ref: docs/superpowers/reports/repair-archive-publication-endpoint.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/repair-archive-publication-endpoint.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 464a6efa69110486f1d30c0c8248f243d3fa537ae40c4791678768dc30f7e668
+        cwd: .
+        deliveryInputs: {}
+        environment: 4e48ac2b3457ed2aaaf79203293f78732c73df5f7a69d5b6adc61c1d0503e52c
+        exitCode: 0
+        inputAfter: 08e72f30192653fc49dde641927e51b743f9e7eb1668126e0bf89ce683f66204
+        inputBefore: 08e72f30192653fc49dde641927e51b743f9e7eb1668126e0bf89ce683f66204
+        manifestHash: 47e3a96d1eede9ad30ca3170debd17aecaf9317aa115c7b745b1d309b65508ce
+        manifestRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/263ffb32-d4c8-4472-9e5a-36d1ff8589e4.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/f69cc272-605b-4b32-a547-61e1916ca40f.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 464a6efa69110486f1d30c0c8248f243d3fa537ae40c4791678768dc30f7e668
+        ref: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/f69cc272-605b-4b32-a547-61e1916ca40f.log
+      - choice: pr
+        proposal:
+          input:
+            change: repair-archive-publication-endpoint
+            changeDir: openspec/changes/repair-archive-publication-endpoint
+            workspaceBaseline:
+              ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 将已验证的 Archive 发布策略要求并入 delivery-governance 主规格，归档本 Change，从当前分支创建目标为
+                origin/main 的 PR，CI 通过后合入。此次交付只涉及 Repoctopus 源码、规格和验收记录。
+              targetBranch: codex/repair-archive-publication-endpoint
+      - prBaseBranch: main
+        remote: origin
+        summary: 将已验证的 Archive 发布策略要求并入 delivery-governance 主规格，归档本 Change，从当前分支创建目标为
+          origin/main 的 PR，CI 通过后合入。此次交付只涉及 Repoctopus 源码、规格和验收记录。
+        targetBranch: codex/repair-archive-publication-endpoint
+      - baseCommit: 3797d973607415fda610ac5c29ac93b9fd8db693
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/repair-archive-publication-endpoint
+        verifiedBranch: codex/repair-archive-publication-endpoint
+      - archiveDirectory: openspec/changes/archive/2026-11-17-repair-archive-publication-endpoint
+      - sequence: 9
+        value:
+          boundBranch: codex/repair-archive-publication-endpoint
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: repair-archive-publication-endpoint
+              changeDir: openspec/changes/repair-archive-publication-endpoint
+              workspaceBaseline:
+                ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+            outputs:
+              full.build.configure:
+                boundBranch: codex/repair-archive-publication-endpoint
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: repair-archive-publication-endpoint
+              changeDir: openspec/changes/repair-archive-publication-endpoint
+              workspaceBaseline:
+                ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/repair-archive-publication-endpoint/.comet/handoff/design-context.json
+                handoffHash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+                proposal: 参考固定 Comet Classic 的已批准交付目标和同一 Run 恢复。Runtime 通过冻结策略摘要校验后，把同一份必填
+                  DeliveryPolicy 传给业务与规格发布。Delivery 复用 GitHub 客户端构造，API
+                  目标取自策略，凭据由 Workspace
+                  装配，此次核对的是客户端请求基址。以原候选包的精确直接前驱采纳新实现，保留审批、Bundle、Closure 和
+                  Journal。用原两条五仓 Run 复验，普通轮复用两个已创建业务 PR 和规格分支 OID，只补一个规格
+                  PR，返工轮完成三项发布，两条冷恢复均返回 completed。覆盖配置漂移拒绝与真实副作用次数。当前 delta spec
+                  可直接覆盖方案。
+                requirementsEvidence:
+                  contentHash: 33f80502d9d1976ac9818af62deee7d74ce681c6a0405526705ed59d7b74d367
+                  ref: openspec/changes/repair-archive-publication-endpoint
+                sourceEvidence:
+                  contentHash: 8c23f2b3aa7b5e3768e9991dda44d7a07e3fb32deed7504238a7442db2676de1
+                  ref: openspec/changes/repair-archive-publication-endpoint
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/repair-archive-publication-endpoint/design.md
+      - sequence: 8
+        value:
+          contentHash: fd701253c6c16d215d33f7c0d965841e2272e00e404cad59a7c0116b28649fe5
+          ref: openspec/changes/repair-archive-publication-endpoint/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/repair-archive-publication-endpoint/.comet/handoff/design-context.json
+          handoffHash: fab0a9338b4022d18eecada04bff62be8fab613c4bed1aad79562f38a69f4697
+          proposal: 参考固定 Comet Classic 的已批准交付目标和同一 Run 恢复。Runtime 通过冻结策略摘要校验后，把同一份必填
+            DeliveryPolicy 传给业务与规格发布。Delivery 复用 GitHub 客户端构造，API 目标取自策略，凭据由
+            Workspace 装配，此次核对的是客户端请求基址。以原候选包的精确直接前驱采纳新实现，保留审批、Bundle、Closure 和
+            Journal。用原两条五仓 Run 复验，普通轮复用两个已创建业务 PR 和规格分支 OID，只补一个规格
+            PR，返工轮完成三项发布，两条冷恢复均返回 completed。覆盖配置漂移拒绝与真实副作用次数。当前 delta spec
+            可直接覆盖方案。
+          requirementsEvidence:
+            contentHash: 33f80502d9d1976ac9818af62deee7d74ce681c6a0405526705ed59d7b74d367
+            ref: openspec/changes/repair-archive-publication-endpoint
+          sourceEvidence:
+            contentHash: 8c23f2b3aa7b5e3768e9991dda44d7a07e3fb32deed7504238a7442db2676de1
+            ref: openspec/changes/repair-archive-publication-endpoint
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: repair-archive-publication-endpoint
+              changeDir: openspec/changes/repair-archive-publication-endpoint
+              workspaceBaseline:
+                ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+                ref: openspec/changes/repair-archive-publication-endpoint
+      - sequence: 2
+        value:
+          contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+          ref: openspec/changes/repair-archive-publication-endpoint
+      - sequence: 4
+        value:
+          contentHash: 155b57736e28f2d1dc8d725e05b5a9cad870582be7cb13037edfd0dd52bde612
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: fd701253c6c16d215d33f7c0d965841e2272e00e404cad59a7c0116b28649fe5
+            ref: openspec/changes/repair-archive-publication-endpoint/design.md
+          plan: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+          planEvidence:
+            contentHash: 92f842ba35bc8323ce245d02d3fe0e4dfee05a52ab74cab9c702c38515bbfd76
+            ref: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+          taskRevision: 4c338259a139e6cbe6436a5b10120cd4ccf6fba3f97fb419c3e370f6014e177d
+      - sequence: 12
+        value:
+          contentHash: 92f842ba35bc8323ce245d02d3fe0e4dfee05a52ab74cab9c702c38515bbfd76
+          ref: docs/superpowers/plans/2026-11-16-repair-archive-publication-endpoint.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: fb88d093629406f62dfed2e9012bf3447acf332acbe930597ea7b3c8758d4bbf
+          cwd: .
+          environment: 73204a8cdc0d0166b799d9f4a3ae2a0d33bf9bcd9749a7919116c018ea7a9f14
+          exitCode: 0
+          inputAfter: 37cb870cf388ad0bb7ebe4cca98f1dda38aa9ddacc96ce3b15bab5ead11082b0
+          inputBefore: 37cb870cf388ad0bb7ebe4cca98f1dda38aa9ddacc96ce3b15bab5ead11082b0
+          manifestHash: 170590a115d54079302a3cbde6c3d4722eec0d421cc0fd4d14cd9e2d7d747ea9
+          manifestRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/8e0c01aa-8f44-419a-b8fd-9ae046636948.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/78ce2b00-3da7-4bbd-8998-a52849d61675.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: fb88d093629406f62dfed2e9012bf3447acf332acbe930597ea7b3c8758d4bbf
+          ref: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/78ce2b00-3da7-4bbd-8998-a52849d61675.log
+      - sequence: 17
+        value:
+          contentHash: 524b7561203c999f4b6ebb317956779d7fbdec8f53cc4f6c433f78e9e94a5033
+          ref: docs/superpowers/reports/repair-archive-publication-endpoint.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/repair-archive-publication-endpoint.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 464a6efa69110486f1d30c0c8248f243d3fa537ae40c4791678768dc30f7e668
+          cwd: .
+          deliveryInputs: {}
+          environment: 4e48ac2b3457ed2aaaf79203293f78732c73df5f7a69d5b6adc61c1d0503e52c
+          exitCode: 0
+          inputAfter: 08e72f30192653fc49dde641927e51b743f9e7eb1668126e0bf89ce683f66204
+          inputBefore: 08e72f30192653fc49dde641927e51b743f9e7eb1668126e0bf89ce683f66204
+          manifestHash: 47e3a96d1eede9ad30ca3170debd17aecaf9317aa115c7b745b1d309b65508ce
+          manifestRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/263ffb32-d4c8-4472-9e5a-36d1ff8589e4.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/f69cc272-605b-4b32-a547-61e1916ca40f.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          contentHash: 464a6efa69110486f1d30c0c8248f243d3fa537ae40c4791678768dc30f7e668
+          ref: .comet/runtime/classic-sdk-checks/9adbf054cd237f144ccf6df7c285efa090d27b25948f76c8d5e79b470378be6b/f69cc272-605b-4b32-a547-61e1916ca40f.log
+      - sequence: 21
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: repair-archive-publication-endpoint
+              changeDir: openspec/changes/repair-archive-publication-endpoint
+              workspaceBaseline:
+                ref: 6e619b27-5abd-492b-93e0-9c477bd8a5e7
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 将已验证的 Archive 发布策略要求并入 delivery-governance 主规格，归档本 Change，从当前分支创建目标为
+                  origin/main 的 PR，CI 通过后合入。此次交付只涉及 Repoctopus 源码、规格和验收记录。
+                targetBranch: codex/repair-archive-publication-endpoint
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 将已验证的 Archive 发布策略要求并入 delivery-governance 主规格，归档本 Change，从当前分支创建目标为
+            origin/main 的 PR，CI 通过后合入。此次交付只涉及 Repoctopus 源码、规格和验收记录。
+          targetBranch: codex/repair-archive-publication-endpoint
+      - sequence: 22
+        value:
+          baseCommit: 3797d973607415fda610ac5c29ac93b9fd8db693
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/repair-archive-publication-endpoint
+          verifiedBranch: codex/repair-archive-publication-endpoint
+      - sequence: 23
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-17-repair-archive-publication-endpoint
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 52
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 54
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 48
+        height: 5
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: 57
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 58
+        right: 51
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 53
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 59
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 22
+        left: 63
+        right: 64
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 65
+        right: 51
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 66
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 67
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 70
+        height: 2
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 72
+        right: 73
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 75
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 76
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 71
+        right: 77
+        height: 4
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: 79
+        right: 80
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 81
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 82
+        right: 77
+        height: 4
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 84
+        height: 2
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: 80
+        height: 2
+      - key: full.build.plan
+        value: 33
+        left: 85
+        right: 86
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 87
+        right: 77
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 89
+        right: 90
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 91
+        right: 84
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 92
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 77
+        height: 5
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: 96
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: 97
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 99
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 102
+        right: 96
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 101
+        right: 103
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 104
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 43
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 90
+        right: 84
+        height: 2
+      - key: full.build.check.evidence
+        value: 37
+        left: 109
+        right: 110
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 111
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 112
+        right: 105
+        height: 5
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: 114
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 115
+        right: 108
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 110
+        right: 86
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 116
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 118
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 45
+        left: 120
+        right: 121
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 122
+        right: 108
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 123
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 124
+        right: 105
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 127
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 129
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 132
+        right: 133
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 134
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 136
+        right: 137
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: 138
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 139
+        right: 130
+        height: 4
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: 141
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 145
+        height: 2
+      - key: full.open
+        value: 29
+        left: 143
+        right: 146
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 149
+        right: 150
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 148
+        right: 151
+        height: 3
+      - key: full.open
+        value: 29
+        left: 152
+        right: 146
+        height: 4
+      - key: full.archive.prepare
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: 154
+        right: 155
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: 158
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: 157
+        right: 159
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: 156
+        right: 160
+        height: 4
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 162
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 164
+        right: 165
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 163
+        right: 166
+        height: 3
+      - key: full.open
+        value: 29
+        left: 151
+        right: 167
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 161
+        right: 168
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 171
+        right: 172
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 175
+        height: 2
+      - key: full.open
+        value: 29
+        left: 173
+        right: 176
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 178
+        right: 179
+        height: 2
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 181
+        right: 182
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 180
+        right: 183
+        height: 3
+      - key: full.open
+        value: 29
+        left: 184
+        right: 176
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: 186
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: 188
+        right: 189
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 187
+        right: 190
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 176
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: 191
+        right: 192
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 194
+        right: 195
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 196
+        right: 190
+        height: 3
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: 198
+        height: 2
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 199
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 200
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 201
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 203
+        height: 2
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: 205
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 204
+        right: 206
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 207
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 208
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 56
+      - 62
+      - 68
+      - 78
+      - 83
+      - 88
+      - 94
+      - 100
+      - 106
+      - 113
+      - 119
+      - 125
+      - 128
+      - 131
+      - 135
+      - 140
+      - 142
+      - 147
+      - 153
+      - 169
+      - 170
+      - 177
+      - 185
+      - 193
+      - 202
+      - 209
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:11
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:13
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:14
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:16
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:18
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:20
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:22
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:23
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:4
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:5
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:7
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - repair-archive-publication-endpoint:9
+          - results
+        map: 26
+      - path:
+          - outputs
+        map: 22
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 27
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 28
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 29
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 31
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 36
+  storageHash: 68ed31ed96ed7e355766e9d0c6b132d3694f386eaf1cbd7b0c3b944b0d29ea94
+check_epoch: 6

@@ -97,8 +97,10 @@ export abstract class Delivery extends Service {
   }
   publishSpecification(
     request: SpecificationPublicationRequest,
+    policy: DeliveryPolicy,
     signal?: AbortSignal,
   ): Promise<SpecificationPublicationResult> {
+    void policy;
     void signal;
     return Promise.reject(
       new Error(`Delivery provider cannot publish specification closure for ${request.changeId}`),
