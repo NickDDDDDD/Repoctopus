@@ -2,6 +2,8 @@
 comet_change: recover-runtime-output-cleanup
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-16-recover-runtime-output-cleanup
+status: final
 ---
 
 # Design

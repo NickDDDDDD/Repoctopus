@@ -2,6 +2,7 @@
 change: recover-runtime-output-cleanup
 design-doc: openspec/changes/recover-runtime-output-cleanup/design.md
 base-ref: b6a33525a3db152eaa8b2547cf930a1d2f0f7391
+archived-with: 2026-11-16-recover-runtime-output-cleanup
 ---
 
 # Build 运行时输出清理恢复实施计划
