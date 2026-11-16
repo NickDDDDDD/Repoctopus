@@ -111,7 +111,7 @@ async function fixture(integrated = false) {
         process.platform === 'win32' ? 'junction' : 'dir',
       );
     }
-    await writeFile(path.join(business, '.git', 'info', 'exclude'), '/github-fixture/\n');
+    await writeFile(path.join(business, '.git', 'info', 'exclude'), '/github-fixture\n');
     await git('git', ['push', '-u', 'origin', 'main'], { cwd: business });
     await git('git', ['switch', '-c', 'feature/archive-context'], { cwd: business });
     await writeFile(path.join(business, 'README.md'), '# Delivered business change\n');
@@ -141,7 +141,7 @@ async function fixture(integrated = false) {
   }
   await git('git', ['push', '-u', 'origin', 'main'], { cwd: workspace });
   await git('git', ['switch', '-c', 'spec/archive-context'], { cwd: workspace });
-  await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n/github-fixture/\n');
+  await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n/github-fixture\n');
   await writeFile(
     path.join(workspace, 'repoctopus.yaml'),
     JSON.stringify({
