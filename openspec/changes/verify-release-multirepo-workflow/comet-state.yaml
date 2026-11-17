@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 0e032cb3-d027-4742-b6fe-93bb8b5f2eb5
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: c18d9be354750dae5052ed312f95d68c0c60b5c1
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-17
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/verify-release-multirepo-workflow
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: fd292e935f59b12c8300068e54da780a0b50a46730e01459db12163bbfea110b
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: verify-release-multirepo-workflow
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 2c6ec273fca93ad57498364e3c0defd9bed088d79f5748ca0de26f8d5f36be6b
+    input:
+      change: verify-release-multirepo-workflow
+      changeDir: openspec/changes/verify-release-multirepo-workflow
+      workspaceBaseline:
+        ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: c18d9be354750dae5052ed312f95d68c0c60b5c1
+      boundBranch: codex/verify-release-multirepo-workflow
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-17
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: verify-release-multirepo-workflow:1
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 6042e67c32adccdfff8a8f126f250ad27d418f440fd9a04f251b7ddccb670579
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      verify-release-multirepo-workflow:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: a0b9260a29fd29e09bbf3bf67ec85ecec407a8f30eb5816fd8ab40c5368e4b4f
