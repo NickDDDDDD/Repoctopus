@@ -38,7 +38,7 @@
   **Acceptance:** 行为修改、可分工多包和纯文档场景有实际依据；至少一次真实宿主原生选择并经正式接口提交；在决定和首包边界冷恢复保持有效事实；到 Archive 后无重复发布；现有配置、Work/Skill 与恢复遥测对应实际批准选择，不以自造批准替代真实交互。
   **Requirements:** change-lifecycle / 场景建议与策略授权保持可核对且可恢复；未指定的启动偏好不得成为已批准策略；skill-integration / 入口和 Design Skill 按真实任务场景推荐执行策略。
   **Blocked by:** 2.2；3.2。
-- [ ] 4.2 完成独立审查与完整 Verify，交付绑定实现和实际验收包身份的正式验证报告 <!-- comet-task:d55b0d76-6d49-481c-be64-881c115c4ff7 -->
+- [x] 4.2 完成独立审查与完整 Verify，交付绑定实现和实际验收包身份的正式验证报告 <!-- comet-task:d55b0d76-6d49-481c-be64-881c115c4ff7 -->
   **Acceptance:** 独立审查无未解决阻断项；声明的完整验证和严格规格校验通过；`verification/recommend-build-strategy-from-context/verification-report.md` 包含实际实现提交、包内容摘要、文件数及字节数，原始实验记录可追溯，明确未覆盖限制。
   **Requirements:** change-lifecycle / 场景建议与策略授权保持可核对且可恢复；Build Configuration 只允许受支持的固定策略；skill-integration / 入口和 Design Skill 按真实任务场景推荐执行策略。
   **Blocked by:** 4.1。

@@ -1,6 +1,6 @@
 # 场景化 Build 策略验证报告
 
-状态：Build 验收完成，正在运行完整检查并准备 Comet 正式 Verify。本报告尚不声明 Change 已完成或可交付。
+状态：8 项实施任务、独立审查、实包验收和完整预检已完成。正式阶段结论以同一 Comet Run 的 Build/Verify Guard 收据为准；归档和交付仍须当前授权。
 
 ## 最终实现与候选包
 
@@ -35,8 +35,23 @@ Package content bytes: `6621674`
 
 初始化、自动化审批与本地 GitHub API 为独立夹具，不能等同真实用户答复；上述 native 实验的 Design 则使用实际用户回答，已与自动化决定分开记录。该实验没有业务生产仓、真实远端 PR 或正式 Release。旧开发 checkpoint 不在兼容范围内。
 
+## 完整验证与规格一致性
+
+在最终实现上实际执行 `npm.cmd run verify`，退出码为 0。Vitest 为 214 个文件通过、1 个文件跳过；1312 项测试通过、4 项跳过，测试耗时 1409.24 秒。两套 TypeScript、lint、build、生成物一致性、品牌、架构、provenance、Dashboard salvage、19 项严格规格校验及验证报告包身份检查均通过。完整日志为仓外 `full-verify-preflight.log`。
+
+独立集成审查覆盖 `e27e836..f56ef02`，并增量复核至最终实现 `8163338`。无未解决 IMPORTANT/CRITICAL；最后修正的 Configure 文档行、Design repair 精确次数和在途改选负向断言均已复核。
+
+| 规格要求                           | 实现与验证依据                                                                                                                                             |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build Configuration 仅支持固定策略 | `strategy-selection.ts`、现有 Build Protocol/逐 Work capability 校验；四种合法两轴组合、缺能力和委派证据回归，及实际多 Agent/direct 实验                   |
+| 未指定偏好不得成为批准             | `WorkflowRuns.startChange`、公开 CLI 显式 flags；真实启动 RED/GREEN、非法值零 Run 写入、原生实验无模式参数启动                                             |
+| 建议与授权可核对、可恢复           | 当前已接受 Design submission 派生 proposal；同一 gate CAS、实际 snapshot 的 scoped 决定、历史修订来源保留；真实 CLI 的纠正、过期答复、反复修订和冷恢复回归 |
+| Skill 按实际场景建议两轴           | 入口、Design、Configure/Execute Action Skill、Workspace 教程；冻结 Skill 消费检查，native autonomous/TDD 与实际子 Agent/direct 的完整三仓实验              |
+
+复核了 4 条要求和 23 个场景，未发现实现与已批准设计的矛盾。唯一任务权威仍是本 Change 的 tasks.md，没有额外 spec/ticket/ADR 或实现笔记权威。
+
 ## 原始记录
 
 所有原始命令、真实子 Agent 检查、Git 事实、候选包与发布账本保存在仓外 `C:/Users/User/Desktop/PP/repoctopus-strategy-evidence-20261119/`。其中 `windows-package/receipt.json` 是初始包自动化终态收据；`delegated-lab/evidence/terminal.json` 是实际委派实验终态收据；`native-lab/evidence/native-design-decision.json` 和 `native-answer.json` 分别是原请求及真实答复。等待期间停止了 native 实验临时进程，收到答复后用仓外 `resume-native.mjs` 恢复同一 Run；完成后本地服务已停止。`final-package/` 绑定本报告的最终候选。
 
-正式 Comet Build Check、Verify 的命令、结果及最终限制将在实际完成后补录，不能用上述分段检查代替。
+正式门禁使用 `comet guard recommend-build-strategy-from-context build --apply --local -- npm.cmd run build`，再使用 `comet guard recommend-build-strategy-from-context verify --report verification/recommend-build-strategy-from-context/verification-report.md --apply -- npm.cmd run verify`。这两个命令的实际结果由同一 Run 保存，不以手工声明代替；本报告的预检结果不能自行推进 phase。
