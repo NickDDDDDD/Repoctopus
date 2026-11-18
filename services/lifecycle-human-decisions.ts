@@ -198,7 +198,14 @@ export class LifecycleHumanDecisions {
                 ? {
                     strategy: lifecycle.strategyProposal.strategy,
                     recommendation: lifecycle.strategyProposal.candidate,
-                    preference: state.trigger?.facts.buildStrategyPreference,
+                    preference:
+                      lifecycle.strategyProposal.revisionRequest?.preference ??
+                      state.trigger?.facts.buildStrategyPreference,
+                    initialPreference: state.trigger?.facts.buildStrategyPreference,
+                    preferenceSource: lifecycle.strategyProposal.revisionRequest
+                      ? 'strategy-revision'
+                      : 'run-start',
+                    revisionRequest: lifecycle.strategyProposal.revisionRequest ?? null,
                     source: lifecycle.strategyProposal.source,
                   }
                 : {}),

@@ -106,7 +106,11 @@ Open 和 Design 分别产生独立 Human Decision。Open Host Outcome 成功后�
 
 日常提交造成的 HEAD/worktree 变化是 content drift，不会全局卡住自举 Run；当前阶段仍必须按自己的 frozen input、planning binding、Evidence 或 closure 规则重验。branch、remote、路径、仓库增删与 Workspace/Project 身份变化属于 identity drift，恢复入口保持 fail closed。
 
-Build Configure 的 Human Decision 冻结 execution mode、TDD mode、standard review、Host 能力和隔离。随后 Runtime 从 OpenSpec Tasks 产生 Run-local BuildPlan，执行 Plan Evidence、当前 Work Package 和 Build Check。每次 `run next` 只拉取 Runtime 当前 continuation。内嵌 Host 由同一短生命周期 App 注册；外部 Agent/Runner 使用 `run work-claim`/`run work-outcome` 的 Host-bound 协议。Runner 必须在每次 claim 中声明同一组完整、稳定的 Host 能力，而不是只声明当前 Work 使用的能力；例如 autonomous Build Host 使用 `--host-capabilities build.autonomous,process.execute,repository.read,repository.write,specification.read`，subagent-driven Build Host 将 `build.autonomous` 替换为受证明的 `subagent.dispatch.attested`。Runtime 在持久化 claim 前校验当前 Work 的能力是否为该集合的子集，且不会用当前 Work/packet 反向扩充 Host 身份；Work 的副作用类别和 write scopes 仍逐项限制实际权限。Outcome 通过 `--submission-id <new-id> --result-file <result.json>` 提交受 Runtime schema 校验的结构化 Build 结果。Invocation 中的 Host 快照是跨 CLI 进程的权威身份，后续校验不依赖原进程仍在运行。电脑关闭不需要守护进程：下一位具备 Workspace 状态的 Runner 从同一个 checkpoint 恢复；若原调用结果未知，必须先 `run work-reconcile`，不能自动重放。
+Design Host 根据当前 Tasks、实际影响范围、宿主能力和测试切面，分别建议执行模式与 TDD。未指定的启动参数保持未决定；显式参数是本次偏好。原有 Design Human Decision 展示并批准完整 Strategy，Build Configure 只核验独立 ExecutionBinding，不再增加一次常规配置审批。
+
+Runtime 继续按 Configure → Plan → Plan Evidence → Execute → Check 推进。每次 claim 只要求当前 Work 的能力，不要求只读 Plan Host 具备完整 Execute 能力；Host 如实声明实际可提供的能力，不能从 requirements 反向补齐。外部 Runner 通过 `run work-claim` 和 `run work-outcome --submission-id <new-id> --result-file <file>` 消费当前包与提交结果，保持明确 Runner、invocation 和 packet 身份。子 Agent 模式还要求实际受管委派和回执。
+
+已批准后主动改变配置，使用 `run revise-strategy --run <run-id> --execution-mode <mode> --tdd-mode <mode>`；只给需要改变的轴即可。Runtime 先确认原调用和命令已可安全结束，再派发 Design 修订，用户批准新提案后才采用。无变化请求与恢复不重复审批，Archive 与终态拒绝该入口。原调用结果未知时先 `run work-reconcile`，不能自动重放，也不需要守护进程。
 
 Execution Binding 是 Configure 时冻结的授权基线：repository、branch、isolation、worktree owner 与 Host identity 不会因正常开发 commit 改写。Runtime 另行维护 `BuildWorkspaceCheckpoint` 作为逐 Package 的 Git 进度；Runner 负责在授权 write scope 内 commit/push，Runtime 独立观察 HEAD、证明 fast-forward，并原子接受 Package Completion 与下一 checkpoint。Host 的 Package/Check result 不上报 repository digest。未授权仓变化、历史重写或 identity drift 都会 fail closed；Build Check 只接受与最终 checkpoint 精确一致的 workspace。
 

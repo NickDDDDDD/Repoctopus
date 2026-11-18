@@ -127,6 +127,12 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
       ? { workspaceIntent: structuredClone(snapshot.workspaceIntent) }
       : {}),
     ...(snapshot.buildProtocol ? { buildProtocol: structuredClone(snapshot.buildProtocol) } : {}),
+    ...(snapshot.strategyProposal
+      ? { strategyProposal: structuredClone(snapshot.strategyProposal) }
+      : {}),
+    ...(snapshot.strategyRevisionRequest
+      ? { strategyRevisionRequest: structuredClone(snapshot.strategyRevisionRequest) }
+      : {}),
     ...(snapshot.openApprovalDigest ? { openApprovalDigest: snapshot.openApprovalDigest } : {}),
     ...(snapshot.openApprovalInvalidated ? { openApprovalInvalidated: true } : {}),
     ...(snapshot.planningDigest ? { planningDigest: snapshot.planningDigest } : {}),

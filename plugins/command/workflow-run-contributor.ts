@@ -92,6 +92,13 @@ const plugin = ((context: Context) => {
           ),
       }),
       context.commandRouter.register({
+        name: 'run.change.revise-strategy',
+        execute: ({ input }) =>
+          context.workflowRuns.reviseStrategy(
+            input as Parameters<typeof context.workflowRuns.reviseStrategy>[0],
+          ),
+      }),
+      context.commandRouter.register({
         name: 'run.decision.submit',
         execute: ({ input, signal }) =>
           context.workflowRuns.submitHumanDecision(

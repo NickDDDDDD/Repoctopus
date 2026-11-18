@@ -272,6 +272,15 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     },
   ],
   transitions: [
+    ...(['design', 'build', 'verify'] as const).map<ChangeLifecycleTransitionDefinition>(
+      (phase) => ({
+        id: `${phase}.strategy-revision-requested`,
+        kind: phase === 'design' ? 'self' : 'fallback',
+        from: { phase, statuses: ['running', 'waiting', 'blocked'] },
+        to: { phase: 'design', status: 'running' },
+        trigger: 'explicit-strategy-revision-intent',
+      }),
+    ),
     {
       id: 'open.work-ready',
       kind: 'self',

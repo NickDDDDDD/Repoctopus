@@ -11,7 +11,7 @@ import {
   removeTemporaryDirectory,
   temporaryDirectory,
 } from '../helpers/fixtures.js';
-import { normalizeRemoteIdentity } from '../../platform/git/remote-identity.js';
+
 import { runCli } from './cli.js';
 
 const execFileAsync = promisify(execFile);
@@ -79,16 +79,16 @@ async function runFailure(
 }
 
 describe('specification approval CLI', () => {
-  it('runs the documented branch-first flow and fails closed without trusted input', async () => {
+  it('requires a current Run candidate and never fabricates standalone strategy defaults', async () => {
     const documentation = await readFile(
       path.join(packageRoot, 'docs', 'specification.md'),
       'utf8',
     );
     expect(documentation).toContain(
-      'spec approval prepare --workspace . --change <change-id> --branch spec/<change-id> --target main --json',
+      'spec approval prepare --workspace . --run <run-id> --json',
     );
     expect(documentation).toContain(
-      'spec approval status --workspace . --change <change-id> --json',
+      'run decision --workspace . --run <run-id> --json',
     );
     const selfHosting = await readFile(path.join(packageRoot, 'docs', 'self-hosting.md'), 'utf8');
     expect(selfHosting).toContain(
@@ -145,125 +145,28 @@ describe('specification approval CLI', () => {
     await execFileAsync('git', ['push', '-u', 'origin', 'spec/sample'], { cwd: workspace });
     await execFileAsync('git', ['branch', 'spec/unpublished'], { cwd: workspace });
 
-    const prepared = await runCli<{
-      status: string;
-      snapshot: {
-        artifacts: unknown[];
-        buildStrategyDigest: string;
-        changeBranch: { sourceBranch: string; remoteOid: string; remoteIdentity: string };
-      };
-    }>({
-      packageRoot,
-      cwd: workspace,
-      args: [
-        'spec',
-        'approval',
-        'prepare',
-        '--workspace',
-        workspace,
-        '--change',
-        'sample',
-        '--branch',
-        'spec/sample',
-        '--target',
-        'main',
-      ],
-      environment,
+    const missing = await runFailure(workspace, ['spec', 'approval', 'prepare', '--workspace', workspace], environment);
+    expect(missing.code).toBe(1);
+    expect(missing.diagnostics?.[0]?.message).toMatch(/--run/u);
+    const started = await runCli<{ state: { runId: string; changeLifecycle: { phase: string; checkEpoch: number }; trigger: { facts: { buildStrategyPreference: unknown } } } }>({
+      packageRoot, cwd: workspace, environment,
+      args: ['run', 'start', '--workspace', workspace, '--change', 'sample', '--target', 'main'],
     });
-    expect(prepared).toMatchObject({
-      ok: true,
-      command: 'spec approval prepare',
-      result: {
-        status: 'awaiting_approval',
-        snapshot: { changeBranch: { sourceBranch: 'spec/sample' } },
-      },
+    const runId = started.runId!;
+    const premature = await runFailure(workspace, ['spec', 'approval', 'prepare', '--workspace', workspace, '--run', runId], environment);
+    expect(premature.diagnostics?.[0]?.message).toMatch(/current complete Design proposal/u);
+    const bypass = await runFailure(workspace, ['spec', 'approval', 'prepare', '--workspace', workspace, '--run', runId, '--tdd-mode', 'direct'], environment);
+    expect(bypass.diagnostics?.[0]?.message).toMatch(/revise-strategy/u);
+    const unchanged = await runCli<{ state: { changeLifecycle: { phase: string; checkEpoch: number }; trigger: { facts: { buildStrategyPreference: unknown } } } }>({
+      packageRoot, cwd: workspace, environment, args: ['run', 'status', '--workspace', workspace, '--run', runId],
     });
-    expect(prepared.result?.snapshot.artifacts).toHaveLength(4);
-    expect(prepared.result?.snapshot.changeBranch.remoteOid).toMatch(/^[a-f0-9]{40}$/u);
-    expect(prepared.result?.snapshot.changeBranch.remoteIdentity).toBe(
-      normalizeRemoteIdentity(remote),
-    );
-    expect(prepared.result?.snapshot.buildStrategyDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
-
-    const status = await runCli({
-      packageRoot,
-      cwd: workspace,
-      args: ['spec', 'approval', 'status', '--workspace', workspace, '--change', 'sample'],
-      environment,
-    });
-    expect(status).toMatchObject({ result: { status: 'awaiting_approval', stateVersion: 0 } });
-
-    const reviewFailure = await runFailure(
-      workspace,
-      ['spec', 'approval', 'review', '--workspace', workspace, '--change', 'sample'],
-      environment,
-    );
-    expect(reviewFailure.code).toBe(1);
-    expect(reviewFailure.diagnostics?.[0]?.message).toMatch(/interactive terminal/i);
-
-    const unpublishedFailure = await runFailure(
-      workspace,
-      [
-        'spec',
-        'approval',
-        'prepare',
-        '--workspace',
-        workspace,
-        '--change',
-        'sample',
-        '--branch',
-        'spec/unpublished',
-        '--target',
-        'main',
-      ],
-      environment,
-    );
-    expect(unpublishedFailure.code).toBe(1);
-    expect(unpublishedFailure.diagnostics?.[0]?.message).toMatch(/not published/i);
-
-    const invalidFailure = await runFailure(
-      workspace,
-      [
-        'spec',
-        'approval',
-        'prepare',
-        '--workspace',
-        workspace,
-        '--change',
-        'invalid',
-        '--branch',
-        'spec/sample',
-        '--target',
-        'main',
-      ],
-      environment,
-    );
-    expect(invalidFailure.code).toBe(1);
-    expect(invalidFailure.diagnostics?.[0]?.message).toMatch(/validation|strict/i);
-
-    await write(
-      workspace,
-      'openspec/changes/sample/proposal.md',
-      '# Change: sample\n\n## Why\nThis local edit has not been published.\n',
-    );
-    const dirtyFailure = await runFailure(
-      workspace,
-      [
-        'spec',
-        'approval',
-        'prepare',
-        '--workspace',
-        workspace,
-        '--change',
-        'sample',
-        '--branch',
-        'spec/sample',
-        '--target',
-        'main',
-      ],
-      environment,
-    );
-    expect(dirtyFailure.code).toBe(1);
-    expect(dirtyFailure.diagnostics?.[0]?.message).toMatch(/must be clean/i);
+    expect(unchanged.result!.state.changeLifecycle.phase).toBe('open');
+    expect(unchanged.result!.state.changeLifecycle.checkEpoch).toBe(started.result!.state.changeLifecycle.checkEpoch);
+    expect(unchanged.result!.state.trigger.facts.buildStrategyPreference).toEqual({ schemaVersion: 2 });
+    const approval = await runCli({ packageRoot, cwd: workspace, environment,
+      args: ['spec', 'approval', 'status', '--workspace', workspace, '--change', 'sample'] });
+    expect(approval.result).toBeNull();
+    const review = await runFailure(workspace, ['spec', 'approval', 'review', '--workspace', workspace, '--change', 'sample'], environment);
+    expect(review.diagnostics?.[0]?.message).toMatch(/interactive terminal/iu);
   }, 30_000);
 });

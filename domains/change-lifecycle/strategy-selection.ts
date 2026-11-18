@@ -21,6 +21,7 @@ export interface BuildStrategyCandidate {
 
 export interface BuildStrategyProposal {
   schemaVersion: 1;
+  revisionRequest?: StrategyRevisionRequest;
   candidate: BuildStrategyCandidate;
   strategy: BuildStrategy;
   source: {
@@ -36,7 +37,9 @@ export interface StrategyRevisionRequest {
   requestId: string;
   actorId: string;
   priorStrategyDigest: `sha256:${string}`;
+  baselineStrategy: BuildStrategy;
   preference: BuildStrategyPreference;
+  explicitAxes: readonly ('executionMode' | 'tddMode')[];
 }
 
 export function assertStrategyModes(value: { executionMode?: unknown; tddMode?: unknown }): void {
@@ -77,7 +80,7 @@ function rationale(value: unknown): StrategyRationale {
     )
   )
     throw new Error('Strategy rationale requires bounded project-relative evidence references');
-  return { summary: item.summary, refs: [...item.refs] as string[] };
+  return { summary: item.summary, refs: (item.refs as string[]).map((ref) => ref) };
 }
 
 export function parseBuildStrategyCandidate(value: unknown): BuildStrategyCandidate {

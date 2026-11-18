@@ -239,6 +239,13 @@ describe('Change Run CLI', () => {
 
     const store = new FileRuntimeStore(workspace);
     const beforeConflict = await store.loadRun(first.runId!);
+    await expect(
+      runCli({
+        ...startOptions,
+        args: ['run', 'revise-strategy', '--run', first.runId!, '--tdd-mode', 'direct'],
+      }),
+    ).rejects.toThrow(/Strategy revision requires/);
+    expect(await store.loadRun(first.runId!)).toEqual(beforeConflict);
     const trajectoryBeforeConflict = await store.loadTrajectory(first.runId!);
     await execFileAsync('git', ['switch', '-c', 'spec/other-source'], { cwd: workspace });
     await execFileAsync('git', ['push', '--set-upstream', 'origin', 'spec/other-source'], {

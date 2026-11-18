@@ -51,6 +51,7 @@ import { continuationDiagnostics } from './continuation-diagnostics.js';
 import type { EvidenceCoordinator } from '../../services/evidence-coordinator.js';
 import type { BrowserMaintenance } from '../../services/browser-maintenance.js';
 import type {
+  DelegationReceipt,
   WorkExecutionFinding,
   WorkExecutionPacket,
   WorkExecutionResult,
@@ -74,7 +75,6 @@ import type {
   SpecificationApprovalState,
   SpecificationValidation,
 } from '../../domains/specification/types.js';
-import { inspectPublishedChangeBranch } from '../../platform/git/change-branch.js';
 import {
   reviewHumanDecision as reviewLifecycleDecision,
   reviewSpecificationApproval,
@@ -87,7 +87,6 @@ import {
 import type { LifecycleHumanDecisionView } from '../../services/lifecycle-human-decisions.js';
 import type { ConsistencyReconciliationResult } from '../../services/consistency-reconciler.js';
 import {
-  createBuildStrategy,
   type BuildExecutionMode,
   type BuildTddMode,
 } from '../../domains/change-lifecycle/build-protocol.js';
@@ -98,7 +97,7 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <init|detect|prepare|install-entry-skills|configure-verify|decision|review> | skill <list|get|preview|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|record|resume|work-claim|work-content|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <init|detect|prepare|install-entry-skills|configure-verify|decision|review> | skill <list|get|preview|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|revise-strategy|record|resume|work-claim|work-content|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const COMMANDS = new Set([
   'project init',
   'project detect',
@@ -134,6 +133,7 @@ const COMMANDS = new Set([
   'run work-outcome',
   'run work-reconcile',
   'run decide',
+  'run revise-strategy',
   'run decision',
   'run record',
   'run resume',
@@ -194,6 +194,7 @@ const CLI_FLAGS = new Set([
   'request-id',
   'proposal-hash',
   'findings-file',
+  'delegation-receipts-file',
   'candidate',
   'branch',
   'draft',
@@ -221,6 +222,7 @@ const REQUIRED_FLAGS = new Map<string, readonly string[]>([
   ['run verify', ['run']],
   ['run decision', ['run']],
   ['run decide', ['run']],
+  ['run revise-strategy', ['run']],
   ['run archive-prepare', ['run', 'intent']],
   ['run archive-publish', ['run']],
   ['delivery status', ['change']],
@@ -687,6 +689,8 @@ async function specificationApprovalPrepare(
 ): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const runId = stringFlag(parsed, 'run', { required: true })!;
+  if (parsed.flags.has('execution-mode') || parsed.flags.has('tdd-mode'))
+    throw new Error('Use run revise-strategy to change the current Run strategy');
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute('run.change.prepare-design', {
@@ -1470,6 +1474,12 @@ async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unkn
         await readFile(path.resolve(findingsFile), 'utf8'),
       ) as readonly WorkExecutionFinding[])
     : undefined;
+  const receiptsFile = stringFlag(parsed, 'delegation-receipts-file');
+  const delegationReceipts = receiptsFile
+    ? (JSON.parse(
+        await readFile(path.resolve(receiptsFile), 'utf8'),
+      ) as readonly DelegationReceipt[])
+    : undefined;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute('run.work.outcome', {
@@ -1491,8 +1501,39 @@ async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unkn
         .map((value) => qualifiedSha256(value, 'Consumed layer digest')),
       ...(structuredResult ? { result: structuredResult } : {}),
       ...(findings ? { findings } : {}),
+      ...(receiptsFile ? { delegationReceipts } : {}),
     });
     return successEnvelope({ command: 'run work-outcome', runId, result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function runReviseStrategy(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const outcome = await app.context.commandRouter.execute<unknown, RuntimeResult<RunStatusView>>(
+      'run.change.revise-strategy',
+      {
+        runId,
+        ...(parsed.flags.has('execution-mode')
+          ? { executionMode: stringFlag(parsed, 'execution-mode', { required: true }) }
+          : {}),
+        ...(parsed.flags.has('tdd-mode')
+          ? { tddMode: stringFlag(parsed, 'tdd-mode', { required: true }) }
+          : {}),
+        actor: { actorId: userInfo().username, source: 'cli', authenticated: true },
+      },
+    );
+    return successEnvelope({
+      command: 'run revise-strategy',
+      runId,
+      result: outcome.value,
+      diagnostics: outcome.diagnostics,
+      nextActions: nextActions(outcome.value),
+    });
   } finally {
     await app.close();
   }
@@ -1917,6 +1958,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run work-reconcile') return runWorkReconcile(parsed);
   if (command === 'run decide') return runDecide(parsed);
   if (command === 'run decision') return runDecision(parsed);
+  if (command === 'run revise-strategy') return runReviseStrategy(parsed);
   if (command === 'run record') return runRecord(parsed);
   if (command === 'run resume') return runResume(parsed);
   if (command === 'change reconcile') return changeReconcile(parsed);

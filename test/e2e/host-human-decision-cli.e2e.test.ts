@@ -377,9 +377,39 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
   await git(['push']);
   const candidateFile = path.join(root, 'design-strategy.json');
   await writeFile(candidateFile, JSON.stringify(strategyCandidateFixture('autonomous', 'tdd')));
+  const receiptsFile = path.join(root, 'delegation-receipts.json');
+  await writeFile(receiptsFile, 'null');
+  const rejectedReceipts = await cli<{ acceptance: unknown }>([
+    'run',
+    'work-outcome',
+    '--run',
+    runId,
+    '--submission-id',
+    `${designClaim.invocation.invocationId}:invalid-receipts`,
+    '--invocation-id',
+    designClaim.invocation.invocationId,
+    '--host-id',
+    designClaim.invocation.host.id,
+    '--packet-digest',
+    designClaim.packet.identity.packetDigest,
+    '--result-file',
+    candidateFile,
+    '--delegation-receipts-file',
+    receiptsFile,
+    '--status',
+    'succeeded',
+    '--summary',
+    'Malformed delegation receipts must remain correctable.',
+    '--consumed-layers',
+    designClaim.packet.context.layers
+      .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+      .map((layer) => layer.digest)
+      .join(','),
+  ]);
+  expect(rejectedReceipts.result?.acceptance).toBeNull();
   const validDelta = await readFile(path.join(workspace, change, 'specs/demo/spec.md'), 'utf8');
   const validTasks = await readFile(path.join(workspace, change, 'tasks.md'), 'utf8');
-  await write(`${change}/tasks.md`, validTasks.replace(/  \*\*Acceptance:\*\*[^\n]*\n/u, ''));
+  await write(`${change}/tasks.md`, validTasks.replace(/ {2}\*\*Acceptance:\*\*[^\n]*\n/u, ''));
   await git(['add', '.']);
   await git(['commit', '-m', 'spec: exercise deterministic Design rejection']);
   await git(['push']);
@@ -452,6 +482,13 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
     requiredInputs: { approve: [] },
   });
   expect(design.requestId).not.toBe(view.result!.requestId);
+  const prepared = (
+    await cli<LifecycleHumanDecisionView>(['spec', 'approval', 'prepare', '--run', runId])
+  ).result!;
+  expect(prepared.requestId).toBe(design.requestId);
+  expect(prepared.materials).toMatchObject({
+    strategy: { executionMode: 'autonomous', tddMode: 'tdd' },
+  });
   const waitingDesign = (await cli<RunStatusView>(['run', 'status', '--run', runId])).result!;
   await writeFile(responseFile, JSON.stringify(response));
   expect(
@@ -500,4 +537,84 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
     (await cli<RunStatusView>(['run', 'status', '--run', runId])).result!.state.changeLifecycle!
       .phase,
   ).toBe('build');
+  const beforeRevision = (await cli<RunStatusView>(['run', 'status', '--run', runId])).result!;
+  const noChange = (
+    await cli<RunStatusView>(['run', 'revise-strategy', '--run', runId, '--tdd-mode', 'tdd'])
+  ).result!;
+  expect(noChange.state.changeLifecycle?.checkEpoch).toBe(
+    beforeRevision.state.changeLifecycle?.checkEpoch,
+  );
+  const revised = (
+    await cli<RunStatusView>(['run', 'revise-strategy', '--run', runId, '--tdd-mode', 'direct'])
+  ).result!;
+  expect(revised.state.changeLifecycle).toMatchObject({
+    phase: 'design',
+    currentWork: { kind: 'specification.plan' },
+    strategyRevisionRequest: {
+      preference: { schemaVersion: 2, executionMode: 'autonomous', tddMode: 'direct' },
+    },
+    buildProtocol: { status: 'suspended-for-design', strategy: { tddMode: 'tdd' } },
+  });
+  const repeated = (
+    await cli<RunStatusView>(['run', 'revise-strategy', '--run', runId, '--tdd-mode', 'direct'])
+  ).result!;
+  expect(repeated.state.changeLifecycle?.checkEpoch).toBe(
+    revised.state.changeLifecycle?.checkEpoch,
+  );
+  await cli(['run', 'resume', '--run', runId]);
+  const continued = (await cli<RunStatusView>(['run', 'next', '--run', runId])).result!;
+  expect(continued.state.changeLifecycle?.strategyRevisionRequest).toEqual(
+    revised.state.changeLifecycle?.strategyRevisionRequest,
+  );
+  expect(continued.state.trigger?.facts.buildStrategyPreference).toEqual(
+    beforeRevision.state.trigger?.facts.buildStrategyPreference,
+  );
+  designClaim = (
+    await cli<{ packet: WorkExecutionPacket; invocation: WorkExecutionHostInvocation }>([
+      'run',
+      'work-claim',
+      '--run',
+      runId,
+      '--adapter',
+      'manual',
+      '--runner',
+      'test:host-decision',
+      '--host-capabilities',
+      'repository.read,repository.write,specification.read,specification.write',
+    ])
+  ).result!;
+  // The Host proposes keeping A after the user requested B; show both before approval.
+  await submitDesign();
+  await cli(['run', 'next', '--run', runId]);
+  const keepOriginal = (await cli<LifecycleHumanDecisionView>(['run', 'decision', '--run', runId]))
+    .result!;
+  expect(keepOriginal.materials).toMatchObject({
+    preferenceSource: 'strategy-revision',
+    preference: { tddMode: 'direct' },
+    recommendation: { tddMode: 'tdd' },
+    revisionRequest: { explicitAxes: ['tddMode'] },
+  });
+  await writeFile(
+    responseFile,
+    JSON.stringify({
+      ...keepOriginal.responseTemplate,
+      decision: 'approve',
+      interaction: {
+        channel: 'conversation',
+        authorization: 'user-response',
+        reference: 'fixture-keep-original-strategy',
+      },
+    }),
+  );
+  await cli(['run', 'decide', '--run', runId, '--response-file', responseFile]);
+  await cli(['run', 'next', '--run', runId]);
+  const approvedOriginal = (await cli<RunStatusView>(['run', 'status', '--run', runId])).result!;
+  expect(approvedOriginal.state.changeLifecycle?.strategyRevisionRequest).toBeUndefined();
+  const secondRevision = (
+    await cli<RunStatusView>(['run', 'revise-strategy', '--run', runId, '--tdd-mode', 'direct'])
+  ).result!;
+  expect(secondRevision.state.changeLifecycle?.phase).toBe('design');
+  expect(secondRevision.state.changeLifecycle!.checkEpoch).toBeGreaterThan(
+    approvedOriginal.state.changeLifecycle!.checkEpoch,
+  );
 }, 180_000);

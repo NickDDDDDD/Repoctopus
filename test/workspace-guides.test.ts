@@ -58,6 +58,8 @@ describe('Workspace guide ownership', () => {
       '.agents/skills/team-api-review/SKILL.md',
       'target: build.check',
       'repoctopus.cmd skill preview --workspace .',
+      'run revise-strategy --run <run-id> --tdd-mode direct',
+      '启动时未指定的执行模式和 TDD 保持未决定',
       'REPOCTOPUS_OTLP_DIAGNOSTICS=full',
       'deploy/signoz/workflow-health.json',
     ]) {

@@ -122,6 +122,7 @@ function createChangeInputs(input: {
     tasks: input.lifecycle.tasks ?? [],
     workspaceIntent: input.lifecycle.workspaceIntent ?? null,
     strategyPreference: input.strategyPreference ?? null,
+    strategyRevisionRequest: input.lifecycle.strategyRevisionRequest ?? null,
     build: protocol
       ? {
           currentAction: protocol.currentAction,
