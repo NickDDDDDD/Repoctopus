@@ -14,4 +14,6 @@ Comet 使用精确命令 `npm.cmd run build` 执行 Build Check，并使用 `npm
 
 首轮完整检查为 1293 项通过、4 项跳过，一项既有 Evidence 输入集成测试超过其 30 秒预算，实际耗时约 34 秒。该测试单独复跑在约 6.5 秒通过。后续完整检查设置 `VITEST_MAX_WORKERS=2`，该变量由现有检查策略绑定，测试保持原有范围和断言。首轮失败记录与原始日志保留在当前 Run。
 
+第二轮为 1294 项测试通过、4 项跳过，其后生成物、品牌、架构、来源、Dashboard 清单和严格规格检查全部通过。最后一项检查要求规范的[托管执行报告](../../../verification/verify-release-multirepo-workflow/verification-report.md)，本次最初仅提供了验收收据与本报告。补齐实现提交和实际 tarball 的规范化内容摘要后，由原检查器核对当前产品与测试包的绑定关系。
+
 本次托管服务在本机实现 Git smart HTTP 和 GitHub 兼容 HTTPS，审批使用测试 Host 的确定性答复。完整 GitHub Prepare 作业随合入后的下一份发布候选执行。本次的接线与封存正反例验证覆盖实际候选文件参数、执行顺序及通过收据与候选摘要的绑定。
