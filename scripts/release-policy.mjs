@@ -13,6 +13,31 @@ export function releaseAssetNames(version) {
   return [`repoctopus-${version}.tgz`, `Repoctopus-Desktop-${version}-x64-Setup.exe`, 'SHA256SUMS'];
 }
 
+export function assertWorkflowAcceptance(evidence, candidate) {
+  const required = [
+    'init-to-archive',
+    'build-cold-recovery',
+    'publication-response-loss',
+    'terminal-recovery',
+  ];
+  if (
+    evidence?.kind !== 'WindowsMultirepoPackageE2E' ||
+    evidence.status !== 'passed' ||
+    evidence.finalStatus !== 'completed' ||
+    typeof evidence.runId !== 'string' ||
+    !evidence.runId.trim() ||
+    evidence.candidate?.size !== candidate.size ||
+    evidence.candidate?.digest !== candidate.digest ||
+    !Array.isArray(evidence.checks) ||
+    evidence.checks.length !== required.length ||
+    !required.every((id) =>
+      evidence.checks.some((check) => check.id === id && check.status === 'passed'),
+    )
+  ) {
+    throw new Error('Workflow acceptance receipt does not match the verified CLI candidate');
+  }
+}
+
 export function assertReleaseSource({ commit, tag, version, isMainAncestor, ci, verify }) {
   releaseAssetNames(version);
   if (tag !== `v${version}`) throw new Error('Release tag does not match the package version');

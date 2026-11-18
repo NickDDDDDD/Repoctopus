@@ -48,7 +48,7 @@ repoctopus.cmd --version
 ## 维护者发布版本
 
 1. 在发布 PR 同步 `package.json`、`package-lock.json` 和安装文档，并用候选包验证。合入后，从远端 `main` 选定已通过 `Continuous integration / verify` 的完整 SHA。使用该提交的包版本生成 Tag，例如 `0.1.3` 对应 `v0.1.3`。发布流程使用 GitHub 的预发布标记。
-2. 在 GitHub Actions 的 **Prepare or publish Repoctopus release** 选择 `main`，以 `prepare`、完整 SHA 和 Tag 启动。该操作验证提交、构建并验收 CLI 与桌面包，然后生成草稿。
+2. 在 GitHub Actions 的 **Prepare or publish Repoctopus release** 选择 `main`，以 `prepare`、完整 SHA 和 Tag 启动。该操作验证提交、构建并验收 CLI 与桌面包。Windows 多仓验收使用同一个候选 `.tgz` 跑完 Init 到 Archive，检查首包后的冷恢复和规格 PR 响应丢失后的发布去重，封存核对通过收据和包摘要后生成草稿。
 3. 等 Prepare Run 成功，从候选作业的摘要抄取 **Candidate artifact ID**。在草稿中核对目标提交、CI Run 链接和三份文件。候选工件包含来源记录，可以用其中的摘要核对下载内容。
 4. 从 `main` 再次启动同一 workflow，选择 `publish`，填入同一个 SHA、Tag 和候选工件 ID。该操作核对草稿及远端摘要，再公开预发布。查看末尾的 **Verify public downloads and npx** 作业，确认公开 URL 的文件摘要、CLI 帮助和 JSON 响应都通过。
 5. 将固定版本的 Release 页面及命令交给团队。遇到公开下载验证失败，先核对该版本的公开状态和资产。修复临时网络问题后可用同一个候选重跑 Publish 的验证。需要更正已发布内容时使用新版本和 Tag。
@@ -58,3 +58,17 @@ Prepare 的草稿上传中断时，优先在原 Run 中重跑失败作业，继�
 若 GitHub 为失败上传留下空的 `starter` 占位，维护者先确认状态和大小，再按 GitHub 的资产恢复说明处理该占位并重试原候选。公开时保持草稿、Tag 和资产稳定。若 GitHub 拒绝为工作流文件与默认分支不同的历史提交创建 Tag，维护者可使用有权限的凭据预先建立指向该精确 SHA 的 Tag，Prepare 会再次核对。
 
 维护者也可以从固定提交运行 `npm ci`、`npm run build` 和 `npm pack`，生成供团队在本地验证的 `.tgz`。完整发布通过上面的候选和草稿流程交付。
+
+### 独立运行 Windows 多仓候选包验收
+
+在 Windows 源码根目录安装开发依赖，准备 Git for Windows 及其自带的 OpenSSL。对已经生成的本地 CLI 候选包运行下面的命令，将参数替换为实际包路径。
+
+```powershell
+npm run test:windows-multirepo-package-e2e -- ./repoctopus-0.1.3.tgz
+```
+
+测试会安装该包的生产依赖，在三个临时 Git 仓中完成一条 Change。第一驱动进程完成首包后退出，第二进程恢复同一 Run。托管测试服务先创建规格 PR，再断开响应并暂时隐藏查询结果，随后核对 Runtime 采纳原 PR，且没有重复推送或创建。
+
+成功时输出 `PASSED Windows multirepo package acceptance` 和证据路径。默认在 `dist/windows-multirepo-evidence/<本次时间戳>/` 保存收据、CLI 原始输出、Skill 消费记录和服务请求账本。需要固定证据路径时，在本次终端设置 `REPOCTOPUS_WORKFLOW_E2E_EVIDENCE` 指向目标 JSON 文件。失败时查看收据的 `failure.stage` 和同目录的 `driver.log`。测试退出会清理临时仓、安装目录和自己启动的服务。
+
+验收预算为 15 分钟，覆盖安装及流程执行。网络或工具缺失导致的失败同样阻止候选通过。Prepare 在原 Windows candidate 作业内调用上述入口，使用 `always()` 单独保留 `repoctopus-workflow-diagnostics-<run>-<attempt>` 诊断工件。候选工件中的 CLI 摘要需与多仓通过收据一致，才会封存上传。
