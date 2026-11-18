@@ -1,0 +1,4277 @@
+# comet-execution: managed-run
+change_id: 0e032cb3-d027-4742-b6fe-93bb8b5f2eb5
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: c18d9be354750dae5052ed312f95d68c0c60b5c1
+design_doc: openspec/changes/archive/2026-11-18-verify-release-multirepo-workflow/design.md
+plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/verify-release-multirepo-workflow.md
+branch_status: pending
+created_at: 2026-11-17
+verified_at: 2026-11-18
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/verify-release-multirepo-workflow
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-18-verify-release-multirepo-workflow/.comet/handoff/design-context.json
+handoff_hash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: f98f97214df4bbd42d49271cac787cd725b9ae7a7bc2e934f9586172190525c5
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: verify-release-multirepo-workflow
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 2c6ec273fca93ad57498364e3c0defd9bed088d79f5748ca0de26f8d5f36be6b
+    input:
+      change: verify-release-multirepo-workflow
+      changeDir: openspec/changes/verify-release-multirepo-workflow
+      workspaceBaseline:
+        ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: c18d9be354750dae5052ed312f95d68c0c60b5c1
+      boundBranch: codex/verify-release-multirepo-workflow
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 10
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-17
+      designDoc: openspec/changes/archive/2026-11-18-verify-release-multirepo-workflow/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-18-verify-release-multirepo-workflow/.comet/handoff/design-context.json
+      handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/verify-release-multirepo-workflow.md
+      verifiedAt: 2026-11-18
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 40
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-e6ea4eed4a43af0a52ef1248eea20560a715e8bfb2cb368a7936ac1d7508b66c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:1
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 6042e67c32adccdfff8a8f126f250ad27d418f440fd9a04f251b7ddccb670579
+        outcome:
+          actionId: verify-release-multirepo-workflow:1
+          attempt: 1
+          claimToken: portable-e6ea4eed4a43af0a52ef1248eea20560a715e8bfb2cb368a7936ac1d7508b66c
+          inputHash: 6042e67c32adccdfff8a8f126f250ad27d418f440fd9a04f251b7ddccb670579
+          outcomeId: 56f5bf09-3055-448d-8db2-39096444fba0
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3780b53e96ec577e1e41d847413c3f5d2a8ad594c66d20aed2b08f588f5fe3fb
+            outcomeId: 56f5bf09-3055-448d-8db2-39096444fba0
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-d3d044f47fff039421c7d21769f0a0b1e544e63e97ac04406346be052d382e7e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:4
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: c95ad63037ddc6d690542a39d35ac78680a7900f52673e77f24a15817f48dbc1
+        outcome:
+          actionId: verify-release-multirepo-workflow:4
+          attempt: 1
+          claimToken: portable-d3d044f47fff039421c7d21769f0a0b1e544e63e97ac04406346be052d382e7e
+          inputHash: c95ad63037ddc6d690542a39d35ac78680a7900f52673e77f24a15817f48dbc1
+          outcomeId: verify-release-multirepo-workflow:4:1:executor-result
+          output:
+            contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 76584ea4c48a2838cfe56ee8e90b99348317210652f5d3324ebd6b9340acda8e
+            outcomeId: verify-release-multirepo-workflow:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-832864c56d8ab6cc9c0f27f0fead62ec1b52ac9069b5563beba5c7d79c029cae
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:5
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 30d22c3fe9ee3b8a8f24090aaeec2c9201a394eeaea2684978c786408dd4888a
+        outcome:
+          actionId: verify-release-multirepo-workflow:5
+          attempt: 1
+          claimToken: portable-832864c56d8ab6cc9c0f27f0fead62ec1b52ac9069b5563beba5c7d79c029cae
+          inputHash: 30d22c3fe9ee3b8a8f24090aaeec2c9201a394eeaea2684978c786408dd4888a
+          outcomeId: aac51efd-e0c8-4f23-b80f-7357e705403e
+          output:
+            handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+            handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+            proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+              test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows 隔离安装并通过公共
+              CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+              Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+              Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git smart
+              HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程 resume、next
+              和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端
+              OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+              核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+              分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+              Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+              同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+            requirementsEvidence:
+              contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+              ref: openspec/changes/verify-release-multirepo-workflow
+            sourceEvidence:
+              contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+              ref: openspec/changes/verify-release-multirepo-workflow
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6be7cb6c54fc35e732fe5e4f39869cb880adeb64df88310d804ef157abe6e0a2
+            outcomeId: aac51efd-e0c8-4f23-b80f-7357e705403e
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-31b3d4b8c23de7a57584498f8d20c3538c2fa33c4da2e209772e6177c125542a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:7
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 32c28d5ce1f384752543215c8f1ccf12ec38a2d0c9a0c9b2491c51406f08e12f
+        outcome:
+          actionId: verify-release-multirepo-workflow:7
+          attempt: 1
+          claimToken: portable-31b3d4b8c23de7a57584498f8d20c3538c2fa33c4da2e209772e6177c125542a
+          inputHash: 32c28d5ce1f384752543215c8f1ccf12ec38a2d0c9a0c9b2491c51406f08e12f
+          outcomeId: 4b7b63de-b9d2-4e80-9657-5a40872bdd4e
+          output:
+            designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a06669b8f72f33cfdd383abb086bdcb6df2100cac8363b6b1fe1c1d453bfd6ef
+            outcomeId: 4b7b63de-b9d2-4e80-9657-5a40872bdd4e
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d9b6df8444f2bc62a6b291986c13283339c05b127178b246c55eba1e59b2cb76
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:9
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: b419f5eaeff18c5bef4460b1b7c77fc8c6161ee6a5a023bd9789a0dd14d7cb7a
+        outcome:
+          actionId: verify-release-multirepo-workflow:9
+          attempt: 1
+          claimToken: portable-d9b6df8444f2bc62a6b291986c13283339c05b127178b246c55eba1e59b2cb76
+          inputHash: b419f5eaeff18c5bef4460b1b7c77fc8c6161ee6a5a023bd9789a0dd14d7cb7a
+          outcomeId: cc9d41f7-6fed-482d-9eb5-b4ba1dfed542
+          output:
+            boundBranch: codex/verify-release-multirepo-workflow
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 814c03323a31c86bb8c0447f9fb51a7767304355532155e33ab170e45b032524
+            outcomeId: cc9d41f7-6fed-482d-9eb5-b4ba1dfed542
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-ecdc41b7aeb8730aadc8389138dbfabf6e6773c4ac4f4d3770b984a3cb4d7533
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:11
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 1c20f30ab2640592154d2d1eef057f8329dda874e70a09b7d3ebe6252471a95f
+        outcome:
+          actionId: verify-release-multirepo-workflow:11
+          attempt: 1
+          claimToken: portable-ecdc41b7aeb8730aadc8389138dbfabf6e6773c4ac4f4d3770b984a3cb4d7533
+          inputHash: 1c20f30ab2640592154d2d1eef057f8329dda874e70a09b7d3ebe6252471a95f
+          outcomeId: 5aaf805c-12b9-4cea-b2c7-a72dbd008d92
+          output:
+            designEvidence:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+            plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+            planEvidence:
+              contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+              ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+            taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8a5a62e3f9921436b79ad33f02997704628fdb8ede7c306b7bf8a9c04437b99c
+            outcomeId: 5aaf805c-12b9-4cea-b2c7-a72dbd008d92
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-verify-release-multirepo-261118
+          token: portable-dea6e9e1fcf9c37524fb636c330c570d2193758fa076640bc32aadbb3b3b0ea7
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:13
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: e68276bef25a0f205eca5f83c3ad84b52f7e2d179f2bb220babcd0bedac47eb5
+        outcome:
+          actionId: verify-release-multirepo-workflow:13
+          attempt: 1
+          claimToken: portable-dea6e9e1fcf9c37524fb636c330c570d2193758fa076640bc32aadbb3b3b0ea7
+          inputHash: e68276bef25a0f205eca5f83c3ad84b52f7e2d179f2bb220babcd0bedac47eb5
+          outcomeId: 7b105c36-2198-425b-83b3-6bbebadc6a20
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c17a79f12db9465d581341165d0edafd9074f5ef5f77b763a24f4bf4a66246f6
+            outcomeId: 7b105c36-2198-425b-83b3-6bbebadc6a20
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-ee59f0b5de86125f5affd56c82c0e2d7c2a0313bf5c6443ba88354ca0dca5694
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:14
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 946ea3ded22b5d380324fbb19dd8add93d78c6853ae0574b38687d6c523a7e06
+        outcome:
+          actionId: verify-release-multirepo-workflow:14
+          attempt: 1
+          claimToken: portable-ee59f0b5de86125f5affd56c82c0e2d7c2a0313bf5c6443ba88354ca0dca5694
+          inputHash: 946ea3ded22b5d380324fbb19dd8add93d78c6853ae0574b38687d6c523a7e06
+          outcomeId: c162748e-9da3-46da-b278-26b51b751dd2
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: c6153b7b670323adbc2e24fefa2ec1b8b20b8f18a517b1f1e2137b42ad5350b0
+            cwd: .
+            environment: c31dc68414c4ed17a1adb67ad2b4981c77dfb887c601a7594dd889efc97266fa
+            exitCode: 0
+            inputAfter: 9790d8b7b9824c737112f60d457423f4f3b72b6f1069d765d8ff1fd856c7b866
+            inputBefore: 9790d8b7b9824c737112f60d457423f4f3b72b6f1069d765d8ff1fd856c7b866
+            manifestHash: 75201836435d0ca3005f4e6db1badc2e3bb739a61c5a7e2aac2687e7a57c22a0
+            manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/3321d728-285f-43f4-9050-7aa902d27bbb.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/40684bf1-6378-4a9c-9966-c3f800477560.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d9658f2aaa0d0c95eb356deef5624f1a2d157091cbcb82a96e9434b8c072b93e
+            outcomeId: c162748e-9da3-46da-b278-26b51b751dd2
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-12251eb616e0fa206cdeae888ec37d61384f1ed6dfd45f9de2af4f499f0a5514
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:16
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 2964a9d8458b2b742002aed0006acf647dd314cdd4bf315f4f2de4b359b4cdb2
+        outcome:
+          actionId: verify-release-multirepo-workflow:16
+          attempt: 1
+          claimToken: portable-12251eb616e0fa206cdeae888ec37d61384f1ed6dfd45f9de2af4f499f0a5514
+          inputHash: 2964a9d8458b2b742002aed0006acf647dd314cdd4bf315f4f2de4b359b4cdb2
+          outcomeId: bcee9b88-b48a-4bf5-9722-00603236a6b1
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/verify-release-multirepo-workflow.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8a4b2d3cad68456673060c7bf5d48104f6b87786ee936d084a7e98594f8c09b1
+            outcomeId: bcee9b88-b48a-4bf5-9722-00603236a6b1
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-1a72fac0cf22025af32e88d7f403242a64ffa2f3e56b3153fb9a507fafc6ea34
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:18
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: af6ca7ddf3698c94bb05fd89ae2b58738db73115b0e72e86da8e13bee745c20a
+        outcome:
+          actionId: verify-release-multirepo-workflow:18
+          attempt: 1
+          claimToken: portable-1a72fac0cf22025af32e88d7f403242a64ffa2f3e56b3153fb9a507fafc6ea34
+          inputHash: af6ca7ddf3698c94bb05fd89ae2b58738db73115b0e72e86da8e13bee745c20a
+          outcomeId: 5e674450-d1b3-43fa-bf86-c84d246b81c4
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 39093190270a867d72db07fdcd10aa7dd3c47db2834b810201828db9edcfbe4e
+            cwd: .
+            deliveryInputs: {}
+            environment: 01a56a91df6b2e136aa0a77b4233886c26bbdb1f19583a20608f9eb5cee7b629
+            exitCode: 1
+            inputAfter: 6791c46b29e20cf4e358055fd565ac0a31d93bdfe21ebb9c3260448d077b8947
+            inputBefore: 6791c46b29e20cf4e358055fd565ac0a31d93bdfe21ebb9c3260448d077b8947
+            manifestHash: f60ce6d740490e23e53703f1f43bfc9eaa5583e2f74d03375447ef48cea97ecb
+            manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/abf39c94-9320-4ead-95a9-ae913a1de33c.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/b76f3602-af41-47c9-a545-16d6fa2205f1.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: a817d994251d7ae28c484b8553b3f921801f3cf66e9b37da2268166a01ea37e4
+            outcomeId: 5e674450-d1b3-43fa-bf86-c84d246b81c4
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-f46cd0058a092bcd85bf71ec60f2476c54a4cf3bb4c1721b11490ee7a1f27ff2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:19
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 80be214770c3a642c9c53f63f22be0a5d4fcd38177d52903a51072dba14b6f30
+        outcome:
+          actionId: verify-release-multirepo-workflow:19
+          attempt: 1
+          claimToken: portable-f46cd0058a092bcd85bf71ec60f2476c54a4cf3bb4c1721b11490ee7a1f27ff2
+          inputHash: 80be214770c3a642c9c53f63f22be0a5d4fcd38177d52903a51072dba14b6f30
+          outcomeId: 20eeb9f5-a2be-48d4-af51-0f47d31b6aed
+          output:
+            designEvidence:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+            plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+            planEvidence:
+              contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+              ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+            taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e619f5981bacb6495987986c7dc6204a345476d46a6e8c6dab54a86923e0a31e
+            outcomeId: 20eeb9f5-a2be-48d4-af51-0f47d31b6aed
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-verify-release-multirepo-261118
+          token: portable-c52ea788aacc3cab10a55351391bd09bfdbb031d4a13f12f74e9572de46d8e8e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:21
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 80be214770c3a642c9c53f63f22be0a5d4fcd38177d52903a51072dba14b6f30
+        outcome:
+          actionId: verify-release-multirepo-workflow:21
+          attempt: 1
+          claimToken: portable-c52ea788aacc3cab10a55351391bd09bfdbb031d4a13f12f74e9572de46d8e8e
+          inputHash: 80be214770c3a642c9c53f63f22be0a5d4fcd38177d52903a51072dba14b6f30
+          outcomeId: 978ce0b7-1076-4483-9cac-98b3171a4706
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b19eca42989ce321c31aee29e072e5c2936c1ee90badf3eb20fed7bc6ef76a56
+            outcomeId: 978ce0b7-1076-4483-9cac-98b3171a4706
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-c60d7bc969752f9e56629f28f36f468e48ae3e7c8bcce5b66f9e3ebe2992dd4f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:22
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 80be214770c3a642c9c53f63f22be0a5d4fcd38177d52903a51072dba14b6f30
+        outcome:
+          actionId: verify-release-multirepo-workflow:22
+          attempt: 1
+          claimToken: portable-c60d7bc969752f9e56629f28f36f468e48ae3e7c8bcce5b66f9e3ebe2992dd4f
+          inputHash: 80be214770c3a642c9c53f63f22be0a5d4fcd38177d52903a51072dba14b6f30
+          outcomeId: dac3ad6d-7a8f-4e13-99d4-0ad088bcea6f
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 6eadd72afbfc31a698525c02e72ec01a1de2c39083dee5139cee71060d417040
+            cwd: .
+            environment: c31dc68414c4ed17a1adb67ad2b4981c77dfb887c601a7594dd889efc97266fa
+            exitCode: 0
+            inputAfter: 38449b304126a31d5a42095c101f08c0de32652e6c5ee1d8c999dbaa59d92e20
+            inputBefore: 38449b304126a31d5a42095c101f08c0de32652e6c5ee1d8c999dbaa59d92e20
+            manifestHash: ca52e91edfb46c1be5b21a13aa60f3c85252849f0f7d04fb60bc07b90f7fa2b0
+            manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/d3a0f4a6-63e3-4dd2-8ae9-6fa08676c45a.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/c1a5eb67-b4ac-4d2d-876e-6c08f2421637.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 214ddec8bb3aa70da44bb95ab50819976b8d68b0e9b2db005c7b08a1b4e29b56
+            outcomeId: dac3ad6d-7a8f-4e13-99d4-0ad088bcea6f
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-f5a6a2ab493f5231738ea509af9f6405502930e48831587b3862f801afae9fde
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:24
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 08d57d75ca7aa6a99c154c6ee3aa1ac28a0964240de9e1892e9ec1779acd8de2
+        outcome:
+          actionId: verify-release-multirepo-workflow:24
+          attempt: 1
+          claimToken: portable-f5a6a2ab493f5231738ea509af9f6405502930e48831587b3862f801afae9fde
+          inputHash: 08d57d75ca7aa6a99c154c6ee3aa1ac28a0964240de9e1892e9ec1779acd8de2
+          outcomeId: 9a1d4eec-0611-4ad3-a26d-3bdd4f6724e2
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/verify-release-multirepo-workflow.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7d99bf27bac4a5d351429a296487ba598ca40c5c77ecbf76558990c6aa93925a
+            outcomeId: 9a1d4eec-0611-4ad3-a26d-3bdd4f6724e2
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-b28eca803cf99f7898d5a0a7d43687161720903490ca34dcaf569b96e2bff2f7
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:26
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: dd1117884df8268fd04c7bebbfcd521ad880cdebdba65271e6d1d1a7539f81bb
+        outcome:
+          actionId: verify-release-multirepo-workflow:26
+          attempt: 1
+          claimToken: portable-b28eca803cf99f7898d5a0a7d43687161720903490ca34dcaf569b96e2bff2f7
+          inputHash: dd1117884df8268fd04c7bebbfcd521ad880cdebdba65271e6d1d1a7539f81bb
+          outcomeId: 4ce0e885-256d-4a5e-b712-7f9766b9cd60
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: 6b290228b3517bbef373fb19807a1cec9f39577fe6eff60346463d98775ee701
+            cwd: .
+            deliveryInputs: {}
+            environment: 563f6bdeb8511d96ec323be01eb39f5b53d8eb3852978379061ec90ede90b731
+            exitCode: 1
+            inputAfter: 33d75143acb0649a575ac2a2679cd8fe1a9a208100820e273a9cbfd7c98922a9
+            inputBefore: 33d75143acb0649a575ac2a2679cd8fe1a9a208100820e273a9cbfd7c98922a9
+            manifestHash: abde08ba3a6919296d36d01f04db1ab80f7dd915c9975279a2505b538585508c
+            manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/f91f5379-cc96-41e8-8249-7680f42aa2c1.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/b48d5c26-e04f-48fc-b703-1e4a0569a1aa.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 8123e53068d5a18ede675aee39ecbe6bd3a994619488b10dddb19cff9e59e4fb
+            outcomeId: 4ce0e885-256d-4a5e-b712-7f9766b9cd60
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c0c800de4654d2948b2dbacfa5a13dd8b04e7fd73a94b7a9c2701e8cbe29b5ac
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:27
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: ef24a94abb59825e8ca129edfcb3ddf6537d74b6cc9c9ac5ab9accb49868cdfb
+        outcome:
+          actionId: verify-release-multirepo-workflow:27
+          attempt: 1
+          claimToken: portable-c0c800de4654d2948b2dbacfa5a13dd8b04e7fd73a94b7a9c2701e8cbe29b5ac
+          inputHash: ef24a94abb59825e8ca129edfcb3ddf6537d74b6cc9c9ac5ab9accb49868cdfb
+          outcomeId: 432f4ff2-df35-4547-b84f-e2065d97d093
+          output:
+            designEvidence:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+            plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+            planEvidence:
+              contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+              ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+            taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b98877406e68845a11fed17d7839aaf38f2a5da0a51adc2420f4f423b75cbc2e
+            outcomeId: 432f4ff2-df35-4547-b84f-e2065d97d093
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-verify-release-multirepo-261118
+          token: portable-1d8059859f53de564011045d67280aa06e27ad6aceccacfc11883ead774546ea
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:29
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: ef24a94abb59825e8ca129edfcb3ddf6537d74b6cc9c9ac5ab9accb49868cdfb
+        outcome:
+          actionId: verify-release-multirepo-workflow:29
+          attempt: 1
+          claimToken: portable-1d8059859f53de564011045d67280aa06e27ad6aceccacfc11883ead774546ea
+          inputHash: ef24a94abb59825e8ca129edfcb3ddf6537d74b6cc9c9ac5ab9accb49868cdfb
+          outcomeId: 64490d64-ae64-4160-a085-d292f15655e6
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fbe714e18ed8145639cb6e68db3c8de6a93509685492de4eb279019d2004a974
+            outcomeId: 64490d64-ae64-4160-a085-d292f15655e6
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-e26b0c5bf12effa17fda3c3d142290f00c546d2e01dedc8f230261b7447d3021
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:30
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: ef24a94abb59825e8ca129edfcb3ddf6537d74b6cc9c9ac5ab9accb49868cdfb
+        outcome:
+          actionId: verify-release-multirepo-workflow:30
+          attempt: 1
+          claimToken: portable-e26b0c5bf12effa17fda3c3d142290f00c546d2e01dedc8f230261b7447d3021
+          inputHash: ef24a94abb59825e8ca129edfcb3ddf6537d74b6cc9c9ac5ab9accb49868cdfb
+          outcomeId: cdb27e13-6a95-45aa-83a4-39c62c5c9764
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 6
+            contentHash: 23155687e85f3e105c408a8ed07ba4e17b62f697b620f35757ca45cc259754de
+            cwd: .
+            environment: c31dc68414c4ed17a1adb67ad2b4981c77dfb887c601a7594dd889efc97266fa
+            exitCode: 0
+            inputAfter: 350b81260b29d87b9b53487356076784ed3acd4179ab61d4d14ff5643c00916a
+            inputBefore: 350b81260b29d87b9b53487356076784ed3acd4179ab61d4d14ff5643c00916a
+            manifestHash: d7407ad8586ce4f5a943f57337781822c72ed802367ebfd1f46ceb4480aa3709
+            manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/dd61b968-2d52-4398-9020-4cf493518ae5.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/270800d5-41a8-4dbd-bf4d-d7181e9db7bf.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 389e92136c4275eb36f2f4350bcc31bed2b971f3b65c0fb8e7093cbc489cfd2e
+            outcomeId: cdb27e13-6a95-45aa-83a4-39c62c5c9764
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-6088b319f34d2eda5d42524996ea8ca574ce4d2fc99aa411480efb783dd995b1
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:32
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: d32942f2f0c9c38bfeb17697b46d45722dc733ecf7ca5d89b9c3f9752b6e1712
+        outcome:
+          actionId: verify-release-multirepo-workflow:32
+          attempt: 1
+          claimToken: portable-6088b319f34d2eda5d42524996ea8ca574ce4d2fc99aa411480efb783dd995b1
+          inputHash: d32942f2f0c9c38bfeb17697b46d45722dc733ecf7ca5d89b9c3f9752b6e1712
+          outcomeId: 03f920a7-f02c-411d-a7ad-c4647926e4ae
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/verify-release-multirepo-workflow.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 33a67b81816dbff1bf6a651ad9f2c796c351ec9e715588a9260316d081e5adbd
+            outcomeId: 03f920a7-f02c-411d-a7ad-c4647926e4ae
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-7f5a2059785bb7340bfd3f5c9a5bd827d913be1705b1748e2339fa724851f3c5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:34
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 11a6df6c3c7aa5a62bd04201a2b0e78112d46fae1dba001a8930ed01ca30420f
+        outcome:
+          actionId: verify-release-multirepo-workflow:34
+          attempt: 1
+          claimToken: portable-7f5a2059785bb7340bfd3f5c9a5bd827d913be1705b1748e2339fa724851f3c5
+          inputHash: 11a6df6c3c7aa5a62bd04201a2b0e78112d46fae1dba001a8930ed01ca30420f
+          outcomeId: aa845e35-0bed-4337-97a6-2b6f730726bc
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 7
+            contentHash: c03b64a7e76245c3275e83b42d5f29a18236d91044e164a4b23547e25c29ff62
+            cwd: .
+            deliveryInputs: {}
+            environment: 563f6bdeb8511d96ec323be01eb39f5b53d8eb3852978379061ec90ede90b731
+            exitCode: 0
+            inputAfter: 261f929643ae4e98a3e20284a0084542af5e1ade51ae40bc2044b95601d90de9
+            inputBefore: 261f929643ae4e98a3e20284a0084542af5e1ade51ae40bc2044b95601d90de9
+            manifestHash: e0cab371515da7fcde025e6a9f4c0473ed80be1bf748b86af8e87a35ad9ca486
+            manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/1da6286d-2562-44c8-a06b-d20b68caf4bb.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/f9cffd2a-d216-4b59-9742-6d0b4c719a64.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e7ca612c8615dd965c24be41b808332a2f6051581fb14d8327539b8de7bd0aea
+            outcomeId: aa845e35-0bed-4337-97a6-2b6f730726bc
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-bf9bfbdede736a7dc3d3b8aaebdff7930b4f666541901efaf4b673ef09e5cf5d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:36
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 6fac329df6e8c8d1d2a5983a2e2c5d9da96d6a2f34df222fbf0bbda5ff5dbebc
+        outcome:
+          actionId: verify-release-multirepo-workflow:36
+          attempt: 1
+          claimToken: portable-bf9bfbdede736a7dc3d3b8aaebdff7930b4f666541901efaf4b673ef09e5cf5d
+          inputHash: 6fac329df6e8c8d1d2a5983a2e2c5d9da96d6a2f34df222fbf0bbda5ff5dbebc
+          outcomeId: 2ce5e6a4-b904-4350-a0bf-f0d6d814623a
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: Windows CLI
+              候选包独立三仓验收已完成，5项任务全部完成。实际tarball从Init到Archive，首包后新驱动进程恢复同一Run/Plan及首包完成记录，规格PR已创建后断开响应并隐藏查询，原调用采纳同一PR，reconcile及4次终态探针没有重复发布。Release
+              Prepare对实际候选文件调用同一入口，seal核对成功收据与候选摘要；诊断独立保存。完整Verify已通过1294项测试、4项跳过，生成物/品牌/架构/来源/清单/规格/当前产品执行报告全部通过。首轮旧测试超时与第二轮缺少规范报告的失败保留，最终采用原检查策略绑定的VITEST_MAX_WORKERS=2。归档会把Windows候选包验收要求同步到product-distribution主规格并移动当前Change。交付提议为origin/main，建立PR并在CI通过后使用merge
+              commit合入以保留验证提交祖先关系。完整GitHub Prepare随合入后的下一候选验证。
+            targetBranch: codex/verify-release-multirepo-workflow
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9c5e49218a8e8b7cd1fde9b52e7c56113caa008c461fa9c20517c5470a0132c0
+            outcomeId: 2ce5e6a4-b904-4350-a0bf-f0d6d814623a
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-11b132397f249c53a359b447e237d0598fddd6fc73dedf61faee239cde297101
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:38
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 8ab83f3d3b95ceb5791507abab9024bfba13091ebefee9f84cedef78d3d619c8
+        outcome:
+          actionId: verify-release-multirepo-workflow:38
+          attempt: 1
+          claimToken: portable-11b132397f249c53a359b447e237d0598fddd6fc73dedf61faee239cde297101
+          inputHash: 8ab83f3d3b95ceb5791507abab9024bfba13091ebefee9f84cedef78d3d619c8
+          outcomeId: 0e55a7c9-5545-4329-bb28-8587eb423ae7
+          output:
+            baseCommit: 02130a7cbafd6baf78457352ca20b5cab6282ed7
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/verify-release-multirepo-workflow
+            verifiedBranch: codex/verify-release-multirepo-workflow
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 37d307a9f59b4f658caf69bdbf384cb79a45ac3dcec774931246f6ba9822c285
+            outcomeId: 0e55a7c9-5545-4329-bb28-8587eb423ae7
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-b3c1d1bc49db63bb84bf32c3c9711ba2cf9f672f12ddf0990a3cba5fdac179d9
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:39
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: 36c6012553dce936c438944fc2502dd901834029443e18880df126a79346c808
+        outcome:
+          actionId: verify-release-multirepo-workflow:39
+          artifacts:
+            - sha256: 21dec71a52fcbf02b9dd7b9bc6ba662e30ea3f017c5ef45aa840cbf76ca5b447
+              uri: openspec/changes/archive/2026-11-18-verify-release-multirepo-workflow/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-b3c1d1bc49db63bb84bf32c3c9711ba2cf9f672f12ddf0990a3cba5fdac179d9
+          inputHash: 36c6012553dce936c438944fc2502dd901834029443e18880df126a79346c808
+          outcomeId: 3932aa9f-9e41-4f68-a0d5-dfc26e745725
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-18-verify-release-multirepo-workflow
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ec3572447e6d74457fb2f2821cbb1c4cf792ae76b6cc50d72f1c9577aee1e9e0
+            outcomeId: 3932aa9f-9e41-4f68-a0d5-dfc26e745725
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: verify-release-multirepo-workflow:40
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs: {}
+        inputHash: cecc0f99158596cadcd55f519979008e5e6c7e1b3a61e7909e63673959931be4
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      verify-release-multirepo-workflow:1:
+        results: {}
+        sequence: 1
+      verify-release-multirepo-workflow:11:
+        results: {}
+        sequence: 11
+      verify-release-multirepo-workflow:13:
+        results: {}
+        sequence: 13
+      verify-release-multirepo-workflow:14:
+        results: {}
+        sequence: 14
+      verify-release-multirepo-workflow:16:
+        results: {}
+        sequence: 16
+      verify-release-multirepo-workflow:18:
+        results: {}
+        sequence: 18
+      verify-release-multirepo-workflow:19:
+        results: {}
+        sequence: 19
+      verify-release-multirepo-workflow:21:
+        results: {}
+        sequence: 21
+      verify-release-multirepo-workflow:22:
+        results: {}
+        sequence: 22
+      verify-release-multirepo-workflow:24:
+        results: {}
+        sequence: 24
+      verify-release-multirepo-workflow:26:
+        results: {}
+        sequence: 26
+      verify-release-multirepo-workflow:27:
+        results: {}
+        sequence: 27
+      verify-release-multirepo-workflow:29:
+        results: {}
+        sequence: 29
+      verify-release-multirepo-workflow:30:
+        results: {}
+        sequence: 30
+      verify-release-multirepo-workflow:32:
+        results: {}
+        sequence: 32
+      verify-release-multirepo-workflow:34:
+        results: {}
+        sequence: 34
+      verify-release-multirepo-workflow:36:
+        results: {}
+        sequence: 36
+      verify-release-multirepo-workflow:38:
+        results: {}
+        sequence: 38
+      verify-release-multirepo-workflow:39:
+        results: {}
+        sequence: 39
+      verify-release-multirepo-workflow:4:
+        results: {}
+        sequence: 4
+      verify-release-multirepo-workflow:40:
+        results: {}
+        sequence: 40
+      verify-release-multirepo-workflow:5:
+        results: {}
+        sequence: 5
+      verify-release-multirepo-workflow:7:
+        results: {}
+        sequence: 7
+      verify-release-multirepo-workflow:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: verify-release-multirepo-workflow:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+        proposalHash: 3deb038e92bad7b57ddcaa03f7c74371403e0f5a727a53f18016406100e29e1a
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+          choice: approved
+          proposalHash: 3deb038e92bad7b57ddcaa03f7c74371403e0f5a727a53f18016406100e29e1a
+      - id: verify-release-multirepo-workflow:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+        proposalHash: c0e4b80f44ea2c0c5bdceb59e287b789c68249bacb91c4ba8700b2abeaae7812
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-c0e4b80f44ea2c0c5bdceb59e287b789c68249bacb91c4ba8700b2abeaae7812-approved
+          choice: approved
+          proposalHash: c0e4b80f44ea2c0c5bdceb59e287b789c68249bacb91c4ba8700b2abeaae7812
+      - id: verify-release-multirepo-workflow:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.build.configure:
+              boundBranch: codex/verify-release-multirepo-workflow
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: b933de876334521b2da9f2004b64caa33ea65abbd159bb6cb3d554afc0ea182e
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 11c2864b-cb48-43c2-b65f-0a35c38d17c2
+          choice: approved
+          proposalHash: b933de876334521b2da9f2004b64caa33ea65abbd159bb6cb3d554afc0ea182e
+      - id: verify-release-multirepo-workflow:37
+        stepId: full.archive.confirm
+        sequence: 37
+        status: resolved
+        proposal:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: Windows CLI
+                候选包独立三仓验收已完成，5项任务全部完成。实际tarball从Init到Archive，首包后新驱动进程恢复同一Run/Plan及首包完成记录，规格PR已创建后断开响应并隐藏查询，原调用采纳同一PR，reconcile及4次终态探针没有重复发布。Release
+                Prepare对实际候选文件调用同一入口，seal核对成功收据与候选摘要；诊断独立保存。完整Verify已通过1294项测试、4项跳过，生成物/品牌/架构/来源/清单/规格/当前产品执行报告全部通过。首轮旧测试超时与第二轮缺少规范报告的失败保留，最终采用原检查策略绑定的VITEST_MAX_WORKERS=2。归档会把Windows候选包验收要求同步到product-distribution主规格并移动当前Change。交付提议为origin/main，建立PR并在CI通过后使用merge
+                commit合入以保留验证提交祖先关系。完整GitHub Prepare随合入后的下一候选验证。
+              targetBranch: codex/verify-release-multirepo-workflow
+        proposalHash: d11bcdc627d0ab53797f47887f3a633865612218a50fe3394fdfd104f4b25fd7
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-d11bcdc627d0ab53797f47887f3a633865612218a50fe3394fdfd104f4b25fd7-pr
+          choice: pr
+          proposalHash: d11bcdc627d0ab53797f47887f3a633865612218a50fe3394fdfd104f4b25fd7
+    evidenceWaits:
+      - id: verify-release-multirepo-workflow:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/verify-release-multirepo-workflow
+          contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+          submissionId: 2e2a7583-439a-4be0-88f7-04de8c36c3ee
+      - id: verify-release-multirepo-workflow:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/verify-release-multirepo-workflow/design.md
+          contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+          submissionId: bf896074-19d3-4987-9aec-cef0606e15a7
+      - id: verify-release-multirepo-workflow:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+          submissionId: 374bc8f7-816a-44a1-8f7d-4c277c00cb20
+      - id: verify-release-multirepo-workflow:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/40684bf1-6378-4a9c-9966-c3f800477560.log
+          contentHash: c6153b7b670323adbc2e24fefa2ec1b8b20b8f18a517b1f1e2137b42ad5350b0
+          submissionId: 5f449a21-689f-47da-8aa2-4e58426ba3a7
+      - id: verify-release-multirepo-workflow:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/verify-release-multirepo-workflow.md
+          contentHash: 35d07406af8200bb8e5941d9f665f4e304f3ebd2f9dc7b277ea11d64b851406f
+          submissionId: b364e4de-3f88-4973-8d25-9514aca82053
+      - id: verify-release-multirepo-workflow:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+          submissionId: bf5c5e7e-20f2-442e-9455-36e811b8609e
+      - id: verify-release-multirepo-workflow:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/c1a5eb67-b4ac-4d2d-876e-6c08f2421637.log
+          contentHash: 6eadd72afbfc31a698525c02e72ec01a1de2c39083dee5139cee71060d417040
+          submissionId: da905812-fc8b-41ad-ade2-5c9868234ed9
+      - id: verify-release-multirepo-workflow:25
+        stepId: full.verify.report.evidence
+        sequence: 25
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/verify-release-multirepo-workflow.md
+          contentHash: 374ea39771692c9e21384e732b57f7111b46cb66c086cf9bba7c3ed27d4f0573
+          submissionId: f5e11b3e-0916-4706-aa6d-cb7b600cd6cd
+      - id: verify-release-multirepo-workflow:28
+        stepId: full.build.plan.evidence
+        sequence: 28
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+          submissionId: 7fde260f-423b-428e-8fa3-b1bced76d0f4
+      - id: verify-release-multirepo-workflow:31
+        stepId: full.build.check.evidence
+        sequence: 31
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/270800d5-41a8-4dbd-bf4d-d7181e9db7bf.log
+          contentHash: 23155687e85f3e105c408a8ed07ba4e17b62f697b620f35757ca45cc259754de
+          submissionId: d21adbd4-bca8-4622-86c5-6eddd37d3cbb
+      - id: verify-release-multirepo-workflow:33
+        stepId: full.verify.report.evidence
+        sequence: 33
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/verify-release-multirepo-workflow.md
+          contentHash: dfe42da1c46c669a090b464ce53086fc10d58323c499e54a00c26b64ae91802f
+          submissionId: 0c9b63cb-6d2e-49f1-a150-2ed4b66a3479
+      - id: verify-release-multirepo-workflow:35
+        stepId: full.verify.check.evidence
+        sequence: 35
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/f9cffd2a-d216-4b59-9742-6d0b4c719a64.log
+          contentHash: c03b64a7e76245c3275e83b42d5f29a18236d91044e164a4b23547e25c29ff62
+          submissionId: d8677491-5683-41d0-8838-d6c8270dfd45
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 63
+  sourceHash: 2717b8c0e967534792163fc604ce8e5aeeb09924a38a2d174e36d4ee6abd4c1c
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+      - contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        ref: openspec/changes/verify-release-multirepo-workflow
+      - contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+      - choice: approved
+        proposal:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+      - handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+        handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+        proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+          test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows 隔离安装并通过公共 CLI
+          初始化 Workspace 和两个业务仓，执行同一 Change 的
+          Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+          Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git smart
+          HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程 resume、next
+          和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+          与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+          核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55 分钟，独立验收预算
+          15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户 Design 决定。测试
+          Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare
+          随合入后的下一份候选运行。无需 Spec Patch。
+        requirementsEvidence:
+          contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+          ref: openspec/changes/verify-release-multirepo-workflow
+        sourceEvidence:
+          contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+          ref: openspec/changes/verify-release-multirepo-workflow
+      - designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+      - contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+        ref: openspec/changes/verify-release-multirepo-workflow/design.md
+      - boundBranch: codex/verify-release-multirepo-workflow
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.build.configure:
+              boundBranch: codex/verify-release-multirepo-workflow
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+          ref: openspec/changes/verify-release-multirepo-workflow/design.md
+        plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+        planEvidence:
+          contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+          ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+        taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+      - contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+        ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: c6153b7b670323adbc2e24fefa2ec1b8b20b8f18a517b1f1e2137b42ad5350b0
+        cwd: .
+        environment: c31dc68414c4ed17a1adb67ad2b4981c77dfb887c601a7594dd889efc97266fa
+        exitCode: 0
+        inputAfter: 9790d8b7b9824c737112f60d457423f4f3b72b6f1069d765d8ff1fd856c7b866
+        inputBefore: 9790d8b7b9824c737112f60d457423f4f3b72b6f1069d765d8ff1fd856c7b866
+        manifestHash: 75201836435d0ca3005f4e6db1badc2e3bb739a61c5a7e2aac2687e7a57c22a0
+        manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/3321d728-285f-43f4-9050-7aa902d27bbb.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/40684bf1-6378-4a9c-9966-c3f800477560.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: c6153b7b670323adbc2e24fefa2ec1b8b20b8f18a517b1f1e2137b42ad5350b0
+        ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/40684bf1-6378-4a9c-9966-c3f800477560.log
+      - contentHash: 35d07406af8200bb8e5941d9f665f4e304f3ebd2f9dc7b277ea11d64b851406f
+        ref: docs/superpowers/reports/verify-release-multirepo-workflow.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/verify-release-multirepo-workflow.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 39093190270a867d72db07fdcd10aa7dd3c47db2834b810201828db9edcfbe4e
+        cwd: .
+        deliveryInputs: {}
+        environment: 01a56a91df6b2e136aa0a77b4233886c26bbdb1f19583a20608f9eb5cee7b629
+        exitCode: 1
+        inputAfter: 6791c46b29e20cf4e358055fd565ac0a31d93bdfe21ebb9c3260448d077b8947
+        inputBefore: 6791c46b29e20cf4e358055fd565ac0a31d93bdfe21ebb9c3260448d077b8947
+        manifestHash: f60ce6d740490e23e53703f1f43bfc9eaa5583e2f74d03375447ef48cea97ecb
+        manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/abf39c94-9320-4ead-95a9-ae913a1de33c.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/b76f3602-af41-47c9-a545-16d6fa2205f1.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 6eadd72afbfc31a698525c02e72ec01a1de2c39083dee5139cee71060d417040
+        cwd: .
+        environment: c31dc68414c4ed17a1adb67ad2b4981c77dfb887c601a7594dd889efc97266fa
+        exitCode: 0
+        inputAfter: 38449b304126a31d5a42095c101f08c0de32652e6c5ee1d8c999dbaa59d92e20
+        inputBefore: 38449b304126a31d5a42095c101f08c0de32652e6c5ee1d8c999dbaa59d92e20
+        manifestHash: ca52e91edfb46c1be5b21a13aa60f3c85252849f0f7d04fb60bc07b90f7fa2b0
+        manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/d3a0f4a6-63e3-4dd2-8ae9-6fa08676c45a.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/c1a5eb67-b4ac-4d2d-876e-6c08f2421637.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 6eadd72afbfc31a698525c02e72ec01a1de2c39083dee5139cee71060d417040
+        ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/c1a5eb67-b4ac-4d2d-876e-6c08f2421637.log
+      - contentHash: 374ea39771692c9e21384e732b57f7111b46cb66c086cf9bba7c3ed27d4f0573
+        ref: docs/superpowers/reports/verify-release-multirepo-workflow.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: 6b290228b3517bbef373fb19807a1cec9f39577fe6eff60346463d98775ee701
+        cwd: .
+        deliveryInputs: {}
+        environment: 563f6bdeb8511d96ec323be01eb39f5b53d8eb3852978379061ec90ede90b731
+        exitCode: 1
+        inputAfter: 33d75143acb0649a575ac2a2679cd8fe1a9a208100820e273a9cbfd7c98922a9
+        inputBefore: 33d75143acb0649a575ac2a2679cd8fe1a9a208100820e273a9cbfd7c98922a9
+        manifestHash: abde08ba3a6919296d36d01f04db1ab80f7dd915c9975279a2505b538585508c
+        manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/f91f5379-cc96-41e8-8249-7680f42aa2c1.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/b48d5c26-e04f-48fc-b703-1e4a0569a1aa.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 6
+        contentHash: 23155687e85f3e105c408a8ed07ba4e17b62f697b620f35757ca45cc259754de
+        cwd: .
+        environment: c31dc68414c4ed17a1adb67ad2b4981c77dfb887c601a7594dd889efc97266fa
+        exitCode: 0
+        inputAfter: 350b81260b29d87b9b53487356076784ed3acd4179ab61d4d14ff5643c00916a
+        inputBefore: 350b81260b29d87b9b53487356076784ed3acd4179ab61d4d14ff5643c00916a
+        manifestHash: d7407ad8586ce4f5a943f57337781822c72ed802367ebfd1f46ceb4480aa3709
+        manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/dd61b968-2d52-4398-9020-4cf493518ae5.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/270800d5-41a8-4dbd-bf4d-d7181e9db7bf.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 23155687e85f3e105c408a8ed07ba4e17b62f697b620f35757ca45cc259754de
+        ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/270800d5-41a8-4dbd-bf4d-d7181e9db7bf.log
+      - contentHash: dfe42da1c46c669a090b464ce53086fc10d58323c499e54a00c26b64ae91802f
+        ref: docs/superpowers/reports/verify-release-multirepo-workflow.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 7
+        contentHash: c03b64a7e76245c3275e83b42d5f29a18236d91044e164a4b23547e25c29ff62
+        cwd: .
+        deliveryInputs: {}
+        environment: 563f6bdeb8511d96ec323be01eb39f5b53d8eb3852978379061ec90ede90b731
+        exitCode: 0
+        inputAfter: 261f929643ae4e98a3e20284a0084542af5e1ade51ae40bc2044b95601d90de9
+        inputBefore: 261f929643ae4e98a3e20284a0084542af5e1ade51ae40bc2044b95601d90de9
+        manifestHash: e0cab371515da7fcde025e6a9f4c0473ed80be1bf748b86af8e87a35ad9ca486
+        manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/1da6286d-2562-44c8-a06b-d20b68caf4bb.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/f9cffd2a-d216-4b59-9742-6d0b4c719a64.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: c03b64a7e76245c3275e83b42d5f29a18236d91044e164a4b23547e25c29ff62
+        ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/f9cffd2a-d216-4b59-9742-6d0b4c719a64.log
+      - choice: pr
+        proposal:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: Windows CLI
+                候选包独立三仓验收已完成，5项任务全部完成。实际tarball从Init到Archive，首包后新驱动进程恢复同一Run/Plan及首包完成记录，规格PR已创建后断开响应并隐藏查询，原调用采纳同一PR，reconcile及4次终态探针没有重复发布。Release
+                Prepare对实际候选文件调用同一入口，seal核对成功收据与候选摘要；诊断独立保存。完整Verify已通过1294项测试、4项跳过，生成物/品牌/架构/来源/清单/规格/当前产品执行报告全部通过。首轮旧测试超时与第二轮缺少规范报告的失败保留，最终采用原检查策略绑定的VITEST_MAX_WORKERS=2。归档会把Windows候选包验收要求同步到product-distribution主规格并移动当前Change。交付提议为origin/main，建立PR并在CI通过后使用merge
+                commit合入以保留验证提交祖先关系。完整GitHub Prepare随合入后的下一候选验证。
+              targetBranch: codex/verify-release-multirepo-workflow
+      - prBaseBranch: main
+        remote: origin
+        summary: Windows CLI
+          候选包独立三仓验收已完成，5项任务全部完成。实际tarball从Init到Archive，首包后新驱动进程恢复同一Run/Plan及首包完成记录，规格PR已创建后断开响应并隐藏查询，原调用采纳同一PR，reconcile及4次终态探针没有重复发布。Release
+          Prepare对实际候选文件调用同一入口，seal核对成功收据与候选摘要；诊断独立保存。完整Verify已通过1294项测试、4项跳过，生成物/品牌/架构/来源/清单/规格/当前产品执行报告全部通过。首轮旧测试超时与第二轮缺少规范报告的失败保留，最终采用原检查策略绑定的VITEST_MAX_WORKERS=2。归档会把Windows候选包验收要求同步到product-distribution主规格并移动当前Change。交付提议为origin/main，建立PR并在CI通过后使用merge
+          commit合入以保留验证提交祖先关系。完整GitHub Prepare随合入后的下一候选验证。
+        targetBranch: codex/verify-release-multirepo-workflow
+      - baseCommit: 02130a7cbafd6baf78457352ca20b5cab6282ed7
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/verify-release-multirepo-workflow
+        verifiedBranch: codex/verify-release-multirepo-workflow
+      - archiveDirectory: openspec/changes/archive/2026-11-18-verify-release-multirepo-workflow
+      - sequence: 9
+        value:
+          boundBranch: codex/verify-release-multirepo-workflow
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: verify-release-multirepo-workflow
+              changeDir: openspec/changes/verify-release-multirepo-workflow
+              workspaceBaseline:
+                ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+            outputs:
+              full.build.configure:
+                boundBranch: codex/verify-release-multirepo-workflow
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: verify-release-multirepo-workflow
+              changeDir: openspec/changes/verify-release-multirepo-workflow
+              workspaceBaseline:
+                ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                  test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                  隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                  Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                  Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                  smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                  resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                  receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                  核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                  分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent
+                  建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                  同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+                requirementsEvidence:
+                  contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                  ref: openspec/changes/verify-release-multirepo-workflow
+                sourceEvidence:
+                  contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                  ref: openspec/changes/verify-release-multirepo-workflow
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+      - sequence: 8
+        value:
+          contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+          ref: openspec/changes/verify-release-multirepo-workflow/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+          handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+          proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+            test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows 隔离安装并通过公共
+            CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+            Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+            Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git smart
+            HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程 resume、next
+            和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+            与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+            核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+            分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+            Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare 同参数接线和封存正反例，完整
+            GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+          requirementsEvidence:
+            contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+            ref: openspec/changes/verify-release-multirepo-workflow
+          sourceEvidence:
+            contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+            ref: openspec/changes/verify-release-multirepo-workflow
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: verify-release-multirepo-workflow
+              changeDir: openspec/changes/verify-release-multirepo-workflow
+              workspaceBaseline:
+                ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                ref: openspec/changes/verify-release-multirepo-workflow
+      - sequence: 2
+        value:
+          contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+          ref: openspec/changes/verify-release-multirepo-workflow
+      - sequence: 4
+        value:
+          contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+            ref: openspec/changes/verify-release-multirepo-workflow/design.md
+          plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          planEvidence:
+            contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+            ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+      - sequence: 12
+        value:
+          contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+          ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: c6153b7b670323adbc2e24fefa2ec1b8b20b8f18a517b1f1e2137b42ad5350b0
+          cwd: .
+          environment: c31dc68414c4ed17a1adb67ad2b4981c77dfb887c601a7594dd889efc97266fa
+          exitCode: 0
+          inputAfter: 9790d8b7b9824c737112f60d457423f4f3b72b6f1069d765d8ff1fd856c7b866
+          inputBefore: 9790d8b7b9824c737112f60d457423f4f3b72b6f1069d765d8ff1fd856c7b866
+          manifestHash: 75201836435d0ca3005f4e6db1badc2e3bb739a61c5a7e2aac2687e7a57c22a0
+          manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/3321d728-285f-43f4-9050-7aa902d27bbb.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/40684bf1-6378-4a9c-9966-c3f800477560.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: c6153b7b670323adbc2e24fefa2ec1b8b20b8f18a517b1f1e2137b42ad5350b0
+          ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/40684bf1-6378-4a9c-9966-c3f800477560.log
+      - sequence: 17
+        value:
+          contentHash: 35d07406af8200bb8e5941d9f665f4e304f3ebd2f9dc7b277ea11d64b851406f
+          ref: docs/superpowers/reports/verify-release-multirepo-workflow.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/verify-release-multirepo-workflow.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 39093190270a867d72db07fdcd10aa7dd3c47db2834b810201828db9edcfbe4e
+          cwd: .
+          deliveryInputs: {}
+          environment: 01a56a91df6b2e136aa0a77b4233886c26bbdb1f19583a20608f9eb5cee7b629
+          exitCode: 1
+          inputAfter: 6791c46b29e20cf4e358055fd565ac0a31d93bdfe21ebb9c3260448d077b8947
+          inputBefore: 6791c46b29e20cf4e358055fd565ac0a31d93bdfe21ebb9c3260448d077b8947
+          manifestHash: f60ce6d740490e23e53703f1f43bfc9eaa5583e2f74d03375447ef48cea97ecb
+          manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/abf39c94-9320-4ead-95a9-ae913a1de33c.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/b76f3602-af41-47c9-a545-16d6fa2205f1.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+            ref: openspec/changes/verify-release-multirepo-workflow/design.md
+          plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          planEvidence:
+            contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+            ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+      - sequence: 20
+        value:
+          contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+          ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 6eadd72afbfc31a698525c02e72ec01a1de2c39083dee5139cee71060d417040
+          cwd: .
+          environment: c31dc68414c4ed17a1adb67ad2b4981c77dfb887c601a7594dd889efc97266fa
+          exitCode: 0
+          inputAfter: 38449b304126a31d5a42095c101f08c0de32652e6c5ee1d8c999dbaa59d92e20
+          inputBefore: 38449b304126a31d5a42095c101f08c0de32652e6c5ee1d8c999dbaa59d92e20
+          manifestHash: ca52e91edfb46c1be5b21a13aa60f3c85252849f0f7d04fb60bc07b90f7fa2b0
+          manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/d3a0f4a6-63e3-4dd2-8ae9-6fa08676c45a.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/c1a5eb67-b4ac-4d2d-876e-6c08f2421637.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 23
+        value:
+          contentHash: 6eadd72afbfc31a698525c02e72ec01a1de2c39083dee5139cee71060d417040
+          ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/c1a5eb67-b4ac-4d2d-876e-6c08f2421637.log
+      - sequence: 25
+        value:
+          contentHash: 374ea39771692c9e21384e732b57f7111b46cb66c086cf9bba7c3ed27d4f0573
+          ref: docs/superpowers/reports/verify-release-multirepo-workflow.md
+      - sequence: 24
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/verify-release-multirepo-workflow.md
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: 6b290228b3517bbef373fb19807a1cec9f39577fe6eff60346463d98775ee701
+          cwd: .
+          deliveryInputs: {}
+          environment: 563f6bdeb8511d96ec323be01eb39f5b53d8eb3852978379061ec90ede90b731
+          exitCode: 1
+          inputAfter: 33d75143acb0649a575ac2a2679cd8fe1a9a208100820e273a9cbfd7c98922a9
+          inputBefore: 33d75143acb0649a575ac2a2679cd8fe1a9a208100820e273a9cbfd7c98922a9
+          manifestHash: abde08ba3a6919296d36d01f04db1ab80f7dd915c9975279a2505b538585508c
+          manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/f91f5379-cc96-41e8-8249-7680f42aa2c1.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/b48d5c26-e04f-48fc-b703-1e4a0569a1aa.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 27
+        value:
+          designEvidence:
+            contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+            ref: openspec/changes/verify-release-multirepo-workflow/design.md
+          plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          planEvidence:
+            contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+            ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+      - sequence: 28
+        value:
+          contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+          ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+      - sequence: 29
+        value:
+          event: build-complete
+      - sequence: 30
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 6
+          contentHash: 23155687e85f3e105c408a8ed07ba4e17b62f697b620f35757ca45cc259754de
+          cwd: .
+          environment: c31dc68414c4ed17a1adb67ad2b4981c77dfb887c601a7594dd889efc97266fa
+          exitCode: 0
+          inputAfter: 350b81260b29d87b9b53487356076784ed3acd4179ab61d4d14ff5643c00916a
+          inputBefore: 350b81260b29d87b9b53487356076784ed3acd4179ab61d4d14ff5643c00916a
+          manifestHash: d7407ad8586ce4f5a943f57337781822c72ed802367ebfd1f46ceb4480aa3709
+          manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/dd61b968-2d52-4398-9020-4cf493518ae5.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/270800d5-41a8-4dbd-bf4d-d7181e9db7bf.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 31
+        value:
+          contentHash: 23155687e85f3e105c408a8ed07ba4e17b62f697b620f35757ca45cc259754de
+          ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/270800d5-41a8-4dbd-bf4d-d7181e9db7bf.log
+      - sequence: 33
+        value:
+          contentHash: dfe42da1c46c669a090b464ce53086fc10d58323c499e54a00c26b64ae91802f
+          ref: docs/superpowers/reports/verify-release-multirepo-workflow.md
+      - sequence: 32
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/verify-release-multirepo-workflow.md
+      - sequence: 34
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 7
+          contentHash: c03b64a7e76245c3275e83b42d5f29a18236d91044e164a4b23547e25c29ff62
+          cwd: .
+          deliveryInputs: {}
+          environment: 563f6bdeb8511d96ec323be01eb39f5b53d8eb3852978379061ec90ede90b731
+          exitCode: 0
+          inputAfter: 261f929643ae4e98a3e20284a0084542af5e1ade51ae40bc2044b95601d90de9
+          inputBefore: 261f929643ae4e98a3e20284a0084542af5e1ade51ae40bc2044b95601d90de9
+          manifestHash: e0cab371515da7fcde025e6a9f4c0473ed80be1bf748b86af8e87a35ad9ca486
+          manifestRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/1da6286d-2562-44c8-a06b-d20b68caf4bb.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/f9cffd2a-d216-4b59-9742-6d0b4c719a64.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 35
+        value:
+          contentHash: c03b64a7e76245c3275e83b42d5f29a18236d91044e164a4b23547e25c29ff62
+          ref: .comet/runtime/classic-sdk-checks/94afaedfa5a775900e2f65af3eb28133698dc4cab1fb491e351b944cb1c0e506/f9cffd2a-d216-4b59-9742-6d0b4c719a64.log
+      - sequence: 37
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: verify-release-multirepo-workflow
+              changeDir: openspec/changes/verify-release-multirepo-workflow
+              workspaceBaseline:
+                ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: Windows CLI
+                  候选包独立三仓验收已完成，5项任务全部完成。实际tarball从Init到Archive，首包后新驱动进程恢复同一Run/Plan及首包完成记录，规格PR已创建后断开响应并隐藏查询，原调用采纳同一PR，reconcile及4次终态探针没有重复发布。Release
+                  Prepare对实际候选文件调用同一入口，seal核对成功收据与候选摘要；诊断独立保存。完整Verify已通过1294项测试、4项跳过，生成物/品牌/架构/来源/清单/规格/当前产品执行报告全部通过。首轮旧测试超时与第二轮缺少规范报告的失败保留，最终采用原检查策略绑定的VITEST_MAX_WORKERS=2。归档会把Windows候选包验收要求同步到product-distribution主规格并移动当前Change。交付提议为origin/main，建立PR并在CI通过后使用merge
+                  commit合入以保留验证提交祖先关系。完整GitHub Prepare随合入后的下一候选验证。
+                targetBranch: codex/verify-release-multirepo-workflow
+      - sequence: 36
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: Windows CLI
+            候选包独立三仓验收已完成，5项任务全部完成。实际tarball从Init到Archive，首包后新驱动进程恢复同一Run/Plan及首包完成记录，规格PR已创建后断开响应并隐藏查询，原调用采纳同一PR，reconcile及4次终态探针没有重复发布。Release
+            Prepare对实际候选文件调用同一入口，seal核对成功收据与候选摘要；诊断独立保存。完整Verify已通过1294项测试、4项跳过，生成物/品牌/架构/来源/清单/规格/当前产品执行报告全部通过。首轮旧测试超时与第二轮缺少规范报告的失败保留，最终采用原检查策略绑定的VITEST_MAX_WORKERS=2。归档会把Windows候选包验收要求同步到product-distribution主规格并移动当前Change。交付提议为origin/main，建立PR并在CI通过后使用merge
+            commit合入以保留验证提交祖先关系。完整GitHub Prepare随合入后的下一候选验证。
+          targetBranch: codex/verify-release-multirepo-workflow
+      - sequence: 38
+        value:
+          baseCommit: 02130a7cbafd6baf78457352ca20b5cab6282ed7
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/verify-release-multirepo-workflow
+          verifiedBranch: codex/verify-release-multirepo-workflow
+      - sequence: 39
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-18-verify-release-multirepo-workflow
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.verify.report.evidence
+        value: 20
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 54
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 55
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 56
+        height: 5
+      - key: full.verify.check
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 58
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 59
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 61
+        height: 5
+      - key: full.build.check
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 23
+        left: 63
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 64
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 65
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 66
+        right: 61
+        height: 5
+      - key: full.verify.report.evidence
+        value: 24
+        left: 58
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 68
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 69
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 66
+        right: 70
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 24
+        left: 73
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 25
+        left: 72
+        right: 74
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 75
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 66
+        right: 76
+        height: 5
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 28
+        left: 78
+        right: 79
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 23
+        left: 80
+        right: 81
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 82
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 83
+        right: 76
+        height: 5
+      - key: full.archive.preflight
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: 85
+        height: 2
+      - key: full.archive.prepare
+        value: 28
+        left: 86
+        right: 79
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 81
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 23
+        left: 87
+        right: 88
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 89
+        right: 76
+        height: 5
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 30
+        left: 91
+        right: 92
+        height: 2
+      - key: full.archive.prepare
+        value: 28
+        left: 93
+        right: 79
+        height: 3
+      - key: full.build.check.evidence
+        value: 23
+        left: 94
+        right: 88
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 95
+        right: 76
+        height: 5
+      - key: full.build.configure
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 32
+        left: 97
+        right: 98
+        height: 2
+      - key: full.design.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 36
+        left: 100
+        right: 101
+        height: 2
+      - key: full.open.revalidate
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 39
+        left: null
+        right: 103
+        height: 2
+      - key: full.open.confirm
+        value: 38
+        left: 102
+        right: 104
+        height: 3
+      - key: full.design.document
+        value: 34
+        left: 99
+        right: 105
+        height: 4
+      - key: full.build.plan
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 42
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 97
+        right: 109
+        height: 3
+      - key: full.design.document
+        value: 34
+        left: 110
+        right: 105
+        height: 4
+      - key: full.build.execute
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 32
+        left: 97
+        right: 112
+        height: 2
+      - key: full.build.plan.evidence
+        value: 42
+        left: null
+        right: 108
+        height: 2
+      - key: full.build.plan
+        value: 41
+        left: 113
+        right: 114
+        height: 3
+      - key: full.design.document
+        value: 34
+        left: 115
+        right: 105
+        height: 4
+      - key: full.build.check
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 45
+        left: 117
+        right: 118
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 119
+        right: 112
+        height: 3
+      - key: full.build.plan
+        value: 41
+        left: 120
+        right: 114
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 121
+        right: 105
+        height: 5
+      - key: full.open.evidence
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 46
+        left: null
+        right: 124
+        height: 2
+      - key: full.open.revalidate
+        value: 40
+        left: 123
+        right: 125
+        height: 3
+      - key: full.open.confirm
+        value: 38
+        left: 102
+        right: 126
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 121
+        right: 127
+        height: 5
+      - key: full.verify.check
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 46
+        left: 129
+        right: 124
+        height: 2
+      - key: full.open.revalidate
+        value: 40
+        left: 123
+        right: 130
+        height: 3
+      - key: full.open.confirm
+        value: 38
+        left: 102
+        right: 131
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 121
+        right: 132
+        height: 5
+      - key: full.build.plan.evidence
+        value: 50
+        left: null
+        right: 108
+        height: 2
+      - key: full.build.plan
+        value: 49
+        left: 120
+        right: 134
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 135
+        right: 132
+        height: 5
+      - key: full.build.execute
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 32
+        left: 119
+        right: 137
+        height: 3
+      - key: full.build.plan
+        value: 49
+        left: 138
+        right: 134
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 139
+        right: 132
+        height: 5
+      - key: full.build.check
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 53
+        left: 141
+        right: 118
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 142
+        right: 137
+        height: 3
+      - key: full.build.plan
+        value: 49
+        left: 143
+        right: 134
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 144
+        right: 132
+        height: 5
+      - key: full.verify.run
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 54
+        left: 129
+        right: 146
+        height: 2
+      - key: full.open.revalidate
+        value: 40
+        left: 123
+        right: 147
+        height: 3
+      - key: full.open.confirm
+        value: 38
+        left: 102
+        right: 148
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 144
+        right: 149
+        height: 5
+      - key: full.verify.check
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 54
+        left: 151
+        right: 146
+        height: 2
+      - key: full.open.revalidate
+        value: 40
+        left: 123
+        right: 152
+        height: 3
+      - key: full.open.confirm
+        value: 38
+        left: 102
+        right: 153
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 144
+        right: 154
+        height: 5
+      - key: full.build.plan.evidence
+        value: 58
+        left: null
+        right: 108
+        height: 2
+      - key: full.build.plan
+        value: 57
+        left: 143
+        right: 156
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 157
+        right: 154
+        height: 5
+      - key: full.build.execute
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 32
+        left: 142
+        right: 159
+        height: 3
+      - key: full.build.plan
+        value: 57
+        left: 160
+        right: 156
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 161
+        right: 154
+        height: 5
+      - key: full.build.check
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 61
+        left: 163
+        right: 118
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 164
+        right: 159
+        height: 3
+      - key: full.build.plan
+        value: 57
+        left: 165
+        right: 156
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 166
+        right: 154
+        height: 5
+      - key: full.verify.run
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 62
+        left: 151
+        right: 168
+        height: 2
+      - key: full.open.revalidate
+        value: 40
+        left: 123
+        right: 169
+        height: 3
+      - key: full.open.confirm
+        value: 38
+        left: 102
+        right: 170
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 166
+        right: 171
+        height: 5
+      - key: full.open.revalidate
+        value: 40
+        left: 123
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 65
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 62
+        left: 174
+        right: 168
+        height: 2
+      - key: full.verify.check
+        value: 64
+        left: 173
+        right: 175
+        height: 3
+      - key: full.open.confirm
+        value: 38
+        left: 102
+        right: 176
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 166
+        right: 177
+        height: 5
+      - key: full.archive.confirm
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 67
+        left: 179
+        right: 180
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 118
+        right: 159
+        height: 2
+      - key: full.build.check.evidence
+        value: 61
+        left: 181
+        right: 182
+        height: 3
+      - key: full.build.plan
+        value: 57
+        left: 183
+        right: 156
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 184
+        right: 177
+        height: 5
+      - key: full.archive.preflight
+        value: 68
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 66
+        left: null
+        right: 186
+        height: 2
+      - key: full.archive.prepare
+        value: 67
+        left: 187
+        right: 180
+        height: 3
+      - key: full.build.plan
+        value: 57
+        left: 182
+        right: 156
+        height: 3
+      - key: full.build.check.evidence
+        value: 61
+        left: 188
+        right: 189
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: 190
+        right: 177
+        height: 5
+      - key: full.open
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 38
+        left: 192
+        right: 193
+        height: 2
+      - key: full.archive.confirm
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 68
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 69
+        left: 195
+        right: 196
+        height: 2
+      - key: full.build.check
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 67
+        left: 197
+        right: 198
+        height: 3
+      - key: full.build.configure
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.execute
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 32
+        left: 200
+        right: 201
+        height: 2
+      - key: full.build.plan.evidence
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 57
+        left: 202
+        right: 203
+        height: 3
+      - key: full.build.check.evidence
+        value: 61
+        left: 199
+        right: 204
+        height: 4
+      - key: full.design.document
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 35
+        left: 206
+        right: 207
+        height: 2
+      - key: full.open.confirm
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 39
+        left: 209
+        right: 210
+        height: 2
+      - key: full.verify.check.evidence
+        value: 65
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 62
+        left: 212
+        right: 213
+        height: 2
+      - key: full.verify.check
+        value: 64
+        left: 211
+        right: 214
+        height: 3
+      - key: full.open
+        value: 37
+        left: 208
+        right: 215
+        height: 4
+      - key: full.design.confirm
+        value: 33
+        left: 205
+        right: 216
+        height: 5
+      - key: full.open
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 39
+        left: null
+        right: 219
+        height: 2
+      - key: full.open.confirm
+        value: 38
+        left: 218
+        right: 220
+        height: 3
+      - key: full.design.confirm
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 36
+        left: 222
+        right: 223
+        height: 2
+      - key: full.open.confirm
+        value: 38
+        left: 224
+        right: 220
+        height: 3
+      - key: full.design.confirm
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 34
+        left: 226
+        right: 227
+        height: 2
+      - key: full.design.handoff
+        value: 36
+        left: 228
+        right: 223
+        height: 3
+      - key: full.open.confirm
+        value: 38
+        left: 229
+        right: 220
+        height: 4
+      - key: full.open.evidence
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 37
+        left: null
+        right: 231
+        height: 2
+      - key: full.design.handoff
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 39
+        left: 234
+        right: 235
+        height: 2
+      - key: full.open
+        value: 37
+        left: 233
+        right: 236
+        height: 3
+      - key: full.build.configure
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 35
+        left: 239
+        right: 240
+        height: 2
+      - key: full.design.confirm
+        value: 33
+        left: 238
+        right: 241
+        height: 3
+      - key: full.open
+        value: 37
+        left: 242
+        right: 236
+        height: 4
+      - key: full.archive.prepare
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 60
+        left: 244
+        right: 245
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 57
+        left: null
+        right: 248
+        height: 2
+      - key: full.build.execute
+        value: 59
+        left: 247
+        right: 249
+        height: 3
+      - key: full.build.configure
+        value: 31
+        left: 246
+        right: 250
+        height: 4
+      - key: full.open.revalidate
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 39
+        left: 234
+        right: 252
+        height: 2
+      - key: full.verify.check.evidence
+        value: 65
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 62
+        left: 254
+        right: 255
+        height: 2
+      - key: full.verify.check
+        value: 64
+        left: 253
+        right: 256
+        height: 3
+      - key: full.open
+        value: 37
+        left: 241
+        right: 257
+        height: 4
+      - key: full.design.confirm
+        value: 33
+        left: 251
+        right: 258
+        height: 5
+      - key: full.open
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 34
+        left: 261
+        right: 262
+        height: 2
+      - key: full.open.confirm
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 39
+        left: 264
+        right: 265
+        height: 2
+      - key: full.open
+        value: 37
+        left: 263
+        right: 266
+        height: 3
+      - key: full.build.configure
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 32
+        left: 268
+        right: 269
+        height: 2
+      - key: full.design.document
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 35
+        left: 271
+        right: 272
+        height: 2
+      - key: full.design.confirm
+        value: 33
+        left: 270
+        right: 273
+        height: 3
+      - key: full.open
+        value: 37
+        left: 274
+        right: 266
+        height: 4
+      - key: full.build.check
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 31
+        left: 276
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 41
+        left: 278
+        right: 279
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 277
+        right: 280
+        height: 3
+      - key: full.open
+        value: 37
+        left: 273
+        right: 266
+        height: 3
+      - key: full.design.confirm
+        value: 33
+        left: 281
+        right: 282
+        height: 4
+      - key: full.build.check
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 45
+        left: 284
+        right: 285
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 286
+        right: 280
+        height: 3
+      - key: full.verify.run
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 40
+        left: null
+        right: 288
+        height: 2
+      - key: full.open.evidence
+        value: 39
+        left: 264
+        right: 289
+        height: 3
+      - key: full.open
+        value: 37
+        left: 273
+        right: 290
+        height: 4
+      - key: full.design.confirm
+        value: 33
+        left: 287
+        right: 291
+        height: 5
+      - key: full.build.plan
+        value: 49
+        left: 278
+        right: 279
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 286
+        right: 293
+        height: 3
+      - key: full.open.revalidate
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 39
+        left: 264
+        right: 295
+        height: 2
+      - key: full.verify.report.evidence
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 47
+        left: 297
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 48
+        left: 296
+        right: 298
+        height: 3
+      - key: full.open
+        value: 37
+        left: 273
+        right: 299
+        height: 4
+      - key: full.design.confirm
+        value: 33
+        left: 294
+        right: 300
+        height: 5
+      - key: full.build.check
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 45
+        left: 302
+        right: 285
+        height: 2
+      - key: full.build.execute
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 49
+        left: 304
+        right: 305
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 303
+        right: 306
+        height: 3
+      - key: full.design.confirm
+        value: 33
+        left: 307
+        right: 300
+        height: 5
+      - key: full.build.check.evidence
+        value: 53
+        left: 302
+        right: 285
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 309
+        right: 306
+        height: 3
+      - key: full.verify.run
+        value: 55
+        left: 297
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 48
+        left: 296
+        right: 311
+        height: 3
+      - key: full.open
+        value: 37
+        left: 273
+        right: 312
+        height: 4
+      - key: full.design.confirm
+        value: 33
+        left: 310
+        right: 313
+        height: 5
+      - key: full.build.plan
+        value: 57
+        left: 304
+        right: 305
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 309
+        right: 315
+        height: 3
+      - key: full.verify.report.evidence
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 55
+        left: 317
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 56
+        left: 296
+        right: 318
+        height: 3
+      - key: full.open
+        value: 37
+        left: 273
+        right: 319
+        height: 4
+      - key: full.design.confirm
+        value: 33
+        left: 316
+        right: 320
+        height: 5
+      - key: full.build.check
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 53
+        left: 322
+        right: 285
+        height: 2
+      - key: full.build.execute
+        value: 59
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 57
+        left: 324
+        right: 325
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 323
+        right: 326
+        height: 3
+      - key: full.design.confirm
+        value: 33
+        left: 327
+        right: 320
+        height: 5
+      - key: full.build.check.evidence
+        value: 61
+        left: 322
+        right: 285
+        height: 2
+      - key: full.build.confirm
+        value: 32
+        left: 329
+        right: 326
+        height: 3
+      - key: full.verify.run
+        value: 63
+        left: 317
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 56
+        left: 296
+        right: 331
+        height: 3
+      - key: full.open
+        value: 37
+        left: 273
+        right: 332
+        height: 4
+      - key: full.design.confirm
+        value: 33
+        left: 330
+        right: 333
+        height: 5
+      - key: full.verify.report.evidence
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 63
+        left: 335
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 64
+        left: 296
+        right: 336
+        height: 3
+      - key: full.open
+        value: 37
+        left: 273
+        right: 337
+        height: 4
+      - key: full.design.confirm
+        value: 33
+        left: 330
+        right: 338
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 57
+      - 62
+      - 67
+      - 71
+      - 77
+      - 84
+      - 90
+      - 96
+      - 106
+      - 111
+      - 116
+      - 122
+      - 128
+      - 133
+      - 136
+      - 140
+      - 145
+      - 150
+      - 155
+      - 158
+      - 162
+      - 167
+      - 172
+      - 178
+      - 185
+      - 191
+      - 194
+      - 217
+      - 221
+      - 225
+      - 230
+      - 232
+      - 237
+      - 243
+      - 259
+      - 260
+      - 267
+      - 275
+      - 283
+      - 292
+      - 301
+      - 308
+      - 314
+      - 321
+      - 328
+      - 334
+      - 339
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "21"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actions
+          - "22"
+          - input
+          - outputs
+        map: 18
+      - path:
+          - actions
+          - "23"
+          - input
+          - outputs
+        map: 19
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:11
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:13
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:14
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:16
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:18
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:19
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:21
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:22
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:24
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:26
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:27
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:29
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:30
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:32
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:34
+          - results
+        map: 34
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:36
+          - results
+        map: 35
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:38
+          - results
+        map: 36
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:39
+          - results
+        map: 37
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:4
+          - results
+        map: 38
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:40
+          - results
+        map: 39
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:5
+          - results
+        map: 40
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:7
+          - results
+        map: 41
+      - path:
+          - actionContexts
+          - verify-release-multirepo-workflow:9
+          - results
+        map: 42
+      - path:
+          - outputs
+        map: 39
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 43
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 44
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 45
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 46
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 47
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 48
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 49
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 50
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 51
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 52
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 53
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 54
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 55
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 56
+      - path:
+          - evidenceWaits
+          - "10"
+          - results
+        map: 57
+      - path:
+          - evidenceWaits
+          - "11"
+          - results
+        map: 58
+  storageHash: 5478785fea0725e59209f40af0b01ef225cdbda8a9baa97a0cb67a61969d528a
+check_epoch: 10

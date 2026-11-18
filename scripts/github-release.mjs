@@ -11,6 +11,7 @@ import {
   assertReadyToPublish,
   assertReleaseMarker,
   assertReleaseSource,
+  assertWorkflowAcceptance,
   describeFile,
   releaseAssetNames,
   releaseDraftPlan,
@@ -185,6 +186,10 @@ async function seal(source, directory) {
   if (process.env.RELEASE_CLI_DIGEST !== files[0].digest) {
     throw new Error('CLI tarball changed after verification');
   }
+  const workflowEvidence = JSON.parse(
+    await readFile(process.env.RELEASE_WORKFLOW_EVIDENCE, 'utf8'),
+  );
+  assertWorkflowAcceptance(workflowEvidence, files[0]);
   await writeFile(path.join(directory, checksums), sums(files), { flag: 'wx' });
   files.push(await describeFile(directory, checksums));
   const receipt = {

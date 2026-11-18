@@ -67,4 +67,28 @@ describe('GitHub release workflow contract', () => {
       expect(checkout?.with?.ref).toBe('${{ needs.preflight.outputs.commit }}');
     }
   });
+
+  it('gates sealing on multirepository acceptance of the exact tarball and keeps diagnostics separate', async () => {
+    const workflow = parse(await read('../.github/workflows/release.yml')) as Workflow;
+    const candidate = workflow.jobs.candidate!;
+    const commands = candidate.steps.map(({ run }) => run ?? '').join('\n');
+    expect(commands).toContain(
+      'npm.cmd run test:windows-multirepo-package-e2e -- $env:REPOCTOPUS_PACKAGE_CANDIDATE',
+    );
+    expect(commands.indexOf('test:windows-multirepo-package-e2e')).toBeLessThan(
+      commands.indexOf('scripts/github-release.mjs seal'),
+    );
+    expect(commands).toContain('RELEASE_WORKFLOW_EVIDENCE');
+    expect(await read('../scripts/github-release.mjs')).toContain('assertWorkflowAcceptance');
+    const diagnostic = candidate.steps.find(
+      (step) =>
+        step.with?.name ===
+        'repoctopus-workflow-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}',
+    );
+    expect(diagnostic).toMatchObject({ if: 'always()' });
+    expect(diagnostic?.with?.path).not.toBe('${{ runner.temp }}/repoctopus-release');
+    expect(await read('../.github/workflows/ci.yml')).not.toContain(
+      'test:windows-multirepo-package-e2e',
+    );
+  });
 });

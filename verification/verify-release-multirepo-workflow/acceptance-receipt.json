@@ -1,0 +1,91 @@
+{
+  "kind": "WindowsMultirepoPackageE2E",
+  "status": "passed",
+  "startedAt": "2026-11-18T00:50:44.023Z",
+  "checks": [
+    {
+      "id": "init-to-archive",
+      "status": "passed"
+    },
+    {
+      "id": "build-cold-recovery",
+      "status": "passed"
+    },
+    {
+      "id": "publication-response-loss",
+      "status": "passed"
+    },
+    {
+      "id": "terminal-recovery",
+      "status": "passed"
+    }
+  ],
+  "candidate": {
+    "name": "repoctopus-0.1.3.tgz",
+    "size": 1397287,
+    "digest": "sha256:74ef14f09762762166e1e7d218ed54cb4dac2e2f714677609c8e14206d754493"
+  },
+  "runId": "change-workspace-verify-package-workflow-1084f1a8861b28e9",
+  "finalStatus": "completed",
+  "durationMs": 270731,
+  "sourceCommit": "d69e9385a92343f7b620b0f951da53b9039e7b0e",
+  "buildRecovery": {
+    "firstPID": 50620,
+    "secondPID": 54744,
+    "runId": "change-workspace-verify-package-workflow-1084f1a8861b28e9",
+    "planId": "build-plan:3c47b1b8eeb976414e145611",
+    "sameRun": true,
+    "samePlan": true,
+    "sameCheckpoint": true,
+    "completionsBefore": ["package-completion:9c6462e27a29ba0f33e10adb"],
+    "completionsAfter": ["package-completion:9c6462e27a29ba0f33e10adb"]
+  },
+  "publication": {
+    "createdPRCount": 3,
+    "createdPRRequests": [
+      {
+        "service": "api",
+        "method": "POST",
+        "repository": "backend",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "POST",
+        "repository": "web-front",
+        "route": "pulls"
+      },
+      {
+        "service": "api",
+        "method": "POST",
+        "repository": "workspace",
+        "route": "pulls"
+      }
+    ],
+    "gitPushRequests": [
+      {
+        "service": "git",
+        "method": "POST",
+        "repository": "workspace",
+        "route": "git-receive-pack"
+      }
+    ],
+    "writesDuringReconciliation": 0,
+    "adoptedSpecificationPR": {
+      "provider": "github",
+      "repositoryId": "workspace",
+      "number": 3,
+      "url": "https://github-fixture.localhost/acceptance/workspace/pull/3"
+    }
+  },
+  "terminal": {
+    "probes": ["resume", "next", "next", "resume"],
+    "durableStateDigests": {
+      "run.json": "sha256:45bd0a3e0f075ed72f8f337c2b05db84e08822545d5c44fb87400ae5ab7e9a84",
+      "checkpoint.json": "sha256:70dcbf92342515a1f5d5ea12359bc3d55598c7d6ba2eadde7132b74d66f16715",
+      "trajectory.jsonl": "sha256:7e43eb69252d00cf8fdce10232675c7b28c1bb6d197f32e537f397030c27b58e"
+    },
+    "publicationDigest": "sha256:ed0123557c9fa28403b55e37a0147af60a2e648c11a0958f5d18b1ff2620abde",
+    "evidenceBundleIds": ["8228bd5a6c168cf37e2f348c3e35128dfb1ff8f9b7fb15a177d4451b3729de4d"]
+  }
+}

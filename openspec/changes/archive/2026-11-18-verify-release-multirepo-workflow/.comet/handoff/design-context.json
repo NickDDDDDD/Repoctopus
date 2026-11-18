@@ -1,0 +1,16 @@
+{
+  "change": "verify-release-multirepo-workflow",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655",
+  "files": [
+    { "path": "openspec/changes/verify-release-multirepo-workflow/proposal.md", "sha256": "8574850436307eabad6c2ba4668e070ae5ce56439fb300718431db3425cfaa42" },
+    { "path": "openspec/changes/verify-release-multirepo-workflow/design.md", "sha256": "5c04b43cccc72b714949f33fb5e1c495786a504c9ea7b098864c77a5095e7cb0" },
+    { "path": "openspec/changes/verify-release-multirepo-workflow/tasks.md", "sha256": "7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3" },
+    { "path": "openspec/changes/verify-release-multirepo-workflow/.openspec.yaml", "sha256": "277c3c07d7ab9927f15fff0d9c08afbbb9cc808d563ada95016a72a464a761e0" },
+    { "path": "openspec/changes/verify-release-multirepo-workflow/specs/product-distribution/spec.md", "sha256": "4d2dd9712bbc64475581093963b1867a7cf64b9a5c5a5537c74c8cee861fea71" }
+  ]
+}
