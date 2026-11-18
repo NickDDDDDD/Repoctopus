@@ -11,6 +11,7 @@ const fixture = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const { root, evidence, packageRoot, gitPort, apiPort } = fixture;
 const yaml = createRequire(path.join(packageRoot, 'package.json'))('yaml');
 const entry = path.join(packageRoot, 'bin', 'repoctopus.js');
+const supervisor = path.join(import.meta.dirname, 'package-e2e-command.mjs');
 const project = path.join(root, 'project');
 const workspaceId = 'workspace';
 const workspace = path.join(project, workspaceId);
@@ -36,6 +37,9 @@ const env = {
   REPOCTOPUS_DESKTOP_OTLP_MODE: 'removed',
   REPOCTOPUS_GITHUB_TOKEN: 'local-fixture-only',
 };
+for (const key of Object.keys(env)) {
+  if (key.startsWith('OTEL_')) delete env[key];
+}
 const file = (name) => path.join(evidence, name + '.json');
 const read = (name) => JSON.parse(fs.readFileSync(file(name), 'utf8'));
 const exists = (name) => fs.existsSync(file(name));
@@ -50,12 +54,11 @@ const log = (name, value) =>
 const repository = (name) => path.join(project, name);
 
 function run(command, argv, cwd, expected = [0]) {
-  const result = spawnSync(command, argv, {
+  const result = spawnSync(process.execPath, [supervisor, '90000', command, ...argv], {
     cwd,
     env,
     encoding: 'utf8',
     windowsHide: true,
-    timeout: 90_000,
     maxBuffer: 16 * 1024 * 1024,
   });
   log('commands.jsonl', {
@@ -690,6 +693,10 @@ function recoverPublication() {
 }
 
 function verifyTerminal() {
+  assert.deepEqual(
+    records('decisions.jsonl').map((item) => item.kind),
+    ['specification-open', 'specification-design'],
+  );
   const receipt = read('published-receipt');
   assert.equal(receipt.items.length, 3);
   for (const item of receipt.items) {
@@ -820,12 +827,18 @@ for (let step = 0; step < 40; step++) {
   }
   if (view.state.status === 'waiting') {
     const decision = pull('decision').result;
+    assert(
+      ['specification-open', 'specification-design'].includes(decision.decisionKind),
+      'Unexpected human decision: ' + decision.decisionKind,
+    );
+    assert(
+      !records('decisions.jsonl').some((item) => item.kind === decision.decisionKind),
+      'Repeated human decision: ' + decision.decisionKind,
+    );
     const response = {
       ...decision.responseTemplate,
       decision: 'approve',
-      ...(['specification-open', 'workspace-intent-revision'].includes(decision.decisionKind)
-        ? { isolation: 'branch' }
-        : {}),
+      ...(decision.decisionKind === 'specification-open' ? { isolation: 'branch' } : {}),
       interaction: {
         channel: 'conversation',
         authorization: 'delegated',
@@ -833,6 +846,7 @@ for (let step = 0; step < 40; step++) {
       },
     };
     pull('decide', '--response-file', write('decision-response', response));
+    log('decisions.jsonl', { kind: decision.decisionKind, requestId: decision.requestId });
     continue;
   }
   if (current.phase === 'archive' && !current.currentWork) {

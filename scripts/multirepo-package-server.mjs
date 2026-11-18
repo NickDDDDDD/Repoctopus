@@ -7,6 +7,7 @@ import https from 'node:https';
 import path from 'node:path';
 import process from 'node:process';
 import { URL } from 'node:url';
+import { stopProcessTree } from './package-e2e-process.mjs';
 
 const root = process.argv[2];
 const repositories = new Set(['workspace', 'web-front', 'backend']);
@@ -204,12 +205,20 @@ await Promise.all(
   ),
 );
 process.send({ gitPort: git.address().port, apiPort: api.address().port });
-process.on('message', (message) => {
-  if (message !== 'stop') return;
-  for (const child of children) child.kill();
+let stopping = false;
+async function shutdown() {
+  if (stopping) return;
+  stopping = true;
+  await Promise.all([...children].map(stopProcessTree));
   for (const server of [git, api]) {
     server.close();
     server.closeAllConnections();
   }
-  process.disconnect();
+  if (process.connected) process.disconnect();
+}
+process.on('message', (message) => {
+  if (message === 'stop') void shutdown();
+});
+process.on('disconnect', () => {
+  void shutdown();
 });

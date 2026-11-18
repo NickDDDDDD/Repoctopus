@@ -23,7 +23,14 @@ export async function stopProcessTree(child) {
 }
 
 export function runProcess(file, args, options = {}) {
-  const { timeout = 120_000, onOutput, onSpawn, label = 'Acceptance', ...spawnOptions } = options;
+  const {
+    timeout = 120_000,
+    onOutput,
+    onSpawn,
+    label = 'Acceptance',
+    rejectOnNonzero = true,
+    ...spawnOptions
+  } = options;
   return new Promise((resolve, reject) => {
     const child = spawn(file, args, {
       windowsHide: true,
@@ -61,9 +68,9 @@ export function runProcess(file, args, options = {}) {
         return;
       }
       if (timedOut) reject(new Error(label + ' command timed out'));
-      else if (code !== 0)
+      else if (code !== 0 && rejectOnNonzero)
         reject(new Error(label + ' exited ' + code + '\n' + stderr.slice(-8_000)));
-      else resolve(stdout);
+      else resolve({ stdout, stderr, code });
     });
   });
 }

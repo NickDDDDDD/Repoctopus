@@ -52,9 +52,11 @@ function execute(file, args, options = {}) {
     onOutput: (chunk) => {
       output.write(chunk);
     },
-  }).finally(() => {
-    active = null;
-  });
+  })
+    .then((result) => result.stdout)
+    .finally(() => {
+      active = null;
+    });
 }
 async function openssl() {
   const paths = (await execute('where.exe', ['git'])).trim().split(/\r?\n/u);
