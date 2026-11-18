@@ -1,0 +1,17 @@
+{
+  "change": "recommend-build-strategy-from-context",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "b6ed51b5f6dc76f266e21a03098a71f0a22cd29e041d385de1cefb583f363545",
+  "files": [
+    { "path": "openspec/changes/recommend-build-strategy-from-context/proposal.md", "sha256": "f365b12ded56b33928a7820443cd1fcd07da83aa2f4db4313b74d34c10e2e8ec" },
+    { "path": "openspec/changes/recommend-build-strategy-from-context/design.md", "sha256": "bcb9bff4d03b30e6ce5f0ba2cab86ed3828d48cd222e354909984c239370e8e1" },
+    { "path": "openspec/changes/recommend-build-strategy-from-context/tasks.md", "sha256": "78ef36ceb3c1acb755c14a90e22471efabc7ca5bb5036dcdb5b460a8bacb7eba" },
+    { "path": "openspec/changes/recommend-build-strategy-from-context/.openspec.yaml", "sha256": "277c3c07d7ab9927f15fff0d9c08afbbb9cc808d563ada95016a72a464a761e0" },
+    { "path": "openspec/changes/recommend-build-strategy-from-context/specs/change-lifecycle/spec.md", "sha256": "277ab2295d8c6fa51acfdbd1a034b770d59c52302b6bd6de2421405c9f814fa8" },
+    { "path": "openspec/changes/recommend-build-strategy-from-context/specs/skill-integration/spec.md", "sha256": "c78b45df86643e1f54916e5edd38dcacf52ad3314a6fcc14dbc4a804d10b397e" }
+  ]
+}
