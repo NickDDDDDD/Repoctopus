@@ -34,7 +34,7 @@
 
 ## 4. 真实安装包多仓验收与完整验证
 
-- [ ] 4.1 用实际候选包和宿主执行小型多仓 Change，完成场景建议、原生 Design 选择、实际执行、同 Run 冷恢复和 Archive <!-- comet-task:2171ed0c-5507-4d1e-a071-7e0414535fd8 -->
+- [x] 4.1 用实际候选包和宿主执行小型多仓 Change，完成场景建议、原生 Design 选择、实际执行、同 Run 冷恢复和 Archive <!-- comet-task:2171ed0c-5507-4d1e-a071-7e0414535fd8 -->
   **Acceptance:** 行为修改、可分工多包和纯文档场景有实际依据；至少一次真实宿主原生选择并经正式接口提交；在决定和首包边界冷恢复保持有效事实；到 Archive 后无重复发布；现有配置、Work/Skill 与恢复遥测对应实际批准选择，不以自造批准替代真实交互。
   **Requirements:** change-lifecycle / 场景建议与策略授权保持可核对且可恢复；未指定的启动偏好不得成为已批准策略；skill-integration / 入口和 Design Skill 按真实任务场景推荐执行策略。
   **Blocked by:** 2.2；3.2。
