@@ -54,4 +54,6 @@ Package content bytes: `6621674`
 
 所有原始命令、真实子 Agent 检查、Git 事实、候选包与发布账本保存在仓外 `C:/Users/User/Desktop/PP/repoctopus-strategy-evidence-20261119/`。其中 `windows-package/receipt.json` 是初始包自动化终态收据；`delegated-lab/evidence/terminal.json` 是实际委派实验终态收据；`native-lab/evidence/native-design-decision.json` 和 `native-answer.json` 分别是原请求及真实答复。等待期间停止了 native 实验临时进程，收到答复后用仓外 `resume-native.mjs` 恢复同一 Run；完成后本地服务已停止。`final-package/` 绑定本报告的最终候选。
 
-正式门禁使用 `comet guard recommend-build-strategy-from-context build --apply --local -- npm.cmd run build`，再使用 `comet guard recommend-build-strategy-from-context verify --report verification/recommend-build-strategy-from-context/verification-report.md --apply -- npm.cmd run verify`。这两个命令的实际结果由同一 Run 保存，不以手工声明代替；本报告的预检结果不能自行推进 phase。
+正式 Build Guard 已实际执行 `comet.cmd guard recommend-build-strategy-from-context build --apply --local -- npm.cmd run build`，通过并由 Runtime 推进至 Verify，原始记录为 `comet-build-guard-cmd.log`。Windows PowerShell 须选公开的 `.cmd` 入口保留 `--`；默认 `.ps1` 包装的解析拒绝已保留，没有产生检查收据或推进阶段。
+
+正式 Verify 使用 `comet.cmd guard recommend-build-strategy-from-context verify --report verification/recommend-build-strategy-from-context/verification-report.md --apply -- npm.cmd run verify`。实际结果由同一 Run 保存，不以手工声明代替；本报告的预检结果不能自行推进 phase。

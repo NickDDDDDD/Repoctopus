@@ -2,7 +2,7 @@
 change_id: c5d7a459-ef6c-4b57-a05c-8e3b1924fddf
 workflow: full
 language: zh-CN
-phase: build
+phase: verify
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: b50bde3fae2e9896f2ede3dd9106dff9bdebc725bc4c24fa5f7716f970165ee9
+  hash: 1386750a1678c513dc11e9b097aa09379b4bce8ef581d1474d67ee3868891291
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 2
+      checkEpoch: 3
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,7 +69,7 @@ run_checkpoint:
       handoffHash: b6ed51b5f6dc76f266e21a03098a71f0a22cd29e041d385de1cefb583f363545
       isolation: worktree
       language: zh-CN
-      phase: build
+      phase: verify
       plan: docs/superpowers/plans/2026-11-19-recommend-build-strategy-from-context.md
       reviewMode: thorough
       subagentDispatch: null
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 14
+    sequence: 16
     actions:
       - attempt: 1
         claim:
@@ -768,6 +768,14 @@ run_checkpoint:
         stepId: full.build.execute
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-45310566f7bbf135c36f83d48588d6635e7afb37c7073f9f40bc706190f6fff6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: recommend-build-strategy-from-context:14
         input:
           input:
@@ -887,16 +895,200 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
         inputHash: 1c6d956730a06f0a30f50e6f2e6ce59e077068382a48eab7a7709a57c40ad8a0
+        outcome:
+          actionId: recommend-build-strategy-from-context:14
+          attempt: 1
+          claimToken: portable-45310566f7bbf135c36f83d48588d6635e7afb37c7073f9f40bc706190f6fff6
+          inputHash: 1c6d956730a06f0a30f50e6f2e6ce59e077068382a48eab7a7709a57c40ad8a0
+          outcomeId: 55916ce5-eb4c-48a2-a712-f45b27adc327
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: ffd5097f472801af0765e18d31213e701cc551f26f3076e3030ad05d72d1194c
+            cwd: .
+            environment: f3f0cde52d64d4ce84994c4e5dd9cfc362495c80c0fd82d862df5b28b12d26cb
+            exitCode: 0
+            inputAfter: b7c04d8c069e7206d0d0922a0e2451f18c8324dda0ceb732847ec6cc04a752a0
+            inputBefore: b7c04d8c069e7206d0d0922a0e2451f18c8324dda0ceb732847ec6cc04a752a0
+            manifestHash: c3178c646273214f755a6dc7843a0934407c4f88b7720fcf78f0c4be31f9de03
+            manifestRef: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/8508da76-0a9d-4250-ac1f-a9c67c558ffb.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/9c0e37f0-2a3d-4bd9-ab72-001cfa86374f.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 7070183648f02f496bb42b1da1a5bcabedc9f597e85c80d06db3865be1f4cedd
+            outcomeId: 55916ce5-eb4c-48a2-a712-f45b27adc327
         reconciliations: []
         ref: classic-check
         requiredCapabilities: []
         retry: manual
         runId: recommend-build-strategy-from-context
-        status: pending
+        status: succeeded
         stepId: full.build.check
         type: call_tool
+      - attempt: 1
+        id: recommend-build-strategy-from-context:16
+        input:
+          input:
+            change: recommend-build-strategy-from-context
+            changeDir: openspec/changes/recommend-build-strategy-from-context
+            workspaceBaseline:
+              ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+          outputs:
+            full.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: ffd5097f472801af0765e18d31213e701cc551f26f3076e3030ad05d72d1194c
+              cwd: .
+              environment: f3f0cde52d64d4ce84994c4e5dd9cfc362495c80c0fd82d862df5b28b12d26cb
+              exitCode: 0
+              inputAfter: b7c04d8c069e7206d0d0922a0e2451f18c8324dda0ceb732847ec6cc04a752a0
+              inputBefore: b7c04d8c069e7206d0d0922a0e2451f18c8324dda0ceb732847ec6cc04a752a0
+              manifestHash: c3178c646273214f755a6dc7843a0934407c4f88b7720fcf78f0c4be31f9de03
+              manifestRef: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/8508da76-0a9d-4250-ac1f-a9c67c558ffb.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/9c0e37f0-2a3d-4bd9-ab72-001cfa86374f.log
+              reusable: true
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            full.build.check.evidence:
+              contentHash: ffd5097f472801af0765e18d31213e701cc551f26f3076e3030ad05d72d1194c
+              ref: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/9c0e37f0-2a3d-4bd9-ab72-001cfa86374f.log
+            full.build.configure:
+              boundBranch: codex/recommend-build-strategy-from-context
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: recommend-build-strategy-from-context
+                  changeDir: openspec/changes/recommend-build-strategy-from-context
+                  workspaceBaseline:
+                    ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/recommend-build-strategy-from-context
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: 5e192495c17e2c00f6278483eabc340bad464cbca31250e6f7909315fea8fce5
+                ref: openspec/changes/recommend-build-strategy-from-context/design.md
+              plan: docs/superpowers/plans/2026-11-19-recommend-build-strategy-from-context.md
+              planEvidence:
+                contentHash: 862ce5a5a56d52e1a1ca9d535a30b49828ad23542bc2deecc34cc4d359afa331
+                ref: docs/superpowers/plans/2026-11-19-recommend-build-strategy-from-context.md
+              taskRevision: 78ef36ceb3c1acb755c14a90e22471efabc7ca5bb5036dcdb5b460a8bacb7eba
+            full.build.plan.evidence:
+              contentHash: 862ce5a5a56d52e1a1ca9d535a30b49828ad23542bc2deecc34cc4d359afa331
+              ref: docs/superpowers/plans/2026-11-19-recommend-build-strategy-from-context.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: recommend-build-strategy-from-context
+                  changeDir: openspec/changes/recommend-build-strategy-from-context
+                  workspaceBaseline:
+                    ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/recommend-build-strategy-from-context/.comet/handoff/design-context.json
+                    handoffHash: b6ed51b5f6dc76f266e21a03098a71f0a22cd29e041d385de1cefb583f363545
+                    proposal: 由当前Design
+                      Work根据实际任务范围、依赖、宿主能力和测试切面，分别推荐execution与TDD；Runtime校验类型化build-strategy-candidate，保留未决启动偏好且不补默认。同一Design
+                      gate等待CAS保存候选、原请求和来源，现有Design决定一次绑定稳定策略与规划；原审批receipt先写入而Run接受中断时重验并采用原结果，不重复审批。Configure只验证ExecutionBinding，现有Strategy与Binding身份分离、实际TDD与委派证据保持。spec
+                      approval prepare绑定--run消除另一条默认和硬编码current路径；run
+                      revise-strategy仅表达明确修订意图，Runtime在无在途未知执行的安全Design/Build/Verify边界返回受管Design，仍须当前批准，不直接切换模式。保持两种execution、两种TDD、standard
+                      Review、五阶段、两次正常审查和原OpenSpec/Matt权威。代价为调整公开缺参行为及Design结果协议，不兼容旧开发checkpoint；不引入分类器、新profile或Comet
+                      SDK。验证四组合、纠正补交、能力阻断、决定响应丢失及真实候选安装包多仓从Init到Archive、首包冷恢复和发布去重。独立builder
+                      check无重要未决；没有Spec
+                      Patch，8项任务仍在已批准Open范围内。建议本次实施采用autonomous、TDD、thorough和现有worktree，尚待用户对当前设计及该配置作明确决定。
+                    requirementsEvidence:
+                      contentHash: 47191e5adb7f4cabf171a88bdf2f82e10510237e328abcfc4d415072c2f46347
+                      ref: openspec/changes/recommend-build-strategy-from-context
+                    sourceEvidence:
+                      contentHash: 8eb90d5799e49987039dd18b80a7d79f16a81d5ca63ce7ee92bc227a6401b4e9
+                      ref: openspec/changes/recommend-build-strategy-from-context
+            full.design.document:
+              designDoc: openspec/changes/recommend-build-strategy-from-context/design.md
+            full.design.evidence:
+              contentHash: 5e192495c17e2c00f6278483eabc340bad464cbca31250e6f7909315fea8fce5
+              ref: openspec/changes/recommend-build-strategy-from-context/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/recommend-build-strategy-from-context/.comet/handoff/design-context.json
+              handoffHash: b6ed51b5f6dc76f266e21a03098a71f0a22cd29e041d385de1cefb583f363545
+              proposal: 由当前Design
+                Work根据实际任务范围、依赖、宿主能力和测试切面，分别推荐execution与TDD；Runtime校验类型化build-strategy-candidate，保留未决启动偏好且不补默认。同一Design
+                gate等待CAS保存候选、原请求和来源，现有Design决定一次绑定稳定策略与规划；原审批receipt先写入而Run接受中断时重验并采用原结果，不重复审批。Configure只验证ExecutionBinding，现有Strategy与Binding身份分离、实际TDD与委派证据保持。spec
+                approval prepare绑定--run消除另一条默认和硬编码current路径；run
+                revise-strategy仅表达明确修订意图，Runtime在无在途未知执行的安全Design/Build/Verify边界返回受管Design，仍须当前批准，不直接切换模式。保持两种execution、两种TDD、standard
+                Review、五阶段、两次正常审查和原OpenSpec/Matt权威。代价为调整公开缺参行为及Design结果协议，不兼容旧开发checkpoint；不引入分类器、新profile或Comet
+                SDK。验证四组合、纠正补交、能力阻断、决定响应丢失及真实候选安装包多仓从Init到Archive、首包冷恢复和发布去重。独立builder
+                check无重要未决；没有Spec
+                Patch，8项任务仍在已批准Open范围内。建议本次实施采用autonomous、TDD、thorough和现有worktree，尚待用户对当前设计及该配置作明确决定。
+              requirementsEvidence:
+                contentHash: 47191e5adb7f4cabf171a88bdf2f82e10510237e328abcfc4d415072c2f46347
+                ref: openspec/changes/recommend-build-strategy-from-context
+              sourceEvidence:
+                contentHash: 8eb90d5799e49987039dd18b80a7d79f16a81d5ca63ce7ee92bc227a6401b4e9
+                ref: openspec/changes/recommend-build-strategy-from-context
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: recommend-build-strategy-from-context
+                  changeDir: openspec/changes/recommend-build-strategy-from-context
+                  workspaceBaseline:
+                    ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
+                    ref: openspec/changes/recommend-build-strategy-from-context
+            full.open.evidence:
+              contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
+              ref: openspec/changes/recommend-build-strategy-from-context
+            full.open.revalidate:
+              contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
+        inputHash: 3718e7398d6cb924711ef65498072bdf9f8e3e6347bd404bfff90055d0e944cd
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: recommend-build-strategy-from-context
+        status: pending
+        stepId: full.verify.run
+        type: invoke_skill
     actionContexts:
       recommend-build-strategy-from-context:1:
         results: {}
@@ -1294,6 +1486,173 @@ run_checkpoint:
             value:
               contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
         sequence: 14
+      recommend-build-strategy-from-context:16:
+        results:
+          full.build.check:
+            sequence: 14
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: ffd5097f472801af0765e18d31213e701cc551f26f3076e3030ad05d72d1194c
+              cwd: .
+              environment: f3f0cde52d64d4ce84994c4e5dd9cfc362495c80c0fd82d862df5b28b12d26cb
+              exitCode: 0
+              inputAfter: b7c04d8c069e7206d0d0922a0e2451f18c8324dda0ceb732847ec6cc04a752a0
+              inputBefore: b7c04d8c069e7206d0d0922a0e2451f18c8324dda0ceb732847ec6cc04a752a0
+              manifestHash: c3178c646273214f755a6dc7843a0934407c4f88b7720fcf78f0c4be31f9de03
+              manifestRef: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/8508da76-0a9d-4250-ac1f-a9c67c558ffb.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/9c0e37f0-2a3d-4bd9-ab72-001cfa86374f.log
+              reusable: true
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          full.build.check.evidence:
+            sequence: 15
+            value:
+              contentHash: ffd5097f472801af0765e18d31213e701cc551f26f3076e3030ad05d72d1194c
+              ref: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/9c0e37f0-2a3d-4bd9-ab72-001cfa86374f.log
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/recommend-build-strategy-from-context
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recommend-build-strategy-from-context
+                  changeDir: openspec/changes/recommend-build-strategy-from-context
+                  workspaceBaseline:
+                    ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/recommend-build-strategy-from-context
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 5e192495c17e2c00f6278483eabc340bad464cbca31250e6f7909315fea8fce5
+                ref: openspec/changes/recommend-build-strategy-from-context/design.md
+              plan: docs/superpowers/plans/2026-11-19-recommend-build-strategy-from-context.md
+              planEvidence:
+                contentHash: 862ce5a5a56d52e1a1ca9d535a30b49828ad23542bc2deecc34cc4d359afa331
+                ref: docs/superpowers/plans/2026-11-19-recommend-build-strategy-from-context.md
+              taskRevision: 78ef36ceb3c1acb755c14a90e22471efabc7ca5bb5036dcdb5b460a8bacb7eba
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 862ce5a5a56d52e1a1ca9d535a30b49828ad23542bc2deecc34cc4d359afa331
+              ref: docs/superpowers/plans/2026-11-19-recommend-build-strategy-from-context.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recommend-build-strategy-from-context
+                  changeDir: openspec/changes/recommend-build-strategy-from-context
+                  workspaceBaseline:
+                    ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/recommend-build-strategy-from-context/.comet/handoff/design-context.json
+                    handoffHash: b6ed51b5f6dc76f266e21a03098a71f0a22cd29e041d385de1cefb583f363545
+                    proposal: 由当前Design
+                      Work根据实际任务范围、依赖、宿主能力和测试切面，分别推荐execution与TDD；Runtime校验类型化build-strategy-candidate，保留未决启动偏好且不补默认。同一Design
+                      gate等待CAS保存候选、原请求和来源，现有Design决定一次绑定稳定策略与规划；原审批receipt先写入而Run接受中断时重验并采用原结果，不重复审批。Configure只验证ExecutionBinding，现有Strategy与Binding身份分离、实际TDD与委派证据保持。spec
+                      approval prepare绑定--run消除另一条默认和硬编码current路径；run
+                      revise-strategy仅表达明确修订意图，Runtime在无在途未知执行的安全Design/Build/Verify边界返回受管Design，仍须当前批准，不直接切换模式。保持两种execution、两种TDD、standard
+                      Review、五阶段、两次正常审查和原OpenSpec/Matt权威。代价为调整公开缺参行为及Design结果协议，不兼容旧开发checkpoint；不引入分类器、新profile或Comet
+                      SDK。验证四组合、纠正补交、能力阻断、决定响应丢失及真实候选安装包多仓从Init到Archive、首包冷恢复和发布去重。独立builder
+                      check无重要未决；没有Spec
+                      Patch，8项任务仍在已批准Open范围内。建议本次实施采用autonomous、TDD、thorough和现有worktree，尚待用户对当前设计及该配置作明确决定。
+                    requirementsEvidence:
+                      contentHash: 47191e5adb7f4cabf171a88bdf2f82e10510237e328abcfc4d415072c2f46347
+                      ref: openspec/changes/recommend-build-strategy-from-context
+                    sourceEvidence:
+                      contentHash: 8eb90d5799e49987039dd18b80a7d79f16a81d5ca63ce7ee92bc227a6401b4e9
+                      ref: openspec/changes/recommend-build-strategy-from-context
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/recommend-build-strategy-from-context/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 5e192495c17e2c00f6278483eabc340bad464cbca31250e6f7909315fea8fce5
+              ref: openspec/changes/recommend-build-strategy-from-context/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/recommend-build-strategy-from-context/.comet/handoff/design-context.json
+              handoffHash: b6ed51b5f6dc76f266e21a03098a71f0a22cd29e041d385de1cefb583f363545
+              proposal: 由当前Design
+                Work根据实际任务范围、依赖、宿主能力和测试切面，分别推荐execution与TDD；Runtime校验类型化build-strategy-candidate，保留未决启动偏好且不补默认。同一Design
+                gate等待CAS保存候选、原请求和来源，现有Design决定一次绑定稳定策略与规划；原审批receipt先写入而Run接受中断时重验并采用原结果，不重复审批。Configure只验证ExecutionBinding，现有Strategy与Binding身份分离、实际TDD与委派证据保持。spec
+                approval prepare绑定--run消除另一条默认和硬编码current路径；run
+                revise-strategy仅表达明确修订意图，Runtime在无在途未知执行的安全Design/Build/Verify边界返回受管Design，仍须当前批准，不直接切换模式。保持两种execution、两种TDD、standard
+                Review、五阶段、两次正常审查和原OpenSpec/Matt权威。代价为调整公开缺参行为及Design结果协议，不兼容旧开发checkpoint；不引入分类器、新profile或Comet
+                SDK。验证四组合、纠正补交、能力阻断、决定响应丢失及真实候选安装包多仓从Init到Archive、首包冷恢复和发布去重。独立builder
+                check无重要未决；没有Spec
+                Patch，8项任务仍在已批准Open范围内。建议本次实施采用autonomous、TDD、thorough和现有worktree，尚待用户对当前设计及该配置作明确决定。
+              requirementsEvidence:
+                contentHash: 47191e5adb7f4cabf171a88bdf2f82e10510237e328abcfc4d415072c2f46347
+                ref: openspec/changes/recommend-build-strategy-from-context
+              sourceEvidence:
+                contentHash: 8eb90d5799e49987039dd18b80a7d79f16a81d5ca63ce7ee92bc227a6401b4e9
+                ref: openspec/changes/recommend-build-strategy-from-context
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recommend-build-strategy-from-context
+                  changeDir: openspec/changes/recommend-build-strategy-from-context
+                  workspaceBaseline:
+                    ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
+                    ref: openspec/changes/recommend-build-strategy-from-context
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
+              ref: openspec/changes/recommend-build-strategy-from-context
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
+        sequence: 16
       recommend-build-strategy-from-context:4:
         results:
           full.open:
@@ -2016,9 +2375,206 @@ run_checkpoint:
           ref: docs/superpowers/plans/2026-11-19-recommend-build-strategy-from-context.md
           contentHash: 862ce5a5a56d52e1a1ca9d535a30b49828ad23542bc2deecc34cc4d359afa331
           submissionId: 398c6587-fff4-4ea9-bbb4-5f2f3ecd1965
+      - id: recommend-build-strategy-from-context:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results:
+          full.build.check:
+            sequence: 14
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: ffd5097f472801af0765e18d31213e701cc551f26f3076e3030ad05d72d1194c
+              cwd: .
+              environment: f3f0cde52d64d4ce84994c4e5dd9cfc362495c80c0fd82d862df5b28b12d26cb
+              exitCode: 0
+              inputAfter: b7c04d8c069e7206d0d0922a0e2451f18c8324dda0ceb732847ec6cc04a752a0
+              inputBefore: b7c04d8c069e7206d0d0922a0e2451f18c8324dda0ceb732847ec6cc04a752a0
+              manifestHash: c3178c646273214f755a6dc7843a0934407c4f88b7720fcf78f0c4be31f9de03
+              manifestRef: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/8508da76-0a9d-4250-ac1f-a9c67c558ffb.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/9c0e37f0-2a3d-4bd9-ab72-001cfa86374f.log
+              reusable: true
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/recommend-build-strategy-from-context
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recommend-build-strategy-from-context
+                  changeDir: openspec/changes/recommend-build-strategy-from-context
+                  workspaceBaseline:
+                    ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/recommend-build-strategy-from-context
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 5e192495c17e2c00f6278483eabc340bad464cbca31250e6f7909315fea8fce5
+                ref: openspec/changes/recommend-build-strategy-from-context/design.md
+              plan: docs/superpowers/plans/2026-11-19-recommend-build-strategy-from-context.md
+              planEvidence:
+                contentHash: 862ce5a5a56d52e1a1ca9d535a30b49828ad23542bc2deecc34cc4d359afa331
+                ref: docs/superpowers/plans/2026-11-19-recommend-build-strategy-from-context.md
+              taskRevision: 78ef36ceb3c1acb755c14a90e22471efabc7ca5bb5036dcdb5b460a8bacb7eba
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 862ce5a5a56d52e1a1ca9d535a30b49828ad23542bc2deecc34cc4d359afa331
+              ref: docs/superpowers/plans/2026-11-19-recommend-build-strategy-from-context.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recommend-build-strategy-from-context
+                  changeDir: openspec/changes/recommend-build-strategy-from-context
+                  workspaceBaseline:
+                    ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/recommend-build-strategy-from-context/.comet/handoff/design-context.json
+                    handoffHash: b6ed51b5f6dc76f266e21a03098a71f0a22cd29e041d385de1cefb583f363545
+                    proposal: 由当前Design
+                      Work根据实际任务范围、依赖、宿主能力和测试切面，分别推荐execution与TDD；Runtime校验类型化build-strategy-candidate，保留未决启动偏好且不补默认。同一Design
+                      gate等待CAS保存候选、原请求和来源，现有Design决定一次绑定稳定策略与规划；原审批receipt先写入而Run接受中断时重验并采用原结果，不重复审批。Configure只验证ExecutionBinding，现有Strategy与Binding身份分离、实际TDD与委派证据保持。spec
+                      approval prepare绑定--run消除另一条默认和硬编码current路径；run
+                      revise-strategy仅表达明确修订意图，Runtime在无在途未知执行的安全Design/Build/Verify边界返回受管Design，仍须当前批准，不直接切换模式。保持两种execution、两种TDD、standard
+                      Review、五阶段、两次正常审查和原OpenSpec/Matt权威。代价为调整公开缺参行为及Design结果协议，不兼容旧开发checkpoint；不引入分类器、新profile或Comet
+                      SDK。验证四组合、纠正补交、能力阻断、决定响应丢失及真实候选安装包多仓从Init到Archive、首包冷恢复和发布去重。独立builder
+                      check无重要未决；没有Spec
+                      Patch，8项任务仍在已批准Open范围内。建议本次实施采用autonomous、TDD、thorough和现有worktree，尚待用户对当前设计及该配置作明确决定。
+                    requirementsEvidence:
+                      contentHash: 47191e5adb7f4cabf171a88bdf2f82e10510237e328abcfc4d415072c2f46347
+                      ref: openspec/changes/recommend-build-strategy-from-context
+                    sourceEvidence:
+                      contentHash: 8eb90d5799e49987039dd18b80a7d79f16a81d5ca63ce7ee92bc227a6401b4e9
+                      ref: openspec/changes/recommend-build-strategy-from-context
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/recommend-build-strategy-from-context/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 5e192495c17e2c00f6278483eabc340bad464cbca31250e6f7909315fea8fce5
+              ref: openspec/changes/recommend-build-strategy-from-context/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/recommend-build-strategy-from-context/.comet/handoff/design-context.json
+              handoffHash: b6ed51b5f6dc76f266e21a03098a71f0a22cd29e041d385de1cefb583f363545
+              proposal: 由当前Design
+                Work根据实际任务范围、依赖、宿主能力和测试切面，分别推荐execution与TDD；Runtime校验类型化build-strategy-candidate，保留未决启动偏好且不补默认。同一Design
+                gate等待CAS保存候选、原请求和来源，现有Design决定一次绑定稳定策略与规划；原审批receipt先写入而Run接受中断时重验并采用原结果，不重复审批。Configure只验证ExecutionBinding，现有Strategy与Binding身份分离、实际TDD与委派证据保持。spec
+                approval prepare绑定--run消除另一条默认和硬编码current路径；run
+                revise-strategy仅表达明确修订意图，Runtime在无在途未知执行的安全Design/Build/Verify边界返回受管Design，仍须当前批准，不直接切换模式。保持两种execution、两种TDD、standard
+                Review、五阶段、两次正常审查和原OpenSpec/Matt权威。代价为调整公开缺参行为及Design结果协议，不兼容旧开发checkpoint；不引入分类器、新profile或Comet
+                SDK。验证四组合、纠正补交、能力阻断、决定响应丢失及真实候选安装包多仓从Init到Archive、首包冷恢复和发布去重。独立builder
+                check无重要未决；没有Spec
+                Patch，8项任务仍在已批准Open范围内。建议本次实施采用autonomous、TDD、thorough和现有worktree，尚待用户对当前设计及该配置作明确决定。
+              requirementsEvidence:
+                contentHash: 47191e5adb7f4cabf171a88bdf2f82e10510237e328abcfc4d415072c2f46347
+                ref: openspec/changes/recommend-build-strategy-from-context
+              sourceEvidence:
+                contentHash: 8eb90d5799e49987039dd18b80a7d79f16a81d5ca63ce7ee92bc227a6401b4e9
+                ref: openspec/changes/recommend-build-strategy-from-context
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recommend-build-strategy-from-context
+                  changeDir: openspec/changes/recommend-build-strategy-from-context
+                  workspaceBaseline:
+                    ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
+                    ref: openspec/changes/recommend-build-strategy-from-context
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
+              ref: openspec/changes/recommend-build-strategy-from-context
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/9c0e37f0-2a3d-4bd9-ab72-001cfa86374f.log
+          contentHash: ffd5097f472801af0765e18d31213e701cc551f26f3076e3030ad05d72d1194c
+          submissionId: 8d71e973-6f0f-4eb2-962f-d0f96eb9732d
     ready: []
     joins: {}
     outputs:
+      full.build.check:
+        sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: ffd5097f472801af0765e18d31213e701cc551f26f3076e3030ad05d72d1194c
+          cwd: .
+          environment: f3f0cde52d64d4ce84994c4e5dd9cfc362495c80c0fd82d862df5b28b12d26cb
+          exitCode: 0
+          inputAfter: b7c04d8c069e7206d0d0922a0e2451f18c8324dda0ceb732847ec6cc04a752a0
+          inputBefore: b7c04d8c069e7206d0d0922a0e2451f18c8324dda0ceb732847ec6cc04a752a0
+          manifestHash: c3178c646273214f755a6dc7843a0934407c4f88b7720fcf78f0c4be31f9de03
+          manifestRef: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/8508da76-0a9d-4250-ac1f-a9c67c558ffb.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/9c0e37f0-2a3d-4bd9-ab72-001cfa86374f.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      full.build.check.evidence:
+        sequence: 15
+        value:
+          contentHash: ffd5097f472801af0765e18d31213e701cc551f26f3076e3030ad05d72d1194c
+          ref: .comet/runtime/classic-sdk-checks/d955f61cbcd8c0dd8712c8ab02641948743b3d6f0668e91ba90d9a611e4a00b6/9c0e37f0-2a3d-4bd9-ab72-001cfa86374f.log
       full.build.configure:
         sequence: 9
         value:
@@ -2157,6 +2713,6 @@ run_checkpoint:
           contentHash: 3a64e911a461148de9108e3abca6688c621d015b27816bc6c0d09b04b8f623cb
     children: []
     lineage: []
-  sourceRevision: 21
-  sourceHash: 58799cf150c2b8811024b2e49442c7415461d717bb65e978a53535c9c4ba8c8f
-check_epoch: 2
+  sourceRevision: 24
+  sourceHash: eaa6ce47b6194afe7babdc4d2f552b74ab98c00facf8587f03f595b8e903a370
+check_epoch: 3
