@@ -1,3 +1,9 @@
+---
+comet_change: recommend-build-strategy-from-context
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
