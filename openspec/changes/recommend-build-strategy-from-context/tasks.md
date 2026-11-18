@@ -3,10 +3,10 @@
 ## 1. 打通未决偏好到 Design 决定的生产路径
 
 - [ ] 1.1 先建立缺参默认冻结的失败回归，再更新启动偏好与建议协议，验证缺参、部分输入、完整输入和非法输入
-  **Acceptance:** 修复前公开启动路径因静默补全而失败；修复后缺参可进入 Open，部分偏好不被覆盖，非法值不创建 Run，完整值仍需当前可信批准；相关类型与回归检查通过。
+  **Acceptance:** 修复前公开启动路径因静默补全而失败；修复后缺参可进入 Open，部分偏好不被覆盖，非法值不创建 Run，完整值仍需当前可信批准；spec approval prepare 绑定同一 Run 候选和隔离意图，不再补默认策略；相关类型与回归检查通过。
   **Requirements:** change-lifecycle / 未指定的启动偏好不得成为已批准策略。
 - [ ] 1.2 将 Design Work 的完整建议接入当前决定视图与原子批准路径，验证 Configure 使用同一已批准策略
-  **Acceptance:** 公开 Work Outcome 可提交两轴建议、理由与来源；缺项和陈旧响应不能进入 Build；真实当前 Design 决定一次批准规划与策略，Configure 不追加相同配置问题；同步更新运行时状态及协议说明。
+  **Acceptance:** 公开 Work Outcome 可提交两轴建议、理由与来源；缺项或非法候选保留原 invocation 进入可补交纠正，不提前记成功；陈旧响应不能进入 Build；真实当前 Design 决定一次批准规划与策略，Configure 不追加相同配置问题；同步更新运行时状态及协议说明。
   **Requirements:** change-lifecycle / Build Configuration 只允许受支持的固定策略；场景建议与策略授权保持可核对且可恢复。
   **Blocked by:** 1.1。
 
@@ -24,7 +24,7 @@
 ## 3. 守住恢复、能力与执行证据边界
 
 - [ ] 3.1 扩展决定及恢复回归，验证相同提案、响应丢失、显式改选和等价收尾的审批及失效次数
-  **Acceptance:** 新进程复用原请求或接受事实；相同配置只批准一次；改选不复用旧答复；提交、checkbox、措辞或单纯能力缺席不使相同策略重新批准；真实规划或策略变化仍触发现有正确恢复路径。
+  **Acceptance:** 新进程复用原请求或接受事实，覆盖 Provider approval 已写入但 Run gate 尚未提交的中断；相同配置只批准一次；run revise-strategy 从安全 Build/Verify 边界进入受管 Design，执行未知时阻断、终态拒绝、请求重放幂等，改选不复用旧答复；提交、checkbox、措辞或单纯能力缺席不使相同策略重新批准；真实规划或策略变化仍触发现有正确恢复路径。
   **Requirements:** change-lifecycle / 场景建议与策略授权保持可核对且可恢复；Build Configuration 只允许受支持的固定策略。
   **Blocked by:** 1.2。
 - [ ] 3.2 验证四种支持组合及缺能力分支，核对实际 Execute Skill、TDD 和委派回执约束
