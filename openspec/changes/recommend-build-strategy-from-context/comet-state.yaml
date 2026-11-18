@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: c5d7a459-ef6c-4b57-a05c-8e3b1924fddf
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: e27e83662d09f689b8e22c1d23aa2936b370ba61
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-18
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/recommend-build-strategy-from-context
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: fb7676c05829f6911ec2db43ab74acd1c1a71e51ef81740cea650d3d044f5f5e
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: recommend-build-strategy-from-context
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: b67d69894c833a8928602bebc232acec1d15f18985e1b6a80242fa2cde6b1fea
+    input:
+      change: recommend-build-strategy-from-context
+      changeDir: openspec/changes/recommend-build-strategy-from-context
+      workspaceBaseline:
+        ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: e27e83662d09f689b8e22c1d23aa2936b370ba61
+      boundBranch: codex/recommend-build-strategy-from-context
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-18
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: recommend-build-strategy-from-context:1
+        input:
+          input:
+            change: recommend-build-strategy-from-context
+            changeDir: openspec/changes/recommend-build-strategy-from-context
+            workspaceBaseline:
+              ref: 0d6b4ce8-1d90-455f-b6a5-95b8d983e811
+          outputs: {}
+        inputHash: 03cab9c467f2a2de0c9683a4fd3280294803ecba63f6595cf29cfffb413fe2b0
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: recommend-build-strategy-from-context
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      recommend-build-strategy-from-context:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 8d621ffbe2f52d15095865a422a3a15b6cff3ec3650961f4f7965d3ae7cffd1a
