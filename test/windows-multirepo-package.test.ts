@@ -32,6 +32,27 @@ const passed = {
 };
 
 describe('Windows multirepository release acceptance', () => {
+  it('keeps default diagnostics outside the packaged source tree', async () => {
+    const environment = { ...process.env };
+    delete environment.REPOCTOPUS_WORKFLOW_E2E_EVIDENCE;
+    const child = spawnSync(
+      process.execPath,
+      [fileURLToPath(new URL('../scripts/windows-multirepo-package-e2e.mjs', import.meta.url))],
+      { env: environment, encoding: 'utf8', windowsHide: true, timeout: 10_000 },
+    );
+    expect(child.status).toBe(1);
+    const evidence = /^Evidence: (.+)$/mu.exec(child.stdout)?.[1]?.trim();
+    expect(evidence).toBeDefined();
+    const directory = path.dirname(evidence!);
+    expect(path.dirname(directory)).toBe(path.resolve(os.tmpdir()));
+    expect(path.basename(directory)).toMatch(/^repoctopus-workflow-evidence-\d+$/u);
+    try {
+      expect(JSON.parse(await readFile(evidence!, 'utf8'))).toMatchObject({ status: 'failed' });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   it('requires an explicit tarball and persists input failures', async () => {
     const directory = await mkdtemp(path.join(os.tmpdir(), 'rp-input-'));
     try {

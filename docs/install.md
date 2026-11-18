@@ -69,6 +69,6 @@ npm run test:windows-multirepo-package-e2e -- ./repoctopus-0.1.3.tgz
 
 测试会安装该包的生产依赖，在三个临时 Git 仓中完成一条 Change。第一驱动进程完成首包后退出，第二进程恢复同一 Run。托管测试服务先创建规格 PR，再断开响应并暂时隐藏查询结果，随后核对 Runtime 采纳原 PR，且没有重复推送或创建。
 
-成功时输出 `PASSED Windows multirepo package acceptance` 和证据路径。默认在 `dist/windows-multirepo-evidence/<本次时间戳>/` 保存收据、CLI 原始输出、Skill 消费记录和服务请求账本。需要固定证据路径时，在本次终端设置 `REPOCTOPUS_WORKFLOW_E2E_EVIDENCE` 指向目标 JSON 文件。失败时查看收据的 `failure.stage` 和同目录的 `driver.log`。测试退出会清理临时仓、安装目录和自己启动的服务。
+成功时输出 `PASSED Windows multirepo package acceptance` 和证据路径。默认在系统临时目录的 `repoctopus-workflow-evidence-<本次时间戳>/` 保存收据、CLI 原始输出、Skill 消费记录和服务请求账本。需要固定证据路径时，在本次终端设置 `REPOCTOPUS_WORKFLOW_E2E_EVIDENCE` 指向打包目录以外的目标 JSON 文件。失败时查看收据的 `failure.stage` 和同目录的 `driver.log`。测试退出会清理临时仓、安装目录和自己启动的服务。
 
 验收预算为 15 分钟，覆盖安装及流程执行。网络或工具缺失导致的失败同样阻止候选通过。Prepare 在原 Windows candidate 作业内调用上述入口，使用 `always()` 单独保留 `repoctopus-workflow-diagnostics-<run>-<attempt>` 诊断工件。候选工件中的 CLI 摘要需与多仓通过收据一致，才会封存上传。

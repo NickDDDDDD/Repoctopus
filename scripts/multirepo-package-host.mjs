@@ -694,6 +694,22 @@ function recoverPublication() {
 
 function verifyTerminal() {
   assert.deepEqual(
+    records('skills.jsonl').map((item) => item.kind),
+    [
+      'change.intake',
+      'specification.plan',
+      'build.configure',
+      'build.plan',
+      'build.execute',
+      'build.execute',
+      'build.check',
+      'evidence.verify',
+      'specification.close',
+      'delivery.publish',
+    ],
+    'Expected the complete approved workflow without skipped or repeated Work',
+  );
+  assert.deepEqual(
     records('decisions.jsonl').map((item) => item.kind),
     ['specification-open', 'specification-design'],
   );

@@ -16,14 +16,7 @@ const scriptRoot = path.dirname(fileURLToPath(import.meta.url));
 const started = Date.now();
 const evidenceFile = path.resolve(
   process.env.REPOCTOPUS_WORKFLOW_E2E_EVIDENCE ??
-    path.join(
-      scriptRoot,
-      '..',
-      'dist',
-      'windows-multirepo-evidence',
-      String(started),
-      'receipt.json',
-    ),
+    path.join(os.tmpdir(), 'repoctopus-workflow-evidence-' + started, 'receipt.json'),
 );
 const evidenceDirectory = path.dirname(evidenceFile);
 const receipt = {
