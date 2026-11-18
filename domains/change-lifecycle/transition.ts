@@ -2,6 +2,7 @@ import type { SkillUsageSnapshot } from '../skill/types.js';
 import type { LifecycleDecisionProvenance } from './human-decision.js';
 import type { EffectiveWorkSkillComposition } from '../skill/composition.js';
 import type { SpecificationArtifactKind } from '../specification/types.js';
+import type { BuildStrategyProposal, StrategyRevisionRequest } from './strategy-selection.js';
 import type { SpecificationTask } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { assertVerificationInput, type VerificationInput } from './verification-input.js';
@@ -284,6 +285,8 @@ export interface ChangeLifecycleState {
   tasks?: readonly SpecificationTask[];
   workspaceIntent?: ExecutionWorkspaceIntent;
   buildProtocol?: BuildProtocolState;
+  strategyProposal?: BuildStrategyProposal;
+  strategyRevisionRequest?: StrategyRevisionRequest;
   openApprovalDigest?: `sha256:${string}`;
   openApprovalInvalidated?: boolean;
   planningDigest?: `sha256:${string}`;
@@ -461,6 +464,7 @@ export type ChangeLifecycleObservation =
   | {
       kind: 'design-work-ready';
       work: WorkDescriptor;
+      replacesWorkId?: string;
     }
   | {
       kind: 'planning-authority-invalidated';
@@ -474,6 +478,7 @@ export type ChangeLifecycleObservation =
     }
   | {
       kind: 'design-gate';
+      strategyProposal?: BuildStrategyProposal;
       result: 'blocked' | 'waiting' | 'approved';
       reason: string;
       evidenceIds: readonly string[];
@@ -779,6 +784,7 @@ export function applyChangeLifecycleTransition(options: {
   current: ChangeLifecycleSnapshot;
   transitionId: string;
   next: {
+    strategyProposal?: BuildStrategyProposal | null;
     currentWork: WorkDescriptor | null;
     waitCondition: WaitCondition | null;
     blocker: ChangeRunBlocker | null;
@@ -839,6 +845,9 @@ export function applyChangeLifecycleTransition(options: {
     ...(options.next.tasks ? { tasks: structuredClone(options.next.tasks) } : {}),
   };
   if (options.next.workspaceIntent === null) delete snapshot.workspaceIntent;
+  if (options.next.strategyProposal === null) delete snapshot.strategyProposal;
+  else if (options.next.strategyProposal)
+    snapshot.strategyProposal = structuredClone(options.next.strategyProposal);
   else if (options.next.workspaceIntent) {
     snapshot.workspaceIntent = structuredClone(options.next.workspaceIntent);
   }
@@ -1193,17 +1202,19 @@ export function evolveChangeLifecycle(options: {
     if (
       current.phase !== 'design' ||
       !['running', 'waiting', 'blocked'].includes(current.status) ||
-      current.currentWork !== null ||
+      (current.currentWork !== null && observation.replacesWorkId !== current.currentWork.workId) ||
       observation.work.phase !== 'design' ||
-      observation.work.kind !== 'specification.plan'
+      observation.work.kind !== 'specification.plan' ||
+      observation.work.checkEpoch !== current.checkEpoch + 1
     ) {
       throw new Error(`Design Work dispatch is not valid from ${current.phase}/${current.status}`);
     }
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
-      transitionId: 'design.work-ready',
+      transitionId: observation.replacesWorkId ? 'design.work-repaired' : 'design.work-ready',
       next: {
+        strategyProposal: null,
         currentWork: observation.work,
         waitCondition: null,
         blocker: null,
@@ -2217,6 +2228,7 @@ export function evolveChangeLifecycle(options: {
       current,
       transitionId: 'design.approved',
       next: {
+        strategyProposal: observation.strategyProposal ?? current.strategyProposal ?? null,
         currentWork: observation.work,
         waitCondition: null,
         blocker: null,
@@ -2262,7 +2274,13 @@ export function evolveChangeLifecycle(options: {
       definition: options.definition,
       current,
       transitionId: 'design.await-approval',
-      next: { currentWork: null, waitCondition, blocker: null, planningDigest: null },
+      next: {
+        currentWork: null,
+        waitCondition,
+        blocker: null,
+        planningDigest: null,
+        strategyProposal: observation.strategyProposal ?? current.strategyProposal ?? null,
+      },
     });
   }
   const blocker: ChangeRunBlocker = {

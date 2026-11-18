@@ -194,6 +194,14 @@ export class LifecycleHumanDecisions {
           ? {
               request: approval.decisionRequest,
               specificationRoot: approval.snapshot.specificationRoot,
+              ...(phase === 'design' && lifecycle.strategyProposal
+                ? {
+                    strategy: lifecycle.strategyProposal.strategy,
+                    recommendation: lifecycle.strategyProposal.candidate,
+                    preference: state.trigger?.facts.buildStrategyPreference,
+                    source: lifecycle.strategyProposal.source,
+                  }
+                : {}),
             }
           : { historical: true },
         choices: same ? approval.decisionRequest.options : [],

@@ -209,6 +209,7 @@ export interface WorkOutcomeValidationRecord {
 }
 
 export type WorkExecutionResult =
+  | import('../change-lifecycle/strategy-selection.js').BuildStrategyCandidate
   | {
       schemaVersion: 1;
       kind: 'execution-binding-candidate';

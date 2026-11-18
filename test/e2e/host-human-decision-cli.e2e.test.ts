@@ -12,6 +12,7 @@ import {
   temporaryDirectory,
 } from '../helpers/fixtures.js';
 import { runCli } from './cli.js';
+import { strategyCandidateFixture } from '../helpers/strategy-candidate.js';
 import type { RunStatusView } from '../../domains/runtime/types.js';
 import type {
   WorkExecutionPacket,
@@ -314,7 +315,7 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
     cli(['run', 'decide', '--run', runId, '--response-file', responseFile]),
   ).rejects.toThrow(/conflicts/);
 
-  const designClaim = (
+  let designClaim = (
     await cli<{ packet: WorkExecutionPacket; invocation: WorkExecutionHostInvocation }>([
       'run',
       'work-claim',
@@ -374,29 +375,74 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
   await git(['add', '.']);
   await git(['commit', '-m', 'spec: deepen Design independently']);
   await git(['push']);
-  await cli([
-    'run',
-    'work-outcome',
-    '--run',
-    runId,
-    '--submission-id',
-    `${designClaim.invocation.invocationId}:1`,
-    '--invocation-id',
-    designClaim.invocation.invocationId,
-    '--host-id',
-    designClaim.invocation.host.id,
-    '--packet-digest',
-    designClaim.packet.identity.packetDigest,
-    '--status',
-    'succeeded',
-    '--summary',
-    'Deepened the approved artifacts for engineering execution.',
-    '--consumed-layers',
-    designClaim.packet.context.layers
-      .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
-      .map((layer) => layer.digest)
-      .join(','),
-  ]);
+  const candidateFile = path.join(root, 'design-strategy.json');
+  await writeFile(candidateFile, JSON.stringify(strategyCandidateFixture('autonomous', 'tdd')));
+  const validDelta = await readFile(path.join(workspace, change, 'specs/demo/spec.md'), 'utf8');
+  const validTasks = await readFile(path.join(workspace, change, 'tasks.md'), 'utf8');
+  await write(`${change}/tasks.md`, validTasks.replace(/  \*\*Acceptance:\*\*[^\n]*\n/u, ''));
+  await git(['add', '.']);
+  await git(['commit', '-m', 'spec: exercise deterministic Design rejection']);
+  await git(['push']);
+  const submitDesign = () =>
+    cli([
+      'run',
+      'work-outcome',
+      '--run',
+      runId,
+      '--submission-id',
+      `${designClaim.invocation.invocationId}:1`,
+      '--invocation-id',
+      designClaim.invocation.invocationId,
+      '--host-id',
+      designClaim.invocation.host.id,
+      '--packet-digest',
+      designClaim.packet.identity.packetDigest,
+      '--result-file',
+      candidateFile,
+      '--status',
+      'succeeded',
+      '--summary',
+      'Deepened the approved artifacts for engineering execution.',
+      '--consumed-layers',
+      designClaim.packet.context.layers
+        .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+        .map((layer) => layer.digest)
+        .join(','),
+    ]);
+  await submitDesign();
+  const repairResponse = await cli<RunStatusView>(['run', 'next', '--run', runId]);
+  const repair = repairResponse.result!;
+  expect(repair.changeLifecycle, JSON.stringify(repairResponse.diagnostics)).toMatchObject({
+    phase: 'design',
+    status: 'running',
+    currentWork: { kind: 'specification.plan' },
+  });
+  expect(repair.changeLifecycle!.checkEpoch).toBeGreaterThan(designClaim.packet.claim.checkEpoch);
+  await write(`${change}/specs/demo/spec.md`, validDelta);
+  await write(`${change}/tasks.md`, validTasks);
+  await git(['add', '.']);
+  await git(['commit', '-m', 'spec: correct invalid Design delta']);
+  await git(['push']);
+  await cli(['run', 'resume', '--run', runId]);
+  const resumed = (await cli<RunStatusView>(['run', 'status', '--run', runId])).result!;
+  expect(resumed.changeLifecycle!.currentWork!.workId).toBe(
+    repair.changeLifecycle!.currentWork!.workId,
+  );
+  designClaim = (
+    await cli<{ packet: WorkExecutionPacket; invocation: WorkExecutionHostInvocation }>([
+      'run',
+      'work-claim',
+      '--run',
+      runId,
+      '--adapter',
+      'manual',
+      '--runner',
+      'test:host-decision',
+      '--host-capabilities',
+      'repository.read,repository.write,specification.read,specification.write',
+    ])
+  ).result!;
+  await submitDesign();
   await cli(['run', 'next', '--run', runId]);
   const design = (await cli<LifecycleHumanDecisionView>(['run', 'decision', '--run', runId]))
     .result!;

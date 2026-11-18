@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { strategyCandidateFixture } from './helpers/strategy-candidate.js';
 
 import type { ActionClaimInput } from '../domains/action/types.js';
 import type {
@@ -37,7 +38,7 @@ function frozenPacket(kind = 'build.execute'): WorkExecutionPacket {
       compositionDigest: digest('f'),
     },
     work: {
-      phase: 'build',
+      phase: kind === 'specification.plan' ? 'design' : 'build',
       kind,
       packageId: 'package-1',
     },
@@ -290,6 +291,46 @@ function externalReplayHarness(persisted = true, rejectedSubmissionId?: string) 
 }
 
 describe('Managed Work Executor Build contract', () => {
+  it.each([null, {}, [{ receiptId: 'bad-parent', parentInvocationId: 'other-invocation' }]])(
+    'rejects malformed Design delegation receipts before accepting the submission: %j',
+    async (receipts) => {
+      const { service, authority, workDispatcher } = executor(
+        strategyCandidateFixture() as unknown as Record<string, unknown>,
+        [],
+        undefined,
+        'specification.plan',
+        undefined,
+        (outcome) => ({ ...outcome, delegationReceipts: receipts }),
+      );
+      await expect(service.execute({} as never)).resolves.toMatchObject({ acceptance: null });
+      expect(authority.markHostCompleted).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        expect.objectContaining({ diagnostic: expect.any(String) }),
+      );
+      expect(authority.recordDelegationFacts).not.toHaveBeenCalled();
+      expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
+    },
+  );
+  it('keeps a successful Design submission correctable until both strategy axes are supplied', async () => {
+    const { service, authority, workDispatcher } = executor(
+      undefined,
+      [],
+      undefined,
+      'specification.plan',
+      undefined,
+      (outcome) => ({ ...outcome, result: undefined }),
+    );
+    await expect(service.execute({} as never)).resolves.toMatchObject({ acceptance: null });
+    expect(authority.markHostCompleted).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({ diagnostic: expect.stringMatching(/strategy.*candidate/iu) }),
+    );
+    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
+  });
   it('does not invoke the Host when another Runner owns the durable invocation', async () => {
     const { service, authority, invoke } = executor();
     authority.markHostStarted.mockImplementation(

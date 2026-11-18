@@ -213,7 +213,7 @@ const CLI_FLAGS = new Set([
 const REQUIRED_FLAGS = new Map<string, readonly string[]>([
   ['spec inspect', ['change']],
   ['spec validate', ['change']],
-  ['spec approval prepare', ['change', 'target']],
+  ['spec approval prepare', ['run']],
   ['spec approval status', ['change']],
   ['spec approval review', ['change']],
   ['run status', ['run']],
@@ -686,59 +686,31 @@ async function specificationApprovalPrepare(
   parsed: ParsedArguments,
 ): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const changeId = stringFlag(parsed, 'change', { required: true })!;
-  const sourceBranch = stringFlag(parsed, 'branch', { required: true })!;
-  const targetBranch = stringFlag(parsed, 'target', { required: true })!;
-  const remote = stringFlag(parsed, 'remote', { fallback: 'origin' })!;
-  const config = await loadProjectConfig(workspace);
-  const workspaceRepository = config.repositories.find(
-    (repository) => repository.id === config.shared.workspace.repositoryId,
-  );
-  if (!workspaceRepository) throw new Error('Workspace Repository is not configured');
-  const changeBranch = await inspectPublishedChangeBranch({
-    repositoryPath: workspaceRepository.resolvedPath,
-    repositoryId: workspaceRepository.id,
-    remote,
-    sourceBranch,
-    targetBranch,
-  });
+  const runId = stringFlag(parsed, 'run', { required: true })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const decisionRunId = `specification-approval:${config.shared.workspace.id}:${changeId}`;
-    const buildStrategy = createBuildStrategy({
-      runId: decisionRunId,
-      revision: 1,
-      executionMode: stringFlag(parsed, 'execution-mode', {
-        fallback: 'autonomous',
-      }) as BuildExecutionMode,
-      tddMode: stringFlag(parsed, 'tdd-mode', { fallback: 'tdd' }) as BuildTddMode,
-      reviewMode: 'standard',
-      isolationIntent: 'current',
+    const result = await app.context.commandRouter.execute('run.change.prepare-design', {
+      runId,
+      ...(parsed.flags.has('change')
+        ? { changeId: stringFlag(parsed, 'change', { required: true }) }
+        : {}),
+      ...(parsed.flags.has('branch')
+        ? { sourceBranch: stringFlag(parsed, 'branch', { required: true }) }
+        : {}),
+      ...(parsed.flags.has('target')
+        ? { targetBranch: stringFlag(parsed, 'target', { required: true }) }
+        : {}),
     });
-    const result = await app.context.commandRouter.execute<unknown, SpecificationApprovalState>(
-      'specification.approval.prepare',
-      {
-        changeId,
-        changeBranch,
-        decisionRunId,
-        buildStrategyDigest: buildStrategy.semanticDigest,
-        compositionDigest: app.composition.compositionDigest,
-        projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
-      },
-    );
     return successEnvelope({
       command: 'spec approval prepare',
+      runId,
       result,
-      nextActions:
-        result.status === 'awaiting_approval'
-          ? [`repoctopus spec approval review --change ${changeId}`]
-          : [],
+      nextActions: [`repoctopus run decision --run ${runId}`],
     });
   } finally {
     await app.close();
   }
 }
-
 async function specificationApprovalStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const changeId = stringFlag(parsed, 'change', { required: true })!;
