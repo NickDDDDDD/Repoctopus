@@ -23,7 +23,7 @@
 
 ## 3. 守住恢复、能力与执行证据边界
 
-- [ ] 3.1 扩展决定及恢复回归，验证相同提案、响应丢失、显式改选和等价收尾的审批及失效次数 <!-- comet-task:e50b95cd-d8e9-4d5e-aee7-b898aa205a16 -->
+- [x] 3.1 扩展决定及恢复回归，验证相同提案、响应丢失、显式改选和等价收尾的审批及失效次数 <!-- comet-task:e50b95cd-d8e9-4d5e-aee7-b898aa205a16 -->
   **Acceptance:** 新进程复用原请求或接受事实，覆盖 Provider approval 已写入但 Run gate 尚未提交的中断；相同配置只批准一次；run revise-strategy 从安全 Build/Verify 边界进入受管 Design，执行未知时阻断、终态拒绝、请求重放幂等，改选不复用旧答复；提交、checkbox、措辞或单纯能力缺席不使相同策略重新批准；真实规划或策略变化仍触发现有正确恢复路径。
   **Requirements:** change-lifecycle / 场景建议与策略授权保持可核对且可恢复；Build Configuration 只允许受支持的固定策略。
   **Blocked by:** 1.2。

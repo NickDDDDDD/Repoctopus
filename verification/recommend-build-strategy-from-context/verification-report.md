@@ -20,8 +20,8 @@ Package content bytes: `6621674`
 - Design 候选必须包含两轴及可审阅依据。缺项、非法值和非法委派回执保留原 invocation 可纠正；真实 CLI 已观察到非法回执入口缺失的失败，补齐传输后同 invocation 纠正通过。
 - `spec approval prepare --run` 与 `run decision` 显示同一候选、请求与隔离意图。过期 Open 答复不能批准 Design；用户请求 B、Host 建议保留 A 时仍展示新意图并要求当前决定，批准后再次提出 B 不会被旧修订吞掉。
 - 只读独立审查覆盖候选来源、审批 receipt 与 Run gate 的恢复、显式修订、安全能力边界及回执运输，未发现未解决的 Runtime 重要问题。旧 Configure 文档说明已修正。
-- 最终源码前一轮广覆盖回归为 1302 项通过、4 项跳过；公开 Host CLI 完整场景另行通过。重生命周期矩阵有 7 项通过，余下旧 Design 校验失败断言已按合法 repair Work 更新，正在复跑；保留所有不得越门进入 Build/Verify 的断言。
-- 初始候选的 Windows 三仓实包验收从 Init 走到 Archive，首包完成后换进程续跑同一 Run、规格 PR 响应丢失恢复及终态无副作用检查通过。最终候选按同一路径另行验收。
+- 最终源码前一轮广覆盖回归为 1302 项通过、4 项跳过；公开 Host CLI 完整场景另行通过。重生命周期矩阵的 7 项场景通过；余下单仓场景按合法 repair Work 更新旧断言后，完整复跑通过，实际耗时 268.64 秒。保留所有不得越门进入 Build/Verify 的断言，且精确要求只多执行一次 Design 修正 Work。最终 Host CLI 场景为 120.82 秒通过，包含执行权尚未结清时禁止改选且 epoch 不变的检查。
+- 初始候选和本报告绑定的最终候选分别完成 Windows 三仓实包验收，从 Init 走到 Archive，首包完成后换进程续跑同一 Run、规格 PR 响应丢失恢复及终态无副作用检查均通过。最终候选耗时 315.99 秒，实际收据为 `final-package/windows/receipt.json`。
 - 初始候选的 subagent-driven-development/direct 实包实验由实际子 Agent 完成两个仓的工作包，各自真实检查、提交并 push，回执绑定各包的父 invocation，最终 Archive 和终态恢复通过。没有把 direct 检查伪装成 RED/GREEN。
 
 ## 实验纠正与边界
@@ -30,10 +30,12 @@ Package content bytes: `6621674`
 
 早期直接从 Node 启动 npm 包测试缺少 `npm_execpath`，改从项目声明的 npm 入口运行后安装包测试通过。隔离 worktree 的依赖已按 lockfile 独立安装，未继续复用主目录中旧版 DSH；Electron 已按项目准备入口配置。
 
+最终源码的 lint、两套 TypeScript 检查、build、生成物一致性、品牌、架构、来源、Dashboard 账本和验证报告包内容绑定检查已分别通过；候选契约的最终 57 项定向回归通过。额外运行的全仓 `format:check` 仍有 302 个格式提示，包括 296 个未在本次修改的文件及 6 个 Comet 管理/规划文档；用基线 `e27e836` 中未改动的主规格复核也不能通过格式检查。本次修改的产品源码没有格式提示，未批量重排既有文件或改写已批准文档及 Runtime 管理状态。`format:check` 不在项目声明的 `npm run verify` 或 CI 检查链内，此结果保留为明确限制。
+
 初始化、自动化审批与本地 GitHub API 为独立夹具，不能等同真实用户答复。至少一次原生 Design 答复尚待完成；该实验没有业务生产仓、真实远端 PR 或正式 Release。旧开发 checkpoint 不在兼容范围内。
 
 ## 原始记录
 
-所有原始命令、真实子 Agent 检查、Git 事实、候选包与发布账本保存在仓外 `C:/Users/User/Desktop/PP/repoctopus-strategy-evidence-20261119/`。其中 `windows-package/receipt.json` 是初始包自动化终态收据；`delegated-lab/evidence/terminal.json` 是实际委派实验终态收据；`native-lab/evidence/native-design-decision.json` 是待真实答复的请求。`final-package/` 绑定本报告的最终候选。
+所有原始命令、真实子 Agent 检查、Git 事实、候选包与发布账本保存在仓外 `C:/Users/User/Desktop/PP/repoctopus-strategy-evidence-20261119/`。其中 `windows-package/receipt.json` 是初始包自动化终态收据；`delegated-lab/evidence/terminal.json` 是实际委派实验终态收据；`native-lab/evidence/native-design-decision.json` 是待真实答复的请求。等待期间已停止 native 实验的临时进程及本地服务，Store、原请求及安装包保留，收到真实答复后用仓外 `resume-native.mjs` 恢复同一 Run。`final-package/` 绑定本报告的最终候选。
 
 正式 Comet Build Check、Verify 的命令、结果及最终限制将在实际完成后补录，不能用上述分段检查代替。
