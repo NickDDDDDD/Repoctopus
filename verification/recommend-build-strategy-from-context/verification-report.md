@@ -56,4 +56,4 @@ Package content bytes: `6621674`
 
 正式 Build Guard 已实际执行 `comet.cmd guard recommend-build-strategy-from-context build --apply --local -- npm.cmd run build`，通过并由 Runtime 推进至 Verify，原始记录为 `comet-build-guard-cmd.log`。Windows PowerShell 须选公开的 `.cmd` 入口保留 `--`；默认 `.ps1` 包装的解析拒绝已保留，没有产生检查收据或推进阶段。
 
-正式 Verify 使用 `comet.cmd guard recommend-build-strategy-from-context verify --report verification/recommend-build-strategy-from-context/verification-report.md --apply -- npm.cmd run verify`。实际结果由同一 Run 保存，不以手工声明代替；本报告的预检结果不能自行推进 phase。
+Comet Classic 约束报告入口位于配置的 reports 目录，因此正式 Verify 使用 `comet.cmd guard recommend-build-strategy-from-context verify --report docs/superpowers/reports/recommend-build-strategy-from-context.md --apply -- npm.cmd run verify`。该文件仅索引本详细报告，不复制另一套规划或任务。使用规范化内容报告作为直接入口时，Guard 已在实际检查前拒绝其目录；没有将这次预检拒绝记作检查通过。实际结果由同一 Run 保存，不以手工声明代替；本报告的预检结果不能自行推进 phase。
