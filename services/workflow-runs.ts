@@ -431,12 +431,15 @@ export class WorkflowRuns extends Service {
       if (!input.verificationProfileId.trim()) {
         throw new Error('Change Run verification Evidence Profile is required');
       }
-      const executionMode = input.executionMode ?? 'autonomous';
-      const tddMode = input.tddMode ?? 'tdd';
-      if (!['autonomous', 'subagent-driven-development'].includes(executionMode)) {
+      const executionMode = input.executionMode;
+      const tddMode = input.tddMode;
+      if (
+        executionMode !== undefined &&
+        !['autonomous', 'subagent-driven-development'].includes(executionMode)
+      ) {
         throw new Error('Change Run Build execution mode is invalid');
       }
-      if (!['tdd', 'direct'].includes(tddMode)) {
+      if (tddMode !== undefined && !['tdd', 'direct'].includes(tddMode)) {
         throw new Error('Change Run Build TDD mode is invalid');
       }
       if (input.projectSnapshot.projectId !== workspaceId) {
@@ -537,10 +540,9 @@ export class WorkflowRuns extends Service {
         verificationProfileId: input.verificationProfileId,
         ...(input.verificationProfileExplicit ? { verificationProfileExplicit: true } : {}),
         buildStrategyPreference: {
-          schemaVersion: 1,
-          executionMode,
-          tddMode,
-          reviewMode: 'standard' as const,
+          schemaVersion: 2,
+          ...(executionMode ? { executionMode } : {}),
+          ...(tddMode ? { tddMode } : {}),
         },
         specificationProvider: this.ctx.specification.identity(),
         executionCheckouts: input.executionCheckouts.map((checkout) => ({

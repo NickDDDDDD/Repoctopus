@@ -134,6 +134,9 @@ describe('Change Run CLI', () => {
     const [first, second] = await Promise.all([start(), start()]);
 
     expect(first.runId).toBe(second.runId);
+    expect(first.result?.state.trigger?.facts.buildStrategyPreference).toEqual({
+      schemaVersion: 2,
+    });
     expect(first.result?.changeLifecycle).toMatchObject({
       identity: {
         workspaceId: 'team-platform',

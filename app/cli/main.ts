@@ -1157,10 +1157,16 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           repositoryId: repository.id,
           checkoutPath: repository.path,
         })),
-        executionMode: stringFlag(parsed, 'execution-mode', {
-          fallback: 'autonomous',
-        }) as 'autonomous' | 'subagent-driven-development',
-        tddMode: stringFlag(parsed, 'tdd-mode', { fallback: 'tdd' }) as 'tdd' | 'direct',
+        ...(parsed.flags.has('execution-mode')
+          ? {
+              executionMode: stringFlag(parsed, 'execution-mode', {
+                required: true,
+              }) as BuildExecutionMode,
+            }
+          : {}),
+        ...(parsed.flags.has('tdd-mode')
+          ? { tddMode: stringFlag(parsed, 'tdd-mode', { required: true }) as BuildTddMode }
+          : {}),
         protectedBranches: config.shared.delivery?.checkpoint.protectedBranches ?? [],
       });
       return successEnvelope({
