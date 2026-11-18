@@ -4,11 +4,11 @@
 
 用户已批准本 Change 的 Open 产物。目标为独立 Windows 多仓安装包验收，以及 Release Prepare 对实际候选包的 Init 至 Archive 验收。包含首包后的同一 Run 冷恢复、规格 PR 创建响应丢失后的采纳与去重。
 
-## 待确认技术方案
+## 已批准技术方案
 
 候选方案详见 [Design](design.md)。推荐 Node 独立脚本消费显式候选包，三个临时 Git 仓配合本机 Git/HTTPS 服务。两次驱动进程验证冷恢复，原始请求账本验证发布副作用。Prepare 在封存前调用同一入口，seal 核对绑定候选的通过收据。
 
-上述入口命名、三仓规模、55 分钟作业预算和 15 分钟验收预算由 Agent 提出，等待当前 Design 决定。范围与已批准 Delta Specs 一致。
+上述入口命名、三仓规模、55 分钟作业预算和 15 分钟验收预算由 Agent 提出，用户已批准当前 Design 与 autonomous、TDD、thorough 执行配置。范围与已批准 Delta Specs 一致。
 
 ## 备选与取舍
 

@@ -2,19 +2,19 @@
 change_id: 0e032cb3-d027-4742-b6fe-93bb8b5f2eb5
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: c18d9be354750dae5052ed312f95d68c0c60b5c1
-design_doc: null
-plan: null
+design_doc: openspec/changes/verify-release-multirepo-workflow/design.md
+plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: codex/verify-release-multirepo-workflow
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
 handoff_hash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: f01204eba01d12b210ffde345a33a9e1e919c093446575e6e47138906b9b73f9
+  hash: bb35f1dfec6761da3238d9e1295dbda88927316bd46346a007f0ea5f151a6670
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,32 +56,32 @@ run_checkpoint:
       baseRef: c18d9be354750dae5052ed312f95d68c0c60b5c1
       boundBranch: codex/verify-release-multirepo-workflow
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-17
-      designDoc: null
-      directOverride: null
+      designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+      directOverride: false
       handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
       handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
       isolation: worktree
       language: zh-CN
-      phase: design
-      plan: null
+      phase: build
+      plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 6
+    status: running
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -259,10 +259,803 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-31b3d4b8c23de7a57584498f8d20c3538c2fa33c4da2e209772e6177c125542a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:7
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                    handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                    proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                      test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                      隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                      Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                      Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供
+                      Git smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR
+                      再断开创建响应并暂时隐藏查询结果，换进程 resume、next 和原发布入口维持
+                      reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+                      与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                      核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算
+                      55 分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为
+                      Agent 建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows
+                      实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需
+                      Spec Patch。
+                    requirementsEvidence:
+                      contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                      ref: openspec/changes/verify-release-multirepo-workflow
+                    sourceEvidence:
+                      contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                      ref: openspec/changes/verify-release-multirepo-workflow
+            full.design.handoff:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                    ref: openspec/changes/verify-release-multirepo-workflow
+            full.open.evidence:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+            full.open.revalidate:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        inputHash: 32c28d5ce1f384752543215c8f1ccf12ec38a2d0c9a0c9b2491c51406f08e12f
+        outcome:
+          actionId: verify-release-multirepo-workflow:7
+          attempt: 1
+          claimToken: portable-31b3d4b8c23de7a57584498f8d20c3538c2fa33c4da2e209772e6177c125542a
+          inputHash: 32c28d5ce1f384752543215c8f1ccf12ec38a2d0c9a0c9b2491c51406f08e12f
+          outcomeId: 4b7b63de-b9d2-4e80-9657-5a40872bdd4e
+          output:
+            designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a06669b8f72f33cfdd383abb086bdcb6df2100cac8363b6b1fe1c1d453bfd6ef
+            outcomeId: 4b7b63de-b9d2-4e80-9657-5a40872bdd4e
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d9b6df8444f2bc62a6b291986c13283339c05b127178b246c55eba1e59b2cb76
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:9
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                    handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                    proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                      test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                      隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                      Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                      Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供
+                      Git smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR
+                      再断开创建响应并暂时隐藏查询结果，换进程 resume、next 和原发布入口维持
+                      reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+                      与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                      核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算
+                      55 分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为
+                      Agent 建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows
+                      实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需
+                      Spec Patch。
+                    requirementsEvidence:
+                      contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                      ref: openspec/changes/verify-release-multirepo-workflow
+                    sourceEvidence:
+                      contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                      ref: openspec/changes/verify-release-multirepo-workflow
+            full.design.document:
+              designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+            full.design.evidence:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                    ref: openspec/changes/verify-release-multirepo-workflow
+            full.open.evidence:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+            full.open.revalidate:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        inputHash: b419f5eaeff18c5bef4460b1b7c77fc8c6161ee6a5a023bd9789a0dd14d7cb7a
+        outcome:
+          actionId: verify-release-multirepo-workflow:9
+          attempt: 1
+          claimToken: portable-d9b6df8444f2bc62a6b291986c13283339c05b127178b246c55eba1e59b2cb76
+          inputHash: b419f5eaeff18c5bef4460b1b7c77fc8c6161ee6a5a023bd9789a0dd14d7cb7a
+          outcomeId: cc9d41f7-6fed-482d-9eb5-b4ba1dfed542
+          output:
+            boundBranch: codex/verify-release-multirepo-workflow
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 814c03323a31c86bb8c0447f9fb51a7767304355532155e33ab170e45b032524
+            outcomeId: cc9d41f7-6fed-482d-9eb5-b4ba1dfed542
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-ecdc41b7aeb8730aadc8389138dbfabf6e6773c4ac4f4d3770b984a3cb4d7533
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: verify-release-multirepo-workflow:11
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.build.configure:
+              boundBranch: codex/verify-release-multirepo-workflow
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/verify-release-multirepo-workflow
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                    handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                    proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                      test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                      隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                      Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                      Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供
+                      Git smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR
+                      再断开创建响应并暂时隐藏查询结果，换进程 resume、next 和原发布入口维持
+                      reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+                      与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                      核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算
+                      55 分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为
+                      Agent 建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows
+                      实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需
+                      Spec Patch。
+                    requirementsEvidence:
+                      contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                      ref: openspec/changes/verify-release-multirepo-workflow
+                    sourceEvidence:
+                      contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                      ref: openspec/changes/verify-release-multirepo-workflow
+            full.design.document:
+              designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+            full.design.evidence:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                    ref: openspec/changes/verify-release-multirepo-workflow
+            full.open.evidence:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+            full.open.revalidate:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        inputHash: 1c20f30ab2640592154d2d1eef057f8329dda874e70a09b7d3ebe6252471a95f
+        outcome:
+          actionId: verify-release-multirepo-workflow:11
+          attempt: 1
+          claimToken: portable-ecdc41b7aeb8730aadc8389138dbfabf6e6773c4ac4f4d3770b984a3cb4d7533
+          inputHash: 1c20f30ab2640592154d2d1eef057f8329dda874e70a09b7d3ebe6252471a95f
+          outcomeId: 5aaf805c-12b9-4cea-b2c7-a72dbd008d92
+          output:
+            designEvidence:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+            plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+            planEvidence:
+              contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+              ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+            taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8a5a62e3f9921436b79ad33f02997704628fdb8ede7c306b7bf8a9c04437b99c
+            outcomeId: 5aaf805c-12b9-4cea-b2c7-a72dbd008d92
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: verify-release-multirepo-workflow:13
+        input:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.build.configure:
+              boundBranch: codex/verify-release-multirepo-workflow
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/verify-release-multirepo-workflow
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+                ref: openspec/changes/verify-release-multirepo-workflow/design.md
+              plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+              planEvidence:
+                contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+                ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+              taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+            full.build.plan.evidence:
+              contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+              ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                    handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                    proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                      test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                      隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                      Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                      Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供
+                      Git smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR
+                      再断开创建响应并暂时隐藏查询结果，换进程 resume、next 和原发布入口维持
+                      reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+                      与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                      核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算
+                      55 分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为
+                      Agent 建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows
+                      实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需
+                      Spec Patch。
+                    requirementsEvidence:
+                      contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                      ref: openspec/changes/verify-release-multirepo-workflow
+                    sourceEvidence:
+                      contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                      ref: openspec/changes/verify-release-multirepo-workflow
+            full.design.document:
+              designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+            full.design.evidence:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                    ref: openspec/changes/verify-release-multirepo-workflow
+            full.open.evidence:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+            full.open.revalidate:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        inputHash: e68276bef25a0f205eca5f83c3ad84b52f7e2d179f2bb220babcd0bedac47eb5
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: verify-release-multirepo-workflow
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
     actionContexts:
       verify-release-multirepo-workflow:1:
         results: {}
         sequence: 1
+      verify-release-multirepo-workflow:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/verify-release-multirepo-workflow
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/verify-release-multirepo-workflow
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                    handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                    proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                      test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                      隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                      Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                      Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供
+                      Git smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR
+                      再断开创建响应并暂时隐藏查询结果，换进程 resume、next 和原发布入口维持
+                      reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+                      与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                      核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算
+                      55 分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为
+                      Agent 建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows
+                      实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需
+                      Spec Patch。
+                    requirementsEvidence:
+                      contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                      ref: openspec/changes/verify-release-multirepo-workflow
+                    sourceEvidence:
+                      contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                      ref: openspec/changes/verify-release-multirepo-workflow
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                    ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        sequence: 11
+      verify-release-multirepo-workflow:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/verify-release-multirepo-workflow
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/verify-release-multirepo-workflow
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+                ref: openspec/changes/verify-release-multirepo-workflow/design.md
+              plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+              planEvidence:
+                contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+                ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+              taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+              ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                    handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                    proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                      test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                      隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                      Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                      Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供
+                      Git smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR
+                      再断开创建响应并暂时隐藏查询结果，换进程 resume、next 和原发布入口维持
+                      reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+                      与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                      核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算
+                      55 分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为
+                      Agent 建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows
+                      实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需
+                      Spec Patch。
+                    requirementsEvidence:
+                      contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                      ref: openspec/changes/verify-release-multirepo-workflow
+                    sourceEvidence:
+                      contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                      ref: openspec/changes/verify-release-multirepo-workflow
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                    ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        sequence: 13
       verify-release-multirepo-workflow:4:
         results:
           full.open:
@@ -323,6 +1116,193 @@ run_checkpoint:
             value:
               contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
         sequence: 5
+      verify-release-multirepo-workflow:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                    handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                    proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                      test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                      隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                      Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                      Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供
+                      Git smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR
+                      再断开创建响应并暂时隐藏查询结果，换进程 resume、next 和原发布入口维持
+                      reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+                      与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                      核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算
+                      55 分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为
+                      Agent 建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows
+                      实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需
+                      Spec Patch。
+                    requirementsEvidence:
+                      contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                      ref: openspec/changes/verify-release-multirepo-workflow
+                    sourceEvidence:
+                      contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                      ref: openspec/changes/verify-release-multirepo-workflow
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                    ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        sequence: 7
+      verify-release-multirepo-workflow:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                    handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                    proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                      test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                      隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                      Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                      Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供
+                      Git smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR
+                      再断开创建响应并暂时隐藏查询结果，换进程 resume、next 和原发布入口维持
+                      reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+                      与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                      核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算
+                      55 分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为
+                      Agent 建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows
+                      实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需
+                      Spec Patch。
+                    requirementsEvidence:
+                      contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                      ref: openspec/changes/verify-release-multirepo-workflow
+                    sourceEvidence:
+                      contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                      ref: openspec/changes/verify-release-multirepo-workflow
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                    ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        sequence: 9
     waits:
       - id: verify-release-multirepo-workflow:3
         stepId: full.open.confirm
@@ -361,7 +1341,7 @@ run_checkpoint:
       - id: verify-release-multirepo-workflow:6
         stepId: full.design.confirm
         sequence: 6
-        status: pending
+        status: resolved
         proposal:
           input:
             change: verify-release-multirepo-workflow
@@ -447,6 +1427,143 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        decision:
+          id: classic-design-c0e4b80f44ea2c0c5bdceb59e287b789c68249bacb91c4ba8700b2abeaae7812-approved
+          choice: approved
+          proposalHash: c0e4b80f44ea2c0c5bdceb59e287b789c68249bacb91c4ba8700b2abeaae7812
+      - id: verify-release-multirepo-workflow:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: verify-release-multirepo-workflow
+            changeDir: openspec/changes/verify-release-multirepo-workflow
+            workspaceBaseline:
+              ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+          outputs:
+            full.build.configure:
+              boundBranch: codex/verify-release-multirepo-workflow
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: b933de876334521b2da9f2004b64caa33ea65abbd159bb6cb3d554afc0ea182e
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/verify-release-multirepo-workflow
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                    handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                    proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                      test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                      隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                      Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                      Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供
+                      Git smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR
+                      再断开创建响应并暂时隐藏查询结果，换进程 resume、next 和原发布入口维持
+                      reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+                      与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                      核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算
+                      55 分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为
+                      Agent 建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows
+                      实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需
+                      Spec Patch。
+                    requirementsEvidence:
+                      contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                      ref: openspec/changes/verify-release-multirepo-workflow
+                    sourceEvidence:
+                      contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                      ref: openspec/changes/verify-release-multirepo-workflow
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                    ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        decision:
+          id: 11c2864b-cb48-43c2-b65f-0a35c38d17c2
+          choice: approved
+          proposalHash: b933de876334521b2da9f2004b64caa33ea65abbd159bb6cb3d554afc0ea182e
     evidenceWaits:
       - id: verify-release-multirepo-workflow:2
         stepId: full.open.evidence
@@ -462,9 +1579,340 @@ run_checkpoint:
           ref: openspec/changes/verify-release-multirepo-workflow
           contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
           submissionId: 2e2a7583-439a-4be0-88f7-04de8c36c3ee
+      - id: verify-release-multirepo-workflow:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                    handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                    proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                      test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                      隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                      Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                      Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供
+                      Git smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR
+                      再断开创建响应并暂时隐藏查询结果，换进程 resume、next 和原发布入口维持
+                      reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+                      与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                      核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算
+                      55 分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为
+                      Agent 建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows
+                      实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需
+                      Spec Patch。
+                    requirementsEvidence:
+                      contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                      ref: openspec/changes/verify-release-multirepo-workflow
+                    sourceEvidence:
+                      contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                      ref: openspec/changes/verify-release-multirepo-workflow
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                    ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        receipt:
+          ref: openspec/changes/verify-release-multirepo-workflow/design.md
+          contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+          submissionId: bf896074-19d3-4987-9aec-cef0606e15a7
+      - id: verify-release-multirepo-workflow:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/verify-release-multirepo-workflow
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/verify-release-multirepo-workflow
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+                ref: openspec/changes/verify-release-multirepo-workflow/design.md
+              plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+              planEvidence:
+                contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+                ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+              taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                    handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                    proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                      test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                      隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                      Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                      Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供
+                      Git smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR
+                      再断开创建响应并暂时隐藏查询结果，换进程 resume、next 和原发布入口维持
+                      reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git receive-pack、远端 OID
+                      与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                      核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算
+                      55 分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为
+                      Agent 建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows
+                      实包、Prepare 同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需
+                      Spec Patch。
+                    requirementsEvidence:
+                      contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                      ref: openspec/changes/verify-release-multirepo-workflow
+                    sourceEvidence:
+                      contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                      ref: openspec/changes/verify-release-multirepo-workflow
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+              ref: openspec/changes/verify-release-multirepo-workflow/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+              handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+              proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent 建议，等待用户
+                Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+              requirementsEvidence:
+                contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                ref: openspec/changes/verify-release-multirepo-workflow
+              sourceEvidence:
+                contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                ref: openspec/changes/verify-release-multirepo-workflow
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: verify-release-multirepo-workflow
+                  changeDir: openspec/changes/verify-release-multirepo-workflow
+                  workspaceBaseline:
+                    ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+                    ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+              ref: openspec/changes/verify-release-multirepo-workflow
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
+        receipt:
+          ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+          submissionId: 374bc8f7-816a-44a1-8f7d-4c277c00cb20
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: codex/verify-release-multirepo-workflow
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: verify-release-multirepo-workflow
+              changeDir: openspec/changes/verify-release-multirepo-workflow
+              workspaceBaseline:
+                ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+            outputs:
+              full.build.configure:
+                boundBranch: codex/verify-release-multirepo-workflow
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+            ref: openspec/changes/verify-release-multirepo-workflow/design.md
+          plan: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          planEvidence:
+            contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+            ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+          taskRevision: 7a07f756e0524d498cc3456236c01ded45d6bd749f1fa3db31b91ece890b4dc3
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: 1b0bfbed27173365acdfdc2dab983ee1b1f793504187a7306521b6c024b89873
+          ref: docs/superpowers/plans/2026-11-18-verify-release-multirepo-workflow.md
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: verify-release-multirepo-workflow
+              changeDir: openspec/changes/verify-release-multirepo-workflow
+              workspaceBaseline:
+                ref: f287efc3-4da9-4e48-8bc9-d277394cfb73
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/verify-release-multirepo-workflow/.comet/handoff/design-context.json
+                handoffHash: 1ef200c018f027e0f7e2cea2e2043293a50b1199d3f3be33d86df8cd7ada1655
+                proposal: 候选设计详见当前 change 的 design.md。独立 Node 入口 npm run
+                  test:windows-multirepo-package-e2e 接收必填实际 tgz，在 Windows
+                  隔离安装并通过公共 CLI 初始化 Workspace 和两个业务仓，执行同一 Change 的
+                  Open、Design、Build、Verify、Archive。两个真实标记任务分别保留 RED/GREEN 和
+                  Verify。首包持久化完成后驱动进程退出，第二进程恢复原 Run，核对原计划与首包完成身份及一次执行。夹具提供 Git
+                  smart HTTP 与 GitHub 兼容 HTTPS，先持久化规格 PR 再断开创建响应并暂时隐藏查询结果，换进程
+                  resume、next 和原发布入口维持 reconcile，恢复可见性后采纳同一 PR，核对全部原始创建请求、Git
+                  receive-pack、远端 OID 与终态复读没有重复副作用。Prepare 以实际候选文件显式调用同一入口，seal
+                  核对候选摘要、大小及包含关键检查的通过收据。诊断与收据独立于固定候选资产目录，失败保留诊断并阻止封存。候选作业预算 55
+                  分钟，独立验收预算 15 分钟并有子命令超时和退出清理。独立审查确认无重要未决。采用三仓和上述预算为 Agent
+                  建议，等待用户 Design 决定。测试 Host 使用隔离实验答复，当前验证覆盖 Windows 实包、Prepare
+                  同参数接线和封存正反例，完整 GitHub Prepare 随合入后的下一份候选运行。无需 Spec Patch。
+                requirementsEvidence:
+                  contentHash: b8f838e24c96e3b06d41346afb4425f49cbf52fee2afeead672b84aa9e689334
+                  ref: openspec/changes/verify-release-multirepo-workflow
+                sourceEvidence:
+                  contentHash: ac3d072e19ca0a81265fe3a3d5abb44521575ebcb59cdbfa86cf4e4d4b63ad42
+                  ref: openspec/changes/verify-release-multirepo-workflow
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/verify-release-multirepo-workflow/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: d6d8c9f7a6d1fbbed7dcf1dc6b8f1d70e3f6ddfa092bb6d8ce38803907957160
+          ref: openspec/changes/verify-release-multirepo-workflow/design.md
       full.design.handoff:
         sequence: 5
         value:
@@ -519,6 +1967,6 @@ run_checkpoint:
           contentHash: ec6664db8ae42660d598793f0319885cdc208788bfa61bbcfd10c9cc8a45f264
     children: []
     lineage: []
-  sourceRevision: 9
-  sourceHash: 1056ec944d7491284cf0dfc44ffef19a2e00dab1c4d1b4be56aaf3326fd53cd6
-check_epoch: 1
+  sourceRevision: 19
+  sourceHash: 50f6f9519799bf3d901707ccc39e67aa0a369633d12f3f8549ed27a865c287da
+check_epoch: 2

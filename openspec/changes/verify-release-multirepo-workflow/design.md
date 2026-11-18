@@ -1,3 +1,9 @@
+---
+comet_change: verify-release-multirepo-workflow
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
