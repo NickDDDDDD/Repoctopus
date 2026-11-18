@@ -15,7 +15,11 @@ import {
 } from '../domains/change-lifecycle/archive-input.js';
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import { createLifecyclePhaseWork } from '../domains/change-lifecycle/phase-work.js';
-import { createExecutionWorkspaceIntent, createBuildStrategy, createBuildProtocolState } from '../domains/change-lifecycle/build-protocol.js';
+import {
+  createExecutionWorkspaceIntent,
+  createBuildStrategy,
+  createBuildProtocolState,
+} from '../domains/change-lifecycle/build-protocol.js';
 import {
   BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
   createChangeLifecycleSnapshot,
@@ -1367,9 +1371,16 @@ describe('Archive publication terminal lifecycle', () => {
           changeLifecycle: {
             ...preflight,
             buildProtocol: createBuildProtocolState({
-              runId: preflight.identity.runId, planningDigest: preflight.planningDigest!,
-              strategy: createBuildStrategy({ runId: preflight.identity.runId, revision: 1,
-                executionMode: 'autonomous', tddMode: 'tdd', reviewMode: 'standard', isolationIntent: 'branch' }),
+              runId: preflight.identity.runId,
+              planningDigest: preflight.planningDigest!,
+              strategy: createBuildStrategy({
+                runId: preflight.identity.runId,
+                revision: 1,
+                executionMode: 'autonomous',
+                tddMode: 'tdd',
+                reviewMode: 'standard',
+                isolationIntent: 'branch',
+              }),
             }),
             workspaceIntent: createExecutionWorkspaceIntent({
               ...preflight.identity,
@@ -1570,9 +1581,16 @@ describe('Archive publication terminal lifecycle', () => {
         changeLifecycle: {
           ...preflight,
           buildProtocol: createBuildProtocolState({
-            runId: preflight.identity.runId, planningDigest: preflight.planningDigest!,
-            strategy: createBuildStrategy({ runId: preflight.identity.runId, revision: 1,
-              executionMode: 'autonomous', tddMode: 'tdd', reviewMode: 'standard', isolationIntent: 'branch' }),
+            runId: preflight.identity.runId,
+            planningDigest: preflight.planningDigest!,
+            strategy: createBuildStrategy({
+              runId: preflight.identity.runId,
+              revision: 1,
+              executionMode: 'autonomous',
+              tddMode: 'tdd',
+              reviewMode: 'standard',
+              isolationIntent: 'branch',
+            }),
           }),
           workspaceIntent: createExecutionWorkspaceIntent({
             ...preflight.identity,

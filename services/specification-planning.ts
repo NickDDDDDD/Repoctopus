@@ -217,7 +217,10 @@ export class SpecificationPlanning extends Service {
         };
       }
     }
-    if (input.approvalScope !== undefined && (!input.approvalScope.trim() || input.approvalScope.length > 1024))
+    if (
+      input.approvalScope !== undefined &&
+      (!input.approvalScope.trim() || input.approvalScope.length > 1024)
+    )
       throw new Error('Planning approval scope must be a bounded explicit proposal identity');
     const requestId = input.approvalScope
       ? createHumanDecisionId({
@@ -226,7 +229,9 @@ export class SpecificationPlanning extends Service {
           semanticDigest: snapshot.digest,
         })
       : input.requestId;
-    const scopeChanged = Boolean(input.approvalScope && current?.decisionRequest.requestId !== requestId);
+    const scopeChanged = Boolean(
+      input.approvalScope && current?.decisionRequest.requestId !== requestId,
+    );
     let next = requestSpecificationApproval({
       current,
       snapshot,

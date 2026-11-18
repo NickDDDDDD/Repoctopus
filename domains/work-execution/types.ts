@@ -5,6 +5,7 @@ import type { ActionIntent, ClaimedActionOutcome, WorkExecutorIdentity } from '.
 import type { WorkExecutionContext, WorkSkillResource } from '../change-lifecycle/work-context.js';
 import type { WorkDescriptor } from '../change-lifecycle/transition.js';
 import type { WorkPackageCandidate } from '../change-lifecycle/build-protocol.js';
+import type { BuildStrategyCandidate } from '../change-lifecycle/strategy-selection.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { WorkExecutionRetryPolicy } from './retry-policy.js';
 
@@ -209,7 +210,7 @@ export interface WorkOutcomeValidationRecord {
 }
 
 export type WorkExecutionResult =
-  | import('../change-lifecycle/strategy-selection.js').BuildStrategyCandidate
+  | BuildStrategyCandidate
   | {
       schemaVersion: 1;
       kind: 'execution-binding-candidate';

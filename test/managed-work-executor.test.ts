@@ -307,7 +307,7 @@ describe('Managed Work Executor Build contract', () => {
         expect.anything(),
         expect.anything(),
         expect.anything(),
-        expect.objectContaining({ diagnostic: expect.any(String) }),
+        expect.objectContaining<{ diagnostic: unknown }>({ diagnostic: expect.any(String) }),
       );
       expect(authority.recordDelegationFacts).not.toHaveBeenCalled();
       expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
@@ -327,7 +327,9 @@ describe('Managed Work Executor Build contract', () => {
       expect.anything(),
       expect.anything(),
       expect.anything(),
-      expect.objectContaining({ diagnostic: expect.stringMatching(/strategy.*candidate/iu) }),
+      expect.objectContaining<{ diagnostic: unknown }>({
+        diagnostic: expect.stringMatching(/strategy.*candidate/iu),
+      }),
     );
     expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
   });

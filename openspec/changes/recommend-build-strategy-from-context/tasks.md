@@ -2,21 +2,21 @@
 
 ## 1. 打通未决偏好到 Design 决定的生产路径
 
-- [ ] 1.1 先建立缺参默认冻结的失败回归，再更新启动偏好与建议协议，验证缺参、部分输入、完整输入和非法输入 <!-- comet-task:a62e6fb0-79be-4feb-b8f4-ced99cf94d42 -->
+- [x] 1.1 先建立缺参默认冻结的失败回归，再更新启动偏好与建议协议，验证缺参、部分输入、完整输入和非法输入 <!-- comet-task:a62e6fb0-79be-4feb-b8f4-ced99cf94d42 -->
   **Acceptance:** 修复前公开启动路径因静默补全而失败；修复后缺参可进入 Open，部分偏好不被覆盖，非法值不创建 Run，完整值仍需当前可信批准；spec approval prepare 绑定同一 Run 候选和隔离意图，不再补默认策略；相关类型与回归检查通过。
   **Requirements:** change-lifecycle / 未指定的启动偏好不得成为已批准策略。
-- [ ] 1.2 将 Design Work 的完整建议接入当前决定视图与原子批准路径，验证 Configure 使用同一已批准策略 <!-- comet-task:2b7a50f4-1883-401e-a4a7-1923062a0f3e -->
+- [x] 1.2 将 Design Work 的完整建议接入当前决定视图与原子批准路径，验证 Configure 使用同一已批准策略 <!-- comet-task:2b7a50f4-1883-401e-a4a7-1923062a0f3e -->
   **Acceptance:** 公开 Work Outcome 可提交两轴建议、理由与来源；缺项或非法候选保留原 invocation 进入可补交纠正，不提前记成功；陈旧响应不能进入 Build；真实当前 Design 决定一次批准规划与策略，Configure 不追加相同配置问题；同步更新运行时状态及协议说明。
   **Requirements:** change-lifecycle / Build Configuration 只允许受支持的固定策略；场景建议与策略授权保持可核对且可恢复。
   **Blocked by:** 1.1。
 
 ## 2. 接通场景建议和用户接入体验
 
-- [ ] 2.1 更新入口、Design 与 Configure Skill 的责任及安装模板，用消费契约检查验证场景指引与 Runtime 权威一致 <!-- comet-task:6c5c49ef-7a54-4189-af15-ad85e9394d5d -->
+- [x] 2.1 更新入口、Design 与 Configure Skill 的责任及安装模板，用消费契约检查验证场景指引与 Runtime 权威一致 <!-- comet-task:6c5c49ef-7a54-4189-af15-ad85e9394d5d -->
   **Acceptance:** 入口不要求先选全才启动；Design 分别分析两轴并展示当前偏好；Configure 不再宣称重新批准策略；已安装入口、冻结 packet 与模板保持一致，不增加独立方法或规划权威。
   **Requirements:** skill-integration / 入口和 Design Skill 按真实任务场景推荐执行策略；change-lifecycle / Build Configuration 只允许受支持的固定策略。
   **Blocked by:** 1.2。
-- [ ] 2.2 更新 CLI 帮助、工作流说明和 Workspace 本地教程，用生成产物检查和实际命令验证缺省与显式选择示例 <!-- comet-task:a701ac8f-c99a-40cf-99aa-e6d6477fe3e2 -->
+- [x] 2.2 更新 CLI 帮助、工作流说明和 Workspace 本地教程，用生成产物检查和实际命令验证缺省与显式选择示例 <!-- comet-task:a701ac8f-c99a-40cf-99aa-e6d6477fe3e2 -->
   **Acceptance:** 文档清楚区分推荐、偏好、批准和实际执行；示例覆盖两轴独立与能力限制，没有默认为已批准或新增第三次常规确认的说明；初始化生成文档与源码说明一致。
   **Requirements:** change-lifecycle / 未指定的启动偏好不得成为已批准策略；skill-integration / 入口和 Design Skill 按真实任务场景推荐执行策略。
   **Blocked by:** 2.1。

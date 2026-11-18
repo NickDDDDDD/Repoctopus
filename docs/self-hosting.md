@@ -10,7 +10,7 @@ OpenSpec 四类规划产物
   → 可信用户批准 Open
   → 深化同一四类规划产物
   → 可信用户批准 Design
-  → Build Configure（批准执行模式、TDD、Host 与隔离绑定）
+  → Build Configure（校验已批准策略与实际 Host、隔离绑定）
   → Build Plan + Plan Evidence
   → Execute Work Packages
   → Build Check

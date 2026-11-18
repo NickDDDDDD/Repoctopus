@@ -617,4 +617,30 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
   expect(secondRevision.state.changeLifecycle!.checkEpoch).toBeGreaterThan(
     approvedOriginal.state.changeLifecycle!.checkEpoch,
   );
+  await cli([
+    'run',
+    'work-claim',
+    '--run',
+    runId,
+    '--adapter',
+    'manual',
+    '--runner',
+    'test:host-decision',
+    '--host-capabilities',
+    'repository.read,repository.write,specification.read,specification.write',
+  ]);
+  await expect(
+    cli([
+      'run',
+      'revise-strategy',
+      '--run',
+      runId,
+      '--execution-mode',
+      'subagent-driven-development',
+    ]),
+  ).rejects.toThrow(/settling the current invocation/u);
+  const inFlight = (await cli<RunStatusView>(['run', 'status', '--run', runId])).result!;
+  expect(inFlight.state.changeLifecycle!.checkEpoch).toBe(
+    secondRevision.state.changeLifecycle!.checkEpoch,
+  );
 }, 180_000);
