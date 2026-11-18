@@ -2,6 +2,8 @@
 comet_change: verify-release-multirepo-workflow
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-18-verify-release-multirepo-workflow
+status: final
 ---
 
 # Design

@@ -2,6 +2,7 @@
 change: verify-release-multirepo-workflow
 design-doc: openspec/changes/verify-release-multirepo-workflow/design.md
 base-ref: c18d9be354750dae5052ed312f95d68c0c60b5c1
+archived-with: 2026-11-18-verify-release-multirepo-workflow
 ---
 
 # Windows 多仓候选包验收实施计划
