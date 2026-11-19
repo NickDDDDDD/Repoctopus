@@ -2,6 +2,8 @@
 comet_change: recommend-build-strategy-from-context
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-19-recommend-build-strategy-from-context
+status: final
 ---
 
 # Design

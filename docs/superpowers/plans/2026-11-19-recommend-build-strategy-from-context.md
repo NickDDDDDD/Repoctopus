@@ -2,6 +2,7 @@
 change: recommend-build-strategy-from-context
 design-doc: openspec/changes/recommend-build-strategy-from-context/design.md
 base-ref: a25b9f7
+archived-with: 2026-11-19-recommend-build-strategy-from-context
 ---
 
 # 场景化执行策略实施计划
