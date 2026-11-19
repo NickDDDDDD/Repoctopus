@@ -17,7 +17,7 @@
 - `comet.cmd classic openspec -- validate --all --strict --no-interactive`：16 项通过、0 失败；合法跳过本次 delta specs。
 - `comet.cmd classic openspec -- list --json`：只列出 `retire-obsolete-workflow-proposals`，三个旧提案均未列为活动 Change。
 - `git diff --check 4777902` 与暂存区差异检查：通过。
-- Prettier 检查新增处置索引、本次 proposal/design/tasks/交接摘要及计划：通过。
+- Prettier 检查新增处置索引、本次 proposal/tasks/交接摘要、计划和两份报告：通过。已批准 design.md 保留接受时的原始表格空白，不再运行格式写入。
 - 处置索引内 3 个相对链接全部指向存在的文件；3 条 `git show 37c04f4:openspec/changes/<name>/proposal.md` 示例均已实际读取成功。
 - 对比 20 个删除文件在 `37c04f4` 与整理前 `4777902` 的 Git blob：全部一致，原始文档完整保留于历史。原任务均未勾选，分别为 10、8、8 项。
 - 以 `47779021e06418b7edbdd57f44922e65f7933522` 为基线核对改动边界：只涉及本次规划/状态、处置索引、验证报告与三个旧目录删除。产品源码、主规格和既有验证报告均无变化。
@@ -27,7 +27,11 @@
 
 独立审查者 `housekeeping_independent_review` 核对了当前实际差异、文档依据及原始历史，结论为无 CRITICAL/IMPORTANT 或其他阻断项。审查确认当前配置只接受 guidance/augmentation-replacement、consumed 不证明方法遵循、TDD Evidence ID 目前的结构校验边界，以及固定 Comet Classic 的真实执行要求。
 
-Build 分段与 Verify 最终集成复用同一次有效审查；后续仅补入本报告、任务完成记录和 Comet 管理状态，没有新的产品实现。新增报告将补做一致性复核。
+Build 分段与 Verify 最终集成复用同一次有效审查；审查者已增量复核本报告、报告入口和任务完成记录，无阻断项，没有新的产品实现。
+
+## 已处理的检查拦截
+
+初次提交 Build 完成时，Runtime 拒绝了批准后由 Prettier 改动表格空白的 design.md。该次尚未执行 Build Check，没有有效检查被记为通过。已通过 Git 恢复至 `afe8f06` 中接受的 Design 原文，并提交 `16c8163`；未改变设计语义、修改 Runtime Store 或重建 Run。后续完整 Build/Verify 检查以修正后输入执行。
 
 ## 验证边界
 
