@@ -10,11 +10,11 @@ canonical_spec: openspec
 
 背景见 [proposal.md](proposal.md)。整理基线为 `47779021e06418b7edbdd57f44922e65f7933522`。三个旧提案均来自 `37c04f4`（2026-10-31，`docs(spec): split team skill composition delivery`），合计 26 项未勾选任务；没有可恢复的 Comet 状态。
 
-| 原活动提案 | 当前能力与缺口 | 本次处理 |
-| --- | --- | --- |
+| 原活动提案                         | 当前能力与缺口                                                                                                                  | 本次处理                                                      |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | `add-managed-team-required-checks` | 团队 Skill 支持 guidance、augmentation-replacement；Verify Profile 支持 required 命令节点；尚不支持旧提案的独立 Agent 检查 Work | 暂缓独立 Work，不继续这份旧计划；一般命令检查复用现有 Profile |
-| `verify-open-intake-method` | 已有 Skill 交付/消费记录、当前 Work outcome、Provider 严格校验和 Open 人工批准；消费记录不证明语义理解 | 取消通用 Method Receipt 与自动理解判定方案 |
-| `verify-tdd-method` | 已有 TDD 策略、行为切片和 RED/GREEN/回归引用；引用的结构检查尚不等于真实命令 Evidence 核验 | 撤回旧方案，仅保留重新设计的后续目标 |
+| `verify-open-intake-method`        | 已有 Skill 交付/消费记录、当前 Work outcome、Provider 严格校验和 Open 人工批准；消费记录不证明语义理解                          | 取消通用 Method Receipt 与自动理解判定方案                    |
+| `verify-tdd-method`                | 已有 TDD 策略、行为切片和 RED/GREEN/回归引用；引用的结构检查尚不等于真实命令 Evidence 核验                                      | 撤回旧方案，仅保留重新设计的后续目标                          |
 
 代码核对入口：`domains/project-configuration/config.ts`、`domains/evidence/types.ts`、`services/workflow-runs.ts`、`domains/change-lifecycle/build-protocol.ts`、`services/managed-work-executor.ts`。当前主规格与说明见 `openspec/specs/skill-integration/spec.md`、`openspec/specs/project-configuration/spec.md`、`docs/skills.md`、`docs/evidence.md`。
 
