@@ -1,3 +1,9 @@
+---
+comet_change: retire-obsolete-workflow-proposals
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context

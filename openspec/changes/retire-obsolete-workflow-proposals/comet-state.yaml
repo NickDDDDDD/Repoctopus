@@ -2,19 +2,19 @@
 change_id: ea97e4cb-7642-49d1-bbf2-a194ae75698c
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: direct
 review_mode: thorough
 isolation: worktree
 verify_mode: null
 auto_transition: true
 base_ref: 47779021e06418b7edbdd57f44922e65f7933522
-design_doc: null
-plan: null
+design_doc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: comet/retire-obsolete-workflow-proposals
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
 handoff_hash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 22b43adfa8395cb63773853956096d0cbf38c6ed3cbd2d536de67088becf2bc2
+  hash: d1b7b1bc1e5d4851cbe66f829cf990b931628bf0898ccdb87cc48c536b239f7e
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,32 +56,32 @@ run_checkpoint:
       baseRef: 47779021e06418b7edbdd57f44922e65f7933522
       boundBranch: comet/retire-obsolete-workflow-proposals
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-19
-      designDoc: null
-      directOverride: null
+      designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+      directOverride: false
       handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
       handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
       isolation: worktree
       language: zh-CN
-      phase: design
-      plan: null
+      phase: build
+      plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: direct
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 6
+    status: running
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -251,10 +251,695 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-983a73b5d6f487643232f531f2de940a0acb197b3007161ff12ff86103768e48
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:7
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                    handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                    proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                      specs，不改变Runtime与历史验证事实。取消Open通用Method
+                      Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                      Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                    requirementsEvidence:
+                      contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+                    sourceEvidence:
+                      contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.design.handoff:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                    ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open.evidence:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open.revalidate:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        inputHash: e8e57f388407b31c6b66f68ad6efe71272203a6aaf29ba36490f92d8587e8338
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:7
+          attempt: 1
+          claimToken: portable-983a73b5d6f487643232f531f2de940a0acb197b3007161ff12ff86103768e48
+          inputHash: e8e57f388407b31c6b66f68ad6efe71272203a6aaf29ba36490f92d8587e8338
+          outcomeId: 68d4b07a-d5f6-45e6-93c5-d893b5f824c4
+          output:
+            designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9b37c7524534ccd40c45a271ceb7ddfe042ff5594e029e76429cb62d2dbf6bd6
+            outcomeId: 68d4b07a-d5f6-45e6-93c5-d893b5f824c4
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-09f7e26c2f9848ff76654a04fe3fe23094ec649504212306dc4ed26364deb83f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:9
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                    handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                    proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                      specs，不改变Runtime与历史验证事实。取消Open通用Method
+                      Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                      Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                    requirementsEvidence:
+                      contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+                    sourceEvidence:
+                      contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.design.document:
+              designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+            full.design.evidence:
+              contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+              ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                    ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open.evidence:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open.revalidate:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        inputHash: 7dd409a3d4f078bdce7be899e9705aee4783bcda1924cc30f6b27e574c74a05f
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:9
+          attempt: 1
+          claimToken: portable-09f7e26c2f9848ff76654a04fe3fe23094ec649504212306dc4ed26364deb83f
+          inputHash: 7dd409a3d4f078bdce7be899e9705aee4783bcda1924cc30f6b27e574c74a05f
+          outcomeId: e011b529-a7de-4257-b2b6-fb4224cf9d07
+          output:
+            boundBranch: comet/retire-obsolete-workflow-proposals
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: direct
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a2d7ca10f6666ca76b4d91f047f66769b0797488bef47616d03dc2a72db5e236
+            outcomeId: e011b529-a7de-4257-b2b6-fb4224cf9d07
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c8bc00bd4efee1d957ccd32c5292013d0f4e71733446c1d90380c65f34ecd591
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:11
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.build.configure:
+              boundBranch: comet/retire-obsolete-workflow-proposals
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: direct
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/retire-obsolete-workflow-proposals
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: direct
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                    handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                    proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                      specs，不改变Runtime与历史验证事实。取消Open通用Method
+                      Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                      Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                    requirementsEvidence:
+                      contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+                    sourceEvidence:
+                      contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.design.document:
+              designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+            full.design.evidence:
+              contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+              ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                    ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open.evidence:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open.revalidate:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        inputHash: 34396656e1bbd6fbd6fefd8ced1159d887208ae44daffebc3f05c2277a98921a
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:11
+          attempt: 1
+          claimToken: portable-c8bc00bd4efee1d957ccd32c5292013d0f4e71733446c1d90380c65f34ecd591
+          inputHash: 34396656e1bbd6fbd6fefd8ced1159d887208ae44daffebc3f05c2277a98921a
+          outcomeId: 5b67685e-4811-43d2-a342-2b88d5ec4804
+          output:
+            designEvidence:
+              contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+              ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+            plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+            planEvidence:
+              contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+              ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+            taskRevision: 35a4dd994714f3243f8fa56dd54ff4af790956e9132c77b728f049ce344e5710
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d6ec36732109ae7e876bd1948896ef132e1eeedb6ac44c82dabbafb568b20796
+            outcomeId: 5b67685e-4811-43d2-a342-2b88d5ec4804
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: retire-obsolete-workflow-proposals:13
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.build.configure:
+              boundBranch: comet/retire-obsolete-workflow-proposals
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: direct
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/retire-obsolete-workflow-proposals
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: direct
+            full.build.plan:
+              designEvidence:
+                contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+                ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+              plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+              planEvidence:
+                contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+                ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+              taskRevision: 35a4dd994714f3243f8fa56dd54ff4af790956e9132c77b728f049ce344e5710
+            full.build.plan.evidence:
+              contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+              ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                    handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                    proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                      specs，不改变Runtime与历史验证事实。取消Open通用Method
+                      Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                      Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                    requirementsEvidence:
+                      contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+                    sourceEvidence:
+                      contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.design.document:
+              designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+            full.design.evidence:
+              contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+              ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                    ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open.evidence:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+            full.open.revalidate:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        inputHash: bf5d8a909b682b1ca8a93ee260282a9bb4f26914a339c3b161e52f5fb21897ea
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
     actionContexts:
       retire-obsolete-workflow-proposals:1:
         results: {}
         sequence: 1
+      retire-obsolete-workflow-proposals:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/retire-obsolete-workflow-proposals
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: direct
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/retire-obsolete-workflow-proposals
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: direct
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                    handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                    proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                      specs，不改变Runtime与历史验证事实。取消Open通用Method
+                      Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                      Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                    requirementsEvidence:
+                      contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+                    sourceEvidence:
+                      contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+              ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                    ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        sequence: 11
+      retire-obsolete-workflow-proposals:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/retire-obsolete-workflow-proposals
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: direct
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/retire-obsolete-workflow-proposals
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: direct
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+                ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+              plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+              planEvidence:
+                contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+                ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+              taskRevision: 35a4dd994714f3243f8fa56dd54ff4af790956e9132c77b728f049ce344e5710
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+              ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                    handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                    proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                      specs，不改变Runtime与历史验证事实。取消Open通用Method
+                      Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                      Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                    requirementsEvidence:
+                      contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+                    sourceEvidence:
+                      contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+              ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                    ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        sequence: 13
       retire-obsolete-workflow-proposals:4:
         results:
           full.open:
@@ -315,6 +1000,157 @@ run_checkpoint:
             value:
               contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
         sequence: 5
+      retire-obsolete-workflow-proposals:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                    handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                    proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                      specs，不改变Runtime与历史验证事实。取消Open通用Method
+                      Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                      Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                    requirementsEvidence:
+                      contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+                    sourceEvidence:
+                      contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                    ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        sequence: 7
+      retire-obsolete-workflow-proposals:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                    handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                    proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                      specs，不改变Runtime与历史验证事实。取消Open通用Method
+                      Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                      Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                    requirementsEvidence:
+                      contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+                    sourceEvidence:
+                      contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+              ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                    ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        sequence: 9
     waits:
       - id: retire-obsolete-workflow-proposals:3
         stepId: full.open.confirm
@@ -353,7 +1189,7 @@ run_checkpoint:
       - id: retire-obsolete-workflow-proposals:6
         stepId: full.design.confirm
         sequence: 6
-        status: pending
+        status: resolved
         proposal:
           input:
             change: retire-obsolete-workflow-proposals
@@ -423,6 +1259,125 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        decision:
+          id: classic-design-689aec54a8cde2a3367cb42b6171ecd65a1a56b88d0e317e05b630347f8156a3-approved
+          choice: approved
+          proposalHash: 689aec54a8cde2a3367cb42b6171ecd65a1a56b88d0e317e05b630347f8156a3
+      - id: retire-obsolete-workflow-proposals:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.build.configure:
+              boundBranch: comet/retire-obsolete-workflow-proposals
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: direct
+        proposalHash: ce59f10ce4fd3098d44975afc75e99f975fc98be52bbbcf847aa2d4461c3ce70
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/retire-obsolete-workflow-proposals
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: direct
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                    handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                    proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                      specs，不改变Runtime与历史验证事实。取消Open通用Method
+                      Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                      Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                    requirementsEvidence:
+                      contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+                    sourceEvidence:
+                      contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+              ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                    ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        decision:
+          id: a3392f42-7f2d-4a56-9d51-baa4861c91ce
+          choice: approved
+          proposalHash: ce59f10ce4fd3098d44975afc75e99f975fc98be52bbbcf847aa2d4461c3ce70
     evidenceWaits:
       - id: retire-obsolete-workflow-proposals:2
         stepId: full.open.evidence
@@ -438,9 +1393,296 @@ run_checkpoint:
           ref: openspec/changes/retire-obsolete-workflow-proposals
           contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
           submissionId: 38c1ca0e-49b2-4a96-9fd0-9cef9d14781e
+      - id: retire-obsolete-workflow-proposals:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                    handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                    proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                      specs，不改变Runtime与历史验证事实。取消Open通用Method
+                      Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                      Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                    requirementsEvidence:
+                      contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+                    sourceEvidence:
+                      contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                    ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        receipt:
+          ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+          submissionId: 7d8fc2cd-1ebf-4b4e-8f7c-b48c6ecc897b
+      - id: retire-obsolete-workflow-proposals:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/retire-obsolete-workflow-proposals
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: direct
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/retire-obsolete-workflow-proposals
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: direct
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+                ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+              plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+              planEvidence:
+                contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+                ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+              taskRevision: 35a4dd994714f3243f8fa56dd54ff4af790956e9132c77b728f049ce344e5710
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                    handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                    proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                      specs，不改变Runtime与历史验证事实。取消Open通用Method
+                      Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                      Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                    requirementsEvidence:
+                      contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+                    sourceEvidence:
+                      contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                      ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+              ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: retire-obsolete-workflow-proposals
+                  changeDir: openspec/changes/retire-obsolete-workflow-proposals
+                  workspaceBaseline:
+                    ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                    ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        receipt:
+          ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+          contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+          submissionId: ba382394-fae5-4fc3-81ce-ed66cc628cf1
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: comet/retire-obsolete-workflow-proposals
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: direct
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: retire-obsolete-workflow-proposals
+              changeDir: openspec/changes/retire-obsolete-workflow-proposals
+              workspaceBaseline:
+                ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+            outputs:
+              full.build.configure:
+                boundBranch: comet/retire-obsolete-workflow-proposals
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: direct
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+            ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+          planEvidence:
+            contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+            ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+          taskRevision: 35a4dd994714f3243f8fa56dd54ff4af790956e9132c77b728f049ce344e5710
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+          ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: retire-obsolete-workflow-proposals
+              changeDir: openspec/changes/retire-obsolete-workflow-proposals
+              workspaceBaseline:
+                ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                  specs，不改变Runtime与历史验证事实。取消Open通用Method
+                  Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                  Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                requirementsEvidence:
+                  contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                  ref: openspec/changes/retire-obsolete-workflow-proposals
+                sourceEvidence:
+                  contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                  ref: openspec/changes/retire-obsolete-workflow-proposals
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+          ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
       full.design.handoff:
         sequence: 5
         value:
@@ -487,6 +1729,6 @@ run_checkpoint:
           contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
     children: []
     lineage: []
-  sourceRevision: 9
-  sourceHash: 386ce3e87ab84dde8a9e41ece2d846e557d5f594fec4062c1b6fdfafab4b01e5
-check_epoch: 1
+  sourceRevision: 19
+  sourceHash: a8bd0e54ed9bc8293e13a709170e634b675f769a3d421b96c719af88f3eecdc0
+check_epoch: 2
