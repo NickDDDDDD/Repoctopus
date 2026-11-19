@@ -107,6 +107,7 @@ async function recoverUnstartedPacketResources(
 
 function createChangeInputs(input: {
   runId: string;
+  strategyPreference?: unknown;
   lifecycle: ChangeLifecycleState;
   work: WorkDescriptor;
 }): unknown {
@@ -120,6 +121,8 @@ function createChangeInputs(input: {
     inputDigest: input.work.inputDigest,
     tasks: input.lifecycle.tasks ?? [],
     workspaceIntent: input.lifecycle.workspaceIntent ?? null,
+    strategyPreference: input.strategyPreference ?? null,
+    strategyRevisionRequest: input.lifecycle.strategyRevisionRequest ?? null,
     build: protocol
       ? {
           currentAction: protocol.currentAction,
@@ -266,6 +269,7 @@ export class WorkDispatcher extends Service {
       work,
       changeId: state.changeLifecycle!.identity.changeId,
       changeInputs: createChangeInputs({
+        strategyPreference: state.trigger?.facts.buildStrategyPreference,
         runId: state.runId,
         lifecycle: state.changeLifecycle!,
         work,

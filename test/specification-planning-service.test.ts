@@ -124,6 +124,55 @@ function prepareInput() {
 }
 
 describe('SpecificationPlanning service', () => {
+  it.each(['pending', 'approved'] as const)(
+    'rebinds a scoped Design decision after real planning drift from %s',
+    async (status) => {
+      const workspace = await temporaryDirectory('repoctopus-strategy-scope-');
+      cleanup.push(workspace);
+      const running = app(workspace);
+      const input = {
+        ...prepareInput(),
+        decisionRunId: 'run-scoped',
+        approvalScope: 'explicit-revision:accepted-submission',
+      };
+      try {
+        const original = (await running.planning.assess(input)).approval!;
+        if (status === 'approved')
+          await running.planning.decide({
+            changeId: input.changeId,
+            approvalPhase: 'design',
+            response: {
+              apiVersion: 'repoctopus/v1alpha1',
+              kind: 'HumanDecisionResponse',
+              requestId: original.decisionRequest.requestId,
+              proposalHash: original.decisionRequest.proposalHash,
+              decision: 'approve',
+            },
+            actor: { actorId: 'operator', source: 'cli', authenticated: true },
+          });
+        running.specification.proposalDigest = digest('9');
+        const revised = await running.planning.assess(input);
+        expect(revised.status).toBe('waiting');
+        expect(revised.approval!.decisionRequest.requestId).not.toBe(
+          original.decisionRequest.requestId,
+        );
+        expect(revised.approval!.decisionRequest.proposalHash).not.toBe(
+          original.decisionRequest.proposalHash,
+        );
+        expect((await running.planning.assess(input)).approval).toEqual(revised.approval);
+        await expect(
+          running.planning.assertCurrentProposal(
+            input.changeId,
+            'design',
+            original.decisionRequest.requestId,
+            original.decisionRequest.proposalHash,
+          ),
+        ).rejects.toThrow(/stale|drifted/u);
+      } finally {
+        await running.context.fiber.dispose();
+      }
+    },
+  );
   it('checks a pending Host proposal against real Provider identity without persisting an approval', async () => {
     const workspace = await temporaryDirectory('repoctopus-host-provider-preflight-');
     cleanup.push(workspace);

@@ -2,6 +2,7 @@ import type { SkillUsageSnapshot } from '../skill/types.js';
 import type { LifecycleDecisionProvenance } from './human-decision.js';
 import type { EffectiveWorkSkillComposition } from '../skill/composition.js';
 import type { SpecificationArtifactKind } from '../specification/types.js';
+import type { BuildStrategyProposal, StrategyRevisionRequest } from './strategy-selection.js';
 import type { SpecificationTask } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { assertVerificationInput, type VerificationInput } from './verification-input.js';
@@ -284,6 +285,8 @@ export interface ChangeLifecycleState {
   tasks?: readonly SpecificationTask[];
   workspaceIntent?: ExecutionWorkspaceIntent;
   buildProtocol?: BuildProtocolState;
+  strategyProposal?: BuildStrategyProposal;
+  strategyRevisionRequest?: StrategyRevisionRequest;
   openApprovalDigest?: `sha256:${string}`;
   openApprovalInvalidated?: boolean;
   planningDigest?: `sha256:${string}`;
@@ -427,6 +430,7 @@ export type OpenRepairReasonCode =
   | 'approval-drift';
 
 export type ChangeLifecycleObservation =
+  | { kind: 'strategy-revision-requested'; request: StrategyRevisionRequest; work: WorkDescriptor }
   | {
       kind: 'open-work-ready';
       work: WorkDescriptor;
@@ -461,6 +465,7 @@ export type ChangeLifecycleObservation =
   | {
       kind: 'design-work-ready';
       work: WorkDescriptor;
+      replacesWorkId?: string;
     }
   | {
       kind: 'planning-authority-invalidated';
@@ -474,6 +479,7 @@ export type ChangeLifecycleObservation =
     }
   | {
       kind: 'design-gate';
+      strategyProposal?: BuildStrategyProposal;
       result: 'blocked' | 'waiting' | 'approved';
       reason: string;
       evidenceIds: readonly string[];
@@ -779,6 +785,8 @@ export function applyChangeLifecycleTransition(options: {
   current: ChangeLifecycleSnapshot;
   transitionId: string;
   next: {
+    strategyProposal?: BuildStrategyProposal | null;
+    strategyRevisionRequest?: StrategyRevisionRequest | null;
     currentWork: WorkDescriptor | null;
     waitCondition: WaitCondition | null;
     blocker: ChangeRunBlocker | null;
@@ -839,6 +847,12 @@ export function applyChangeLifecycleTransition(options: {
     ...(options.next.tasks ? { tasks: structuredClone(options.next.tasks) } : {}),
   };
   if (options.next.workspaceIntent === null) delete snapshot.workspaceIntent;
+  if (options.next.strategyProposal === null) delete snapshot.strategyProposal;
+  if (options.next.strategyRevisionRequest === null) delete snapshot.strategyRevisionRequest;
+  else if (options.next.strategyRevisionRequest)
+    snapshot.strategyRevisionRequest = structuredClone(options.next.strategyRevisionRequest);
+  else if (options.next.strategyProposal)
+    snapshot.strategyProposal = structuredClone(options.next.strategyProposal);
   else if (options.next.workspaceIntent) {
     snapshot.workspaceIntent = structuredClone(options.next.workspaceIntent);
   }
@@ -1189,21 +1203,67 @@ export function evolveChangeLifecycle(options: {
     };
     return reduced;
   }
+  if (observation.kind === 'strategy-revision-requested') {
+    if (current.strategyRevisionRequest?.requestId === observation.request.requestId)
+      return { snapshot: structuredClone(current), fact: null };
+    const prior =
+      current.buildProtocol?.strategy ??
+      current.strategyProposal?.strategy ??
+      current.strategyRevisionRequest?.baselineStrategy;
+    if (
+      !['design', 'build', 'verify'].includes(current.phase) ||
+      ['completed', 'failed', 'migration_required'].includes(current.status) ||
+      !prior ||
+      prior.semanticDigest !== observation.request.priorStrategyDigest ||
+      observation.work.kind !== 'specification.plan' ||
+      observation.work.phase !== 'design' ||
+      observation.work.checkEpoch !== current.checkEpoch + 1
+    )
+      throw new Error(
+        'Strategy revision requires a current nonterminal strategy and the next Design Work',
+      );
+    const protocol = current.buildProtocol;
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: `${current.phase}.strategy-revision-requested`,
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        strategyProposal: null,
+        strategyRevisionRequest: observation.request,
+        planningDigest: null,
+        verificationInput: null,
+        verificationInvalidation: null,
+        buildProtocol:
+          protocol && protocol.status !== 'suspended-for-design'
+            ? suspendBuildProtocolForDesign(protocol, {
+                observedPlanningDigest: protocol.planningDigest,
+                reasonCode: 'strategy-revision-requested',
+                invalidatedIdentities: ['build-strategy'],
+              })
+            : (protocol ?? null),
+      },
+    });
+  }
   if (observation.kind === 'design-work-ready') {
     if (
       current.phase !== 'design' ||
       !['running', 'waiting', 'blocked'].includes(current.status) ||
-      current.currentWork !== null ||
+      (current.currentWork !== null && observation.replacesWorkId !== current.currentWork.workId) ||
       observation.work.phase !== 'design' ||
-      observation.work.kind !== 'specification.plan'
+      observation.work.kind !== 'specification.plan' ||
+      observation.work.checkEpoch !== current.checkEpoch + 1
     ) {
       throw new Error(`Design Work dispatch is not valid from ${current.phase}/${current.status}`);
     }
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
-      transitionId: 'design.work-ready',
+      transitionId: observation.replacesWorkId ? 'design.work-repaired' : 'design.work-ready',
       next: {
+        strategyProposal: null,
         currentWork: observation.work,
         waitCondition: null,
         blocker: null,
@@ -2217,6 +2277,8 @@ export function evolveChangeLifecycle(options: {
       current,
       transitionId: 'design.approved',
       next: {
+        strategyRevisionRequest: null,
+        strategyProposal: observation.strategyProposal ?? current.strategyProposal ?? null,
         currentWork: observation.work,
         waitCondition: null,
         blocker: null,
@@ -2262,7 +2324,13 @@ export function evolveChangeLifecycle(options: {
       definition: options.definition,
       current,
       transitionId: 'design.await-approval',
-      next: { currentWork: null, waitCondition, blocker: null, planningDigest: null },
+      next: {
+        currentWork: null,
+        waitCondition,
+        blocker: null,
+        planningDigest: null,
+        strategyProposal: observation.strategyProposal ?? current.strategyProposal ?? null,
+      },
     });
   }
   const blocker: ChangeRunBlocker = {

@@ -6,6 +6,7 @@ import type { HumanDecisionInteraction } from '../domains/change-lifecycle/human
 import {
   assertSpecificationApprovalState,
   createPlanningSnapshot,
+  createHumanDecisionId,
   createSpecificationApprovalMigrationPlan,
   recordSpecificationApprovalDecision,
   requestSpecificationApproval,
@@ -36,6 +37,7 @@ export interface PrepareSpecificationApprovalInput {
   changeBranch: ChangeBranchReference;
   requestId?: string;
   forceNewApproval?: boolean;
+  approvalScope?: string;
   buildStrategyDigest?: `sha256:${string}`;
   now?: () => Date;
   signal?: AbortSignal;
@@ -215,13 +217,28 @@ export class SpecificationPlanning extends Service {
         };
       }
     }
+    if (
+      input.approvalScope !== undefined &&
+      (!input.approvalScope.trim() || input.approvalScope.length > 1024)
+    )
+      throw new Error('Planning approval scope must be a bounded explicit proposal identity');
+    const requestId = input.approvalScope
+      ? createHumanDecisionId({
+          runId: input.decisionRunId ?? input.changeId,
+          decisionKind: `specification-${snapshot.approvalPhase}:${input.approvalScope}`,
+          semanticDigest: snapshot.digest,
+        })
+      : input.requestId;
+    const scopeChanged = Boolean(
+      input.approvalScope && current?.decisionRequest.requestId !== requestId,
+    );
     let next = requestSpecificationApproval({
       current,
       snapshot,
       timestamp: (input.now ?? (() => new Date()))().toISOString(),
-      ...(input.requestId ? { requestId: input.requestId } : {}),
+      ...(requestId ? { requestId } : {}),
       ...(input.decisionRunId ? { decisionRunId: input.decisionRunId } : {}),
-      ...(input.forceNewApproval ? { forceNewRequest: true } : {}),
+      ...(input.forceNewApproval || scopeChanged ? { forceNewRequest: true } : {}),
     });
     if (current?.stateVersion !== next.stateVersion) {
       try {

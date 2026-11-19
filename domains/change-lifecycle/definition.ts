@@ -54,8 +54,7 @@ function validatorProfile(id: string) {
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
-  version: '4.10.0',
-  compatibleDigests: ['sha256:4f22c8eb4559307b8995f91ff832c0a3d8aea6501b28f0b4abb4321d000929e3'],
+  version: '4.11.0',
   phases: [
     {
       phase: 'open',
@@ -273,6 +272,15 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     },
   ],
   transitions: [
+    ...(['design', 'build', 'verify'] as const).map<ChangeLifecycleTransitionDefinition>(
+      (phase) => ({
+        id: `${phase}.strategy-revision-requested`,
+        kind: phase === 'design' ? 'self' : 'fallback',
+        from: { phase, statuses: ['running', 'waiting', 'blocked'] },
+        to: { phase: 'design', status: 'running' },
+        trigger: 'explicit-strategy-revision-intent',
+      }),
+    ),
     {
       id: 'open.work-ready',
       kind: 'self',
@@ -335,6 +343,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'design', statuses: ['running', 'waiting', 'blocked'] },
       to: { phase: 'design', status: 'running' },
       trigger: 'design-work-created',
+      requiredValidatorProfile: 'design.artifacts-valid',
+    },
+    {
+      id: 'design.work-repaired',
+      kind: 'self',
+      from: { phase: 'design', statuses: ['running', 'waiting', 'blocked'] },
+      to: { phase: 'design', status: 'running' },
+      trigger: 'design-provider-deterministic-rejection',
       requiredValidatorProfile: 'design.artifacts-valid',
     },
     {

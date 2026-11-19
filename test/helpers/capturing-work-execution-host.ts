@@ -12,6 +12,11 @@ import type {
   WorkExecutionSessionIdentity,
 } from '../../domains/work-execution/types.js';
 import type { CommandHandler } from '../../services/command-router.js';
+import { strategyCandidateFixture } from './strategy-candidate.js';
+import type {
+  BuildExecutionMode,
+  BuildTddMode,
+} from '../../domains/change-lifecycle/build-protocol.js';
 
 const codeDigest = `sha256:${'c'.repeat(64)}` as const;
 
@@ -131,7 +136,17 @@ export function installCapturingWorkExecutionHost(input: {
         });
       }
       await input.afterOperations?.(packet);
-      const result = input.result?.(packet, session);
+      let result = input.result?.(packet, session);
+      if (packet.work.kind === 'specification.plan' && result === undefined) {
+        const layer = packet.context.layers.find((candidate) => candidate.kind === 'change-inputs');
+        const { strategyPreference } = JSON.parse(layer?.content ?? '{}') as {
+          strategyPreference?: { executionMode?: BuildExecutionMode; tddMode?: BuildTddMode };
+        };
+        result = strategyCandidateFixture(
+          strategyPreference?.executionMode ?? 'autonomous',
+          strategyPreference?.tddMode ?? 'tdd',
+        );
+      }
       const delegationReceipts = input.delegationReceipts?.(packet, session) ?? [];
       return {
         schemaVersion: 1,

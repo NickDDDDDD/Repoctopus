@@ -388,6 +388,23 @@ function build(claim) {
     message =
       'Read the delivered Open Action and method. Confirmed the Store and both repositories; README files exist and the marker paths are unused. Created and strictly validated the four OpenSpec artifact types.';
   } else if (kind === 'specification.plan') {
+    result = {
+      schemaVersion: 1,
+      kind: 'build-strategy-candidate',
+      executionMode: 'autonomous',
+      tddMode: 'tdd',
+      rationale: {
+        execution: {
+          summary: 'Two bounded marker packages execute sequentially in this single managed Host.',
+          refs: ['tasks.md'],
+        },
+        tdd: {
+          summary:
+            'Each marker has an executable exact-value check that fails before implementation.',
+          refs: ['design.md'],
+        },
+      },
+    };
     const relative = 'openspec/changes/' + changeId + '/design.md';
     const text =
       '\n## Verification and recovery\n\nUse independent marker packages with real RED/GREEN checks. Resume the same Run after the first completed package. Verify exact contents and recover a lost specification PR response.\n';

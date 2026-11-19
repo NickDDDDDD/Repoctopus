@@ -46,11 +46,12 @@ Open 与 Design gate 不直接拼接 `inspect`、目录或 CLI 输出，而只�
 
 ```powershell
 git push -u origin spec/<change-id>
-node bin/repoctopus.js spec approval prepare --workspace . --change <change-id> --branch spec/<change-id> --target main --json
-node bin/repoctopus.js spec approval status --workspace . --change <change-id> --json
-node bin/repoctopus.js spec approval review --workspace . --change <change-id>
-node bin/repoctopus.js run decide --workspace . --run <run-id>
+repoctopus spec approval prepare --workspace . --run <run-id> --json
+repoctopus run decision --workspace . --run <run-id> --json
+repoctopus run decide --workspace . --run <run-id>
 ```
+
+Design Work 完成后，`spec approval prepare --run` 返回同一 Run 的当前 Design 请求，展示实际执行模式、TDD、理由和偏好来源。它不从默认参数创建另一份配置，不创建 MR，也不能替代当前 Work。尚未形成候选时，先沿 Run 返回的 continuation 完成 Design。需要改变策略时使用 `run revise-strategy`，不能通过 prepare 覆盖它。
 
 Open 先创建或修复完整四件套，严格校验后在 `open/waiting` 形成第一次请求；批准才进入 Design。Design 在同一四件套上深化工程决策和任务，再严格校验并在 `design/waiting` 形成第二次独立请求；批准才进入 Build。两次都用 `run decide` 提交 `approve`、`revise` 或 `reject`，并按 phase 分库存储，不能互相冒充。Host 先用 `run decision --run <run-id> --json` 读取材料，通过原生提问或对话取得真实决定，再用 `run decide --response-file` 回传；没有真实用户交互上下文时使用上述终端模式。完整合同及信任边界见 [人工决定](human-decision.md)。Git 作者和 MR 状态不能代替用户决定。
 

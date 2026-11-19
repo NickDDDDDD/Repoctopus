@@ -1103,15 +1103,25 @@ describe('managed Change execution production composition', () => {
           const plan = vi.spyOn(application.context.evidenceCoordinator, 'plan');
           const run = vi.spyOn(application.context.evidenceCoordinator, 'run');
 
+          const beforeCoverage = await status();
+          const designInvocations = capture.invocations.filter(
+            (entry) => entry.packet.work.kind === 'specification.plan',
+          ).length;
           const coverageBlocked = await next();
           expect(coverageBlocked.value).toMatchObject({
             changeLifecycle: {
               phase: 'design',
-              status: 'blocked',
-              currentWork: null,
+              status: 'running',
+              currentWork: { kind: 'specification.plan' },
             },
-            continuation: { reason: 'transition-pending' },
+            continuation: { continuation: 'execute', reason: 'work-unclaimed' },
           });
+          expect(coverageBlocked.value.state.changeLifecycle!.checkEpoch).toBe(
+            beforeCoverage.state.changeLifecycle!.checkEpoch + 1,
+          );
+          expect(coverageBlocked.value.state.changeLifecycle?.workspaceIntent).toEqual(
+            beforeCoverage.state.changeLifecycle?.workspaceIntent,
+          );
           expect((await status()).state.workExecution).toBeUndefined();
           expect(compile).toHaveBeenCalledOnce();
           expect(plan).not.toHaveBeenCalled();
@@ -1145,6 +1155,20 @@ describe('managed Change execution production composition', () => {
           compile.mockRestore();
           plan.mockRestore();
           run.mockRestore();
+          const repairedDesign = await next();
+          expect(repairedDesign.value.state.changeLifecycle!.checkEpoch).toBe(
+            coverageBlocked.value.state.changeLifecycle!.checkEpoch,
+          );
+          expect(repairedDesign.value.state.workExecution).toMatchObject({
+            status: 'outcome',
+            actionOutcome: { status: 'succeeded' },
+            acceptedSubmission: {
+              outcome: { result: { kind: 'build-strategy-candidate' } },
+            },
+          });
+          expect(
+            capture.invocations.filter((entry) => entry.packet.work.kind === 'specification.plan'),
+          ).toHaveLength(designInvocations + 1);
         }
 
         const waiting = await next();
@@ -2552,6 +2576,7 @@ describe('managed Change execution production composition', () => {
             ? ['change.intake', 'change.intake']
             : []),
           'specification.plan',
+          ...(!multiRepository && executionMode === 'autonomous' ? ['specification.plan'] : []),
           'build.configure',
           'build.plan',
           'build.execute',

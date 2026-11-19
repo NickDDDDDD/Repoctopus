@@ -1,4 +1,10 @@
 import type { EvidenceCoordinator } from './evidence-coordinator.js';
+import {
+  parseBuildStrategyCandidate,
+  assertStrategyModes,
+  type BuildStrategyProposal,
+  type StrategyRevisionRequest,
+} from '../domains/change-lifecycle/strategy-selection.js';
 import { createHash, randomUUID } from 'node:crypto';
 import {
   createVerifyRepair,
@@ -431,12 +437,15 @@ export class WorkflowRuns extends Service {
       if (!input.verificationProfileId.trim()) {
         throw new Error('Change Run verification Evidence Profile is required');
       }
-      const executionMode = input.executionMode ?? 'autonomous';
-      const tddMode = input.tddMode ?? 'tdd';
-      if (!['autonomous', 'subagent-driven-development'].includes(executionMode)) {
+      const executionMode = input.executionMode;
+      const tddMode = input.tddMode;
+      if (
+        executionMode !== undefined &&
+        !['autonomous', 'subagent-driven-development'].includes(executionMode)
+      ) {
         throw new Error('Change Run Build execution mode is invalid');
       }
-      if (!['tdd', 'direct'].includes(tddMode)) {
+      if (tddMode !== undefined && !['tdd', 'direct'].includes(tddMode)) {
         throw new Error('Change Run Build TDD mode is invalid');
       }
       if (input.projectSnapshot.projectId !== workspaceId) {
@@ -537,10 +546,9 @@ export class WorkflowRuns extends Service {
         verificationProfileId: input.verificationProfileId,
         ...(input.verificationProfileExplicit ? { verificationProfileExplicit: true } : {}),
         buildStrategyPreference: {
-          schemaVersion: 1,
-          executionMode,
-          tddMode,
-          reviewMode: 'standard' as const,
+          schemaVersion: 2,
+          ...(executionMode ? { executionMode } : {}),
+          ...(tddMode ? { tddMode } : {}),
         },
         specificationProvider: this.ctx.specification.identity(),
         executionCheckouts: input.executionCheckouts.map((checkout) => ({
@@ -735,6 +743,121 @@ export class WorkflowRuns extends Service {
     return this.operations.run({ cancellable: false, signal }, () =>
       this.humanDecisions.read(input),
     );
+  }
+
+  prepareDesignApproval(input: {
+    runId: string;
+    changeId?: string;
+    sourceBranch?: string;
+    targetBranch?: string;
+  }) {
+    return this.operations.run({ cancellable: false }, async () => {
+      const state = await this.ctx.runStore.loadRun(input.runId);
+      const lifecycle = state.changeLifecycle;
+      const target = state.trigger?.facts.targetBranch as { targetBranch?: string } | undefined;
+      const binding = state.trigger?.facts.changeStartBinding as
+        | { sourceBranch?: string }
+        | undefined;
+      if (
+        lifecycle?.phase !== 'design' ||
+        !lifecycle.strategyProposal ||
+        (input.changeId !== undefined && input.changeId !== lifecycle.identity.changeId) ||
+        (input.sourceBranch !== undefined && input.sourceBranch !== binding?.sourceBranch) ||
+        (input.targetBranch !== undefined && input.targetBranch !== target?.targetBranch)
+      )
+        throw new Error(
+          'Prepare approval requires the same Run and its current complete Design proposal; use run next or run decision',
+        );
+      const view = await this.humanDecisions.read({ runId: input.runId });
+      if (view.decisionKind !== 'specification-design' || !view.currentRequest)
+        throw new Error('Run has no current Design decision; follow its continuation');
+      return view;
+    });
+  }
+
+  reviseStrategy(input: {
+    runId: string;
+    executionMode?: BuildStrategy['executionMode'];
+    tddMode?: BuildStrategy['tddMode'];
+    actor: SpecificationApprovalActor;
+  }) {
+    return this.operations.run({ cancellable: false }, async () => {
+      if (!input.actor.authenticated || !input.actor.actorId.trim())
+        throw new Error('Strategy revision requires a trusted actor');
+      assertStrategyModes(input);
+      if (input.executionMode === undefined && input.tddMode === undefined)
+        throw new Error('Strategy revision requires at least one explicit axis');
+      const state = await this.ctx.runStore.loadRun(input.runId);
+      const lifecycle = state.changeLifecycle;
+      const prior =
+        lifecycle?.buildProtocol?.strategy ??
+        lifecycle?.strategyProposal?.strategy ??
+        lifecycle?.strategyRevisionRequest?.baselineStrategy;
+      if (
+        !lifecycle ||
+        !['design', 'build', 'verify'].includes(lifecycle.phase) ||
+        ['completed', 'failed', 'migration_required'].includes(state.status) ||
+        !prior
+      )
+        throw new Error(
+          'Strategy revision requires a nonterminal Design, Build or Verify strategy',
+        );
+      const preference = {
+        schemaVersion: 2 as const,
+        executionMode: input.executionMode ?? prior.executionMode,
+        tddMode: input.tddMode ?? prior.tddMode,
+      };
+      if (preference.executionMode === prior.executionMode && preference.tddMode === prior.tddMode)
+        return { value: await this.coordinator.status(input.runId), diagnostics: [] };
+      const request: StrategyRevisionRequest = {
+        schemaVersion: 1,
+        actorId: input.actor.actorId,
+        priorStrategyDigest: prior.semanticDigest,
+        baselineStrategy: structuredClone(prior),
+        preference,
+        explicitAxes: [
+          ...(input.executionMode === undefined ? [] : ['executionMode' as const]),
+          ...(input.tddMode === undefined ? [] : ['tddMode' as const]),
+        ],
+        requestId: `strategy-revision:${createHash('sha256')
+          .update(
+            canonicalJson({
+              runId: input.runId,
+              prior: prior.semanticDigest,
+              preference,
+              revision: lifecycle.revision,
+            }),
+          )
+          .digest('hex')}`,
+      };
+      if (
+        lifecycle.phase === 'design' &&
+        lifecycle.strategyRevisionRequest?.priorStrategyDigest === prior.semanticDigest &&
+        canonicalJson(lifecycle.strategyRevisionRequest.preference) === canonicalJson(preference)
+      )
+        return { value: await this.coordinator.status(input.runId), diagnostics: [] };
+      await this.assertStrategyRevisionSafe(state);
+      return this.createDesignWork(state, undefined, { revision: request });
+    });
+  }
+
+  private async assertStrategyRevisionSafe(state: RunState): Promise<void> {
+    if (
+      state.reconciliationRequired ||
+      state.pendingActionId ||
+      (state.workExecution &&
+        ['claimed', 'context-delivered', 'invoking', 'submitted', 'unknown'].includes(
+          state.workExecution.status,
+        )) ||
+      (state.changeLifecycle?.currentWork &&
+        (await this.ctx.evidenceCoordinator.hasUnsettledWorkAttempt(
+          state.runId,
+          state.changeLifecycle.currentWork.workId,
+        )))
+    )
+      throw new Error(
+        'Strategy revision requires settling the current invocation, command or unknown result first',
+      );
   }
 
   submitHumanDecision(
@@ -1189,6 +1312,13 @@ export class WorkflowRuns extends Service {
         remote: base.remote,
         targetBranch: base.targetBranch,
       });
+      const revisionProposal =
+        approvalPhase === 'design' && lifecycle.strategyRevisionRequest
+          ? this.strategyProposal(state, lifecycle)
+          : null;
+      const approvalScope = revisionProposal
+        ? `design-strategy:${lifecycle.strategyRevisionRequest!.requestId}:${revisionProposal.source.submissionDigest}`
+        : null;
       assessment = await this.ctx.specificationPlanning.assess({
         changeId: lifecycle.identity.changeId,
         decisionRunId: state.runId,
@@ -1226,6 +1356,7 @@ export class WorkflowRuns extends Service {
               requestId: `open-repair:${state.runId}:${lifecycle.revision}`,
             }
           : {}),
+        ...(approvalScope ? { approvalScope } : {}),
         ...(signal ? { signal } : {}),
       });
       if (assessment.observation) {
@@ -1256,49 +1387,62 @@ export class WorkflowRuns extends Service {
     };
   }
 
-  private buildStrategy(state: RunState, lifecycle: ChangeLifecycleState): BuildStrategy {
-    if (!lifecycle.workspaceIntent) {
-      throw new Error('Build Strategy requires the approved Workspace isolation intent');
-    }
-    const preference = state.trigger?.facts.buildStrategyPreference as
-      | {
-          schemaVersion?: unknown;
-          executionMode?: unknown;
-          tddMode?: unknown;
-          reviewMode?: unknown;
-        }
-      | undefined;
+  private strategyProposal(
+    state: RunState,
+    lifecycle: ChangeLifecycleState,
+  ): BuildStrategyProposal {
+    const execution = state.workExecution;
+    const submission = execution?.acceptedSubmission;
     if (
-      preference?.schemaVersion !== 1 ||
-      (preference.executionMode !== 'autonomous' &&
-        preference.executionMode !== 'subagent-driven-development') ||
-      (preference.tddMode !== 'tdd' && preference.tddMode !== 'direct') ||
-      preference.reviewMode !== 'standard'
+      lifecycle.currentWork?.kind === 'specification.plan' &&
+      execution?.workId === lifecycle.currentWork.workId &&
+      execution.checkEpoch === lifecycle.checkEpoch &&
+      ['outcome', 'validated'].includes(execution.status) &&
+      execution.actionOutcome?.status === 'succeeded' &&
+      submission
     ) {
-      throw new Error('Change Run is missing its frozen Build Strategy preference');
-    }
-    const current = lifecycle.buildProtocol?.strategy;
-    const candidate = createBuildStrategy({
-      runId: state.runId,
-      revision: current?.revision ?? 1,
-      executionMode: preference.executionMode,
-      tddMode: preference.tddMode,
-      reviewMode: preference.reviewMode,
-      isolationIntent: lifecycle.workspaceIntent.isolation,
-    });
-    if (current && current.semanticDigest !== candidate.semanticDigest) {
-      return createBuildStrategy({
+      if (!lifecycle.workspaceIntent)
+        throw new Error('Strategy requires approved isolation intent');
+      const candidate = parseBuildStrategyCandidate(submission.outcome.result);
+      const previous = lifecycle.buildProtocol?.strategy;
+      let strategy = createBuildStrategy({
         runId: state.runId,
-        revision: current.revision + 1,
+        revision: previous?.revision ?? 1,
         executionMode: candidate.executionMode,
         tddMode: candidate.tddMode,
-        reviewMode: candidate.reviewMode,
-        isolationIntent: candidate.isolationIntent,
+        reviewMode: 'standard',
+        isolationIntent: lifecycle.workspaceIntent.isolation,
       });
+      if (previous && previous.semanticDigest !== strategy.semanticDigest)
+        strategy = createBuildStrategy({
+          ...strategy,
+          runId: state.runId,
+          revision: previous.revision + 1,
+        });
+      return {
+        schemaVersion: 1,
+        candidate,
+        strategy,
+        ...(lifecycle.strategyRevisionRequest
+          ? { revisionRequest: structuredClone(lifecycle.strategyRevisionRequest) }
+          : {}),
+        source: {
+          workId: execution.workId,
+          inputDigest: execution.inputDigest,
+          submissionId: submission.submissionId,
+          submissionDigest: submission.payloadDigest,
+        },
+      };
     }
-    return candidate;
+    if (lifecycle.strategyProposal) return lifecycle.strategyProposal;
+    throw new Error('Design requires a current accepted Build strategy candidate');
   }
 
+  private buildStrategy(state: RunState, lifecycle: ChangeLifecycleState): BuildStrategy {
+    if (lifecycle.phase === 'design') return this.strategyProposal(state, lifecycle).strategy;
+    if (lifecycle.buildProtocol?.strategy) return lifecycle.buildProtocol.strategy;
+    throw new Error('Build requires its approved Strategy');
+  }
   private async loadChangePlanningBase(
     state: RunState,
     lifecycle: ChangeLifecycleState,
@@ -2799,9 +2943,19 @@ export class WorkflowRuns extends Service {
   private async createDesignWork(
     state: RunState,
     signal?: AbortSignal,
+    correction?: {
+      repairOf?: { workId: string; submissionDigest: string };
+      revision?: StrategyRevisionRequest;
+    },
   ): Promise<RuntimeResult<RunStatusView>> {
     const lifecycle = state.changeLifecycle;
-    if (!lifecycle || lifecycle.phase !== 'design' || lifecycle.currentWork) {
+    const repairOf = correction?.repairOf;
+    const revision = correction?.revision;
+    if (
+      !lifecycle ||
+      (!revision && lifecycle.phase !== 'design') ||
+      (!revision && lifecycle.currentWork && lifecycle.currentWork.workId !== repairOf?.workId)
+    ) {
       throw new Error('Design Work can only be created at an empty Design continuation');
     }
     const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(state.runId);
@@ -2840,10 +2994,39 @@ export class WorkflowRuns extends Service {
     for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
       await this.coordinator.bindSkill(state.runId, skill);
     }
-    const created = await this.coordinator.acceptChangeObservation(state.runId, {
-      kind: 'design-work-ready',
-      work,
-    });
+    const created = await this.coordinator.acceptChangeObservation(
+      state.runId,
+      revision
+        ? { kind: 'strategy-revision-requested', request: revision, work }
+        : {
+            kind: 'design-work-ready',
+            work,
+            ...(repairOf ? { replacesWorkId: repairOf.workId } : {}),
+          },
+      revision
+        ? {
+            reobserve: async (latest) => {
+              if (latest.changeLifecycle?.revision !== lifecycle.revision)
+                throw new Error('Strategy revision belongs to a stale Run revision');
+              await this.assertStrategyRevisionSafe(latest);
+            },
+          }
+        : repairOf
+          ? {
+              reobserve: (latest) => {
+                if (
+                  latest.changeLifecycle?.revision !== lifecycle.revision ||
+                  latest.changeLifecycle.currentWork?.workId !== repairOf.workId ||
+                  latest.workExecution?.acceptedSubmission?.payloadDigest !==
+                    repairOf.submissionDigest ||
+                  latest.workExecution.actionOutcome?.status !== 'succeeded'
+                )
+                  throw new Error('Design repair source changed before acceptance');
+                return Promise.resolve();
+              },
+            }
+          : undefined,
+    );
     await this.ctx.workExecutionAuthority.recordWorkCreated(state.runId, work);
     return { ...created, value: await this.coordinator.status(state.runId) };
   }
@@ -3584,6 +3767,14 @@ export class WorkflowRuns extends Service {
                 protocol: ReturnType<typeof createBuildProtocolState>;
               }
             | undefined;
+          if (
+            lifecycle.phase === 'design' &&
+            lifecycle.currentWork &&
+            (!['outcome', 'validated'].includes(current.workExecution?.status ?? '') ||
+              current.workExecution?.actionOutcome?.status !== 'succeeded')
+          ) {
+            return { value: await this.coordinator.status(runId), diagnostics: [] };
+          }
           const evaluated =
             lifecycle.phase === 'design'
               ? await this.assessChangePlanning(current, lifecycle, 'design', signal)
@@ -3623,6 +3814,21 @@ export class WorkflowRuns extends Service {
             return this.planningObservationUnavailable(runId);
           }
           const { projectSnapshot, projectConfigDigest, workspaceRepositoryId } = evaluated;
+          if (
+            lifecycle.phase === 'design' &&
+            assessment.status === 'blocked' &&
+            assessment.observation &&
+            lifecycle.currentWork?.kind === 'specification.plan' &&
+            current.workExecution?.acceptedSubmission &&
+            current.workExecution.actionOutcome?.status === 'succeeded'
+          ) {
+            return this.createDesignWork(current, signal, {
+              repairOf: {
+                workId: lifecycle.currentWork.workId,
+                submissionDigest: current.workExecution.acceptedSubmission.payloadDigest,
+              },
+            });
+          }
           if (
             lifecycle.phase === 'build' &&
             lifecycle.currentWork === null &&
@@ -5651,6 +5857,9 @@ export class WorkflowRuns extends Service {
             runId,
             {
               kind: 'design-gate',
+              ...(assessment.status !== 'blocked'
+                ? { strategyProposal: this.strategyProposal(current, lifecycle) }
+                : {}),
               result: assessment.status,
               reason: assessment.reason,
               evidenceIds: assessment.evidenceDigests,

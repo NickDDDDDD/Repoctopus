@@ -134,6 +134,9 @@ describe('Change Run CLI', () => {
     const [first, second] = await Promise.all([start(), start()]);
 
     expect(first.runId).toBe(second.runId);
+    expect(first.result?.state.trigger?.facts.buildStrategyPreference).toEqual({
+      schemaVersion: 2,
+    });
     expect(first.result?.changeLifecycle).toMatchObject({
       identity: {
         workspaceId: 'team-platform',
@@ -141,7 +144,7 @@ describe('Change Run CLI', () => {
       },
       phase: 'open',
       status: 'running',
-      definition: { id: 'repoctopus-change', version: '4.10.0' },
+      definition: { id: 'repoctopus-change', version: '4.11.0' },
     });
     const firstLifecycle = first.result!.changeLifecycle!;
     const secondLifecycle = second.result!.changeLifecycle!;
@@ -193,8 +196,56 @@ describe('Change Run CLI', () => {
     const runDirectories = await readdir(path.join(workspace, '.repoctopus', 'runs'));
     expect(runDirectories).toEqual([first.runId]);
 
+    const partial = await runCli<RunStatusView>({
+      ...startOptions,
+      args: [
+        ...startOptions.args.map((arg) =>
+          arg === 'stable-create-or-resume' ? 'partial-strategy' : arg,
+        ),
+        '--tdd-mode',
+        'direct',
+      ],
+    });
+    expect(partial.result?.state.trigger?.facts.buildStrategyPreference).toEqual({
+      schemaVersion: 2,
+      tddMode: 'direct',
+    });
+
+    const explicit = await runCli<RunStatusView>({
+      ...startOptions,
+      args: [
+        ...startOptions.args.map((arg) =>
+          arg === 'stable-create-or-resume' ? 'explicit-strategy' : arg,
+        ),
+        '--execution-mode',
+        'subagent-driven-development',
+        '--tdd-mode',
+        'direct',
+      ],
+    });
+    expect(explicit.result?.state.trigger?.facts.buildStrategyPreference).toEqual({
+      schemaVersion: 2,
+      executionMode: 'subagent-driven-development',
+      tddMode: 'direct',
+    });
+    const beforeInvalid = await readdir(path.join(workspace, '.repoctopus', 'runs'));
+    expect(
+      await runCliFailure({
+        ...startOptions,
+        args: [...startOptions.args, '--tdd-mode', 'invalid'],
+      }),
+    ).toMatchObject({ ok: false });
+    expect(await readdir(path.join(workspace, '.repoctopus', 'runs'))).toEqual(beforeInvalid);
+
     const store = new FileRuntimeStore(workspace);
     const beforeConflict = await store.loadRun(first.runId!);
+    await expect(
+      runCli({
+        ...startOptions,
+        args: ['run', 'revise-strategy', '--run', first.runId!, '--tdd-mode', 'direct'],
+      }),
+    ).rejects.toThrow(/Strategy revision requires/);
+    expect(await store.loadRun(first.runId!)).toEqual(beforeConflict);
     const trajectoryBeforeConflict = await store.loadTrajectory(first.runId!);
     await execFileAsync('git', ['switch', '-c', 'spec/other-source'], { cwd: workspace });
     await execFileAsync('git', ['push', '--set-upstream', 'origin', 'spec/other-source'], {

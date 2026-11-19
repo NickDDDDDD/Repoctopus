@@ -114,6 +114,27 @@ Runtime 在 change 开始时冻结并绑定有效组合身份，但只把当前 
 
 内置 Method Profile Registry 以 `id + version + digest` 固定已审核规则；每条规则同时绑定上游 source digest、适用 phase、官方 artifact kind，以及 `context`、`deterministic-validator`、`review-rubric` 或 `human-decision` enforcement。上下文装配只输出这些 Repoctopus-owned 规则，不读取或注入原始 `to-spec`/`to-tickets` 正文。即使项目或用户目录定义同名 Skill，lifecycle definition validation 也会在 Work 创建前拒绝它。
 
+## 根据任务选择执行方式
+
+启动 Change 时，可以不指定执行模式和 TDD。入口不会把缺项解释为用户已选择的默认值。Design Agent 检查实际任务、依赖、宿主能力和测试入口后，分别提出建议；你在原有 Design 审批中查看最终组合与理由。
+
+| 配置                          | 适用依据                                   | 执行要求                                 |
+| ----------------------------- | ------------------------------------------ | ---------------------------------------- |
+| `autonomous`                  | 任务范围小或责任紧密耦合                   | 当前 Agent 实施，保留 Runtime 和独立审查 |
+| `subagent-driven-development` | 有清晰分工边界和可用委派能力               | 实际受管子 Agent 与当前包的委派回执      |
+| `tdd`                         | 可观察行为变更、缺陷回归                   | 真实 RED、GREEN 与回归证据               |
+| `direct`                      | 无适用行为测试的文档等任务，或用户明确选择 | 保留适用检查、Build Check 和 Verify      |
+
+这两个配置轴独立，多仓 Workspace 也可以只用一个 Agent。缺少测试基础设施需要说明并处理，不能直接等同于不用测试。已经明确的偏好会一并展示；建议不是批准，缺少所选执行能力时 Runtime 会阻断，不静默改选。
+
+需要主动改选时，在原 Workspace 执行：
+
+```powershell
+repoctopus run revise-strategy --run <run-id> --tdd-mode direct --json
+```
+
+未给的轴沿用已批准策略；首次 Design 尚未批准时，取当前完整待审候选。审批材料同时展示初始偏好、本次明确改选的轴及最终建议，不能把 Host 未批准的建议当作你的明确选择。Runtime 在可安全停止的 Design、Build 或 Verify 边界创建 Design 修订，当前提案批准后才采用新策略。在途调用或未知结果需要先核对；Archive 和终态不接受改选。
+
 ## 预览工作流中的 Skill
 
 在已接入的 Workspace 根运行预览。终端按 Work 列出 Skill、Provider、来源、角色、位置和绑定。Build Execute 分别展示 `tdd` 和 `direct`。Build 重试的诊断 Skill 会标出装填条件。

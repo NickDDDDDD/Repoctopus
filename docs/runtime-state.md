@@ -84,6 +84,7 @@ Build phase 固定执行 `Configure → Plan → Plan Evidence → Execute → C
 | Execute       | 当前 package 的验收、测试、实现和可选受管子代理委派 Evidence                                                                    |
 | Check         | 全部 package、Task acceptance、测试、独立 standard review 和仓库事实                                                            |
 
+启动 trigger 中的 `buildStrategyPreference` schema 2 只记录显式输入，两轴允许缺项；它不是批准。Design Work 通过 `build-strategy-candidate` 返回完整建议与理由，Runtime 将候选、原 submission 来源和当前请求保存在原 Design gate checkpoint。可信 Design receipt 先持久化，Run 在重验后的同一次 CAS 接受规划与 Strategy；响应丢失按原请求恢复。后期读取批准后的 BuildProtocol Strategy，不再从 trigger 重新推导策略。
 `BuildStrategy` 冻结经过 Design 批准的稳定语义：`autonomous|subagent-driven-development`、`tdd|direct`、standard review 与 `current|branch|worktree` 隔离意图。每个不可变 `WorkDescriptor` 是当前 Action 所需 capability 的唯一权威；`WorkDispatcher` 在 claim、packet ownership 和 invocation 建立前比较 Host 的明确声明，能力不足只阻断当前 Work，并记录不含 capability 文本或 Host identity Metric label 的 `work.claim-capability-rejected`。Runtime 不会从 Work requirements 反向补齐 Host 声明。
 
 `ExecutionBinding` schema v3 只记录 Runtime 在 Configure 观察并验证的协调 Host identity、repository/branch/HEAD、ownership 和 opaque local overlay reference；它不记录 Configure invocation 的 capability list 或 digest。绝对路径只保存在本机 overlay，不进入可移植状态或 OTLP。Configure 成功后自动进入 Plan，不建立第二次常规人工批准。Plan、Execute 与 Check Outcome 只绑定原 claim/invocation/submission identity，并重新验证 Binding 自己拥有的事实；后续 Work 使用更小或不同的合法 capability 集合不会重建 Binding。旧 Binding schema 明确返回 `migration_required`，不双读旧 capability identity。

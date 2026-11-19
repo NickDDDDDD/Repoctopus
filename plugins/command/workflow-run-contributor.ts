@@ -85,6 +85,20 @@ const plugin = ((context: Context) => {
           context.workflowRuns.readHumanDecision(input as ReadLifecycleDecisionInput, signal),
       }),
       context.commandRouter.register({
+        name: 'run.change.prepare-design',
+        execute: ({ input }) =>
+          context.workflowRuns.prepareDesignApproval(
+            input as Parameters<typeof context.workflowRuns.prepareDesignApproval>[0],
+          ),
+      }),
+      context.commandRouter.register({
+        name: 'run.change.revise-strategy',
+        execute: ({ input }) =>
+          context.workflowRuns.reviseStrategy(
+            input as Parameters<typeof context.workflowRuns.reviseStrategy>[0],
+          ),
+      }),
+      context.commandRouter.register({
         name: 'run.decision.submit',
         execute: ({ input, signal }) =>
           context.workflowRuns.submitHumanDecision(

@@ -21,6 +21,7 @@ import type {
 import { assertManagedDelegation } from '../domains/work-execution/delegation.js';
 import { assertBoundedWorkExecutionFindings } from '../domains/work-execution/findings.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
+import { parseBuildStrategyCandidate } from '../domains/change-lifecycle/strategy-selection.js';
 import {
   resolveBuildWorkOutcomeProcessor,
   UnregisteredBuildWorkOutcomeProcessorError,
@@ -234,6 +235,10 @@ function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
     }
   }
   if (!outcome.result) return;
+  if (outcome.result.kind === 'build-strategy-candidate') {
+    parseBuildStrategyCandidate(outcome.result);
+    return;
+  }
   if (typeof outcome.result !== 'object' || Array.isArray(outcome.result)) {
     throw new Error('Work Execution result must be an object');
   }
@@ -430,6 +435,11 @@ export class ManagedWorkExecutor extends Service {
         }
         assertBoundedWorkExecutionFindings(hostOutcome);
         assertBoundedExecutionResult(hostOutcome);
+        if (hostOutcome.status === 'succeeded' && packet.work.kind === 'specification.plan') {
+          parseBuildStrategyCandidate(hostOutcome.result);
+        } else if (hostOutcome.result?.kind === 'build-strategy-candidate') {
+          throw new Error('Build strategy candidate is only accepted for Design Work');
+        }
         assertManagedDelegation(packet, invocation.host, hostOutcome);
         skillFailure = validateConsumedExecutionSkills(packet, hostOutcome);
         if (skillFailure) {

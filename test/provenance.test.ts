@@ -80,7 +80,7 @@ describe('third-party provenance', () => {
 
   it('accepts the immutable Cordis snapshot', async () => {
     const result = await checkProvenance(await provenanceFixture());
-    expect(result.valid).toBe(true);
+    expect(result.valid, result.findings.join('\n')).toBe(true);
     expect(result.fileCount).toBe(113);
   });
 
