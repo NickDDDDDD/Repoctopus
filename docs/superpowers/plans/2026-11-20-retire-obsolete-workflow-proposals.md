@@ -2,6 +2,7 @@
 change: retire-obsolete-workflow-proposals
 design-doc: openspec/changes/retire-obsolete-workflow-proposals/design.md
 base-ref: 47779021e06418b7edbdd57f44922e65f7933522
+archived-with: 2026-11-20-retire-obsolete-workflow-proposals
 ---
 
 # 旧活动提案整理计划

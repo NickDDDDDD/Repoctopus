@@ -1,0 +1,2621 @@
+# comet-execution: managed-run
+change_id: ea97e4cb-7642-49d1-bbf2-a194ae75698c
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: direct
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 47779021e06418b7edbdd57f44922e65f7933522
+design_doc: openspec/changes/archive/2026-11-20-retire-obsolete-workflow-proposals/design.md
+plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/retire-obsolete-workflow-proposals.md
+branch_status: pending
+created_at: 2026-11-19
+verified_at: 2026-11-19
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/retire-obsolete-workflow-proposals
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-20-retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+handoff_hash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: dcb0683496f9c3cea5ed407462899548d664ff46e9cb9b9a1fcbb04aa8d13daa
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: retire-obsolete-workflow-proposals
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 35ce204767603dd1228003bf872b48c819e2b5a3bdeb3e6c5581d64f22da8ed9
+    input:
+      change: retire-obsolete-workflow-proposals
+      changeDir: openspec/changes/retire-obsolete-workflow-proposals
+      workspaceBaseline:
+        ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 47779021e06418b7edbdd57f44922e65f7933522
+      boundBranch: comet/retire-obsolete-workflow-proposals
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 6
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-19
+      designDoc: openspec/changes/archive/2026-11-20-retire-obsolete-workflow-proposals/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-20-retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+      handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: direct
+      verificationReport: docs/superpowers/reports/retire-obsolete-workflow-proposals.md
+      verifiedAt: 2026-11-19
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 24
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-160cd3d42be4942176b761910a3a2851fb402ccdc3e0a23df2acf9ea55e55993
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:1
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: 5d8e7a0417448684d12ae04e4ed2afcc4ace952c256065ec91b29a27f6640f60
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:1
+          attempt: 1
+          claimToken: portable-160cd3d42be4942176b761910a3a2851fb402ccdc3e0a23df2acf9ea55e55993
+          inputHash: 5d8e7a0417448684d12ae04e4ed2afcc4ace952c256065ec91b29a27f6640f60
+          outcomeId: de871897-d104-4ae5-9881-a45f51d5e214
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 014d10e513e817ef0e0f12082cc8d42b76ddded20862baea1c37d67cb7a29431
+            outcomeId: de871897-d104-4ae5-9881-a45f51d5e214
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-74e22e1b36e7ac486a723381069cb399adc549d61dde26335eeed97ddcb59015
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:4
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: 461ed4c55b51648423bbb9ba4f1d0b3501c4cc8ab21d5d3e7884fca9959f4c0d
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:4
+          attempt: 1
+          claimToken: portable-74e22e1b36e7ac486a723381069cb399adc549d61dde26335eeed97ddcb59015
+          inputHash: 461ed4c55b51648423bbb9ba4f1d0b3501c4cc8ab21d5d3e7884fca9959f4c0d
+          outcomeId: retire-obsolete-workflow-proposals:4:1:executor-result
+          output:
+            contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 46209043883359475609585cea087ec69287c86610b8f291d84d2d550306636e
+            outcomeId: retire-obsolete-workflow-proposals:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-74da38cff688b017a55f9c0616ea3936f6226c7d7a83d0c87086127ddf5682cc
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:5
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: 6e1ecfcecb165be0465cd01c4b00320fa501daea2c2bded334c7a196550d8d8a
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:5
+          attempt: 1
+          claimToken: portable-74da38cff688b017a55f9c0616ea3936f6226c7d7a83d0c87086127ddf5682cc
+          inputHash: 6e1ecfcecb165be0465cd01c4b00320fa501daea2c2bded334c7a196550d8d8a
+          outcomeId: 9bfee970-9333-46a4-a9f3-872c1619a248
+          output:
+            handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+            handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+            proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+              specs，不改变Runtime与历史验证事实。取消Open通用Method
+              Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+              Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+            requirementsEvidence:
+              contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+            sourceEvidence:
+              contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8e8cccd85423ccf4c887258552fc523ea4c2c3fb5c5663acc53deb76504436d8
+            outcomeId: 9bfee970-9333-46a4-a9f3-872c1619a248
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-983a73b5d6f487643232f531f2de940a0acb197b3007161ff12ff86103768e48
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:7
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: e8e57f388407b31c6b66f68ad6efe71272203a6aaf29ba36490f92d8587e8338
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:7
+          attempt: 1
+          claimToken: portable-983a73b5d6f487643232f531f2de940a0acb197b3007161ff12ff86103768e48
+          inputHash: e8e57f388407b31c6b66f68ad6efe71272203a6aaf29ba36490f92d8587e8338
+          outcomeId: 68d4b07a-d5f6-45e6-93c5-d893b5f824c4
+          output:
+            designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9b37c7524534ccd40c45a271ceb7ddfe042ff5594e029e76429cb62d2dbf6bd6
+            outcomeId: 68d4b07a-d5f6-45e6-93c5-d893b5f824c4
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-09f7e26c2f9848ff76654a04fe3fe23094ec649504212306dc4ed26364deb83f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:9
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: 7dd409a3d4f078bdce7be899e9705aee4783bcda1924cc30f6b27e574c74a05f
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:9
+          attempt: 1
+          claimToken: portable-09f7e26c2f9848ff76654a04fe3fe23094ec649504212306dc4ed26364deb83f
+          inputHash: 7dd409a3d4f078bdce7be899e9705aee4783bcda1924cc30f6b27e574c74a05f
+          outcomeId: e011b529-a7de-4257-b2b6-fb4224cf9d07
+          output:
+            boundBranch: comet/retire-obsolete-workflow-proposals
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: direct
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a2d7ca10f6666ca76b4d91f047f66769b0797488bef47616d03dc2a72db5e236
+            outcomeId: e011b529-a7de-4257-b2b6-fb4224cf9d07
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c8bc00bd4efee1d957ccd32c5292013d0f4e71733446c1d90380c65f34ecd591
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:11
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: 34396656e1bbd6fbd6fefd8ced1159d887208ae44daffebc3f05c2277a98921a
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:11
+          attempt: 1
+          claimToken: portable-c8bc00bd4efee1d957ccd32c5292013d0f4e71733446c1d90380c65f34ecd591
+          inputHash: 34396656e1bbd6fbd6fefd8ced1159d887208ae44daffebc3f05c2277a98921a
+          outcomeId: 5b67685e-4811-43d2-a342-2b88d5ec4804
+          output:
+            designEvidence:
+              contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+              ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+            plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+            planEvidence:
+              contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+              ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+            taskRevision: 35a4dd994714f3243f8fa56dd54ff4af790956e9132c77b728f049ce344e5710
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d6ec36732109ae7e876bd1948896ef132e1eeedb6ac44c82dabbafb568b20796
+            outcomeId: 5b67685e-4811-43d2-a342-2b88d5ec4804
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: root-housekeeping-20261120
+          token: portable-24476c9122693b904d829d90afeda54ee266ca69d682374ae9a05eeca094a6ef
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:13
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: bf5d8a909b682b1ca8a93ee260282a9bb4f26914a339c3b161e52f5fb21897ea
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:13
+          attempt: 1
+          claimToken: portable-24476c9122693b904d829d90afeda54ee266ca69d682374ae9a05eeca094a6ef
+          inputHash: bf5d8a909b682b1ca8a93ee260282a9bb4f26914a339c3b161e52f5fb21897ea
+          outcomeId: 44c13a4a-75d0-4b33-8a3d-3afe2d08dd36
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f3859947c266513157804047846c220bbefaf06555f5252587f9915a7b6ab9f0
+            outcomeId: 44c13a4a-75d0-4b33-8a3d-3afe2d08dd36
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-d86e12e7563da9a6e83892845e6a6ffa9d95a19f6002cdc5bd8a9c7936293d1a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:14
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: 07fbb5b49e862a7a273199232a42e24e334a173dc48dc373ef55b5caaa6994d0
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:14
+          attempt: 1
+          claimToken: portable-d86e12e7563da9a6e83892845e6a6ffa9d95a19f6002cdc5bd8a9c7936293d1a
+          inputHash: 07fbb5b49e862a7a273199232a42e24e334a173dc48dc373ef55b5caaa6994d0
+          outcomeId: 231ef30f-a14c-4578-9215-37221c9073ef
+          output:
+            argv:
+              - comet.cmd
+              - classic
+              - openspec
+              - --
+              - validate
+              - --all
+              - --strict
+              - --no-interactive
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+            cwd: .
+            environment: 7960a5d08232598bbe75930333799532eb0fab0046fea5c1924b9ce5d3c2d9d1
+            exitCode: 0
+            inputAfter: b7f0137bda27859cafd843ad10286a3b6525449733eb42bdd9fe0e298c4bf75d
+            inputBefore: b7f0137bda27859cafd843ad10286a3b6525449733eb42bdd9fe0e298c4bf75d
+            manifestHash: 900d402fac4fbf3c9e0c4cb0864ebd9b5fe55b05e25abaec884ae3e1c3452f2d
+            manifestRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/a4a5cabb-5c23-46e7-a345-f74168fba376.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/21a659d9-667f-4197-aa18-4b9eb14de167.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ea1b6a46ce86b6845ea08c715843de847ee1221164f80533d6b4e392ad0092e8
+            outcomeId: 231ef30f-a14c-4578-9215-37221c9073ef
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-bca0aa68ec1c9a39e4ca924424fb60d0fb5b23b3e8879866f2622e4b894a749b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:16
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: 7f350c92b83ba015876bb01b33e4320998c0ee63e4f16c9238455e67977ef648
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:16
+          attempt: 1
+          claimToken: portable-bca0aa68ec1c9a39e4ca924424fb60d0fb5b23b3e8879866f2622e4b894a749b
+          inputHash: 7f350c92b83ba015876bb01b33e4320998c0ee63e4f16c9238455e67977ef648
+          outcomeId: 81654166-578d-48ca-9c4f-de2a2c2afa09
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/retire-obsolete-workflow-proposals.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1871ff71b8ec781e21b0075aa0030224d4dcda56f159400d55905e2e50ee1265
+            outcomeId: 81654166-578d-48ca-9c4f-de2a2c2afa09
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-f1f3d3b37ac667e4416629b0506174d3c2d72f1ab31fbfdcad01691e7d9db13b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:18
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: 7c3f797a0725e4d25d542ba79a5af7a584977660b5c326a420784c09af7201ca
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:18
+          attempt: 1
+          claimToken: portable-f1f3d3b37ac667e4416629b0506174d3c2d72f1ab31fbfdcad01691e7d9db13b
+          inputHash: 7c3f797a0725e4d25d542ba79a5af7a584977660b5c326a420784c09af7201ca
+          outcomeId: fcdb0bf7-317e-469d-b6d0-00b1d561f299
+          output:
+            argv:
+              - comet.cmd
+              - classic
+              - openspec
+              - --
+              - validate
+              - --all
+              - --strict
+              - --no-interactive
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+            cwd: .
+            deliveryInputs: {}
+            environment: 7960a5d08232598bbe75930333799532eb0fab0046fea5c1924b9ce5d3c2d9d1
+            exitCode: 0
+            inputAfter: b266e00af3c13557ec59eb58f5dd7b33d28fcd484cc25d8382ae78587f7fcae2
+            inputBefore: b266e00af3c13557ec59eb58f5dd7b33d28fcd484cc25d8382ae78587f7fcae2
+            manifestHash: 30a6c95bfb5ed3ced5949245f1d5856c3d4bc0d6f20546d7894d5ad684c754d4
+            manifestRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/c704d75b-76bb-4377-8d12-9ee7f1bb5c8d.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/ac1c05c4-3020-457b-a894-cc597b828646.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 069b367d757e64df70e949bbb44e04fb868b031bcf1a8fd7acc1620269130f72
+            outcomeId: fcdb0bf7-317e-469d-b6d0-00b1d561f299
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-3d53ef7ef259a79f68b6a4e1825dc15dd65ef90f668597b5fac762c6c2628ba3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:20
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: 335100d65dbca29608d1eb9abd62b4a66f8c8f7744ccf0fd7b6943fbe9cbe3fe
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:20
+          attempt: 1
+          claimToken: portable-3d53ef7ef259a79f68b6a4e1825dc15dd65ef90f668597b5fac762c6c2628ba3
+          inputHash: 335100d65dbca29608d1eb9abd62b4a66f8c8f7744ccf0fd7b6943fbe9cbe3fe
+          outcomeId: d6f35a46-b2b4-476e-ba53-ac65f2e945c7
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档本次文档整理Change并交付origin/main：撤出三个过时活动提案，保留Git历史与取消/暂缓结论，仅保留TDD真实命令Evidence核验后续目标；不归档旧提案为已完成，不同步旧delta
+              specs，不改变Runtime或主规格。三项任务完成，正式Build/Verify通过，严格校验16/16及独立审查通过。创建PR并在CI通过后合入；本次不发布Release。
+            targetBranch: comet/retire-obsolete-workflow-proposals
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f42e2fff4af58216c3ffef3430524d56e0a45750a65598559b8975baa854515e
+            outcomeId: d6f35a46-b2b4-476e-ba53-ac65f2e945c7
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-8c3ed775a4bf0e3022cc14cf5c493f71d19d9ef312cc24f182a12072136db7b9
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:22
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: 70d764b0414785504ee48b7623314d26e10ea2c9442450b190fd8376e77c4994
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:22
+          attempt: 1
+          claimToken: portable-8c3ed775a4bf0e3022cc14cf5c493f71d19d9ef312cc24f182a12072136db7b9
+          inputHash: 70d764b0414785504ee48b7623314d26e10ea2c9442450b190fd8376e77c4994
+          outcomeId: b26a0e9b-f107-4f58-bb10-93fc6fa48232
+          output:
+            baseCommit: 761818a931986a22e4134c16df5947e76f795db0
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/retire-obsolete-workflow-proposals
+            verifiedBranch: comet/retire-obsolete-workflow-proposals
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 937fff9fae01fac677b1c1190d61898c5dcccf55f4e01b3b162198370d590517
+            outcomeId: b26a0e9b-f107-4f58-bb10-93fc6fa48232
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-683a294923945cc419c6dd36f1402824c822433fa05674008da0ca2850898e94
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: retire-obsolete-workflow-proposals:23
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: d519ca4b63b6db13e84edcdf7743d0d4e9e1b743eb02f9415fa2853ea56cf04b
+        outcome:
+          actionId: retire-obsolete-workflow-proposals:23
+          artifacts:
+            - sha256: 0b73aa2688b4b4d83a04ffbda4c8e3744af190951dd3bb2ae3b178fb0ad8042f
+              uri: openspec/changes/archive/2026-11-20-retire-obsolete-workflow-proposals/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-683a294923945cc419c6dd36f1402824c822433fa05674008da0ca2850898e94
+          inputHash: d519ca4b63b6db13e84edcdf7743d0d4e9e1b743eb02f9415fa2853ea56cf04b
+          outcomeId: e96fde3f-bc5d-4c5b-b542-64a02ba50384
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-20-retire-obsolete-workflow-proposals
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6aa6ded3ce3ea4050df01ea6e8e90cf19df82eb083c93381a7aede498f8b1ee4
+            outcomeId: e96fde3f-bc5d-4c5b-b542-64a02ba50384
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: retire-obsolete-workflow-proposals:24
+        input:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs: {}
+        inputHash: c81cb681a64fe72a0ead94e091216c8a3f5be72a0d3709d49336c575887f9767
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: retire-obsolete-workflow-proposals
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      retire-obsolete-workflow-proposals:1:
+        results: {}
+        sequence: 1
+      retire-obsolete-workflow-proposals:11:
+        results: {}
+        sequence: 11
+      retire-obsolete-workflow-proposals:13:
+        results: {}
+        sequence: 13
+      retire-obsolete-workflow-proposals:14:
+        results: {}
+        sequence: 14
+      retire-obsolete-workflow-proposals:16:
+        results: {}
+        sequence: 16
+      retire-obsolete-workflow-proposals:18:
+        results: {}
+        sequence: 18
+      retire-obsolete-workflow-proposals:20:
+        results: {}
+        sequence: 20
+      retire-obsolete-workflow-proposals:22:
+        results: {}
+        sequence: 22
+      retire-obsolete-workflow-proposals:23:
+        results: {}
+        sequence: 23
+      retire-obsolete-workflow-proposals:24:
+        results: {}
+        sequence: 24
+      retire-obsolete-workflow-proposals:4:
+        results: {}
+        sequence: 4
+      retire-obsolete-workflow-proposals:5:
+        results: {}
+        sequence: 5
+      retire-obsolete-workflow-proposals:7:
+        results: {}
+        sequence: 7
+      retire-obsolete-workflow-proposals:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: retire-obsolete-workflow-proposals:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+        proposalHash: c295d48c4d0b5e74d841381d4bcf3ae7633d593215050f76d8341f65b0cfcc4e
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+          choice: approved
+          proposalHash: c295d48c4d0b5e74d841381d4bcf3ae7633d593215050f76d8341f65b0cfcc4e
+      - id: retire-obsolete-workflow-proposals:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+        proposalHash: 689aec54a8cde2a3367cb42b6171ecd65a1a56b88d0e317e05b630347f8156a3
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-689aec54a8cde2a3367cb42b6171ecd65a1a56b88d0e317e05b630347f8156a3-approved
+          choice: approved
+          proposalHash: 689aec54a8cde2a3367cb42b6171ecd65a1a56b88d0e317e05b630347f8156a3
+      - id: retire-obsolete-workflow-proposals:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.build.configure:
+              boundBranch: comet/retire-obsolete-workflow-proposals
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: direct
+        proposalHash: ce59f10ce4fd3098d44975afc75e99f975fc98be52bbbcf847aa2d4461c3ce70
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: a3392f42-7f2d-4a56-9d51-baa4861c91ce
+          choice: approved
+          proposalHash: ce59f10ce4fd3098d44975afc75e99f975fc98be52bbbcf847aa2d4461c3ce70
+      - id: retire-obsolete-workflow-proposals:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档本次文档整理Change并交付origin/main：撤出三个过时活动提案，保留Git历史与取消/暂缓结论，仅保留TDD真实命令Evidence核验后续目标；不归档旧提案为已完成，不同步旧delta
+                specs，不改变Runtime或主规格。三项任务完成，正式Build/Verify通过，严格校验16/16及独立审查通过。创建PR并在CI通过后合入；本次不发布Release。
+              targetBranch: comet/retire-obsolete-workflow-proposals
+        proposalHash: a622252420ebc60a2a6b01ec7444b4924c72680f5216070cfb568a32402e64a0
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-a622252420ebc60a2a6b01ec7444b4924c72680f5216070cfb568a32402e64a0-pr
+          choice: pr
+          proposalHash: a622252420ebc60a2a6b01ec7444b4924c72680f5216070cfb568a32402e64a0
+    evidenceWaits:
+      - id: retire-obsolete-workflow-proposals:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/retire-obsolete-workflow-proposals
+          contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+          submissionId: 38c1ca0e-49b2-4a96-9fd0-9cef9d14781e
+      - id: retire-obsolete-workflow-proposals:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+          submissionId: 7d8fc2cd-1ebf-4b4e-8f7c-b48c6ecc897b
+      - id: retire-obsolete-workflow-proposals:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+          contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+          submissionId: ba382394-fae5-4fc3-81ce-ed66cc628cf1
+      - id: retire-obsolete-workflow-proposals:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/21a659d9-667f-4197-aa18-4b9eb14de167.log
+          contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+          submissionId: 5f942fce-c719-41c7-8f17-aa2c57f6b8ec
+      - id: retire-obsolete-workflow-proposals:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/retire-obsolete-workflow-proposals.md
+          contentHash: dc65bc3b7c40ce9f013012f32eb9c6684b8cef42f4c0572892329c84c38d31b0
+          submissionId: 8faf9995-e832-4f17-a65b-6ac92aebfe5c
+      - id: retire-obsolete-workflow-proposals:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/ac1c05c4-3020-457b-a894-cc597b828646.log
+          contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+          submissionId: a127106c-703e-4120-95f0-eddfbc076d03
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 37
+  sourceHash: 0ffe105bc88ee62f948f61152304cee878b9a10c089bc323be82a995ccf5f453
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+              ref: openspec/changes/retire-obsolete-workflow-proposals
+      - contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+        ref: openspec/changes/retire-obsolete-workflow-proposals
+      - contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+      - choice: approved
+        proposal:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+              handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+              proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                specs，不改变Runtime与历史验证事实。取消Open通用Method
+                Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+              requirementsEvidence:
+                contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+              sourceEvidence:
+                contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+      - handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+        handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+        proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+          specs，不改变Runtime与历史验证事实。取消Open通用Method
+          Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+          Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+        requirementsEvidence:
+          contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+          ref: openspec/changes/retire-obsolete-workflow-proposals
+        sourceEvidence:
+          contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+          ref: openspec/changes/retire-obsolete-workflow-proposals
+      - designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+      - contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+        ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+      - boundBranch: comet/retire-obsolete-workflow-proposals
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: direct
+      - choice: approved
+        proposal:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.build.configure:
+              boundBranch: comet/retire-obsolete-workflow-proposals
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: direct
+      - designEvidence:
+          contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+          ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+        plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+        planEvidence:
+          contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+          ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+        taskRevision: 35a4dd994714f3243f8fa56dd54ff4af790956e9132c77b728f049ce344e5710
+      - contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+        ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+      - event: build-complete
+      - argv:
+          - comet.cmd
+          - classic
+          - openspec
+          - --
+          - validate
+          - --all
+          - --strict
+          - --no-interactive
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+        cwd: .
+        environment: 7960a5d08232598bbe75930333799532eb0fab0046fea5c1924b9ce5d3c2d9d1
+        exitCode: 0
+        inputAfter: b7f0137bda27859cafd843ad10286a3b6525449733eb42bdd9fe0e298c4bf75d
+        inputBefore: b7f0137bda27859cafd843ad10286a3b6525449733eb42bdd9fe0e298c4bf75d
+        manifestHash: 900d402fac4fbf3c9e0c4cb0864ebd9b5fe55b05e25abaec884ae3e1c3452f2d
+        manifestRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/a4a5cabb-5c23-46e7-a345-f74168fba376.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/21a659d9-667f-4197-aa18-4b9eb14de167.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+        ref: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/21a659d9-667f-4197-aa18-4b9eb14de167.log
+      - contentHash: dc65bc3b7c40ce9f013012f32eb9c6684b8cef42f4c0572892329c84c38d31b0
+        ref: docs/superpowers/reports/retire-obsolete-workflow-proposals.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/retire-obsolete-workflow-proposals.md
+      - argv:
+          - comet.cmd
+          - classic
+          - openspec
+          - --
+          - validate
+          - --all
+          - --strict
+          - --no-interactive
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+        cwd: .
+        deliveryInputs: {}
+        environment: 7960a5d08232598bbe75930333799532eb0fab0046fea5c1924b9ce5d3c2d9d1
+        exitCode: 0
+        inputAfter: b266e00af3c13557ec59eb58f5dd7b33d28fcd484cc25d8382ae78587f7fcae2
+        inputBefore: b266e00af3c13557ec59eb58f5dd7b33d28fcd484cc25d8382ae78587f7fcae2
+        manifestHash: 30a6c95bfb5ed3ced5949245f1d5856c3d4bc0d6f20546d7894d5ad684c754d4
+        manifestRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/c704d75b-76bb-4377-8d12-9ee7f1bb5c8d.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/ac1c05c4-3020-457b-a894-cc597b828646.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+        ref: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/ac1c05c4-3020-457b-a894-cc597b828646.log
+      - choice: pr
+        proposal:
+          input:
+            change: retire-obsolete-workflow-proposals
+            changeDir: openspec/changes/retire-obsolete-workflow-proposals
+            workspaceBaseline:
+              ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档本次文档整理Change并交付origin/main：撤出三个过时活动提案，保留Git历史与取消/暂缓结论，仅保留TDD真实命令Evidence核验后续目标；不归档旧提案为已完成，不同步旧delta
+                specs，不改变Runtime或主规格。三项任务完成，正式Build/Verify通过，严格校验16/16及独立审查通过。创建PR并在CI通过后合入；本次不发布Release。
+              targetBranch: comet/retire-obsolete-workflow-proposals
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档本次文档整理Change并交付origin/main：撤出三个过时活动提案，保留Git历史与取消/暂缓结论，仅保留TDD真实命令Evidence核验后续目标；不归档旧提案为已完成，不同步旧delta
+          specs，不改变Runtime或主规格。三项任务完成，正式Build/Verify通过，严格校验16/16及独立审查通过。创建PR并在CI通过后合入；本次不发布Release。
+        targetBranch: comet/retire-obsolete-workflow-proposals
+      - baseCommit: 761818a931986a22e4134c16df5947e76f795db0
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: comet/retire-obsolete-workflow-proposals
+        verifiedBranch: comet/retire-obsolete-workflow-proposals
+      - archiveDirectory: openspec/changes/archive/2026-11-20-retire-obsolete-workflow-proposals
+      - sequence: 9
+        value:
+          boundBranch: comet/retire-obsolete-workflow-proposals
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: direct
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: retire-obsolete-workflow-proposals
+              changeDir: openspec/changes/retire-obsolete-workflow-proposals
+              workspaceBaseline:
+                ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+            outputs:
+              full.build.configure:
+                boundBranch: comet/retire-obsolete-workflow-proposals
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: direct
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: retire-obsolete-workflow-proposals
+              changeDir: openspec/changes/retire-obsolete-workflow-proposals
+              workspaceBaseline:
+                ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+                handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+                proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+                  specs，不改变Runtime与历史验证事实。取消Open通用Method
+                  Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+                  Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+                requirementsEvidence:
+                  contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+                  ref: openspec/changes/retire-obsolete-workflow-proposals
+                sourceEvidence:
+                  contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+                  ref: openspec/changes/retire-obsolete-workflow-proposals
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/retire-obsolete-workflow-proposals/design.md
+      - sequence: 8
+        value:
+          contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+          ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/retire-obsolete-workflow-proposals/.comet/handoff/design-context.json
+          handoffHash: 5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d
+          proposal: 仅整理三个旧活动提案：删除旧活动目录，以docs/workflow-follow-ups.md记录撤回或暂缓原因、37c04f4源提交和原路径；不将旧提案作为交付归档，不同步旧delta
+            specs，不改变Runtime与历史验证事实。取消Open通用Method
+            Receipt，暂缓独立团队检查Work，只保留TDD真实命令Evidence核验后续目标。三项文档任务，按严格校验、差异边界、链接和Git追溯验收。建议autonomous+direct+thorough，沿用worktree；执行配置等待用户决定。风险是误将取消当交付或把Verify
+            Profile等同独立Work，处置索引明确说明边界。无Spec Patch。
+          requirementsEvidence:
+            contentHash: 1b2e9ae0fe2a8e69ab39337e2a64f4609099f95f52472ec04d08f6b25bb94952
+            ref: openspec/changes/retire-obsolete-workflow-proposals
+          sourceEvidence:
+            contentHash: 2b7c562a472a716171e88bdea25a28e849b86e8a438163845525e519a8d80af2
+            ref: openspec/changes/retire-obsolete-workflow-proposals
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: retire-obsolete-workflow-proposals
+              changeDir: openspec/changes/retire-obsolete-workflow-proposals
+              workspaceBaseline:
+                ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+                ref: openspec/changes/retire-obsolete-workflow-proposals
+      - sequence: 2
+        value:
+          contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+          ref: openspec/changes/retire-obsolete-workflow-proposals
+      - sequence: 4
+        value:
+          contentHash: af4b8bdfbd427a72815542013040cc2b8e968b0ad6c0e24051b53507c6abcf3f
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 0f032a04404477ea7d4d41a024da85d6b7ae91d51b9e3c19b9ee42c1f4da8c70
+            ref: openspec/changes/retire-obsolete-workflow-proposals/design.md
+          plan: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+          planEvidence:
+            contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+            ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+          taskRevision: 35a4dd994714f3243f8fa56dd54ff4af790956e9132c77b728f049ce344e5710
+      - sequence: 12
+        value:
+          contentHash: ffcf20e49f94649d11cfd1add2502a40944634fee6801e91bcb2ba3701f6c88e
+          ref: docs/superpowers/plans/2026-11-20-retire-obsolete-workflow-proposals.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - comet.cmd
+            - classic
+            - openspec
+            - --
+            - validate
+            - --all
+            - --strict
+            - --no-interactive
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+          cwd: .
+          environment: 7960a5d08232598bbe75930333799532eb0fab0046fea5c1924b9ce5d3c2d9d1
+          exitCode: 0
+          inputAfter: b7f0137bda27859cafd843ad10286a3b6525449733eb42bdd9fe0e298c4bf75d
+          inputBefore: b7f0137bda27859cafd843ad10286a3b6525449733eb42bdd9fe0e298c4bf75d
+          manifestHash: 900d402fac4fbf3c9e0c4cb0864ebd9b5fe55b05e25abaec884ae3e1c3452f2d
+          manifestRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/a4a5cabb-5c23-46e7-a345-f74168fba376.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/21a659d9-667f-4197-aa18-4b9eb14de167.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+          ref: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/21a659d9-667f-4197-aa18-4b9eb14de167.log
+      - sequence: 17
+        value:
+          contentHash: dc65bc3b7c40ce9f013012f32eb9c6684b8cef42f4c0572892329c84c38d31b0
+          ref: docs/superpowers/reports/retire-obsolete-workflow-proposals.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/retire-obsolete-workflow-proposals.md
+      - sequence: 18
+        value:
+          argv:
+            - comet.cmd
+            - classic
+            - openspec
+            - --
+            - validate
+            - --all
+            - --strict
+            - --no-interactive
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+          cwd: .
+          deliveryInputs: {}
+          environment: 7960a5d08232598bbe75930333799532eb0fab0046fea5c1924b9ce5d3c2d9d1
+          exitCode: 0
+          inputAfter: b266e00af3c13557ec59eb58f5dd7b33d28fcd484cc25d8382ae78587f7fcae2
+          inputBefore: b266e00af3c13557ec59eb58f5dd7b33d28fcd484cc25d8382ae78587f7fcae2
+          manifestHash: 30a6c95bfb5ed3ced5949245f1d5856c3d4bc0d6f20546d7894d5ad684c754d4
+          manifestRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/c704d75b-76bb-4377-8d12-9ee7f1bb5c8d.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/ac1c05c4-3020-457b-a894-cc597b828646.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          contentHash: 514d127b04a757e59b7ee6623cbe9dd5b6d98271ded2a0efe04a92fbfe80501b
+          ref: .comet/runtime/classic-sdk-checks/6badf10592358d41d76afa4e9901c1557be3a643889e07af945b02264dd58156/ac1c05c4-3020-457b-a894-cc597b828646.log
+      - sequence: 21
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: retire-obsolete-workflow-proposals
+              changeDir: openspec/changes/retire-obsolete-workflow-proposals
+              workspaceBaseline:
+                ref: 9cfd2579-76eb-4b21-8cb5-8262ad59b85f
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档本次文档整理Change并交付origin/main：撤出三个过时活动提案，保留Git历史与取消/暂缓结论，仅保留TDD真实命令Evidence核验后续目标；不归档旧提案为已完成，不同步旧delta
+                  specs，不改变Runtime或主规格。三项任务完成，正式Build/Verify通过，严格校验16/16及独立审查通过。创建PR并在CI通过后合入；本次不发布Release。
+                targetBranch: comet/retire-obsolete-workflow-proposals
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档本次文档整理Change并交付origin/main：撤出三个过时活动提案，保留Git历史与取消/暂缓结论，仅保留TDD真实命令Evidence核验后续目标；不归档旧提案为已完成，不同步旧delta
+            specs，不改变Runtime或主规格。三项任务完成，正式Build/Verify通过，严格校验16/16及独立审查通过。创建PR并在CI通过后合入；本次不发布Release。
+          targetBranch: comet/retire-obsolete-workflow-proposals
+      - sequence: 22
+        value:
+          baseCommit: 761818a931986a22e4134c16df5947e76f795db0
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/retire-obsolete-workflow-proposals
+          verifiedBranch: comet/retire-obsolete-workflow-proposals
+      - sequence: 23
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-20-retire-obsolete-workflow-proposals
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 52
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 54
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 48
+        height: 5
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: 57
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 58
+        right: 51
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 53
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 59
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 22
+        left: 63
+        right: 64
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 65
+        right: 51
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 66
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 67
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 70
+        height: 2
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 72
+        right: 73
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 75
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 76
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 71
+        right: 77
+        height: 4
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: 79
+        right: 80
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 81
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 82
+        right: 77
+        height: 4
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 84
+        height: 2
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: 80
+        height: 2
+      - key: full.build.plan
+        value: 33
+        left: 85
+        right: 86
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 87
+        right: 77
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 89
+        right: 90
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 91
+        right: 84
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 92
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 77
+        height: 5
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: 96
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: 97
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 99
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 102
+        right: 96
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 101
+        right: 103
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 104
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 43
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 90
+        right: 84
+        height: 2
+      - key: full.build.check.evidence
+        value: 37
+        left: 109
+        right: 110
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 111
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 112
+        right: 105
+        height: 5
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: 114
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 115
+        right: 108
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 110
+        right: 86
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 116
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 118
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 45
+        left: 120
+        right: 121
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 122
+        right: 108
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 123
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 124
+        right: 105
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 127
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 129
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 132
+        right: 133
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 134
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 136
+        right: 137
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: 138
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 139
+        right: 130
+        height: 4
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: 141
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 145
+        height: 2
+      - key: full.open
+        value: 29
+        left: 143
+        right: 146
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 149
+        right: 150
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 148
+        right: 151
+        height: 3
+      - key: full.open
+        value: 29
+        left: 152
+        right: 146
+        height: 4
+      - key: full.archive.prepare
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: 154
+        right: 155
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: 158
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: 157
+        right: 159
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: 156
+        right: 160
+        height: 4
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 162
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 164
+        right: 165
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 163
+        right: 166
+        height: 3
+      - key: full.open
+        value: 29
+        left: 151
+        right: 167
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 161
+        right: 168
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 171
+        right: 172
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 175
+        height: 2
+      - key: full.open
+        value: 29
+        left: 173
+        right: 176
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 178
+        right: 179
+        height: 2
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 181
+        right: 182
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 180
+        right: 183
+        height: 3
+      - key: full.open
+        value: 29
+        left: 184
+        right: 176
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: 186
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: 188
+        right: 189
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 187
+        right: 190
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 176
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: 191
+        right: 192
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 194
+        right: 195
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 196
+        right: 190
+        height: 3
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: 198
+        height: 2
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 199
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 200
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 201
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 203
+        height: 2
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: 205
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 204
+        right: 206
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 207
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 208
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 56
+      - 62
+      - 68
+      - 78
+      - 83
+      - 88
+      - 94
+      - 100
+      - 106
+      - 113
+      - 119
+      - 125
+      - 128
+      - 131
+      - 135
+      - 140
+      - 142
+      - 147
+      - 153
+      - 169
+      - 170
+      - 177
+      - 185
+      - 193
+      - 202
+      - 209
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:11
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:13
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:14
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:16
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:18
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:20
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:22
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:23
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:4
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:5
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:7
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - retire-obsolete-workflow-proposals:9
+          - results
+        map: 26
+      - path:
+          - outputs
+        map: 22
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 27
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 28
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 29
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 31
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 36
+  storageHash: 646d1f5cf5868bfb8b93ee7924b734bece99051049ad8df6c2cda94b027b3fa8
+check_epoch: 6

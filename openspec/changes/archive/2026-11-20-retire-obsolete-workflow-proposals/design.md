@@ -2,6 +2,8 @@
 comet_change: retire-obsolete-workflow-proposals
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-20-retire-obsolete-workflow-proposals
+status: final
 ---
 
 # Design
