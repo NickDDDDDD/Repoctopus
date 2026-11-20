@@ -35,6 +35,24 @@ Build 分段与 Verify 最终集成复用同一次有效审查；审查者已增
 
 ## 验证边界
 
-本次没有执行 Runtime 全量测试、重打安装包、多仓发布实验或 Release。变更仅整理文档，采用已批准的 direct 模式，不制造 RED/GREEN。本次不声称已实现 TDD 命令 Evidence 核验，也不承诺独立团队检查 Work 的交付时间。
+原文档验证阶段没有执行 Runtime 全量测试、重打安装包、多仓发布实验或 Release。交付阶段发现分发门禁要求后，补充了下面的实包检查。变更仅整理文档，采用已批准的 direct 模式，不制造 RED/GREEN。本次不声称已实现 TDD 命令 Evidence 核验，也不承诺独立团队检查 Work 的交付时间。
 
 Comet 固定参考为 `35c9860b77b42bafa0c2d80d8d695889f888a924`（0.5.1），本次未升级或引入其源码。
+
+## 交付阶段的分发门禁补充
+
+原文档验证遗漏了 `docs/` 会进入 CLI 包的影响。本地执行 `npm.cmd run check:managed-execution-report` 已复现：旧报告不能覆盖新增的 `docs/workflow-follow-ups.md`。本节补齐实际包证据，不修改已封存归档、旧报告或检查器，不重建已完成 Run。
+
+Tested implementation commit: `25923738094b0e6e15b08e17764b3376b99416cd`
+
+Package content SHA-256: `ce93b4e676a2331a9191599c531f6a94b27c8a0cec70372ee58d2af051ae3cfe`
+
+Package files: `489`
+
+Package content bytes: `6624985`
+
+在该提交实际执行 `npm.cmd ci --ignore-scripts --no-audit --no-fund`、`npm.cmd run build` 和 `npm.cmd pack --json --ignore-scripts`，以项目 `packageContentDigest` 计算上述内容摘要。在独立临时目录安装该 `.tgz` 后，安装所得 `bin/repoctopus.js --help` 退出码为 0；包内处置索引与源码文件 SHA-256 一致。
+
+通过 Git 对比，该提交相对于此前完成真实多仓验收的 `8163338d3916981c5982f8c37f1690ad541d205d`，产品代码、脚本、技能、依赖和锁文件均未变化。原报告的实包为 488 个文件、6621674 字节；本包仅增加 1 份 3311 字节的处置索引。原文档校验和独立审查覆盖该索引；本节不宣称重新执行了多仓工作流实验。后续只补证据文档，交付结论仍须实际 CI 检查通过。
+
+补充上述证据后，实际运行 `npm.cmd run check:managed-execution-report` 退出码为 0，检查器选择本报告并重打包核对得到相同内容摘要。没有修改门禁规则。
