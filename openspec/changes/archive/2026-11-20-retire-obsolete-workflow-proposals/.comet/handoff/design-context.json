@@ -1,0 +1,15 @@
+{
+  "change": "retire-obsolete-workflow-proposals",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "5aef2a952a77de1cdbe125e780b4a524a9b44ea191e56905f2910c7b2fb7ae3d",
+  "files": [
+    { "path": "openspec/changes/retire-obsolete-workflow-proposals/proposal.md", "sha256": "ec649e264d127d346e3cde6c0e92d847577de15ea1d070672385736ae1348e6b" },
+    { "path": "openspec/changes/retire-obsolete-workflow-proposals/design.md", "sha256": "11f751b74b82a01c8a6becc0d51a0d0b38eb40c677b3267e042d3f791f32dcbf" },
+    { "path": "openspec/changes/retire-obsolete-workflow-proposals/tasks.md", "sha256": "35a4dd994714f3243f8fa56dd54ff4af790956e9132c77b728f049ce344e5710" },
+    { "path": "openspec/changes/retire-obsolete-workflow-proposals/.openspec.yaml", "sha256": "fbc0c7ff72420ffdc980cf0329136b2732845d9701cd9ef0fd8a9b96292fca7c" }
+  ]
+}

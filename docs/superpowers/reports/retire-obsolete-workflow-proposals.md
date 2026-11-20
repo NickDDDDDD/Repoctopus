@@ -1,0 +1,7 @@
+# 旧活动提案整理验证
+
+本文件是 Comet Classic 报告入口。详细检查与审查证据见唯一[验证报告](../../../verification/retire-obsolete-workflow-proposals/verification-report.md)。
+
+三个旧提案已从活动清单撤出，取消、暂缓和 TDD 后续目标已区分记录。OpenSpec 全量严格校验为 16 项通过、0 失败；改动边界、历史追溯、链接和文档格式检查通过，独立审查无阻断项。
+
+本次不改变 Runtime 行为。原文档验证阶段未执行产品测试或重打安装包；交付复核补充了实际包构建、安装及文档一致性检查，详见报告。本次未发布 Release。正式 Build/Verify 阶段状态由原 Comet Run 的 Guard 收据保存；交付还须当前 CI 检查通过。
