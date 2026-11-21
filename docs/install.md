@@ -8,10 +8,10 @@
 
 ## 用 npx 临时运行 CLI
 
-在 [GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases) 确认指定版本的 `repoctopus-<版本>.tgz` 已公开。以下以 `v0.1.3` 为例。
+在 [GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases) 确认指定版本的 `repoctopus-<版本>.tgz` 已公开。以下以 `v0.1.4` 为例。
 
 ```bash
-npx --yes --ignore-scripts --legacy-peer-deps --package=https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.3/repoctopus-0.1.3.tgz repoctopus --help
+npx --yes --ignore-scripts --legacy-peer-deps --package=https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.4/repoctopus-0.1.4.tgz repoctopus --help
 ```
 
 确认输出 `Usage: repoctopus ...` 后，进入准备接入的 Git 项目或已有团队 Workspace。每次运行时保留上面命令中直到 `repoctopus` 的部分，再把 `--help` 换成所需的子命令和参数。让 Agent 执行时也提供这个固定版本命令。Windows PowerShell 若阻止 `.ps1` 启动器，使用 `npx.cmd`。示例带上 `--legacy-peer-deps`，以避开 Windows npm 11 在同一项目连续运行本地 tarball 时的缓存解析错误。
@@ -24,7 +24,7 @@ npx --yes --ignore-scripts --legacy-peer-deps --package=https://github.com/NickD
 
 ```powershell
 $repoctopusInstall = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.repoctopus-cli'
-npm.cmd install --ignore-scripts --omit=dev --prefix $repoctopusInstall ./repoctopus-0.1.3.tgz
+npm.cmd install --ignore-scripts --omit=dev --prefix $repoctopusInstall ./repoctopus-0.1.4.tgz
 $repoctopusBin = Join-Path $repoctopusInstall 'node_modules/.bin'
 $env:Path = "$repoctopusBin$([IO.Path]::PathSeparator)$env:Path"
 repoctopus.cmd --help
@@ -47,7 +47,7 @@ repoctopus.cmd --version
 
 ## 维护者发布版本
 
-1. 在发布 PR 同步 `package.json`、`package-lock.json` 和安装文档，并用候选包验证。合入后，从远端 `main` 选定已通过 `Continuous integration / verify` 的完整 SHA。使用该提交的包版本生成 Tag，例如 `0.1.3` 对应 `v0.1.3`。发布流程使用 GitHub 的预发布标记。
+1. 在发布 PR 同步 `package.json`、`package-lock.json` 和安装文档，并用候选包验证。合入后，从远端 `main` 选定已通过 `Continuous integration / verify` 的完整 SHA。使用该提交的包版本生成 Tag，例如 `0.1.4` 对应 `v0.1.4`。发布流程使用 GitHub 的预发布标记。
 2. 在 GitHub Actions 的 **Prepare or publish Repoctopus release** 选择 `main`，以 `prepare`、完整 SHA 和 Tag 启动。该操作验证提交、构建并验收 CLI 与桌面包。Windows 多仓验收使用同一个候选 `.tgz` 跑完 Init 到 Archive，检查首包后的冷恢复和规格 PR 响应丢失后的发布去重，封存核对通过收据和包摘要后生成草稿。
 3. 等 Prepare Run 成功，从候选作业的摘要抄取 **Candidate artifact ID**。在草稿中核对目标提交、CI Run 链接和三份文件。候选工件包含来源记录，可以用其中的摘要核对下载内容。
 4. 从 `main` 再次启动同一 workflow，选择 `publish`，填入同一个 SHA、Tag 和候选工件 ID。该操作核对草稿及远端摘要，再公开预发布。查看末尾的 **Verify public downloads and npx** 作业，确认公开 URL 的文件摘要、CLI 帮助和 JSON 响应都通过。
@@ -64,7 +64,7 @@ Prepare 的草稿上传中断时，优先在原 Run 中重跑失败作业，继�
 在 Windows 源码根目录安装开发依赖，准备 Git for Windows 及其自带的 OpenSSL。对已经生成的本地 CLI 候选包运行下面的命令，将参数替换为实际包路径。
 
 ```powershell
-npm run test:windows-multirepo-package-e2e -- ./repoctopus-0.1.3.tgz
+npm run test:windows-multirepo-package-e2e -- ./repoctopus-0.1.4.tgz
 ```
 
 测试会安装该包的生产依赖，在三个临时 Git 仓中完成一条 Change。第一驱动进程完成首包后退出，第二进程恢复同一 Run。托管测试服务先创建规格 PR，再断开响应并暂时隐藏查询结果，随后核对 Runtime 采纳原 PR，且没有重复推送或创建。
