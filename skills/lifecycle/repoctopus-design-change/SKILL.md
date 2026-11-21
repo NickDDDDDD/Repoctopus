@@ -11,7 +11,7 @@ metadata:
 
 # Design a managed Change
 
-Execute only the selected `specification.plan` Work. Start from the approved Open baseline, consume the delivered `codebase-design` augmentation, and deepen proposal, delta specs, `design.md`, and `tasks.md` in their existing Provider-owned locations.
+Execute only the selected `specification.plan` Work. Start from the approved Open baseline and use the augmentation delivered for the `design-method` slot, including its resources. Deepen proposal, delta specs, `design.md`, and `tasks.md` in their existing Provider-owned locations.
 
 Keep requirements and observable behavior in specs, engineering decisions in `design.md`, and executable sequencing in `tasks.md`. Update the same four artifacts; do not add a fifth planning artifact, ADR, implementation notes, Build Plan, or alternate ticket authority. Do not approve the plan or advance the phase. Return an Outcome so strict Provider validation and the independent Design Human Decision can run.
 
