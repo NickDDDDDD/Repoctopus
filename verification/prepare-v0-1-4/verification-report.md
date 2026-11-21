@@ -13,6 +13,7 @@ Package content bytes: `6625016`
 - 实包 npx 检查通过，覆盖版本、帮助和项目探测 JSON。实包协议及团队 Skill 组合测试共 6 项通过。构建和生成物一致性检查通过。
 - 默认三仓 Run 通过从 Init 到 Archive 的完整验收，首包后换进程恢复同一个 Run，规格 PR 响应丢失后恢复原 PR，终态复读没有重复发布。收据记录的候选文件摘要与本报告一致。
 - 默认 Design packet 同时交付固定 Action 和 `codebase-design`。团队五仓场景交付同一份 Action、团队方法及规则资源，默认方法从 packet 移出。Host 根据交付的资源，在原 `design.md` 中记录规则 token 与策略选择依据。两个文档包按已批准的 autonomous + direct 实施，实际内容与回归检查通过。
+- 安装包的 Skill 预览测试 9 项通过。团队场景的 Standards 与 Spec 独立审查均无发现，并按实际规则核对文件字节、Git 范围、HEAD 和摘要。实验 Host 拼接说明时将 Design token 放到下一行，token 本身与投递资源一致。
 - 锁文件版本更新曾连带改到一处间接依赖版本范围，最终提交已恢复原范围。重新打包后候选文件字节一致。
 
 多仓验收的审批和发布服务是隔离的实验夹具。GitHub Release Prepare 将从通过 CI 的 main 提交构建并验收正式草稿所用工件。

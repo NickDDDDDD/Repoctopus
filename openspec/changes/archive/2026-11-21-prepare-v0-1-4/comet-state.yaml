@@ -1,0 +1,1969 @@
+# comet-execution: managed-run
+change_id: d3031851-55e2-4fee-b257-d9aac47c1bec
+workflow: tweak
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: direct
+build_pause: null
+subagent_dispatch: null
+tdd_mode: direct
+review_mode: off
+isolation: worktree
+verify_mode: light
+auto_transition: true
+base_ref: f1d0bba40b9e5f4a2b2475fb612ca8cfd4ee5dfe
+design_doc: null
+plan: null
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/prepare-v0-1-4.md
+branch_status: pending
+created_at: 2026-11-21
+verified_at: 2026-11-21
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/prepare-v0-1-4
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: c1f04648f17ee5bd414f12a0eb8dfdd2ecacb894d8012cc6d573b30d27c337fb
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: prepare-v0-1-4
+    revision: 1
+    workflow:
+      id: comet-classic-tweak
+      version: "1"
+      hash: fdf07b67da7ac398b4edb7c9909de416a5ef83a8db900f0772e4859731a215cd
+    definitionHashes:
+      '["comet-classic-tweak","1"]': fdf07b67da7ac398b4edb7c9909de416a5ef83a8db900f0772e4859731a215cd
+    initialStateHash: eefb3cc485b25810fffe035089266d9a4d7f4fbd6f7f4a7225bd972fbac8a83d
+    input:
+      change: prepare-v0-1-4
+      changeDir: openspec/changes/prepare-v0-1-4
+      workspaceBaseline:
+        ref: 8cf28006-e167-4a57-aab0-2b085c294351
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: f1d0bba40b9e5f4a2b2475fb612ca8cfd4ee5dfe
+      boundBranch: comet/prepare-v0-1-4
+      branchStatus: pending
+      buildMode: direct
+      buildPause: null
+      checkEpoch: 5
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-21
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: null
+      reviewMode: off
+      subagentDispatch: null
+      tddMode: direct
+      verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+      verifiedAt: 2026-11-21
+      verifyFailures: 0
+      verifyMode: light
+      verifyResult: pass
+      workflow: tweak
+    status: running
+    sequence: 14
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-f8149b421da882654154730329605a876e4879df2e0f0e29e0303c79af8ea6b3
+        executionOrigin:
+          workflow:
+            hash: fdf07b67da7ac398b4edb7c9909de416a5ef83a8db900f0772e4859731a215cd
+            id: comet-classic-tweak
+            version: "1"
+        id: prepare-v0-1-4:1
+        input:
+          input:
+            change: prepare-v0-1-4
+            changeDir: openspec/changes/prepare-v0-1-4
+            workspaceBaseline:
+              ref: 8cf28006-e167-4a57-aab0-2b085c294351
+          outputs: {}
+        inputHash: 0e67fe2e7af7bdf1e0f08cf5b3956ddc4b853d53f9cb31d233efb2ce8c914a3c
+        outcome:
+          actionId: prepare-v0-1-4:1
+          attempt: 1
+          claimToken: portable-f8149b421da882654154730329605a876e4879df2e0f0e29e0303c79af8ea6b3
+          inputHash: 0e67fe2e7af7bdf1e0f08cf5b3956ddc4b853d53f9cb31d233efb2ce8c914a3c
+          outcomeId: 1991d325-0627-45cb-aa47-683d984b3e70
+          output:
+            event: open-complete
+            requirementsEvidence:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 674ad9870e09ce6275237f7721eaf464fc6d736772bbfd7235524a464ee6ed11
+            outcomeId: 1991d325-0627-45cb-aa47-683d984b3e70
+        reconciliations: []
+        ref: comet-tweak
+        requiredCapabilities: []
+        retry: manual
+        runId: prepare-v0-1-4
+        status: succeeded
+        stepId: tweak.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/prepare-v0-1-4:3/1
+          token: portable-2664f709a45f22d08c8cf4de452def7e1ce8da9e28303abba026c554eaa8a5cf
+        executionOrigin:
+          workflow:
+            hash: fdf07b67da7ac398b4edb7c9909de416a5ef83a8db900f0772e4859731a215cd
+            id: comet-classic-tweak
+            version: "1"
+        id: prepare-v0-1-4:3
+        input:
+          input:
+            change: prepare-v0-1-4
+            changeDir: openspec/changes/prepare-v0-1-4
+            workspaceBaseline:
+              ref: 8cf28006-e167-4a57-aab0-2b085c294351
+          outputs:
+            tweak.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+            tweak.open.evidence:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+        inputHash: 972b5e4eaf05f4bee8932c09e04fe9bcf59f6a42296da9afa2115a685eb05451
+        outcome:
+          actionId: prepare-v0-1-4:3
+          attempt: 1
+          claimToken: portable-2664f709a45f22d08c8cf4de452def7e1ce8da9e28303abba026c554eaa8a5cf
+          inputHash: 972b5e4eaf05f4bee8932c09e04fe9bcf59f6a42296da9afa2115a685eb05451
+          outcomeId: 6320d51e-f6ca-4f02-a180-9f18c2a4eea9
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: aab8d1427f07fa1709e05b20428065d11f6f6a5df679838f865d0e791461f0d0
+            outcomeId: 6320d51e-f6ca-4f02-a180-9f18c2a4eea9
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: prepare-v0-1-4
+        status: succeeded
+        stepId: tweak.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-09eacc7cb1861dac582710fc8793a7bf0ea35b0754e7fe64688f616d3d3b94f4
+        executionOrigin:
+          workflow:
+            hash: fdf07b67da7ac398b4edb7c9909de416a5ef83a8db900f0772e4859731a215cd
+            id: comet-classic-tweak
+            version: "1"
+        id: prepare-v0-1-4:4
+        input:
+          input:
+            change: prepare-v0-1-4
+            changeDir: openspec/changes/prepare-v0-1-4
+            workspaceBaseline:
+              ref: 8cf28006-e167-4a57-aab0-2b085c294351
+          outputs:
+            tweak.build.execute:
+              event: build-complete
+            tweak.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+            tweak.open.evidence:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+        inputHash: 498f2f21f2f1b4696c0b3383b9191183b3a0cb78cd8835ff3d1377006c95d6c3
+        outcome:
+          actionId: prepare-v0-1-4:4
+          attempt: 1
+          claimToken: portable-09eacc7cb1861dac582710fc8793a7bf0ea35b0754e7fe64688f616d3d3b94f4
+          inputHash: 498f2f21f2f1b4696c0b3383b9191183b3a0cb78cd8835ff3d1377006c95d6c3
+          outcomeId: 631131a9-aff9-446c-bc16-e50994f16753
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 1
+            contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+            cwd: .
+            environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+            exitCode: 0
+            inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+            inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+            manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+            manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: aabfb0683cabd99c578aac0c8c21150e97ff31fc42ec50b71105e70dd1ac51fe
+            outcomeId: 631131a9-aff9-446c-bc16-e50994f16753
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: prepare-v0-1-4
+        status: succeeded
+        stepId: tweak.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-b912801850de9e232ffa270df820eb986c71b970af478786753a0e84528cb29a
+        executionOrigin:
+          workflow:
+            hash: fdf07b67da7ac398b4edb7c9909de416a5ef83a8db900f0772e4859731a215cd
+            id: comet-classic-tweak
+            version: "1"
+        id: prepare-v0-1-4:6
+        input:
+          input:
+            change: prepare-v0-1-4
+            changeDir: openspec/changes/prepare-v0-1-4
+            workspaceBaseline:
+              ref: 8cf28006-e167-4a57-aab0-2b085c294351
+          outputs:
+            tweak.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            tweak.build.check.evidence:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+            tweak.build.execute:
+              event: build-complete
+            tweak.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+            tweak.open.evidence:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+        inputHash: de9feb058cd94f82626346e46ca6169912a59a6a7fd71f738ade3e1ae285a8e2
+        outcome:
+          actionId: prepare-v0-1-4:6
+          attempt: 1
+          claimToken: portable-b912801850de9e232ffa270df820eb986c71b970af478786753a0e84528cb29a
+          inputHash: de9feb058cd94f82626346e46ca6169912a59a6a7fd71f738ade3e1ae285a8e2
+          outcomeId: 94359bc8-8177-43bb-9134-377208a5d7fa
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6a73759112be49e5b6b330af23300aa35d6e8d5a31664300cc442f9ea3ea4138
+            outcomeId: 94359bc8-8177-43bb-9134-377208a5d7fa
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: prepare-v0-1-4
+        status: succeeded
+        stepId: tweak.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-fad84c70d5dcbcf8f5501ed8af349b029ec42366fb40c5410fba1dcef73c0723
+        executionOrigin:
+          workflow:
+            hash: fdf07b67da7ac398b4edb7c9909de416a5ef83a8db900f0772e4859731a215cd
+            id: comet-classic-tweak
+            version: "1"
+        id: prepare-v0-1-4:8
+        input:
+          input:
+            change: prepare-v0-1-4
+            changeDir: openspec/changes/prepare-v0-1-4
+            workspaceBaseline:
+              ref: 8cf28006-e167-4a57-aab0-2b085c294351
+          outputs:
+            tweak.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            tweak.build.check.evidence:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+            tweak.build.execute:
+              event: build-complete
+            tweak.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+            tweak.open.evidence:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+            tweak.verify.report.evidence:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+            tweak.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        inputHash: 9e9c0a73cc033963b0fc3ae5dbb4b984545c43330466b6ba10d588a82a94ecc1
+        outcome:
+          actionId: prepare-v0-1-4:8
+          attempt: 1
+          claimToken: portable-fad84c70d5dcbcf8f5501ed8af349b029ec42366fb40c5410fba1dcef73c0723
+          inputHash: 9e9c0a73cc033963b0fc3ae5dbb4b984545c43330466b6ba10d588a82a94ecc1
+          outcomeId: e1d64cd2-779c-4b94-a84b-07c3c50f24c4
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - check:managed-execution-report
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+            cwd: .
+            deliveryInputs:
+              verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+            environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+            exitCode: 0
+            inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+            inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+            manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+            manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7a95d3093e6ba22db4b3e0b9b1167f5cbb51a4d368cfbe8cb2f5de89e313b390
+            outcomeId: e1d64cd2-779c-4b94-a84b-07c3c50f24c4
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: prepare-v0-1-4
+        status: succeeded
+        stepId: tweak.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-001a4907c4da1d74903900254d0873841a6c47fe9fa7df0d47ab8f36dfd9f6eb
+        executionOrigin:
+          workflow:
+            hash: fdf07b67da7ac398b4edb7c9909de416a5ef83a8db900f0772e4859731a215cd
+            id: comet-classic-tweak
+            version: "1"
+        id: prepare-v0-1-4:10
+        input:
+          input:
+            change: prepare-v0-1-4
+            changeDir: openspec/changes/prepare-v0-1-4
+            workspaceBaseline:
+              ref: 8cf28006-e167-4a57-aab0-2b085c294351
+          outputs:
+            tweak.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            tweak.build.check.evidence:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+            tweak.build.execute:
+              event: build-complete
+            tweak.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+            tweak.open.evidence:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+            tweak.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              cwd: .
+              deliveryInputs:
+                verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+              environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+              exitCode: 0
+              inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            tweak.verify.check.evidence:
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+            tweak.verify.report.evidence:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+            tweak.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        inputHash: fee1abe48b0c16e277b7b62487b35431a5f25b8b23387a6e4b12edf9aef0a3bc
+        outcome:
+          actionId: prepare-v0-1-4:10
+          attempt: 1
+          claimToken: portable-001a4907c4da1d74903900254d0873841a6c47fe9fa7df0d47ab8f36dfd9f6eb
+          inputHash: fee1abe48b0c16e277b7b62487b35431a5f25b8b23387a6e4b12edf9aef0a3bc
+          outcomeId: fad4821c-ec43-4743-a014-c4df4f4ac6a9
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+              方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+            targetBranch: comet/prepare-v0-1-4
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 332b5cf112fd18d53ef158cd32a44ce105c07ebeac685bf5266e7d29d385a6e4
+            outcomeId: fad4821c-ec43-4743-a014-c4df4f4ac6a9
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: prepare-v0-1-4
+        status: succeeded
+        stepId: tweak.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-1bec4355ddc328cbd4ba5a4ea0282566d8f868cc0b880ec8c3bf816f95835284
+        executionOrigin:
+          workflow:
+            hash: fdf07b67da7ac398b4edb7c9909de416a5ef83a8db900f0772e4859731a215cd
+            id: comet-classic-tweak
+            version: "1"
+        id: prepare-v0-1-4:12
+        input:
+          input:
+            change: prepare-v0-1-4
+            changeDir: openspec/changes/prepare-v0-1-4
+            workspaceBaseline:
+              ref: 8cf28006-e167-4a57-aab0-2b085c294351
+          outputs:
+            tweak.archive.confirm:
+              choice: pr
+              proposal:
+                input:
+                  change: prepare-v0-1-4
+                  changeDir: openspec/changes/prepare-v0-1-4
+                  workspaceBaseline:
+                    ref: 8cf28006-e167-4a57-aab0-2b085c294351
+                outputs:
+                  tweak.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                      方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+                    targetBranch: comet/prepare-v0-1-4
+            tweak.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+              targetBranch: comet/prepare-v0-1-4
+            tweak.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            tweak.build.check.evidence:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+            tweak.build.execute:
+              event: build-complete
+            tweak.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+            tweak.open.evidence:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+            tweak.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              cwd: .
+              deliveryInputs:
+                verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+              environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+              exitCode: 0
+              inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            tweak.verify.check.evidence:
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+            tweak.verify.report.evidence:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+            tweak.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        inputHash: 917f8bd8d8d8e4375c0e153675387845bc92872ad436141c4c62f3d8ea809b55
+        outcome:
+          actionId: prepare-v0-1-4:12
+          attempt: 1
+          claimToken: portable-1bec4355ddc328cbd4ba5a4ea0282566d8f868cc0b880ec8c3bf816f95835284
+          inputHash: 917f8bd8d8d8e4375c0e153675387845bc92872ad436141c4c62f3d8ea809b55
+          outcomeId: c0b3d690-c39c-4842-8ce0-4a3643bb8b3c
+          output:
+            baseCommit: e9196937462dbb3d5a581a1415bab85f4753d4f1
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/prepare-v0-1-4
+            verifiedBranch: comet/prepare-v0-1-4
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 58d3561399de11aaef7ba5b38466b292aa66fe85316c5a9124348cc8ee82fce7
+            outcomeId: c0b3d690-c39c-4842-8ce0-4a3643bb8b3c
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: prepare-v0-1-4
+        status: succeeded
+        stepId: tweak.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-a5f70b20b3a75447b8cedf4ec20d990564b1f1997f8d8631e83fe2de2f4fa23c
+        executionOrigin:
+          workflow:
+            hash: fdf07b67da7ac398b4edb7c9909de416a5ef83a8db900f0772e4859731a215cd
+            id: comet-classic-tweak
+            version: "1"
+        id: prepare-v0-1-4:13
+        input:
+          input:
+            change: prepare-v0-1-4
+            changeDir: openspec/changes/prepare-v0-1-4
+            workspaceBaseline:
+              ref: 8cf28006-e167-4a57-aab0-2b085c294351
+          outputs:
+            tweak.archive.confirm:
+              choice: pr
+              proposal:
+                input:
+                  change: prepare-v0-1-4
+                  changeDir: openspec/changes/prepare-v0-1-4
+                  workspaceBaseline:
+                    ref: 8cf28006-e167-4a57-aab0-2b085c294351
+                outputs:
+                  tweak.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                      方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+                    targetBranch: comet/prepare-v0-1-4
+            tweak.archive.preflight:
+              baseCommit: e9196937462dbb3d5a581a1415bab85f4753d4f1
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/prepare-v0-1-4
+              verifiedBranch: comet/prepare-v0-1-4
+            tweak.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+              targetBranch: comet/prepare-v0-1-4
+            tweak.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            tweak.build.check.evidence:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+            tweak.build.execute:
+              event: build-complete
+            tweak.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+            tweak.open.evidence:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+            tweak.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              cwd: .
+              deliveryInputs:
+                verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+              environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+              exitCode: 0
+              inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            tweak.verify.check.evidence:
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+            tweak.verify.report.evidence:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+            tweak.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        inputHash: 1d56fc8423cd70f526575478341d638fbfe9ff33ae6eede882dbcf1ef19fe8ef
+        outcome:
+          actionId: prepare-v0-1-4:13
+          artifacts:
+            - sha256: 07fb07c9189ffd5d50224d221748d604956096322b66ae777b95dcb5ff78a0e0
+              uri: openspec/changes/archive/2026-11-21-prepare-v0-1-4/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-a5f70b20b3a75447b8cedf4ec20d990564b1f1997f8d8631e83fe2de2f4fa23c
+          inputHash: 1d56fc8423cd70f526575478341d638fbfe9ff33ae6eede882dbcf1ef19fe8ef
+          outcomeId: 73eb8789-b906-4378-b6d4-a7eba0a60adc
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-21-prepare-v0-1-4
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ad08ceb0690e380f75ec6c53b0d3670473940c39e60161cc67d3dcfd707c6d22
+            outcomeId: 73eb8789-b906-4378-b6d4-a7eba0a60adc
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: prepare-v0-1-4
+        status: succeeded
+        stepId: tweak.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: prepare-v0-1-4:14
+        input:
+          input:
+            change: prepare-v0-1-4
+            changeDir: openspec/changes/prepare-v0-1-4
+            workspaceBaseline:
+              ref: 8cf28006-e167-4a57-aab0-2b085c294351
+          outputs:
+            tweak.archive.confirm:
+              choice: pr
+              proposal:
+                input:
+                  change: prepare-v0-1-4
+                  changeDir: openspec/changes/prepare-v0-1-4
+                  workspaceBaseline:
+                    ref: 8cf28006-e167-4a57-aab0-2b085c294351
+                outputs:
+                  tweak.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                      方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+                    targetBranch: comet/prepare-v0-1-4
+            tweak.archive.execute:
+              archiveDirectory: openspec/changes/archive/2026-11-21-prepare-v0-1-4
+            tweak.archive.preflight:
+              baseCommit: e9196937462dbb3d5a581a1415bab85f4753d4f1
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/prepare-v0-1-4
+              verifiedBranch: comet/prepare-v0-1-4
+            tweak.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+              targetBranch: comet/prepare-v0-1-4
+            tweak.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            tweak.build.check.evidence:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+            tweak.build.execute:
+              event: build-complete
+            tweak.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+            tweak.open.evidence:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+            tweak.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              cwd: .
+              deliveryInputs:
+                verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+              environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+              exitCode: 0
+              inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            tweak.verify.check.evidence:
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+            tweak.verify.report.evidence:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+            tweak.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        inputHash: fa9d055793ad03fbb1d89d8e89f3c141d43b5abb196c034ccf76961875b178d6
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: prepare-v0-1-4
+        status: pending
+        stepId: tweak.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      prepare-v0-1-4:1:
+        results: {}
+        sequence: 1
+      prepare-v0-1-4:10:
+        results:
+          tweak.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          tweak.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+          tweak.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+          tweak.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              cwd: .
+              deliveryInputs:
+                verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+              environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+              exitCode: 0
+              inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          tweak.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+          tweak.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+          tweak.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        sequence: 10
+      prepare-v0-1-4:12:
+        results:
+          tweak.archive.confirm:
+            sequence: 11
+            value:
+              choice: pr
+              proposal:
+                input:
+                  change: prepare-v0-1-4
+                  changeDir: openspec/changes/prepare-v0-1-4
+                  workspaceBaseline:
+                    ref: 8cf28006-e167-4a57-aab0-2b085c294351
+                outputs:
+                  tweak.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                      方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+                    targetBranch: comet/prepare-v0-1-4
+          tweak.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+              targetBranch: comet/prepare-v0-1-4
+          tweak.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          tweak.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+          tweak.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+          tweak.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              cwd: .
+              deliveryInputs:
+                verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+              environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+              exitCode: 0
+              inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          tweak.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+          tweak.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+          tweak.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        sequence: 12
+      prepare-v0-1-4:13:
+        results:
+          tweak.archive.confirm:
+            sequence: 11
+            value:
+              choice: pr
+              proposal:
+                input:
+                  change: prepare-v0-1-4
+                  changeDir: openspec/changes/prepare-v0-1-4
+                  workspaceBaseline:
+                    ref: 8cf28006-e167-4a57-aab0-2b085c294351
+                outputs:
+                  tweak.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                      方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+                    targetBranch: comet/prepare-v0-1-4
+          tweak.archive.preflight:
+            sequence: 12
+            value:
+              baseCommit: e9196937462dbb3d5a581a1415bab85f4753d4f1
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/prepare-v0-1-4
+              verifiedBranch: comet/prepare-v0-1-4
+          tweak.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+              targetBranch: comet/prepare-v0-1-4
+          tweak.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          tweak.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+          tweak.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+          tweak.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              cwd: .
+              deliveryInputs:
+                verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+              environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+              exitCode: 0
+              inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          tweak.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+          tweak.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+          tweak.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        sequence: 13
+      prepare-v0-1-4:14:
+        results:
+          tweak.archive.confirm:
+            sequence: 11
+            value:
+              choice: pr
+              proposal:
+                input:
+                  change: prepare-v0-1-4
+                  changeDir: openspec/changes/prepare-v0-1-4
+                  workspaceBaseline:
+                    ref: 8cf28006-e167-4a57-aab0-2b085c294351
+                outputs:
+                  tweak.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                      方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+                    targetBranch: comet/prepare-v0-1-4
+          tweak.archive.execute:
+            sequence: 13
+            value:
+              archiveDirectory: openspec/changes/archive/2026-11-21-prepare-v0-1-4
+          tweak.archive.preflight:
+            sequence: 12
+            value:
+              baseCommit: e9196937462dbb3d5a581a1415bab85f4753d4f1
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/prepare-v0-1-4
+              verifiedBranch: comet/prepare-v0-1-4
+          tweak.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+              targetBranch: comet/prepare-v0-1-4
+          tweak.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          tweak.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+          tweak.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+          tweak.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              cwd: .
+              deliveryInputs:
+                verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+              environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+              exitCode: 0
+              inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          tweak.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+          tweak.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+          tweak.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        sequence: 14
+      prepare-v0-1-4:3:
+        results:
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+        sequence: 3
+      prepare-v0-1-4:4:
+        results:
+          tweak.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+        sequence: 4
+      prepare-v0-1-4:6:
+        results:
+          tweak.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          tweak.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+          tweak.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+        sequence: 6
+      prepare-v0-1-4:8:
+        results:
+          tweak.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          tweak.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+          tweak.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+          tweak.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+          tweak.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        sequence: 8
+    waits:
+      - id: prepare-v0-1-4:11
+        stepId: tweak.archive.confirm
+        sequence: 11
+        status: resolved
+        proposal:
+          input:
+            change: prepare-v0-1-4
+            changeDir: openspec/changes/prepare-v0-1-4
+            workspaceBaseline:
+              ref: 8cf28006-e167-4a57-aab0-2b085c294351
+          outputs:
+            tweak.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+              targetBranch: comet/prepare-v0-1-4
+        proposalHash: fe86360fa41b446e86054b60151b9cafd36bd35e19e628e004d5d01ee357746b
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results:
+          tweak.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+              targetBranch: comet/prepare-v0-1-4
+          tweak.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          tweak.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+          tweak.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+          tweak.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              cwd: .
+              deliveryInputs:
+                verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+              environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+              exitCode: 0
+              inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          tweak.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+          tweak.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+          tweak.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        decision:
+          id: classic-archive-fe86360fa41b446e86054b60151b9cafd36bd35e19e628e004d5d01ee357746b-pr
+          choice: pr
+          proposalHash: fe86360fa41b446e86054b60151b9cafd36bd35e19e628e004d5d01ee357746b
+    evidenceWaits:
+      - id: prepare-v0-1-4:2
+        stepId: tweak.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+        receipt:
+          ref: openspec/changes/prepare-v0-1-4
+          contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+          submissionId: 7c127d73-9d2d-4af8-9474-588691beab98
+      - id: prepare-v0-1-4:5
+        stepId: tweak.build.check.evidence
+        sequence: 5
+        kind: classic-build-check
+        status: resolved
+        results:
+          tweak.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          tweak.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+          contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+          submissionId: decc1c4a-ddd8-4f5f-bbe5-c36b9ce94d90
+      - id: prepare-v0-1-4:7
+        stepId: tweak.verify.report.evidence
+        sequence: 7
+        kind: classic-verification-report
+        status: resolved
+        results:
+          tweak.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          tweak.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+          tweak.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+          tweak.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        receipt:
+          ref: docs/superpowers/reports/prepare-v0-1-4.md
+          contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+          submissionId: 8ffa5c5c-f2e6-420c-a922-ff8328a84a39
+      - id: prepare-v0-1-4:9
+        stepId: tweak.verify.check.evidence
+        sequence: 9
+        kind: classic-verify-check
+        status: resolved
+        results:
+          tweak.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              cwd: .
+              environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+              exitCode: 0
+              inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+              manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          tweak.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+              ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+          tweak.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          tweak.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+                ref: openspec/changes/prepare-v0-1-4
+          tweak.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+              ref: openspec/changes/prepare-v0-1-4
+          tweak.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+              cwd: .
+              deliveryInputs:
+                verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+              environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+              exitCode: 0
+              inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+              manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+              manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          tweak.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+              ref: docs/superpowers/reports/prepare-v0-1-4.md
+          tweak.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+          contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+          submissionId: b161d303-b9f9-4560-8c82-e8167c2b1bc0
+    ready: []
+    joins: {}
+    outputs:
+      tweak.archive.confirm:
+        sequence: 11
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: prepare-v0-1-4
+              changeDir: openspec/changes/prepare-v0-1-4
+              workspaceBaseline:
+                ref: 8cf28006-e167-4a57-aab0-2b085c294351
+            outputs:
+              tweak.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+                  方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+                targetBranch: comet/prepare-v0-1-4
+      tweak.archive.execute:
+        sequence: 13
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-21-prepare-v0-1-4
+      tweak.archive.preflight:
+        sequence: 12
+        value:
+          baseCommit: e9196937462dbb3d5a581a1415bab85f4753d4f1
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/prepare-v0-1-4
+          verifiedBranch: comet/prepare-v0-1-4
+      tweak.archive.prepare:
+        sequence: 10
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档 v0.1.4 准备变更并通过 PR 交付 origin/main。范围为 Design
+            方法提示、版本和安装说明，候选实包验证已通过。CI 通过后准备发布草稿，公开发布另行决定。
+          targetBranch: comet/prepare-v0-1-4
+      tweak.build.check:
+        sequence: 4
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 1
+          contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+          cwd: .
+          environment: 114b113a43d96232fd464b4ac6607688357f381bf790c756bc902e8b2fdcd0f6
+          exitCode: 0
+          inputAfter: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+          inputBefore: 1e8a042784cbc0fd88df20a1b53a71e5d0242b422dcc4fb547a39d88575e2f60
+          manifestHash: 7d7804c4906330738a839a279b2db37ed4637e279ec541e64eae4bd7f6fb47be
+          manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/79dd138b-e1cc-41ab-887b-38beebb17801.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      tweak.build.check.evidence:
+        sequence: 5
+        value:
+          contentHash: 20fdd9a0714d06963a69814653b0326c0600aae1241b0402f86f343a28af761e
+          ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/641ce913-aecc-47b3-8766-e1c4fc50d11a.log
+      tweak.build.execute:
+        sequence: 3
+        value:
+          event: build-complete
+      tweak.open:
+        sequence: 1
+        value:
+          event: open-complete
+          requirementsEvidence:
+            contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+            ref: openspec/changes/prepare-v0-1-4
+      tweak.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 32604f503aec3bbcf67df50744959d881cf47f14693297b47a6ff6c0e768e445
+          ref: openspec/changes/prepare-v0-1-4
+      tweak.verify.check:
+        sequence: 8
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - check:managed-execution-report
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+          cwd: .
+          deliveryInputs:
+            verification/prepare-v0-1-4/verification-report.md: git:90eb5d082cd282d0f5fdd8127bce990e01161525
+          environment: 2d23cfed99d0c4eca4c5fc74b738f9104ca4977bb72436219ce8f2af7c88197c
+          exitCode: 0
+          inputAfter: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+          inputBefore: 85676a7437597b6c0ed6e9032629ed79b49d3f2853f7172ae49556a9a760414f
+          manifestHash: 9fa349b498f979fa3f2188128626242a25b5d90e786826036e7556db2ceea5bf
+          manifestRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/ef6f9251-2275-4acf-b01c-73af2c6c35a1.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      tweak.verify.check.evidence:
+        sequence: 9
+        value:
+          contentHash: 9476af3a2c5d44e1c4e70bf2bfb45af8164520b091c512b4ccc90048c1a06e8b
+          ref: .comet/runtime/classic-sdk-checks/ffd274539554ce8a1b306ce6b65aff51879ac1a5e58847be9c0992dc597e6912/97a4de22-f3cc-40b1-98af-c44116a17378.log
+      tweak.verify.report.evidence:
+        sequence: 7
+        value:
+          contentHash: a345f1cfb415cfa7cc6f4c29d95eb5eeb057d9fa82739db702f3bb974b50f317
+          ref: docs/superpowers/reports/prepare-v0-1-4.md
+      tweak.verify.run:
+        sequence: 6
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/prepare-v0-1-4.md
+    children: []
+    lineage: []
+  sourceRevision: 22
+  sourceHash: 9535eb58e3fbefe0d7e54972df75bf680bf662eeae21ea34d95592afcb7397cc
+check_epoch: 5
