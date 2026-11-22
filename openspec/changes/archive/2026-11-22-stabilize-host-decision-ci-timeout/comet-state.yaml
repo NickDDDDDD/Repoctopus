@@ -1,0 +1,1940 @@
+# comet-execution: managed-run
+change_id: 37c4a6a5-3463-4627-ba9d-53ebecce5b1f
+workflow: hotfix
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: direct
+build_pause: null
+subagent_dispatch: null
+tdd_mode: direct
+review_mode: off
+isolation: worktree
+verify_mode: light
+auto_transition: true
+base_ref: 314a84f925df2fa3afa90d6f5541a781eb6dc13a
+design_doc: null
+plan: null
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+branch_status: pending
+created_at: 2026-11-22
+verified_at: 2026-11-22
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/stabilize-host-decision-ci-timeout-retry
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: bc41363237b8556d5d97ecdb6cebe27c2489b2604141efcf780a97382138692e
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-host-decision-ci-timeout
+    revision: 1
+    workflow:
+      id: comet-classic-hotfix
+      version: "1"
+      hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+    definitionHashes:
+      '["comet-classic-hotfix","1"]': 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+    initialStateHash: 9b9dc8f1a34c8f1ae20b3dfcb75b1c2bd030a25b037713aa87d6cb818fb0b6f0
+    input:
+      change: stabilize-host-decision-ci-timeout
+      changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+      workspaceBaseline:
+        ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 314a84f925df2fa3afa90d6f5541a781eb6dc13a
+      boundBranch: comet/stabilize-host-decision-ci-timeout-retry
+      branchStatus: pending
+      buildMode: direct
+      buildPause: null
+      checkEpoch: 5
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-22
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: null
+      reviewMode: off
+      subagentDispatch: null
+      tddMode: direct
+      verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+      verifiedAt: 2026-11-22
+      verifyFailures: 0
+      verifyMode: light
+      verifyResult: pass
+      workflow: hotfix
+    status: running
+    sequence: 14
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-8594caa002c86834fe7cc146176db765e11615c5d8489e72501de39aa85a8d1f
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: stabilize-host-decision-ci-timeout:1
+        input:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+          outputs: {}
+        inputHash: 35ca19f1d0789241460056e423cde03a52387418a49dc311625d61cb87328bb8
+        outcome:
+          actionId: stabilize-host-decision-ci-timeout:1
+          attempt: 1
+          claimToken: portable-8594caa002c86834fe7cc146176db765e11615c5d8489e72501de39aa85a8d1f
+          inputHash: 35ca19f1d0789241460056e423cde03a52387418a49dc311625d61cb87328bb8
+          outcomeId: 14b50ef1-55c6-410f-af93-82b234c83f86
+          output:
+            event: open-complete
+            requirementsEvidence:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fa792077f7902849eda67cdf6109a07e7b6a82ca682b3e993170e920c7e01146
+            outcomeId: 14b50ef1-55c6-410f-af93-82b234c83f86
+        reconciliations: []
+        ref: comet-hotfix
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-decision-ci-timeout
+        status: succeeded
+        stepId: hotfix.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/stabilize-host-decision-ci-timeout:3/1
+          token: portable-2cdaa7a057aa04022c0cca256b85fe5420dbcbaac99a96c6689a2cb36f237da6
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: stabilize-host-decision-ci-timeout:3
+        input:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+          outputs:
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.open.evidence:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+        inputHash: 4e6faff07d96ecd219c877dfd149dd4965a92b860acd20a144f520493203aeda
+        outcome:
+          actionId: stabilize-host-decision-ci-timeout:3
+          attempt: 1
+          claimToken: portable-2cdaa7a057aa04022c0cca256b85fe5420dbcbaac99a96c6689a2cb36f237da6
+          inputHash: 4e6faff07d96ecd219c877dfd149dd4965a92b860acd20a144f520493203aeda
+          outcomeId: 174e2860-80e3-4057-9c30-b0b9c062a2d0
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1f08264026298b0dd295b9567f9bbdbc8aebaabce9f0fa61d8f99fbcae768c30
+            outcomeId: 174e2860-80e3-4057-9c30-b0b9c062a2d0
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-decision-ci-timeout
+        status: succeeded
+        stepId: hotfix.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-8748d7f54f43215d0cd384966119374ced9cb654444a9490c308aecb13ab463b
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: stabilize-host-decision-ci-timeout:4
+        input:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+          outputs:
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.open.evidence:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+        inputHash: 51f40288831550bbe41b0195322ea13651938c9cc668d801d902df85ea345e2e
+        outcome:
+          actionId: stabilize-host-decision-ci-timeout:4
+          attempt: 1
+          claimToken: portable-8748d7f54f43215d0cd384966119374ced9cb654444a9490c308aecb13ab463b
+          inputHash: 51f40288831550bbe41b0195322ea13651938c9cc668d801d902df85ea345e2e
+          outcomeId: 8ffe7272-b47d-4e79-857b-48b5257f90dd
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 1
+            contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+            cwd: .
+            environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+            exitCode: 0
+            inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+            inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+            manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+            manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 99dd62756d4cfd11b5e40972ec3433499f8c20bbef544bbde3da9eada21eb456
+            outcomeId: 8ffe7272-b47d-4e79-857b-48b5257f90dd
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-decision-ci-timeout
+        status: succeeded
+        stepId: hotfix.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-1e651e3b530fd3a48bf93840b9348c63797dbbbc52962ba8f8ab64ca37e18fab
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: stabilize-host-decision-ci-timeout:6
+        input:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+          outputs:
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.open.evidence:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+        inputHash: fdb75a8434f143cd878067f1ed50cbdae6649141225f1d0df3471ddafe555cc4
+        outcome:
+          actionId: stabilize-host-decision-ci-timeout:6
+          attempt: 1
+          claimToken: portable-1e651e3b530fd3a48bf93840b9348c63797dbbbc52962ba8f8ab64ca37e18fab
+          inputHash: fdb75a8434f143cd878067f1ed50cbdae6649141225f1d0df3471ddafe555cc4
+          outcomeId: a0cd3d15-a0a2-4c0d-b21f-5c404744b2b2
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bf13b8c7a8bcb512d8c64cfc4d5560e97b47d757161942b76ae53d8cbd2dfd1e
+            outcomeId: a0cd3d15-a0a2-4c0d-b21f-5c404744b2b2
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-decision-ci-timeout
+        status: succeeded
+        stepId: hotfix.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-58e9be82a99024e1f827cd5a2141550c95c4bff0dbcf56fb8c68aed6a6040bae
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: stabilize-host-decision-ci-timeout:8
+        input:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+          outputs:
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.open.evidence:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.verify.report.evidence:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+            hotfix.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        inputHash: 444ca326dc8f4a49966715bae83a4401f8bd9290a54d0034cde8d17f3c8d6cdc
+        outcome:
+          actionId: stabilize-host-decision-ci-timeout:8
+          attempt: 1
+          claimToken: portable-58e9be82a99024e1f827cd5a2141550c95c4bff0dbcf56fb8c68aed6a6040bae
+          inputHash: 444ca326dc8f4a49966715bae83a4401f8bd9290a54d0034cde8d17f3c8d6cdc
+          outcomeId: 1e0be0a1-152f-4e68-b579-9f20e17b6e2a
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - check:managed-execution-report
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+            cwd: .
+            deliveryInputs: {}
+            environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+            exitCode: 0
+            inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+            inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+            manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+            manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c8026c55365e4c75fb3c578548926e73d6bbeceb22fe0498b942bbe6dd1ce401
+            outcomeId: 1e0be0a1-152f-4e68-b579-9f20e17b6e2a
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-decision-ci-timeout
+        status: succeeded
+        stepId: hotfix.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-3f62503cc131162acf6bd16288f7d015cca928448b25b9c29d1c5abc1232d6ba
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: stabilize-host-decision-ci-timeout:10
+        input:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+          outputs:
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.open.evidence:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              cwd: .
+              deliveryInputs: {}
+              environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+              exitCode: 0
+              inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            hotfix.verify.check.evidence:
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+            hotfix.verify.report.evidence:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+            hotfix.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        inputHash: 7492f0285171aec3a9f878243c5e8a410dae61627e276c666fa80de5bcb6e780
+        outcome:
+          actionId: stabilize-host-decision-ci-timeout:10
+          attempt: 1
+          claimToken: portable-3f62503cc131162acf6bd16288f7d015cca928448b25b9c29d1c5abc1232d6ba
+          inputHash: 7492f0285171aec3a9f878243c5e8a410dae61627e276c666fa80de5bcb6e780
+          outcomeId: 66f768e9-d2c6-4ee6-90d2-4baffec02685
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+            targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0f855525cf12f2caf6a184c8094bf210e0fd0ef81886dbb15857ca27e98dda08
+            outcomeId: 66f768e9-d2c6-4ee6-90d2-4baffec02685
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-decision-ci-timeout
+        status: succeeded
+        stepId: hotfix.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-266605e7c7464b19207fd0c364bdb97383ab02d521cd0f503e2b948452bed560
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: stabilize-host-decision-ci-timeout:12
+        input:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+          outputs:
+            hotfix.archive.confirm:
+              choice: pr
+              proposal:
+                input:
+                  change: stabilize-host-decision-ci-timeout
+                  changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+                  workspaceBaseline:
+                    ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+                    targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+            hotfix.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.open.evidence:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              cwd: .
+              deliveryInputs: {}
+              environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+              exitCode: 0
+              inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            hotfix.verify.check.evidence:
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+            hotfix.verify.report.evidence:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+            hotfix.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        inputHash: 73d51baf5cc15fbaa37e05059d406dfb8daf88102c951c85e98d282d85ea08c4
+        outcome:
+          actionId: stabilize-host-decision-ci-timeout:12
+          attempt: 1
+          claimToken: portable-266605e7c7464b19207fd0c364bdb97383ab02d521cd0f503e2b948452bed560
+          inputHash: 73d51baf5cc15fbaa37e05059d406dfb8daf88102c951c85e98d282d85ea08c4
+          outcomeId: e649cd06-6280-4a28-908b-ad9f78808d7f
+          output:
+            baseCommit: cbd9912212e620bfc29a17ec2d00dbe0fb7a3dbb
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+            verifiedBranch: comet/stabilize-host-decision-ci-timeout-retry
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8cd065b4e6d96eb5aa730a2ba2f01ac71646799160d4d3d670664cd1e4cd2739
+            outcomeId: e649cd06-6280-4a28-908b-ad9f78808d7f
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-decision-ci-timeout
+        status: succeeded
+        stepId: hotfix.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-d34132054d16ee12c39a413242d5e3de21cdb61e91ec15c60de5a78165fab89d
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: stabilize-host-decision-ci-timeout:13
+        input:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+          outputs:
+            hotfix.archive.confirm:
+              choice: pr
+              proposal:
+                input:
+                  change: stabilize-host-decision-ci-timeout
+                  changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+                  workspaceBaseline:
+                    ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+                    targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+            hotfix.archive.preflight:
+              baseCommit: cbd9912212e620bfc29a17ec2d00dbe0fb7a3dbb
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+              verifiedBranch: comet/stabilize-host-decision-ci-timeout-retry
+            hotfix.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.open.evidence:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              cwd: .
+              deliveryInputs: {}
+              environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+              exitCode: 0
+              inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            hotfix.verify.check.evidence:
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+            hotfix.verify.report.evidence:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+            hotfix.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        inputHash: 09b442c69f10b0329537e06fca1c911a5ecc6ef412d647392b56a1d9f5959ef4
+        outcome:
+          actionId: stabilize-host-decision-ci-timeout:13
+          artifacts:
+            - sha256: e1975de3e897e34cf63f922d7f4c7f95a04cf12fdc0fb9d324dffcbc1aceaaf8
+              uri: openspec/changes/archive/2026-11-22-stabilize-host-decision-ci-timeout/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-d34132054d16ee12c39a413242d5e3de21cdb61e91ec15c60de5a78165fab89d
+          inputHash: 09b442c69f10b0329537e06fca1c911a5ecc6ef412d647392b56a1d9f5959ef4
+          outcomeId: c9449f7c-46db-49db-9528-08cb9399f515
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-22-stabilize-host-decision-ci-timeout
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d2af4124bd6f14eef4907e1f439a3ddcb05cac3f33eec1b51463e1023fcb6dee
+            outcomeId: c9449f7c-46db-49db-9528-08cb9399f515
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-decision-ci-timeout
+        status: succeeded
+        stepId: hotfix.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: stabilize-host-decision-ci-timeout:14
+        input:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+          outputs:
+            hotfix.archive.confirm:
+              choice: pr
+              proposal:
+                input:
+                  change: stabilize-host-decision-ci-timeout
+                  changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+                  workspaceBaseline:
+                    ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+                    targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+            hotfix.archive.execute:
+              archiveDirectory: openspec/changes/archive/2026-11-22-stabilize-host-decision-ci-timeout
+            hotfix.archive.preflight:
+              baseCommit: cbd9912212e620bfc29a17ec2d00dbe0fb7a3dbb
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+              verifiedBranch: comet/stabilize-host-decision-ci-timeout-retry
+            hotfix.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.open.evidence:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              cwd: .
+              deliveryInputs: {}
+              environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+              exitCode: 0
+              inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            hotfix.verify.check.evidence:
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+            hotfix.verify.report.evidence:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+            hotfix.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        inputHash: 89d19459e09cbb4df9ead59193b693a6c378155c7684a26cd652b6a69fe181e4
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-decision-ci-timeout
+        status: pending
+        stepId: hotfix.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      stabilize-host-decision-ci-timeout:1:
+        results: {}
+        sequence: 1
+      stabilize-host-decision-ci-timeout:10:
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              cwd: .
+              deliveryInputs: {}
+              environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+              exitCode: 0
+              inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        sequence: 10
+      stabilize-host-decision-ci-timeout:12:
+        results:
+          hotfix.archive.confirm:
+            sequence: 11
+            value:
+              choice: pr
+              proposal:
+                input:
+                  change: stabilize-host-decision-ci-timeout
+                  changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+                  workspaceBaseline:
+                    ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+                    targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+          hotfix.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              cwd: .
+              deliveryInputs: {}
+              environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+              exitCode: 0
+              inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        sequence: 12
+      stabilize-host-decision-ci-timeout:13:
+        results:
+          hotfix.archive.confirm:
+            sequence: 11
+            value:
+              choice: pr
+              proposal:
+                input:
+                  change: stabilize-host-decision-ci-timeout
+                  changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+                  workspaceBaseline:
+                    ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+                    targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+          hotfix.archive.preflight:
+            sequence: 12
+            value:
+              baseCommit: cbd9912212e620bfc29a17ec2d00dbe0fb7a3dbb
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+              verifiedBranch: comet/stabilize-host-decision-ci-timeout-retry
+          hotfix.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              cwd: .
+              deliveryInputs: {}
+              environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+              exitCode: 0
+              inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        sequence: 13
+      stabilize-host-decision-ci-timeout:14:
+        results:
+          hotfix.archive.confirm:
+            sequence: 11
+            value:
+              choice: pr
+              proposal:
+                input:
+                  change: stabilize-host-decision-ci-timeout
+                  changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+                  workspaceBaseline:
+                    ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+                    targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+          hotfix.archive.execute:
+            sequence: 13
+            value:
+              archiveDirectory: openspec/changes/archive/2026-11-22-stabilize-host-decision-ci-timeout
+          hotfix.archive.preflight:
+            sequence: 12
+            value:
+              baseCommit: cbd9912212e620bfc29a17ec2d00dbe0fb7a3dbb
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+              verifiedBranch: comet/stabilize-host-decision-ci-timeout-retry
+          hotfix.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              cwd: .
+              deliveryInputs: {}
+              environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+              exitCode: 0
+              inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        sequence: 14
+      stabilize-host-decision-ci-timeout:3:
+        results:
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+        sequence: 3
+      stabilize-host-decision-ci-timeout:4:
+        results:
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+        sequence: 4
+      stabilize-host-decision-ci-timeout:6:
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+        sequence: 6
+      stabilize-host-decision-ci-timeout:8:
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        sequence: 8
+    waits:
+      - id: stabilize-host-decision-ci-timeout:11
+        stepId: hotfix.archive.confirm
+        sequence: 11
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+          outputs:
+            hotfix.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+        proposalHash: ddd57d453dc014c6e625f2b16eef4d031e03079d158e608d2799e9a871e57953
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results:
+          hotfix.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+              targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              cwd: .
+              deliveryInputs: {}
+              environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+              exitCode: 0
+              inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        decision:
+          id: classic-archive-ddd57d453dc014c6e625f2b16eef4d031e03079d158e608d2799e9a871e57953-pr
+          choice: pr
+          proposalHash: ddd57d453dc014c6e625f2b16eef4d031e03079d158e608d2799e9a871e57953
+    evidenceWaits:
+      - id: stabilize-host-decision-ci-timeout:2
+        stepId: hotfix.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+        receipt:
+          ref: openspec/changes/stabilize-host-decision-ci-timeout
+          contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+          submissionId: 8c84725e-d26e-461e-9496-e9181a1604a5
+      - id: stabilize-host-decision-ci-timeout:5
+        stepId: hotfix.build.check.evidence
+        sequence: 5
+        kind: classic-build-check
+        status: resolved
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+          contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+          submissionId: fa9d8249-fe7c-4811-9392-ba15b53714e0
+      - id: stabilize-host-decision-ci-timeout:7
+        stepId: hotfix.verify.report.evidence
+        sequence: 7
+        kind: classic-verification-report
+        status: resolved
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        receipt:
+          ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+          contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+          submissionId: 6d6b2f51-13a4-4129-a30a-acf0b001cc74
+      - id: stabilize-host-decision-ci-timeout:9
+        stepId: hotfix.verify.check.evidence
+        sequence: 9
+        kind: classic-verify-check
+        status: resolved
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              cwd: .
+              environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+              exitCode: 0
+              inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+              manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+              ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+              cwd: .
+              deliveryInputs: {}
+              environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+              exitCode: 0
+              inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+              manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+              manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+              ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+          contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+          submissionId: 51e985f6-7e4f-4c6b-a5bb-7fe071b897d2
+    ready: []
+    joins: {}
+    outputs:
+      hotfix.archive.confirm:
+        sequence: 11
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: stabilize-host-decision-ci-timeout
+              changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+              workspaceBaseline:
+                ref: 1f842983-575c-4c75-a4bc-993edbe12a77
+            outputs:
+              hotfix.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+                targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+      hotfix.archive.execute:
+        sequence: 13
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-22-stabilize-host-decision-ci-timeout
+      hotfix.archive.preflight:
+        sequence: 12
+        value:
+          baseCommit: cbd9912212e620bfc29a17ec2d00dbe0fb7a3dbb
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+          verifiedBranch: comet/stabilize-host-decision-ci-timeout-retry
+      hotfix.archive.prepare:
+        sequence: 10
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档单条 CI 超时修复及其证据，向 origin/main 提 PR。通过 PR 和 main CI 后准备 v0.1.4 草稿。
+          targetBranch: comet/stabilize-host-decision-ci-timeout-retry
+      hotfix.build.check:
+        sequence: 4
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 1
+          contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+          cwd: .
+          environment: c135e41fd3c5ba48d8eddad0d7c91dbe2387c5733a0869371f5523112598f95a
+          exitCode: 0
+          inputAfter: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+          inputBefore: e45641df3d3e72911df5dada2da6e85fd6a774a5a7f87992297100126947ed81
+          manifestHash: ee5faaf42b3658b002612ca9405789a0ab6bc28d292ffdc936f8543bb4c6b8e7
+          manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/fe2fade8-18af-438e-94f1-d5e6bd3a3b7d.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      hotfix.build.check.evidence:
+        sequence: 5
+        value:
+          contentHash: 6078174e62fcec045958e00276d1b49a686575f9e5e95f7cbb5abe5cbc3bc304
+          ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/bb468b1f-23a5-4e9a-a298-e1b676c170b5.log
+      hotfix.build.execute:
+        sequence: 3
+        value:
+          event: build-complete
+      hotfix.open:
+        sequence: 1
+        value:
+          event: open-complete
+          requirementsEvidence:
+            contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+            ref: openspec/changes/stabilize-host-decision-ci-timeout
+      hotfix.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 39c79f00b5bd5f5ae71cda6acea305a42169f174a1afe45ed0a231a89ca09363
+          ref: openspec/changes/stabilize-host-decision-ci-timeout
+      hotfix.verify.check:
+        sequence: 8
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - check:managed-execution-report
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+          cwd: .
+          deliveryInputs: {}
+          environment: 5f575069c1be3bbd3905ff8aa59b70566996f91b8ad88b827a61f754285ede07
+          exitCode: 0
+          inputAfter: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+          inputBefore: 74facc0ad698d23ff65abecd822c1ceaeb14ec480aef35e750f8388fa652c915
+          manifestHash: 90e0a0d61f30fa7d95aee2923d6f2e7450716982a3eb0f64e42fe087475fce42
+          manifestRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/3667184f-42db-4057-835e-77168c576af6.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      hotfix.verify.check.evidence:
+        sequence: 9
+        value:
+          contentHash: 0405dcd04a1185cfc97c6038f189f2ccefffef1fad416aa766eb2a11f7a754db
+          ref: .comet/runtime/classic-sdk-checks/fa670affd7d1fa095b29ab06719d990623f9de2cbef770715357f7825f2255cd/0898fcde-0b70-4a25-af7e-818e0a079a23.log
+      hotfix.verify.report.evidence:
+        sequence: 7
+        value:
+          contentHash: 6d67c3e71c080b71fdad1cdbbfc4204752cdcc835cf9e195fdf75e77f45f76b0
+          ref: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+      hotfix.verify.run:
+        sequence: 6
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-host-decision-ci-timeout.md
+    children: []
+    lineage: []
+  sourceRevision: 22
+  sourceHash: 442c962b0750b18608592cb4995d2b74c54499860053cedcee2d1bcd8f54ff06
+check_epoch: 5
