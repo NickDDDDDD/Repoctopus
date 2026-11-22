@@ -25,6 +25,8 @@ const packageRoot = path.resolve(import.meta.dirname, '../..');
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
+// This scenario starts a real CLI process for each decision and strategy revision.
+// Its timeout covers their cumulative startup cost during the parallel end-to-end suite.
 it('lets a non-TTY Host read and answer the actual Open request, then recover the same decision', async () => {
   const root = await temporaryDirectory('repoctopus-host-decision-');
   cleanup.push(root);
@@ -643,4 +645,4 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
   expect(inFlight.state.changeLifecycle!.checkEpoch).toBe(
     secondRevision.state.changeLifecycle!.checkEpoch,
   );
-}, 180_000);
+}, 300_000);
