@@ -1,0 +1,213 @@
+# comet-execution: managed-run
+change_id: 712ee5de-f393-49a7-8b02-5078e1d69166
+workflow: hotfix
+language: zh-CN
+phase: build
+context_compression: off
+build_mode: direct
+build_pause: null
+subagent_dispatch: null
+tdd_mode: direct
+review_mode: off
+isolation: worktree
+verify_mode: light
+auto_transition: true
+base_ref: 314a84f925df2fa3afa90d6f5541a781eb6dc13a
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-22
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/stabilize-host-decision-ci-timeout
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 29276754e27196066f27a5477e409a525b75682d0d168816415b261e2bc3718f
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-host-decision-ci-timeout
+    revision: 1
+    workflow:
+      id: comet-classic-hotfix
+      version: "1"
+      hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+    definitionHashes:
+      '["comet-classic-hotfix","1"]': 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+    initialStateHash: 041ccfc14a962d4a18b7dd1b9a0b1a9be456e208cd662e33e5edd86217537aae
+    input:
+      change: stabilize-host-decision-ci-timeout
+      changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+      workspaceBaseline:
+        ref: ffe10d90-4515-4e90-8f30-2ec3bf5559a4
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 314a84f925df2fa3afa90d6f5541a781eb6dc13a
+      boundBranch: comet/stabilize-host-decision-ci-timeout
+      branchStatus: pending
+      buildMode: direct
+      buildPause: null
+      checkEpoch: 1
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-22
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: build
+      plan: null
+      reviewMode: off
+      subagentDispatch: null
+      tddMode: direct
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: light
+      verifyResult: pending
+      workflow: hotfix
+    status: running
+    sequence: 3
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-a28a4f0615600eea73823596e5be7e307a59551eefe10a73fe4e702affeec5a5
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: stabilize-host-decision-ci-timeout:1
+        input:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: ffe10d90-4515-4e90-8f30-2ec3bf5559a4
+          outputs: {}
+        inputHash: a9cdf7b7aba1abaced5f5ac2f538f3f9fe395f5e34ac41d334444f0a4396bdeb
+        outcome:
+          actionId: stabilize-host-decision-ci-timeout:1
+          attempt: 1
+          claimToken: portable-a28a4f0615600eea73823596e5be7e307a59551eefe10a73fe4e702affeec5a5
+          inputHash: a9cdf7b7aba1abaced5f5ac2f538f3f9fe395f5e34ac41d334444f0a4396bdeb
+          outcomeId: c26b8176-8b43-4581-b077-71624f1961f4
+          output:
+            event: open-complete
+            requirementsEvidence:
+              contentHash: 4904c1aac07d3d7d9a0d636bd5f9f576c5f80efe2d79cdaaaf907bf0c6102bad
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 81974705c3686be08ce35c3e739d785ff97640e0ab9bf00b0679212a12610d27
+            outcomeId: c26b8176-8b43-4581-b077-71624f1961f4
+        reconciliations: []
+        ref: comet-hotfix
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-decision-ci-timeout
+        status: succeeded
+        stepId: hotfix.open
+        type: invoke_skill
+      - attempt: 1
+        id: stabilize-host-decision-ci-timeout:3
+        input:
+          input:
+            change: stabilize-host-decision-ci-timeout
+            changeDir: openspec/changes/stabilize-host-decision-ci-timeout
+            workspaceBaseline:
+              ref: ffe10d90-4515-4e90-8f30-2ec3bf5559a4
+          outputs:
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 4904c1aac07d3d7d9a0d636bd5f9f576c5f80efe2d79cdaaaf907bf0c6102bad
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+            hotfix.open.evidence:
+              contentHash: 4904c1aac07d3d7d9a0d636bd5f9f576c5f80efe2d79cdaaaf907bf0c6102bad
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+        inputHash: 879670fd10bec7cc9df56d92d55cc078d6cd44311af4745e7fee6c4f05776281
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-decision-ci-timeout
+        status: pending
+        stepId: hotfix.build.execute
+        type: invoke_skill
+    actionContexts:
+      stabilize-host-decision-ci-timeout:1:
+        results: {}
+        sequence: 1
+      stabilize-host-decision-ci-timeout:3:
+        results:
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 4904c1aac07d3d7d9a0d636bd5f9f576c5f80efe2d79cdaaaf907bf0c6102bad
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 4904c1aac07d3d7d9a0d636bd5f9f576c5f80efe2d79cdaaaf907bf0c6102bad
+              ref: openspec/changes/stabilize-host-decision-ci-timeout
+        sequence: 3
+    waits: []
+    evidenceWaits:
+      - id: stabilize-host-decision-ci-timeout:2
+        stepId: hotfix.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: 4904c1aac07d3d7d9a0d636bd5f9f576c5f80efe2d79cdaaaf907bf0c6102bad
+                ref: openspec/changes/stabilize-host-decision-ci-timeout
+        receipt:
+          ref: openspec/changes/stabilize-host-decision-ci-timeout
+          contentHash: 4904c1aac07d3d7d9a0d636bd5f9f576c5f80efe2d79cdaaaf907bf0c6102bad
+          submissionId: f1c59ad6-737f-4114-bdfd-80c9491257f0
+    ready: []
+    joins: {}
+    outputs:
+      hotfix.open:
+        sequence: 1
+        value:
+          event: open-complete
+          requirementsEvidence:
+            contentHash: 4904c1aac07d3d7d9a0d636bd5f9f576c5f80efe2d79cdaaaf907bf0c6102bad
+            ref: openspec/changes/stabilize-host-decision-ci-timeout
+      hotfix.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 4904c1aac07d3d7d9a0d636bd5f9f576c5f80efe2d79cdaaaf907bf0c6102bad
+          ref: openspec/changes/stabilize-host-decision-ci-timeout
+    children: []
+    lineage: []
+  sourceRevision: 4
+  sourceHash: 174f758fff0ed1f77d942e3cbb1c586dda1ff185f7fe08088ad191047b1feb35
+check_epoch: 1
