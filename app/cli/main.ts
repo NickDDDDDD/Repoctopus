@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { realpathSync } from 'node:fs';
 import { readFile, realpath } from 'node:fs/promises';
 import { hostname, userInfo } from 'node:os';
 import path from 'node:path';
@@ -92,10 +93,12 @@ import {
 } from '../../domains/change-lifecycle/build-protocol.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
-const PRODUCT_ROOT =
+// The native resolver expands Windows 8.3 names before providers locate bundled resources.
+const PRODUCT_ROOT = realpathSync.native(
   path.basename(DIST_DIR) === 'dist'
     ? path.resolve(DIST_DIR, '..')
-    : path.resolve(DIST_DIR, '..', '..');
+    : path.resolve(DIST_DIR, '..', '..'),
+);
 const USAGE =
   'Usage: repoctopus project <init|detect|prepare|install-entry-skills|configure-verify|decision|review> | skill <list|get|preview|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|revise-strategy|record|resume|work-claim|work-content|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const COMMANDS = new Set([
