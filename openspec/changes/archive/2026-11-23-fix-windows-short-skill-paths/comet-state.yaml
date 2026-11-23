@@ -1,0 +1,1957 @@
+# comet-execution: managed-run
+change_id: ac598235-50b0-46fc-b90c-2e95d8739ae5
+workflow: hotfix
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: direct
+build_pause: null
+subagent_dispatch: null
+tdd_mode: direct
+review_mode: off
+isolation: worktree
+verify_mode: light
+auto_transition: true
+base_ref: 28122c12a3c3622816aec8433bfde916a4b61e97
+design_doc: null
+plan: null
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/fix-windows-short-skill-paths.md
+branch_status: pending
+created_at: 2026-11-22
+verified_at: 2026-11-23
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/fix-windows-short-skill-paths
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 7ae8aeb142bd637c0cb19f8e9a5c77078783627f499783721fb4dd8b7a648904
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: fix-windows-short-skill-paths
+    revision: 1
+    workflow:
+      id: comet-classic-hotfix
+      version: "1"
+      hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+    definitionHashes:
+      '["comet-classic-hotfix","1"]': 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+    initialStateHash: 7795aaf0799a5b19acfdb25f1abe75da3ff172f0878099ee3354ebde5b8fd344
+    input:
+      change: fix-windows-short-skill-paths
+      changeDir: openspec/changes/fix-windows-short-skill-paths
+      workspaceBaseline:
+        ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 28122c12a3c3622816aec8433bfde916a4b61e97
+      boundBranch: comet/fix-windows-short-skill-paths
+      branchStatus: pending
+      buildMode: direct
+      buildPause: null
+      checkEpoch: 5
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-22
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: null
+      reviewMode: off
+      subagentDispatch: null
+      tddMode: direct
+      verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+      verifiedAt: 2026-11-23
+      verifyFailures: 0
+      verifyMode: light
+      verifyResult: pass
+      workflow: hotfix
+    status: running
+    sequence: 14
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-43cfee0299c1e5692dbd5e51f10cfe05b64b9d7d52d5161864cc09e5ba683d55
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: fix-windows-short-skill-paths:1
+        input:
+          input:
+            change: fix-windows-short-skill-paths
+            changeDir: openspec/changes/fix-windows-short-skill-paths
+            workspaceBaseline:
+              ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+          outputs: {}
+        inputHash: 8c4529cbd9328ab4b57d512bde45fcace654ee6414b8911e136b7c1c5aa32e4e
+        outcome:
+          actionId: fix-windows-short-skill-paths:1
+          attempt: 1
+          claimToken: portable-43cfee0299c1e5692dbd5e51f10cfe05b64b9d7d52d5161864cc09e5ba683d55
+          inputHash: 8c4529cbd9328ab4b57d512bde45fcace654ee6414b8911e136b7c1c5aa32e4e
+          outcomeId: c34e34f2-fc12-475a-8dd9-4619d72f4202
+          output:
+            event: open-complete
+            requirementsEvidence:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ce4feca6166b243ce451db7fca4b50aa26eca405ea92dc482ecb321d4a81da71
+            outcomeId: c34e34f2-fc12-475a-8dd9-4619d72f4202
+        reconciliations: []
+        ref: comet-hotfix
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-short-skill-paths
+        status: succeeded
+        stepId: hotfix.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/fix-windows-short-skill-paths:3/1
+          token: portable-46310c9043d8e03419a34a825a325329fab1bbd215abed97c07535d710ce31be
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: fix-windows-short-skill-paths:3
+        input:
+          input:
+            change: fix-windows-short-skill-paths
+            changeDir: openspec/changes/fix-windows-short-skill-paths
+            workspaceBaseline:
+              ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+          outputs:
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.open.evidence:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+        inputHash: 5ce08eba54e0296f322dc58661ac4a2907853c649938b7fd44b59ae95f0b7a32
+        outcome:
+          actionId: fix-windows-short-skill-paths:3
+          attempt: 1
+          claimToken: portable-46310c9043d8e03419a34a825a325329fab1bbd215abed97c07535d710ce31be
+          inputHash: 5ce08eba54e0296f322dc58661ac4a2907853c649938b7fd44b59ae95f0b7a32
+          outcomeId: c26b0edb-5776-4ca9-999b-8986e9840001
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b199d04ff8c400b49f86d0bbae3ffc2d575ed0ce0b70db176c24c117d817b74c
+            outcomeId: c26b0edb-5776-4ca9-999b-8986e9840001
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-short-skill-paths
+        status: succeeded
+        stepId: hotfix.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-6c80a2e6b974dd03c48961c5ee114e7d1571f9d9f4be75f7daafb627c735cdde
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: fix-windows-short-skill-paths:4
+        input:
+          input:
+            change: fix-windows-short-skill-paths
+            changeDir: openspec/changes/fix-windows-short-skill-paths
+            workspaceBaseline:
+              ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+          outputs:
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.open.evidence:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+        inputHash: 977605bd235caf82275026f21d5a53b7952b1bc91c13e7f6e290d9eb150a8937
+        outcome:
+          actionId: fix-windows-short-skill-paths:4
+          attempt: 1
+          claimToken: portable-6c80a2e6b974dd03c48961c5ee114e7d1571f9d9f4be75f7daafb627c735cdde
+          inputHash: 977605bd235caf82275026f21d5a53b7952b1bc91c13e7f6e290d9eb150a8937
+          outcomeId: 43fa5bb7-2d43-4474-97a3-78a22bcc4705
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 1
+            contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+            cwd: .
+            environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+            exitCode: 0
+            inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+            inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+            manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+            manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 64e6e44349751e433cfcffc772b4b609beb07ea6f6e1099fbdda29a234952eb6
+            outcomeId: 43fa5bb7-2d43-4474-97a3-78a22bcc4705
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-short-skill-paths
+        status: succeeded
+        stepId: hotfix.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-4c21295efe899ab22d6950a5e9658d49bbb0b6463accdd16f5e1fec70cbc994d
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: fix-windows-short-skill-paths:6
+        input:
+          input:
+            change: fix-windows-short-skill-paths
+            changeDir: openspec/changes/fix-windows-short-skill-paths
+            workspaceBaseline:
+              ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+          outputs:
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.open.evidence:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+        inputHash: 80dfc4268fcdb25a59b321644ef4a60d70952242e58744c3bedd60705365fd5a
+        outcome:
+          actionId: fix-windows-short-skill-paths:6
+          attempt: 1
+          claimToken: portable-4c21295efe899ab22d6950a5e9658d49bbb0b6463accdd16f5e1fec70cbc994d
+          inputHash: 80dfc4268fcdb25a59b321644ef4a60d70952242e58744c3bedd60705365fd5a
+          outcomeId: 84d88879-d525-49dd-af5f-f4835dd41e84
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a0e774e08bddf70a5906d5b161aaf6c66a8cae39b0b3d46a8c2f1ff29207e951
+            outcomeId: 84d88879-d525-49dd-af5f-f4835dd41e84
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-short-skill-paths
+        status: succeeded
+        stepId: hotfix.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-0e93532e2a370036df363edcfde909bfd54fb05a74c47623ae349eadf28b2254
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: fix-windows-short-skill-paths:8
+        input:
+          input:
+            change: fix-windows-short-skill-paths
+            changeDir: openspec/changes/fix-windows-short-skill-paths
+            workspaceBaseline:
+              ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+          outputs:
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.open.evidence:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.verify.report.evidence:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+            hotfix.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        inputHash: 2d35b50e01c8eb2b2ebc66c70851051da2302ecdecc29edc04123bf9c3c03a1a
+        outcome:
+          actionId: fix-windows-short-skill-paths:8
+          attempt: 1
+          claimToken: portable-0e93532e2a370036df363edcfde909bfd54fb05a74c47623ae349eadf28b2254
+          inputHash: 2d35b50e01c8eb2b2ebc66c70851051da2302ecdecc29edc04123bf9c3c03a1a
+          outcomeId: 4105e8c2-2348-41f4-aea3-aef5be743073
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - check:managed-execution-report
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+            cwd: .
+            deliveryInputs: {}
+            environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+            exitCode: 0
+            inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+            inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+            manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+            manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e1559b2803e6e9137a593d3b6ecf1839f1e841905c39a17d7a607a379d4e1edf
+            outcomeId: 4105e8c2-2348-41f4-aea3-aef5be743073
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-short-skill-paths
+        status: succeeded
+        stepId: hotfix.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-f4eb27f8083eeb6e7cbf4ed4107c4008b9997349c2eebe1c52627f3c99895377
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: fix-windows-short-skill-paths:10
+        input:
+          input:
+            change: fix-windows-short-skill-paths
+            changeDir: openspec/changes/fix-windows-short-skill-paths
+            workspaceBaseline:
+              ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+          outputs:
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.open.evidence:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              cwd: .
+              deliveryInputs: {}
+              environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+              exitCode: 0
+              inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            hotfix.verify.check.evidence:
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+            hotfix.verify.report.evidence:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+            hotfix.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        inputHash: 3ea949989eb59ed8cb7bd50e19a7a15b349dd35e1a81d9add961125134b5d355
+        outcome:
+          actionId: fix-windows-short-skill-paths:10
+          attempt: 1
+          claimToken: portable-f4eb27f8083eeb6e7cbf4ed4107c4008b9997349c2eebe1c52627f3c99895377
+          inputHash: 3ea949989eb59ed8cb7bd50e19a7a15b349dd35e1a81d9add961125134b5d355
+          outcomeId: fbc6c218-7766-4989-b54b-85e4b4827503
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+              v0.1.4 草稿。
+            targetBranch: comet/fix-windows-short-skill-paths
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1a052582688c924f9b7ef7769f62a8d37119bf6bfa95692bc421aa5cb160e4f5
+            outcomeId: fbc6c218-7766-4989-b54b-85e4b4827503
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-short-skill-paths
+        status: succeeded
+        stepId: hotfix.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-b95ceb6d1786f1616f9cd6f11f0a1e2ecc28806cf426f6341aaa7df604007467
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: fix-windows-short-skill-paths:12
+        input:
+          input:
+            change: fix-windows-short-skill-paths
+            changeDir: openspec/changes/fix-windows-short-skill-paths
+            workspaceBaseline:
+              ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+          outputs:
+            hotfix.archive.confirm:
+              choice: pr
+              proposal:
+                input:
+                  change: fix-windows-short-skill-paths
+                  changeDir: openspec/changes/fix-windows-short-skill-paths
+                  workspaceBaseline:
+                    ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                      v0.1.4 草稿。
+                    targetBranch: comet/fix-windows-short-skill-paths
+            hotfix.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                v0.1.4 草稿。
+              targetBranch: comet/fix-windows-short-skill-paths
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.open.evidence:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              cwd: .
+              deliveryInputs: {}
+              environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+              exitCode: 0
+              inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            hotfix.verify.check.evidence:
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+            hotfix.verify.report.evidence:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+            hotfix.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        inputHash: a0f0ddd057f50fe2b86cb3df9e0838babd66df5283a1b51660bf98ae2a8e3c43
+        outcome:
+          actionId: fix-windows-short-skill-paths:12
+          attempt: 1
+          claimToken: portable-b95ceb6d1786f1616f9cd6f11f0a1e2ecc28806cf426f6341aaa7df604007467
+          inputHash: a0f0ddd057f50fe2b86cb3df9e0838babd66df5283a1b51660bf98ae2a8e3c43
+          outcomeId: 718dcab4-aa2f-4d96-b953-200c23012779
+          output:
+            baseCommit: 638a05cdd1ab582932c4ad4b69510516f41842bc
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/fix-windows-short-skill-paths
+            verifiedBranch: comet/fix-windows-short-skill-paths
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 955b535883ccc3e40a99c56300e5974b0240b34c489c606ea3008a4428779546
+            outcomeId: 718dcab4-aa2f-4d96-b953-200c23012779
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-short-skill-paths
+        status: succeeded
+        stepId: hotfix.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-1341df338d52612090021a0d8fd0f2fb951bff11c2d5e9bc3270386cd9077317
+        executionOrigin:
+          workflow:
+            hash: 6f71bc84d0b99735ca7b6578709966e435eb6c732dcd702ad2771b5569fc9552
+            id: comet-classic-hotfix
+            version: "1"
+        id: fix-windows-short-skill-paths:13
+        input:
+          input:
+            change: fix-windows-short-skill-paths
+            changeDir: openspec/changes/fix-windows-short-skill-paths
+            workspaceBaseline:
+              ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+          outputs:
+            hotfix.archive.confirm:
+              choice: pr
+              proposal:
+                input:
+                  change: fix-windows-short-skill-paths
+                  changeDir: openspec/changes/fix-windows-short-skill-paths
+                  workspaceBaseline:
+                    ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                      v0.1.4 草稿。
+                    targetBranch: comet/fix-windows-short-skill-paths
+            hotfix.archive.preflight:
+              baseCommit: 638a05cdd1ab582932c4ad4b69510516f41842bc
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/fix-windows-short-skill-paths
+              verifiedBranch: comet/fix-windows-short-skill-paths
+            hotfix.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                v0.1.4 草稿。
+              targetBranch: comet/fix-windows-short-skill-paths
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.open.evidence:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              cwd: .
+              deliveryInputs: {}
+              environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+              exitCode: 0
+              inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            hotfix.verify.check.evidence:
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+            hotfix.verify.report.evidence:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+            hotfix.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        inputHash: 6ff3365785f0ea806351e4895941943e620e7f7fe4f5a0b79fcf8a0eed591755
+        outcome:
+          actionId: fix-windows-short-skill-paths:13
+          artifacts:
+            - sha256: 88d256318b618b53d71ace2a25ad37fe9d208348d74b5f03d8b592db3c7fa816
+              uri: openspec/changes/archive/2026-11-23-fix-windows-short-skill-paths/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-1341df338d52612090021a0d8fd0f2fb951bff11c2d5e9bc3270386cd9077317
+          inputHash: 6ff3365785f0ea806351e4895941943e620e7f7fe4f5a0b79fcf8a0eed591755
+          outcomeId: 0c0466a6-cc29-4e88-9536-1f27a84beb1c
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-23-fix-windows-short-skill-paths
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 07f410b7960bed4ce5ef9591568be365abd91adeaa0d66a41bae4af54c87a0f7
+            outcomeId: 0c0466a6-cc29-4e88-9536-1f27a84beb1c
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-short-skill-paths
+        status: succeeded
+        stepId: hotfix.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: fix-windows-short-skill-paths:14
+        input:
+          input:
+            change: fix-windows-short-skill-paths
+            changeDir: openspec/changes/fix-windows-short-skill-paths
+            workspaceBaseline:
+              ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+          outputs:
+            hotfix.archive.confirm:
+              choice: pr
+              proposal:
+                input:
+                  change: fix-windows-short-skill-paths
+                  changeDir: openspec/changes/fix-windows-short-skill-paths
+                  workspaceBaseline:
+                    ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                      v0.1.4 草稿。
+                    targetBranch: comet/fix-windows-short-skill-paths
+            hotfix.archive.execute:
+              archiveDirectory: openspec/changes/archive/2026-11-23-fix-windows-short-skill-paths
+            hotfix.archive.preflight:
+              baseCommit: 638a05cdd1ab582932c4ad4b69510516f41842bc
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/fix-windows-short-skill-paths
+              verifiedBranch: comet/fix-windows-short-skill-paths
+            hotfix.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                v0.1.4 草稿。
+              targetBranch: comet/fix-windows-short-skill-paths
+            hotfix.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            hotfix.build.check.evidence:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+            hotfix.build.execute:
+              event: build-complete
+            hotfix.open:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.open.evidence:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+            hotfix.verify.check:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              cwd: .
+              deliveryInputs: {}
+              environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+              exitCode: 0
+              inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+            hotfix.verify.check.evidence:
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+            hotfix.verify.report.evidence:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+            hotfix.verify.run:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        inputHash: 2f723bc55a23bed04d528ba9c386a52f38f7f27ffe6c80f128a7e2403fb0ebd0
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fix-windows-short-skill-paths
+        status: pending
+        stepId: hotfix.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      fix-windows-short-skill-paths:1:
+        results: {}
+        sequence: 1
+      fix-windows-short-skill-paths:10:
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              cwd: .
+              deliveryInputs: {}
+              environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+              exitCode: 0
+              inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        sequence: 10
+      fix-windows-short-skill-paths:12:
+        results:
+          hotfix.archive.confirm:
+            sequence: 11
+            value:
+              choice: pr
+              proposal:
+                input:
+                  change: fix-windows-short-skill-paths
+                  changeDir: openspec/changes/fix-windows-short-skill-paths
+                  workspaceBaseline:
+                    ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                      v0.1.4 草稿。
+                    targetBranch: comet/fix-windows-short-skill-paths
+          hotfix.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                v0.1.4 草稿。
+              targetBranch: comet/fix-windows-short-skill-paths
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              cwd: .
+              deliveryInputs: {}
+              environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+              exitCode: 0
+              inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        sequence: 12
+      fix-windows-short-skill-paths:13:
+        results:
+          hotfix.archive.confirm:
+            sequence: 11
+            value:
+              choice: pr
+              proposal:
+                input:
+                  change: fix-windows-short-skill-paths
+                  changeDir: openspec/changes/fix-windows-short-skill-paths
+                  workspaceBaseline:
+                    ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                      v0.1.4 草稿。
+                    targetBranch: comet/fix-windows-short-skill-paths
+          hotfix.archive.preflight:
+            sequence: 12
+            value:
+              baseCommit: 638a05cdd1ab582932c4ad4b69510516f41842bc
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/fix-windows-short-skill-paths
+              verifiedBranch: comet/fix-windows-short-skill-paths
+          hotfix.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                v0.1.4 草稿。
+              targetBranch: comet/fix-windows-short-skill-paths
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              cwd: .
+              deliveryInputs: {}
+              environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+              exitCode: 0
+              inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        sequence: 13
+      fix-windows-short-skill-paths:14:
+        results:
+          hotfix.archive.confirm:
+            sequence: 11
+            value:
+              choice: pr
+              proposal:
+                input:
+                  change: fix-windows-short-skill-paths
+                  changeDir: openspec/changes/fix-windows-short-skill-paths
+                  workspaceBaseline:
+                    ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+                outputs:
+                  hotfix.archive.prepare:
+                    prBaseBranch: main
+                    remote: origin
+                    summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                      v0.1.4 草稿。
+                    targetBranch: comet/fix-windows-short-skill-paths
+          hotfix.archive.execute:
+            sequence: 13
+            value:
+              archiveDirectory: openspec/changes/archive/2026-11-23-fix-windows-short-skill-paths
+          hotfix.archive.preflight:
+            sequence: 12
+            value:
+              baseCommit: 638a05cdd1ab582932c4ad4b69510516f41842bc
+              deliveryAction: pr
+              prBaseBranch: main
+              remote: origin
+              remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+              targetBranch: comet/fix-windows-short-skill-paths
+              verifiedBranch: comet/fix-windows-short-skill-paths
+          hotfix.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                v0.1.4 草稿。
+              targetBranch: comet/fix-windows-short-skill-paths
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              cwd: .
+              deliveryInputs: {}
+              environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+              exitCode: 0
+              inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        sequence: 14
+      fix-windows-short-skill-paths:3:
+        results:
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+        sequence: 3
+      fix-windows-short-skill-paths:4:
+        results:
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+        sequence: 4
+      fix-windows-short-skill-paths:6:
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+        sequence: 6
+      fix-windows-short-skill-paths:8:
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        sequence: 8
+    waits:
+      - id: fix-windows-short-skill-paths:11
+        stepId: hotfix.archive.confirm
+        sequence: 11
+        status: resolved
+        proposal:
+          input:
+            change: fix-windows-short-skill-paths
+            changeDir: openspec/changes/fix-windows-short-skill-paths
+            workspaceBaseline:
+              ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+          outputs:
+            hotfix.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                v0.1.4 草稿。
+              targetBranch: comet/fix-windows-short-skill-paths
+        proposalHash: 27757274e9e000a78a4f923581c38d58290442d976915964655d0eaa58f5d219
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results:
+          hotfix.archive.prepare:
+            sequence: 10
+            value:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                v0.1.4 草稿。
+              targetBranch: comet/fix-windows-short-skill-paths
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              cwd: .
+              deliveryInputs: {}
+              environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+              exitCode: 0
+              inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.check.evidence:
+            sequence: 9
+            value:
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        decision:
+          id: classic-archive-27757274e9e000a78a4f923581c38d58290442d976915964655d0eaa58f5d219-pr
+          choice: pr
+          proposalHash: 27757274e9e000a78a4f923581c38d58290442d976915964655d0eaa58f5d219
+    evidenceWaits:
+      - id: fix-windows-short-skill-paths:2
+        stepId: hotfix.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+        receipt:
+          ref: openspec/changes/fix-windows-short-skill-paths
+          contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+          submissionId: 64be3adf-c19b-418c-a2fc-310a2261c405
+      - id: fix-windows-short-skill-paths:5
+        stepId: hotfix.build.check.evidence
+        sequence: 5
+        kind: classic-build-check
+        status: resolved
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+          contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+          submissionId: bea4726a-3520-40af-9895-804c32d001c1
+      - id: fix-windows-short-skill-paths:7
+        stepId: hotfix.verify.report.evidence
+        sequence: 7
+        kind: classic-verification-report
+        status: resolved
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        receipt:
+          ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+          contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+          submissionId: d47c53ed-6662-48cc-a0e9-b37f5e4c2cd1
+      - id: fix-windows-short-skill-paths:9
+        stepId: hotfix.verify.check.evidence
+        sequence: 9
+        kind: classic-verify-check
+        status: resolved
+        results:
+          hotfix.build.check:
+            sequence: 4
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 1
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              cwd: .
+              environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+              exitCode: 0
+              inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+              manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          hotfix.build.check.evidence:
+            sequence: 5
+            value:
+              contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+              ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+          hotfix.build.execute:
+            sequence: 3
+            value:
+              event: build-complete
+          hotfix.open:
+            sequence: 1
+            value:
+              event: open-complete
+              requirementsEvidence:
+                contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+                ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.open.evidence:
+            sequence: 2
+            value:
+              contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+              ref: openspec/changes/fix-windows-short-skill-paths
+          hotfix.verify.check:
+            sequence: 8
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - check:managed-execution-report
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+              cwd: .
+              deliveryInputs: {}
+              environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+              exitCode: 0
+              inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+              manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+              manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+              reusable: false
+              reused: false
+              scope: verify
+              tier: full
+              timeoutMs: 2700000
+          hotfix.verify.report.evidence:
+            sequence: 7
+            value:
+              contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+              ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+          hotfix.verify.run:
+            sequence: 6
+            value:
+              event: verification-ready
+              verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+          contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+          submissionId: eb24402c-acf2-48dd-bbb8-e3f0f0516214
+    ready: []
+    joins: {}
+    outputs:
+      hotfix.archive.confirm:
+        sequence: 11
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: fix-windows-short-skill-paths
+              changeDir: openspec/changes/fix-windows-short-skill-paths
+              workspaceBaseline:
+                ref: 44205a0d-7dc8-4c06-aeb4-243f391696ca
+            outputs:
+              hotfix.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+                  v0.1.4 草稿。
+                targetBranch: comet/fix-windows-short-skill-paths
+      hotfix.archive.execute:
+        sequence: 13
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-23-fix-windows-short-skill-paths
+      hotfix.archive.preflight:
+        sequence: 12
+        value:
+          baseCommit: 638a05cdd1ab582932c4ad4b69510516f41842bc
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/fix-windows-short-skill-paths
+          verifiedBranch: comet/fix-windows-short-skill-paths
+      hotfix.archive.prepare:
+        sequence: 10
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档 Windows 短路径 Skill 修复和实包证据，向 origin/main 提 PR。PR 与 main CI 通过后重新准备
+            v0.1.4 草稿。
+          targetBranch: comet/fix-windows-short-skill-paths
+      hotfix.build.check:
+        sequence: 4
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 1
+          contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+          cwd: .
+          environment: 9fd9533658d79b708ab2b16e260d54c92068689dfd337ad21a974e8c883beb43
+          exitCode: 0
+          inputAfter: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+          inputBefore: 5caa88a8952423a1501eb1e7e3d48ee46e457514957b28185f4696b5538a4faf
+          manifestHash: d5eabe46ef6ae001dc4670693a17ba52cf863fae447d799b92df1fc1baa87e07
+          manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/20bbd9c9-3450-4d06-a477-1110dd948802.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      hotfix.build.check.evidence:
+        sequence: 5
+        value:
+          contentHash: db7357688df52fbba3519addfeb69f0307eb813d2cd9b3da6d8114bc5c0c1361
+          ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/32fd96de-86bb-463a-8471-22b1f5768a06.log
+      hotfix.build.execute:
+        sequence: 3
+        value:
+          event: build-complete
+      hotfix.open:
+        sequence: 1
+        value:
+          event: open-complete
+          requirementsEvidence:
+            contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+            ref: openspec/changes/fix-windows-short-skill-paths
+      hotfix.open.evidence:
+        sequence: 2
+        value:
+          contentHash: c5c3f914ec8cd94ace21aac693be499af69b56d99883f5cf0d9d1e0cae55fa00
+          ref: openspec/changes/fix-windows-short-skill-paths
+      hotfix.verify.check:
+        sequence: 8
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - check:managed-execution-report
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+          cwd: .
+          deliveryInputs: {}
+          environment: 4a55ad8977ebdf1efda1cf7119b7446d82276fbf8df21389287f66efc75e7d80
+          exitCode: 0
+          inputAfter: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+          inputBefore: 79e1fce0149a004d63a80113a3e6661d3a6411ca33eddd64aed4f66cc5d1170d
+          manifestHash: f355fdeb08f48ad1cb7d563b9a94c7c5de54b77fc3489d775ee1d1c968bc054d
+          manifestRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/be79844b-06f1-4685-8219-ad868d93b924.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      hotfix.verify.check.evidence:
+        sequence: 9
+        value:
+          contentHash: 0ad9390d4f05829cf569d1cc2cb764cc942f4823ef22dd2fffe78a3f2e1ecd51
+          ref: .comet/runtime/classic-sdk-checks/87a04469f61d75984976fdc1ced4972755f04dcda58116b208a115ef3eef2e5d/5c6c6261-88d0-473f-a307-325e01cc50d0.log
+      hotfix.verify.report.evidence:
+        sequence: 7
+        value:
+          contentHash: 091c34a3f9a71d23d058ace34ebda3a7136c96bf630e6a281c81e6a97912e61c
+          ref: docs/superpowers/reports/fix-windows-short-skill-paths.md
+      hotfix.verify.run:
+        sequence: 6
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/fix-windows-short-skill-paths.md
+    children: []
+    lineage: []
+  sourceRevision: 22
+  sourceHash: 490096b195ebd32080c19968db54bb06693c5b623fa07a1bd996e6c367ce2ba1
+check_epoch: 5
