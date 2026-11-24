@@ -22,6 +22,8 @@ Package content bytes: `6677251`
 
 ## Windows 实包结果
 
+[最终 CLI 候选包收据](final-cli-receipt.json)绑定上述最终 tarball。公共 CLI 从 Init 完成到 Archive，通过首包后的新进程恢复、规格 PR 响应丢失去重以及终态恢复。
+
 [多仓收据](verify-repair-receipt.json)覆盖初始化至归档、首包后换进程恢复、原规格 PR 创建响应丢失后的恢复，以及终态重复读取。通过后端集成检查引入一次实际失败，Runtime 以 `revise-implementation` 返回 Build，保留前端包。前端执行及机器验证各一次，后端各两次。随后通过 Verify、Archive 和发布去重检查。
 
 [安装态回放收据](installed-guidance-evidence.json)记录同一轨迹的七个检查点。序列 64 待审，67 进入 Build 并撤下审批指引，127 显示 1/2 工作包，174 进入 Verify，196 回到 Build 并显示返工与 1/2，216 恢复进行中，325 显示归档完成。进度来自实际提交的 Runtime 事实。
