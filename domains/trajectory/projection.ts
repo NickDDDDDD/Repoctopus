@@ -1002,7 +1002,7 @@ function projectLifecycle(change: ProjectedChange, envelope: ObservationEnvelope
     (envelope.eventType === 'run.started' ? 'running' : null);
   if (!CHANGE_RUN_STATUSES.includes(status as RunStatus)) return;
   const from = changePhase(stringAttribute(envelope.attributes, 'fromPhase'));
-  const previous = change.lifecycle;
+  const previousPhase = change.lifecycle?.phase ?? change.phase;
   const waiting = status === 'waiting';
   change.lifecycle = {
     phase,
@@ -1015,7 +1015,7 @@ function projectLifecycle(change: ProjectedChange, envelope: ObservationEnvelope
       status === 'running' && isTransition && from !== null && phaseIndex(from) > phaseIndex(phase),
     observedAt: envelope.observedAt,
   };
-  if (previous && previous.phase !== phase) {
+  if (previousPhase !== phase) {
     change.currentWork = null;
     change.buildAction = null;
   }
@@ -1097,7 +1097,7 @@ function projectChange(
     next === undefined ? previous : next;
   projectLifecycle(change, envelope);
   change.phase = change.lifecycle?.phase ?? value(envelope.correlation.phase, change.phase);
-  if (!change.lifecycle || envelope.correlation.phase === change.lifecycle.phase) {
+  if (envelope.correlation.phase === 'build' && change.phase === 'build') {
     change.buildAction = value(envelope.correlation.buildAction, change.buildAction);
   }
   change.status =

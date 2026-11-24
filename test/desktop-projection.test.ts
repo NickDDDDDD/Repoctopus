@@ -52,6 +52,7 @@ describe('desktop change projection', () => {
     expect(snapshot.changes[0]?.buildActions.find(({ action }) => action === 'check')?.state).toBe(
       'not-reported',
     );
+    expect(snapshot.changes[0]?.buildAction).toBeNull();
   });
 
   it('requires lifecycle evidence before presenting a restored Run as terminal', () => {
