@@ -580,8 +580,9 @@ async function main() {
         const state = await page.evaluate('window.repoctopusDesktop.currentState()');
         throw new Error(`${error.message}; body: ${body}; state: ${JSON.stringify(state)}`);
       });
-      const body = await waitForText(page, runtimeRunId);
       await waitForSelectedChange(page, 'add-windows-desktop-dashboard');
+      await page.evaluate("document.querySelector('details.run-details').open = true");
+      const body = await waitForText(page, runtimeRunId);
       assert(
         body.includes('build.execute:417ed2ee777f'),
         'Current self-hosted Work was not rendered',

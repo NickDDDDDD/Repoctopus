@@ -7,6 +7,7 @@ import type {
   ProjectedHealthReason,
   ProjectedTimelineState,
 } from '../../../../domains/trajectory/projection.js';
+import { NextStep, PHASE_NAMES, workflowGuidance } from './workflow-guidance.js';
 
 const PHASE_LABELS = {
   open: 'Open',
@@ -36,15 +37,16 @@ const STATE_LABELS: Record<ProjectedTimelineState, string> = {
 };
 
 const DISPLAY_LABELS: Record<ProjectedChange['displayState'], string> = {
-  sparse: '事实稀疏',
-  'catching-up': '正在追平',
-  live: '实时',
-  stale: '数据过期',
-  gap: '存在缺口',
-  error: '接收异常',
-  stalled: '执行停滞',
-  waiting: '等待决定',
+  sparse: '等待状态',
+  'catching-up': '正在同步',
+  live: '进行中',
+  stale: '状态待确认',
+  gap: '数据不完整',
+  error: '连接异常',
+  stalled: '进展待确认',
+  waiting: '等待处理',
   rework: '返工中',
+  blocked: '已阻塞',
   complete: '已完成',
   failed: '失败',
 };
@@ -126,6 +128,12 @@ function reasonText(reason: ProjectedHealthReason): string {
       return `${reason.destinationId ?? '目的地'}积压 ${reason.count ?? 0} 条`;
     case 'destination-failed':
       return `${reason.destinationId ?? '目的地'}最近投递失败${reason.category ? ` · ${reason.category}` : ''}`;
+    case 'specification-artifact-missing':
+      return '缺少规格文件';
+    case 'specification-validation-failed':
+      return '规格校验未通过';
+    case 'specification-contract-conflict':
+      return '规格存在冲突';
     default:
       return reason.code;
   }
@@ -152,6 +160,12 @@ function ChangeNavigation({
 }) {
   const selected = application.selectedContext;
   const workspaces = [...new Set(snapshot.changes.map((change) => change.workspaceId))].sort();
+  const needsAttention = (change: ProjectedChange) =>
+    ['waiting', 'blocked', 'stalled', 'failed'].includes(change.displayState);
+  const isSelected = (change: ProjectedChange) =>
+    selected?.workspaceId === change.workspaceId &&
+    selected.changeId === change.changeId &&
+    selected.runId === change.runId;
   const select = (change: ProjectedChange) => {
     window.repoctopusDesktop.selectChange({
       schemaVersion: 1,
@@ -160,45 +174,65 @@ function ChangeNavigation({
       runId: change.runId,
     });
   };
-  const list = (
+  const renderRows = (changes: ProjectedChange[], workspaceChanges: ProjectedChange[]) =>
+    changes.map((change) => (
+      <button
+        className="change-row"
+        type="button"
+        aria-pressed={isSelected(change)}
+        key={`${change.changeId}\0${change.runId}`}
+        onClick={() => select(change)}
+      >
+        <StatusDot state={change.displayState} />
+        <span className="change-row__copy">
+          <span className="change-row__name" title={change.changeId}>
+            {change.changeId}
+          </span>
+          <span className="change-row__meta">
+            {needsAttention(change)
+              ? workflowGuidance(change).title
+              : `${change.phase ? PHASE_NAMES[change.phase] + ' · ' : ''}${DISPLAY_LABELS[change.displayState]}`}
+          </span>
+          {workspaceChanges.some(
+            (other) => other.changeId === change.changeId && other.runId !== change.runId,
+          ) ? (
+            <span className="change-row__meta" title={change.runId}>
+              Run …{change.runId.slice(-12)}
+            </span>
+          ) : null}
+        </span>
+      </button>
+    ));
+  const list = (scope: string) => (
     <div className="change-list" role="list">
-      {workspaces.map((workspaceId) => (
-        <section
-          className="workspace-group"
-          key={workspaceId}
-          aria-labelledby={`workspace-${workspaceId}`}
-        >
-          <h2 id={`workspace-${workspaceId}`}>{workspaceId}</h2>
-          <div className="workspace-changes" role="list">
-            {snapshot.changes
-              .filter((change) => change.workspaceId === workspaceId)
-              .map((change) => {
-                const isSelected =
-                  selected?.workspaceId === change.workspaceId &&
-                  selected.changeId === change.changeId &&
-                  selected.runId === change.runId;
-                return (
-                  <button
-                    className="change-row"
-                    type="button"
-                    aria-pressed={isSelected}
-                    key={`${change.changeId}\0${change.runId}`}
-                    onClick={() => select(change)}
-                  >
-                    <StatusDot state={change.displayState} />
-                    <span className="change-row__copy">
-                      <span className="change-row__name">{change.changeId}</span>
-                      <span className="change-row__meta">
-                        {DISPLAY_LABELS[change.displayState]} ·{' '}
-                        {formatTime(change.latestObservedAt)}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
-          </div>
-        </section>
-      ))}
+      {workspaces.map((workspaceId) => {
+        const workspaceChanges = snapshot.changes.filter(
+          (change) => change.workspaceId === workspaceId,
+        );
+        const active = workspaceChanges.filter((change) => change.displayState !== 'complete');
+        const completed = workspaceChanges.filter((change) => change.displayState === 'complete');
+        active.sort(
+          (left, right) =>
+            Number(needsAttention(right)) - Number(needsAttention(left)) ||
+            right.latestObservedAt.localeCompare(left.latestObservedAt),
+        );
+        return (
+          <section
+            className="workspace-group"
+            key={workspaceId}
+            aria-labelledby={`${scope}-workspace-${workspaceId}`}
+          >
+            <h2 id={`${scope}-workspace-${workspaceId}`}>{workspaceId}</h2>
+            <div className="workspace-changes">{renderRows(active, workspaceChanges)}</div>
+            {completed.length > 0 ? (
+              <details className="completed-runs" open={completed.some(isSelected)}>
+                <summary>已完成 · {completed.length}</summary>
+                <div className="workspace-changes">{renderRows(completed, workspaceChanges)}</div>
+              </details>
+            ) : null}
+          </section>
+        );
+      })}
     </div>
   );
 
@@ -207,16 +241,16 @@ function ChangeNavigation({
       <aside className="change-sidebar" aria-label="Workspace 与 change">
         <div className="sidebar-heading">
           <p>当前工作</p>
-          <span>{snapshot.changes.length} 个 change</span>
+          <span>{snapshot.changes.length} 条 Run</span>
         </div>
-        {list}
+        {list('desktop')}
       </aside>
       <details className="mobile-change-nav">
         <summary>
           <span>切换 change</span>
           <span>{selected?.changeId ?? '尚未选择'}</span>
         </summary>
-        {list}
+        {list('compact')}
       </details>
     </>
   );
@@ -224,41 +258,29 @@ function ChangeNavigation({
 
 function PhaseRail({ change }: { change: ProjectedChange }) {
   return (
-    <section className="phase-region" aria-labelledby="phase-heading">
-      <div className="section-heading">
-        <div>
-          <p className="section-kicker">Lifecycle</p>
-          <h2 id="phase-heading">五阶段</h2>
-        </div>
-        <p>尝试与时间只来自已接收的权威事实</p>
-      </div>
+    <section className="phase-region" aria-label="工作流阶段">
       <ol className="phase-rail" role="list">
-        {change.phases.map((phase, index) => {
-          const latest = phase.attempts.at(-1);
+        {change.phases.map((phase) => {
+          const current = phase.phase === change.phase;
           return (
-            <li className="phase-step" data-state={phase.state} key={phase.phase}>
-              <div className="phase-step__index" aria-hidden="true">
-                {index + 1}
-              </div>
+            <li
+              className="phase-step"
+              data-state={phase.state}
+              key={phase.phase}
+              aria-current={current ? 'step' : undefined}
+            >
+              <StatusDot state={phase.state} />
               <div className="phase-step__body">
                 <div className="phase-step__title">
                   <h3>{PHASE_LABELS[phase.phase]}</h3>
-                  <StateBadge state={phase.state} />
                 </div>
-                <dl>
-                  <div>
-                    <dt>尝试</dt>
-                    <dd className="numeric">{phase.attempts.length || '—'}</dd>
-                  </div>
-                  <div>
-                    <dt>进入</dt>
-                    <dd>{formatTime(latest?.enteredAt ?? null)}</dd>
-                  </div>
-                  <div>
-                    <dt>耗时</dt>
-                    <dd>{formatDuration(latest ? attemptDuration(latest) : null)}</dd>
-                  </div>
-                </dl>
+                <p>
+                  {PHASE_NAMES[phase.phase]}
+                  {current ? ' · 当前' : ''}
+                </p>
+                {phase.state !== 'not-reported' ? (
+                  <span className="phase-step__state">{STATE_LABELS[phase.state]}</span>
+                ) : null}
               </div>
             </li>
           );
@@ -268,13 +290,28 @@ function PhaseRail({ change }: { change: ProjectedChange }) {
   );
 }
 
+function PhaseHistory({ change }: { change: ProjectedChange }) {
+  return (
+    <MetadataList
+      items={change.phases.map((phase) => {
+        const latest = phase.attempts.at(-1);
+        return [
+          PHASE_NAMES[phase.phase],
+          latest
+            ? `${phase.attempts.length} 次尝试 · ${formatTime(latest.enteredAt)} · ${formatDuration(attemptDuration(latest))}`
+            : null,
+        ];
+      })}
+    />
+  );
+}
+
 function BuildTimeline({ change }: { change: ProjectedChange }) {
   return (
     <section className="build-region" aria-labelledby="build-heading">
       <div className="section-heading section-heading--compact">
         <div>
-          <p className="section-kicker">Build</p>
-          <h2 id="build-heading">执行动作</h2>
+          <h2 id="build-heading">实现进度</h2>
         </div>
         <p>{change.buildAction ? ACTION_LABELS[change.buildAction] : '当前 action 尚未上报'}</p>
       </div>
@@ -310,7 +347,6 @@ function WorkDetails({ change }: { change: ProjectedChange }) {
     <section className="detail-section" aria-labelledby="work-heading">
       <div className="section-heading section-heading--compact">
         <div>
-          <p className="section-kicker">Current work</p>
           <h2 id="work-heading">当前执行</h2>
         </div>
         {work ? <StateBadge state={work.state} /> : <StateBadge state="not-reported" />}
@@ -331,30 +367,19 @@ function WorkDetails({ change }: { change: ProjectedChange }) {
   );
 }
 
-function SkillDetails({ change }: { change: ProjectedChange }) {
-  const skills = change.currentWork
-    ? change.skills.filter((skill) => skill.workId === change.currentWork?.workId)
-    : [];
+function SkillDetails({ skills }: { skills: ProjectedChange['skills'] }) {
   const roleLabel = (role: ProjectedChange['skills'][number]['role']) =>
     ({
-      action: 'Action Skill',
-      augmentation: 'Legacy augmentation',
-      'builtin-augmentation': 'Built-in augmentation',
-      'team-guidance': 'Team guidance',
-      'team-replacement': 'Team replacement',
+      action: '工作流 Action',
+      augmentation: '补充方法',
+      'builtin-augmentation': '内置方法',
+      'team-guidance': '团队指导',
+      'team-replacement': '团队替换',
     })[role];
   return (
-    <section className="detail-section" aria-labelledby="skill-heading">
-      <div className="section-heading section-heading--compact">
-        <div>
-          <p className="section-kicker">Skill chain</p>
-          <h2 id="skill-heading">Skill 装填与消费</h2>
-        </div>
-        <p>{skills.length > 0 ? `${skills.length} 个` : '尚未上报'}</p>
-      </div>
-      {skills.length === 0 ? (
-        <p className="empty-copy">当前 Work 没有已上报的 Skill 事实。</p>
-      ) : (
+    <details className="secondary-panel skill-details">
+      <summary>Skill 装填详情</summary>
+      {skills.length > 0 ? (
         <div className="skill-list" role="list">
           {skills.map((skill) => (
             <div className="skill-row" role="listitem" key={`${skill.role}:${skill.name}`}>
@@ -377,10 +402,10 @@ function SkillDetails({ change }: { change: ProjectedChange }) {
                       (stage === 'delivered' && skill.state === 'consumed')
                     }
                   >
-                    {stage}
+                    {SKILL_STATUS[stage]}
                   </span>
                 ))}
-                {skill.state === 'failed' ? <span data-active="true">failed</span> : null}
+                {skill.state === 'failed' ? <span data-active="true">校验失败</span> : null}
               </div>
               {skill.failureReason ? (
                 <p className="skill-row__failure">消费校验失败：{skill.failureReason}</p>
@@ -388,31 +413,63 @@ function SkillDetails({ change }: { change: ProjectedChange }) {
             </div>
           ))}
         </div>
+      ) : (
+        <p className="empty-copy">当前 Work 尚无 Skill 观测。</p>
       )}
       <p className="helper-copy">
-        consumed 表示 Host 声明并由 Runtime 校验的消费证明，不代表 Agent 的内部思考。
+        「已确认读取」表示 Runtime 校验了宿主的 Skill 消费证明。实际测试结果见验证证据。
       </p>
+    </details>
+  );
+}
+
+const SKILL_STATUS = {
+  'not-reported': '尚未上报',
+  resolved: '已选定',
+  delivered: '已交付',
+  consumed: '已确认读取',
+  failed: '校验失败',
+} as const;
+
+function CurrentSkills({ change }: { change: ProjectedChange }) {
+  if (!change.currentWork) return null;
+  const skills = change.skills.filter((skill) => skill.workId === change.currentWork?.workId);
+  if (skills.length === 0) return null;
+  return (
+    <section aria-labelledby="current-skills-heading" className="current-skills">
+      <h2 id="current-skills-heading">当前 Skill</h2>
+      <ul role="list">
+        {skills.map((skill) => (
+          <li key={`${skill.role}:${skill.name}`}>
+            <span>{skill.name}</span>
+            <span>{SKILL_STATUS[skill.state]}</span>
+          </li>
+        ))}
+      </ul>
+      <SkillDetails skills={skills} />
     </section>
   );
 }
 
 function EvidenceDetails({ change }: { change: ProjectedChange }) {
-  const waiting = change.decisions.filter((decision) => decision.state === 'waiting');
+  const waiting = change.decisions.find(
+    (decision) =>
+      decision.decisionId === change.lifecycle?.decisionId && decision.state === 'waiting',
+  );
   const latestBinding = change.bindingRevalidations.at(-1) ?? null;
   const latestEvidence = change.evidence.at(-1) ?? null;
   return (
     <section className="detail-section" aria-labelledby="evidence-heading">
       <div className="section-heading section-heading--compact">
         <div>
-          <p className="section-kicker">Decision & evidence</p>
-          <h2 id="evidence-heading">验证与下一步</h2>
+          <h2 id="evidence-heading">审批与验证记录</h2>
         </div>
-        <p>{waiting.length > 0 ? '需要人工决定' : value(change.continuation)}</p>
+        <p>{waiting ? '需要人工决定' : value(change.continuation)}</p>
       </div>
       <MetadataList
         items={[
-          ['Human Decision', waiting[0]?.decisionId ?? null],
-          ['Decision 类别', waiting[0]?.kind ?? null],
+          ['当前审批请求', waiting?.decisionId ?? null],
+          ['审批类别', waiting?.kind ?? null],
           ['Strategy', change.strategyId ?? null],
           [
             'Execution Binding',
@@ -435,7 +492,6 @@ function EvidenceDetails({ change }: { change: ProjectedChange }) {
           ['Evidence Attempt', latestEvidence?.attemptId ?? null],
           ['Gate', latestEvidence?.gateStatus ?? null],
           ['Artifact', latestEvidence?.artifacts.at(-1)?.artifactType ?? null],
-          ['下一步', change.continuation ?? null],
         ]}
       />
       {latestEvidence?.artifacts.length ? (
@@ -452,7 +508,6 @@ function HealthSummary({ change }: { change: ProjectedChange }) {
     <section className="health-region" aria-labelledby="health-heading">
       <div className="section-heading">
         <div>
-          <p className="section-kicker">Explainable health</p>
           <h2 id="health-heading">工作流健康</h2>
         </div>
         <p>四个维度独立判断，不合成总分</p>
@@ -486,13 +541,13 @@ function HealthSummary({ change }: { change: ProjectedChange }) {
 }
 
 function SelectedChange({ change }: { change: ProjectedChange }) {
+  const hasBuildHistory = change.buildActions.some((action) => action.state !== 'not-reported');
   return (
     <div className="change-view">
       <header className="change-header">
         <div>
           <p className="breadcrumb">{change.workspaceId}</p>
           <h1>{change.changeId}</h1>
-          <p className="run-id">{change.runId}</p>
         </div>
         <div className="change-status" data-state={change.displayState}>
           <StatusDot state={change.displayState} />
@@ -501,13 +556,36 @@ function SelectedChange({ change }: { change: ProjectedChange }) {
         </div>
       </header>
       <PhaseRail change={change} />
-      <BuildTimeline change={change} />
-      <div className="detail-region">
-        <WorkDetails change={change} />
-        <SkillDetails change={change} />
-        <EvidenceDetails change={change} />
+      <div className="overview">
+        <NextStep change={change} />
+        <CurrentSkills change={change} />
       </div>
-      <HealthSummary change={change} />
+      {change.phase === 'build' ? <BuildTimeline change={change} /> : null}
+      <details className="secondary-panel run-details">
+        <summary>运行与诊断详情</summary>
+        <MetadataList items={[['Run', change.runId]]} />
+        <PhaseHistory change={change} />
+        {change.phase !== 'build' && hasBuildHistory ? <BuildTimeline change={change} /> : null}
+        {change.recoveries.length > 0 ? (
+          <MetadataList
+            items={change.recoveries.map((item) => [
+              formatTime(item.observedAt),
+              [
+                item.fromPhase ? PHASE_NAMES[item.fromPhase] : null,
+                item.toPhase ? PHASE_NAMES[item.toPhase] : null,
+                item.findingKind,
+              ]
+                .filter(Boolean)
+                .join(' · ') || '恢复记录',
+            ])}
+          />
+        ) : null}
+        <div className="detail-region">
+          <WorkDetails change={change} />
+          <EvidenceDetails change={change} />
+        </div>
+        <HealthSummary change={change} />
+      </details>
     </div>
   );
 }
@@ -515,12 +593,11 @@ function SelectedChange({ change }: { change: ProjectedChange }) {
 function NoSelection({ application }: { application: DesktopApplicationSnapshot }) {
   return (
     <section className="empty-state" aria-live="polite">
-      <p className="section-kicker">Ready</p>
       <h1>{application.activeContext ? '等待启动来源的首个观测' : '选择一个 change'}</h1>
       <p>
         {application.activeContext
-          ? 'Desktop Host 已收到 Run 上下文。投影会在第一批 OTLP 事实到达后显示，不会扫描 Workspace 文件补造状态。'
-          : '左侧会列出已通过本地 OTLP 接收器上报的 Workspace 与 change。'}
+          ? '收到这条 Run 的状态后，界面会自动显示当前阶段和下一步。'
+          : '在 Agent 会话启动或恢复 Change，或者从列表选择一条已有 Run。'}
       </p>
     </section>
   );
@@ -547,7 +624,14 @@ export function Dashboard({
     <div className="workspace-layout">
       <ChangeNavigation snapshot={projection} application={application} />
       <main className="dashboard-main">
-        {change ? <SelectedChange change={change} /> : <NoSelection application={application} />}
+        {change ? (
+          <SelectedChange
+            key={`${change.workspaceId}\0${change.changeId}\0${change.runId}`}
+            change={change}
+          />
+        ) : (
+          <NoSelection application={application} />
+        )}
       </main>
     </div>
   );

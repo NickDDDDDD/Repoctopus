@@ -57,12 +57,69 @@ describe('desktop dashboard accessibility and resilient content', () => {
     expect(markup).toContain('<aside');
     expect(markup).toContain('aria-label="Workspace 与 change"');
     expect(markup).toContain('aria-pressed="true"');
+    expect(markup).toContain('aria-current="step"');
+    expect(markup).toContain('现在要做什么');
     expect(markup).toContain('<button');
     expect(markup).toContain('<summary>');
     expect(markup).toContain(workspaceId);
     expect(markup).toContain(changeId);
     expect(markup).toContain(runId);
     expect(markup).toContain(String(Number.MAX_SAFE_INTEGER));
+  });
+
+  it('puts current approval guidance on the main screen and withdraws it as soon as Build starts', async () => {
+    const { Dashboard } = (await import(dashboardModule)) as unknown as {
+      Dashboard: ComponentType<{
+        projection: ChangeProjectionSnapshot;
+        application: DesktopApplicationSnapshot;
+      }>;
+    };
+    const identity = { workspaceId: 'team', changeId: 'settings', runId: 'run-settings' };
+    const application = {
+      apiVersion: 'repoctopus.desktop/v1alpha1' as const,
+      protocolVersion: 1 as const,
+      phase: 'ready' as const,
+      activeContext: null,
+      selectedContext: { schemaVersion: 1 as const, ...identity },
+    };
+    const design: ObservationEnvelope = {
+      schemaVersion: 1,
+      envelopeId: `sha256:${'1'.repeat(64)}`,
+      digest: `sha256:${'2'.repeat(64)}`,
+      observedAt: '2026-10-29T00:00:00.000Z',
+      eventType: 'change.lifecycle.transitioned',
+      identity: { eventId: 'design', runId: identity.runId, sequence: 1 },
+      correlation: {
+        workspaceId: identity.workspaceId,
+        changeId: identity.changeId,
+        phase: 'design',
+        decisionId: 'design-approval:settings',
+        decisionKind: 'human-decision',
+      },
+      attributes: { toStatus: 'waiting', healthReason: 'design-approval' },
+    };
+    const waiting = reduceChangeProjection(createEmptyChangeProjection(), design).snapshot;
+    const waitingMarkup = renderToStaticMarkup(
+      createElement(Dashboard, { projection: waiting, application }),
+    );
+    expect(waitingMarkup).toContain('请审核设计方案');
+    expect(waitingMarkup).toContain('复制给 Agent');
+    const build = reduceChangeProjection(waiting, {
+      ...design,
+      envelopeId: `sha256:${'3'.repeat(64)}`,
+      identity: { eventId: 'approved', runId: identity.runId, sequence: 2 },
+      correlation: {
+        workspaceId: identity.workspaceId,
+        changeId: identity.changeId,
+        phase: 'build',
+      },
+      attributes: { fromPhase: 'design', toStatus: 'running' },
+    }).snapshot;
+    const buildMarkup = renderToStaticMarkup(
+      createElement(Dashboard, { projection: build, application }),
+    );
+    expect(buildMarkup).toContain('实现进行中');
+    expect(buildMarkup).not.toContain('复制给 Agent');
   });
 
   it('keeps keyboard focus visible and supports narrow/high-DPI reflow without fixed zoom', async () => {

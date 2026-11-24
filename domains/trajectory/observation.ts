@@ -171,6 +171,9 @@ export const OBSERVATION_ATTRIBUTE_KEYS = [
   'decisionStatus',
   'reasonClass',
   'buildEvent',
+  'buildPackageTotal',
+  'buildPackageCompleted',
+  'workspaceReconciliationRequired',
   'skillCategory',
   'ruleCategory',
   'ruleApplicable',
@@ -390,6 +393,19 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
     if (key === 'reason' || key.startsWith('health') || key.startsWith('rollback')) continue;
     const value = scalar(event.data[key]);
     if (value !== undefined) result[key] = value;
+  }
+  if (result.workspaceReconciliationRequired === undefined) {
+    const reconciliation = record(event.data.reconciliation);
+    if (event.type === 'recovery.reconciled' && reconciliation?.requiresReconciliation === true) {
+      result.workspaceReconciliationRequired = true;
+    } else if (
+      event.type === 'run.resumed' &&
+      (record(event.data.buildWorkspaceRecovery) ||
+        record(event.data.evidenceWorkspaceRecovery) ||
+        record(event.data.authorizedBranchRebind))
+    ) {
+      result.workspaceReconciliationRequired = false;
+    }
   }
   if (
     event.type === 'desktop.activation' &&
