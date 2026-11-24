@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 7c840406-0128-49ec-96f9-07a9b452f191
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 47a6d957a39c6b84137e35dec92d0702f86f7018
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-24
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: comet/improve-desktop-workflow-guidance
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: b41f434292e00708dbb9ea0f8e2f6224e6458ceffaa98d1c760e1c50d4fbb0ab
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: improve-desktop-workflow-guidance
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 446d73e78cd4c9d2ec0c07da4e097f582ca83f51454e14a5d4ea0b96ab84ea7a
+    input:
+      change: improve-desktop-workflow-guidance
+      changeDir: openspec/changes/improve-desktop-workflow-guidance
+      workspaceBaseline:
+        ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 47a6d957a39c6b84137e35dec92d0702f86f7018
+      boundBranch: comet/improve-desktop-workflow-guidance
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-24
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: improve-desktop-workflow-guidance:1
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: b75aa4edf23c1edbea4413c20fb04cf17eed43abc376f509ee910de70901e4a5
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      improve-desktop-workflow-guidance:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 325e8ad514cb4d522c0efb0e49117c4d171d28f6ebc3956d19bc1fe726fbfb91
