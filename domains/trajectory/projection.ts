@@ -986,8 +986,8 @@ function projectLifecycle(change: ProjectedChange, envelope: ObservationEnvelope
     return;
   const isTransition = envelope.eventType === 'change.lifecycle.transitioned';
   const status =
-    stringAttribute(envelope.attributes, 'healthStatus') ??
     (isTransition ? stringAttribute(envelope.attributes, 'toStatus') : null) ??
+    stringAttribute(envelope.attributes, 'healthStatus') ??
     (envelope.eventType === 'run.started' ? 'running' : null);
   if (!CHANGE_RUN_STATUSES.includes(status as RunStatus)) return;
   const from = changePhase(stringAttribute(envelope.attributes, 'fromPhase'));
