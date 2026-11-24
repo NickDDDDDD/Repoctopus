@@ -228,6 +228,11 @@ describe('desktop change projection', () => {
     });
     snapshot = reduceChangeProjection(snapshot, otherRun).snapshot;
     expect(snapshot.changes.find((entry) => entry.runId === 'run-1')?.displayState).toBe('waiting');
+    expect(snapshot.changes.find((entry) => entry.runId === 'other')).toMatchObject({
+      displayState: 'gap',
+      phase: null,
+      latestSequence: 0,
+    });
     snapshot = reduceChangeProjection(snapshot, build).snapshot;
     expect(snapshot.changes.find((entry) => entry.runId === 'run-1')?.displayState).toBe('gap');
     snapshot = reduceChangeProjection(structuredClone(snapshot), approved).snapshot;

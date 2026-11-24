@@ -1193,6 +1193,10 @@ export function reduceChangeProjection(
     const remaining = pending.filter((item) => item.identity.sequence >= firstMissing);
     for (const item of pending.slice(0, pending.length - remaining.length))
       applyEnvelope(next, item);
+    if (!next.changes.some((change) => change.runId === runId)) {
+      const unconfirmed = createProjectedChange(envelope);
+      if (unconfirmed) next.changes.push(unconfirmed);
+    }
     if (remaining.length) (next.pendingEnvelopes ??= {})[runKey] = remaining;
     else if (next.pendingEnvelopes) delete next.pendingEnvelopes[runKey];
   } else {
