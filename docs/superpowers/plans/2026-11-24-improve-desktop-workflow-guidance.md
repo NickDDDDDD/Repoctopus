@@ -2,6 +2,7 @@
 change: improve-desktop-workflow-guidance
 design-doc: openspec/changes/improve-desktop-workflow-guidance/design.md
 base-ref: 77ee9722e6836129caf3c4718054bd90f53b6b0e
+archived-with: 2026-11-24-improve-desktop-workflow-guidance
 ---
 
 # 桌面当前工作和下一步实施计划

@@ -2,6 +2,8 @@
 comet_change: improve-desktop-workflow-guidance
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-24-improve-desktop-workflow-guidance
+status: final
 ---
 
 ## Context

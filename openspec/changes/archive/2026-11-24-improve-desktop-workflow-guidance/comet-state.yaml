@@ -1,0 +1,2591 @@
+# comet-execution: managed-run
+change_id: 7c840406-0128-49ec-96f9-07a9b452f191
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 47a6d957a39c6b84137e35dec92d0702f86f7018
+design_doc: openspec/changes/archive/2026-11-24-improve-desktop-workflow-guidance/design.md
+plan: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/improve-desktop-workflow-guidance.md
+branch_status: pending
+created_at: 2026-11-24
+verified_at: 2026-11-24
+archive_confirmation: confirmed
+archived: true
+bound_branch: comet/improve-desktop-workflow-guidance
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-24-improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+handoff_hash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 5fff67ab8e97b907b07abe6da375fd60cedd87afd780e7195991fc3bf1dedb3d
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: improve-desktop-workflow-guidance
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 446d73e78cd4c9d2ec0c07da4e097f582ca83f51454e14a5d4ea0b96ab84ea7a
+    input:
+      change: improve-desktop-workflow-guidance
+      changeDir: openspec/changes/improve-desktop-workflow-guidance
+      workspaceBaseline:
+        ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 47a6d957a39c6b84137e35dec92d0702f86f7018
+      boundBranch: comet/improve-desktop-workflow-guidance
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 6
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-24
+      designDoc: openspec/changes/archive/2026-11-24-improve-desktop-workflow-guidance/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-24-improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+      handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/improve-desktop-workflow-guidance.md
+      verifiedAt: 2026-11-24
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 24
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-64ac07f5ed239668869269759f37773fe0dc373fe6cb3523500e5efd78591147
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:1
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: b75aa4edf23c1edbea4413c20fb04cf17eed43abc376f509ee910de70901e4a5
+        outcome:
+          actionId: improve-desktop-workflow-guidance:1
+          attempt: 1
+          claimToken: portable-64ac07f5ed239668869269759f37773fe0dc373fe6cb3523500e5efd78591147
+          inputHash: b75aa4edf23c1edbea4413c20fb04cf17eed43abc376f509ee910de70901e4a5
+          outcomeId: 21485365-0c9a-40ed-b0bb-5fcebbbf9c90
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: da16ac2d7d68b79fa496ffe119ab583e33be6389616feb4b717b81c5c25b79ab
+            outcomeId: 21485365-0c9a-40ed-b0bb-5fcebbbf9c90
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-673ea9f7cc42f083a419532e5b31ad13d307f1ca661fe39f6370cd963642573e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:4
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: d7715845a33cc9379c9bcabf9411854a8e167fbb7187f1dcf802c75c13752f6e
+        outcome:
+          actionId: improve-desktop-workflow-guidance:4
+          attempt: 1
+          claimToken: portable-673ea9f7cc42f083a419532e5b31ad13d307f1ca661fe39f6370cd963642573e
+          inputHash: d7715845a33cc9379c9bcabf9411854a8e167fbb7187f1dcf802c75c13752f6e
+          outcomeId: improve-desktop-workflow-guidance:4:1:executor-result
+          output:
+            contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6c44f4e76a0994077682d24f8fab8f37019a25872c3343a72be8640307336c97
+            outcomeId: improve-desktop-workflow-guidance:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-9c04c6a854bbd851abe7b547a516b949947727760c52874b9cc5df7906c07afa
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:5
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: ef65f48350b725bd36707bf6909704c555bccd0dee06f2480f73593cfa0b8abf
+        outcome:
+          actionId: improve-desktop-workflow-guidance:5
+          attempt: 1
+          claimToken: portable-9c04c6a854bbd851abe7b547a516b949947727760c52874b9cc5df7906c07afa
+          inputHash: ef65f48350b725bd36707bf6909704c555bccd0dee06f2480f73593cfa0b8abf
+          outcomeId: 3bb05e95-586b-4f89-977e-4a1633cea657
+          output:
+            handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+            handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+            proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+              wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+              的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron 审批竖切，再用
+              Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用 Open。
+            requirementsEvidence:
+              contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+              ref: openspec/changes/improve-desktop-workflow-guidance
+            sourceEvidence:
+              contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+              ref: openspec/changes/improve-desktop-workflow-guidance
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9e19acae6fb686a20a81b004d42e1544d4b9585395c23d2a790f5b7b0ca54b92
+            outcomeId: 3bb05e95-586b-4f89-977e-4a1633cea657
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-3c22d00b7899cedad058938b586e8d50981093dc87a71835935964e8c64fc444
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:7
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: 6854aca9414fb43deb68fa2dcbd4bd6a67db300c4f44f76863080f1e0f6d64a9
+        outcome:
+          actionId: improve-desktop-workflow-guidance:7
+          attempt: 1
+          claimToken: portable-3c22d00b7899cedad058938b586e8d50981093dc87a71835935964e8c64fc444
+          inputHash: 6854aca9414fb43deb68fa2dcbd4bd6a67db300c4f44f76863080f1e0f6d64a9
+          outcomeId: 4656f89b-6924-4e98-8e7d-003cc662bfd6
+          output:
+            designDoc: openspec/changes/improve-desktop-workflow-guidance/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1d3ee257f2cd4d82448a71bdbc6884c2e2acabc564ef931c8f5b69bd3e6e27e6
+            outcomeId: 4656f89b-6924-4e98-8e7d-003cc662bfd6
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-62aa59665301dff611a56bcd45cc373bdf56a122b383b1cddd87ad531d8877ad
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:9
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: ede6f45ffd943ee75c072b47c6b4bcff4eb388f8e279119540e9110de054e1fb
+        outcome:
+          actionId: improve-desktop-workflow-guidance:9
+          attempt: 1
+          claimToken: portable-62aa59665301dff611a56bcd45cc373bdf56a122b383b1cddd87ad531d8877ad
+          inputHash: ede6f45ffd943ee75c072b47c6b4bcff4eb388f8e279119540e9110de054e1fb
+          outcomeId: a279a81d-8417-4a29-9b09-787956908713
+          output:
+            boundBranch: comet/improve-desktop-workflow-guidance
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a2905a30c2fefe3eafad7a7e6ac450872228ce2f29317cd427c1ff4ea3a77f1e
+            outcomeId: a279a81d-8417-4a29-9b09-787956908713
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c107da8d4d03188a107826c7cf49bd1c3e5ad20145d2c58c484f0a36b52b1d91
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:11
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: b65dd3d28214f302c41688a6f8458932dc63839f8d26ca91781545e52da3b19a
+        outcome:
+          actionId: improve-desktop-workflow-guidance:11
+          attempt: 1
+          claimToken: portable-c107da8d4d03188a107826c7cf49bd1c3e5ad20145d2c58c484f0a36b52b1d91
+          inputHash: b65dd3d28214f302c41688a6f8458932dc63839f8d26ca91781545e52da3b19a
+          outcomeId: 6ab29531-d15d-481a-928a-04b49070adcf
+          output:
+            designEvidence:
+              contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+              ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+            plan: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+            planEvidence:
+              contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+              ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+            taskRevision: 7fdce092b31cdf8d5e7d120444d184479ba6f643df4c705661441bfd7dcd5140
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 81196cbe8791b65cf65602cd3068d144a914ba9b4e65c863254c14e6cc3042f7
+            outcomeId: 6ab29531-d15d-481a-928a-04b49070adcf
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-desktop-guidance-20261124
+          token: portable-22ca830bf631c2704b99e7b1aa5fbe1ebcb47f54cb151012afde1b133ef63a5a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:13
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: 69152bea66e9bdba75ae75a5651abe6ccefa31ad9f67692ce14738a85e7b6a0c
+        outcome:
+          actionId: improve-desktop-workflow-guidance:13
+          attempt: 1
+          claimToken: portable-22ca830bf631c2704b99e7b1aa5fbe1ebcb47f54cb151012afde1b133ef63a5a
+          inputHash: 69152bea66e9bdba75ae75a5651abe6ccefa31ad9f67692ce14738a85e7b6a0c
+          outcomeId: e4e45f2b-cd40-4a75-896b-87a37ba2f527
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8db6b9ca455325d3c75df8994920c5055d9332fba600471784f2dc210b48b0c1
+            outcomeId: e4e45f2b-cd40-4a75-896b-87a37ba2f527
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-dbe26aab3e9ae8cbdf934503636ca58eb376e5127b1d092c0af2a4b10d0dd227
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:14
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: a5d520c0dd735844e029bed0143d0d37101b73e509a8767ee8cbf7b26abddaae
+        outcome:
+          actionId: improve-desktop-workflow-guidance:14
+          attempt: 1
+          claimToken: portable-dbe26aab3e9ae8cbdf934503636ca58eb376e5127b1d092c0af2a4b10d0dd227
+          inputHash: a5d520c0dd735844e029bed0143d0d37101b73e509a8767ee8cbf7b26abddaae
+          outcomeId: ff94bee6-815f-4191-a06d-a5f92e71fc09
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+            cwd: .
+            environment: daf827ea0dbb37395b38ce636198a61ec258ff610ff833da3ea63c18d1701428
+            exitCode: 0
+            inputAfter: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+            inputBefore: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+            manifestHash: 6d16a5ab38dffc8178cc669f8f2a81e1e64ea5f6a662fc2b05983ea57b46147b
+            manifestRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/82f35851-a026-4a1b-9073-5be043c7f9f8.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: da488fa9791b8f70db3399df0efcd354dbc506afc064176e973241919f0f48ea
+            outcomeId: ff94bee6-815f-4191-a06d-a5f92e71fc09
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-fe33ee2c524e39caec04b4a07930b868dc0cc0f46d62516b897325af8c4465b0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:16
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: c147813981c5bc9225999a584eee285b51f9f84d31ad1ac29dd2f60bc67579d6
+        outcome:
+          actionId: improve-desktop-workflow-guidance:16
+          attempt: 1
+          claimToken: portable-fe33ee2c524e39caec04b4a07930b868dc0cc0f46d62516b897325af8c4465b0
+          inputHash: c147813981c5bc9225999a584eee285b51f9f84d31ad1ac29dd2f60bc67579d6
+          outcomeId: a1cb690b-e169-4651-8c88-d9898b291f2e
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/improve-desktop-workflow-guidance.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f66c25754487908c48467b38f953721220ca7388dcaee100973c06a973921948
+            outcomeId: a1cb690b-e169-4651-8c88-d9898b291f2e
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-02965a41051877fb0f5a905d48810b983166314d177211183fdc179cc8244907
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:18
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: 90efbea58ab37d76cb9b5f608e48ee3339210743cb401346daa456e78cd454b4
+        outcome:
+          actionId: improve-desktop-workflow-guidance:18
+          attempt: 1
+          claimToken: portable-02965a41051877fb0f5a905d48810b983166314d177211183fdc179cc8244907
+          inputHash: 90efbea58ab37d76cb9b5f608e48ee3339210743cb401346daa456e78cd454b4
+          outcomeId: a8d14dd3-6864-4800-9ebe-1a9cf56f4165
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: e6cec8c133292d1c93faa960d173a022e06d6a049a9684062e1537b93718357b
+            cwd: .
+            deliveryInputs: {}
+            environment: cf873f88a9eb7ec19c569220704405dcf984d6441cdb91bc78081eb842e52d4a
+            exitCode: 0
+            inputAfter: 6212dbaf2c98fbecea089828e7b0a93e2166efc6c4b3f4ef90bc3df2614ad87d
+            inputBefore: 6212dbaf2c98fbecea089828e7b0a93e2166efc6c4b3f4ef90bc3df2614ad87d
+            manifestHash: 8aa13e1fc8b073a71f2ed6e840604330690d61875e5ae1499ddf7d69c5edb3c0
+            manifestRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/d7df3e1b-6d13-4a47-b6e2-6bb386e841cd.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/26b55fc0-02b8-4725-9820-47e7713e9d57.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 85f0f269503ad08f73f88985bdf6f297b78c3bebbd3752ec6a13df42a0efe0b9
+            outcomeId: a8d14dd3-6864-4800-9ebe-1a9cf56f4165
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c468449e8a140f7d1f4b8bff331f58d98a31440df2054fb85573ac4c47e9b251
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:20
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: b2ba6d6260b62b17ce1e08513999e48a231ac46dea1b2efa7a4890f056271213
+        outcome:
+          actionId: improve-desktop-workflow-guidance:20
+          attempt: 1
+          claimToken: portable-c468449e8a140f7d1f4b8bff331f58d98a31440df2054fb85573ac4c47e9b251
+          inputHash: b2ba6d6260b62b17ce1e08513999e48a231ac46dea1b2efa7a4890f056271213
+          outcomeId: 84310be8-021d-4bbe-99d4-4de27a33ba2b
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档已验证的桌面工作流引导，将五阶段、下一步和当前观测的要求并入 desktop-observability-dashboard
+              主规格。在当前分支提交并推送归档，用 PR 交付至 origin/main。
+            targetBranch: comet/improve-desktop-workflow-guidance
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 99a0acff0eaf3d81149f06c6cae761a3f504c5efc4156d5cf8c16a665e67a4d4
+            outcomeId: 84310be8-021d-4bbe-99d4-4de27a33ba2b
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-84e42790491688c38a27d239564901ab49e1ff164c52987af82818475b440c84
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:22
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: e04dd94718accd874c621411b70f8809d888a36446fa42b6710aab827c0a36de
+        outcome:
+          actionId: improve-desktop-workflow-guidance:22
+          attempt: 1
+          claimToken: portable-84e42790491688c38a27d239564901ab49e1ff164c52987af82818475b440c84
+          inputHash: e04dd94718accd874c621411b70f8809d888a36446fa42b6710aab827c0a36de
+          outcomeId: 1d6c37aa-b980-428d-b4ab-f10fd42f7835
+          output:
+            baseCommit: f281453b95d741f8a538d4f3028535ffe1c6419b
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: comet/improve-desktop-workflow-guidance
+            verifiedBranch: comet/improve-desktop-workflow-guidance
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 59f74ee688d3c9a4f07d2aa823324db8405c8e561e81da5e43968928516641b3
+            outcomeId: 1d6c37aa-b980-428d-b4ab-f10fd42f7835
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-c8a15327f46cfe1e0c60422c6df7462133c0a2993c40163e197ef9418157b34f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:23
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: bf0dc47cf989a0a61b5265c27edf6a0d00305ea485a0d165dd7cd9dc93a5a43a
+        outcome:
+          actionId: improve-desktop-workflow-guidance:23
+          artifacts:
+            - sha256: 18f5b82ff8232239308318781d9efcfc00903f948c8ffb1d36d3bc6d5228e375
+              uri: openspec/changes/archive/2026-11-24-improve-desktop-workflow-guidance/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-c8a15327f46cfe1e0c60422c6df7462133c0a2993c40163e197ef9418157b34f
+          inputHash: bf0dc47cf989a0a61b5265c27edf6a0d00305ea485a0d165dd7cd9dc93a5a43a
+          outcomeId: 2ea149c6-42ad-4551-9f56-584ae8471fa5
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-24-improve-desktop-workflow-guidance
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5db8ce0b9dfe784dde9da20b18fc34d3779b782f686ab2cbe908154ba4eeca3b
+            outcomeId: 2ea149c6-42ad-4551-9f56-584ae8471fa5
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: improve-desktop-workflow-guidance:24
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs: {}
+        inputHash: e3f0562f3724027dd1b671ab8933b6d7391803ddbdd0017a2ba86f30e7224e3b
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      improve-desktop-workflow-guidance:1:
+        results: {}
+        sequence: 1
+      improve-desktop-workflow-guidance:11:
+        results: {}
+        sequence: 11
+      improve-desktop-workflow-guidance:13:
+        results: {}
+        sequence: 13
+      improve-desktop-workflow-guidance:14:
+        results: {}
+        sequence: 14
+      improve-desktop-workflow-guidance:16:
+        results: {}
+        sequence: 16
+      improve-desktop-workflow-guidance:18:
+        results: {}
+        sequence: 18
+      improve-desktop-workflow-guidance:20:
+        results: {}
+        sequence: 20
+      improve-desktop-workflow-guidance:22:
+        results: {}
+        sequence: 22
+      improve-desktop-workflow-guidance:23:
+        results: {}
+        sequence: 23
+      improve-desktop-workflow-guidance:24:
+        results: {}
+        sequence: 24
+      improve-desktop-workflow-guidance:4:
+        results: {}
+        sequence: 4
+      improve-desktop-workflow-guidance:5:
+        results: {}
+        sequence: 5
+      improve-desktop-workflow-guidance:7:
+        results: {}
+        sequence: 7
+      improve-desktop-workflow-guidance:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: improve-desktop-workflow-guidance:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+              ref: openspec/changes/improve-desktop-workflow-guidance
+        proposalHash: 5b6173f4fea5fcfe7f2c31389652fc2be63d6de8f201118131162c9dc3a5ac47
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+          choice: approved
+          proposalHash: 5b6173f4fea5fcfe7f2c31389652fc2be63d6de8f201118131162c9dc3a5ac47
+      - id: improve-desktop-workflow-guidance:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+              handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+              proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron 审批竖切，再用
+                Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用 Open。
+              requirementsEvidence:
+                contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                ref: openspec/changes/improve-desktop-workflow-guidance
+              sourceEvidence:
+                contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                ref: openspec/changes/improve-desktop-workflow-guidance
+        proposalHash: 311f288657fad57f760849ed3df8102bb55ec4de86ce464b5fdd8e1324062604
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-311f288657fad57f760849ed3df8102bb55ec4de86ce464b5fdd8e1324062604-approved
+          choice: approved
+          proposalHash: 311f288657fad57f760849ed3df8102bb55ec4de86ce464b5fdd8e1324062604
+      - id: improve-desktop-workflow-guidance:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs:
+            full.build.configure:
+              boundBranch: comet/improve-desktop-workflow-guidance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 1d051daca43d560d82045b74bfef1e75e490f74d1b39e8f46c831c949ff31a05
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: d294560b-d680-4506-a098-b317cc028c8d
+          choice: approved
+          proposalHash: 1d051daca43d560d82045b74bfef1e75e490f74d1b39e8f46c831c949ff31a05
+      - id: improve-desktop-workflow-guidance:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档已验证的桌面工作流引导，将五阶段、下一步和当前观测的要求并入 desktop-observability-dashboard
+                主规格。在当前分支提交并推送归档，用 PR 交付至 origin/main。
+              targetBranch: comet/improve-desktop-workflow-guidance
+        proposalHash: a6081f9b5593fd65ab851efc4e3869c65e85d87b5aea446a7ed51d37a386029a
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-a6081f9b5593fd65ab851efc4e3869c65e85d87b5aea446a7ed51d37a386029a-pr
+          choice: pr
+          proposalHash: a6081f9b5593fd65ab851efc4e3869c65e85d87b5aea446a7ed51d37a386029a
+    evidenceWaits:
+      - id: improve-desktop-workflow-guidance:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/improve-desktop-workflow-guidance
+          contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+          submissionId: 24b0eb46-8ac2-4ba3-a3f0-ca0fd643ca83
+      - id: improve-desktop-workflow-guidance:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+          contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+          submissionId: ba351913-f519-4c2e-8469-9b975c1a8d35
+      - id: improve-desktop-workflow-guidance:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+          contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+          submissionId: 08ba3a09-0c5d-4ad9-92e4-13e4f13ce64e
+      - id: improve-desktop-workflow-guidance:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+          contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+          submissionId: 5d759ad9-d46f-4af3-bf80-7755ccdf110f
+      - id: improve-desktop-workflow-guidance:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/improve-desktop-workflow-guidance.md
+          contentHash: 69bae7102c0438a3a3c64644786292ce4c6d83778eafc19f52a055dc9c99d38e
+          submissionId: ba69b38d-ca9a-4031-ab6d-b3a3474d4a9c
+      - id: improve-desktop-workflow-guidance:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/26b55fc0-02b8-4725-9820-47e7713e9d57.log
+          contentHash: e6cec8c133292d1c93faa960d173a022e06d6a049a9684062e1537b93718357b
+          submissionId: 7c0d75df-7cfd-4811-be86-67cef40e0754
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 37
+  sourceHash: d58619e852ab513e18444879fef75121c835d455443ef725c88bc7e3cb6bbcb7
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+              ref: openspec/changes/improve-desktop-workflow-guidance
+      - contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+        ref: openspec/changes/improve-desktop-workflow-guidance
+      - contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+      - choice: approved
+        proposal:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+              handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+              proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron 审批竖切，再用
+                Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用 Open。
+              requirementsEvidence:
+                contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                ref: openspec/changes/improve-desktop-workflow-guidance
+              sourceEvidence:
+                contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                ref: openspec/changes/improve-desktop-workflow-guidance
+      - handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+        handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+        proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+          wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+          的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron 审批竖切，再用 Windows
+          安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用 Open。
+        requirementsEvidence:
+          contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+          ref: openspec/changes/improve-desktop-workflow-guidance
+        sourceEvidence:
+          contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+          ref: openspec/changes/improve-desktop-workflow-guidance
+      - designDoc: openspec/changes/improve-desktop-workflow-guidance/design.md
+      - contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+        ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+      - boundBranch: comet/improve-desktop-workflow-guidance
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs:
+            full.build.configure:
+              boundBranch: comet/improve-desktop-workflow-guidance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+          ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+        plan: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+        planEvidence:
+          contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+          ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+        taskRevision: 7fdce092b31cdf8d5e7d120444d184479ba6f643df4c705661441bfd7dcd5140
+      - contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+        ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+        cwd: .
+        environment: daf827ea0dbb37395b38ce636198a61ec258ff610ff833da3ea63c18d1701428
+        exitCode: 0
+        inputAfter: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+        inputBefore: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+        manifestHash: 6d16a5ab38dffc8178cc669f8f2a81e1e64ea5f6a662fc2b05983ea57b46147b
+        manifestRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/82f35851-a026-4a1b-9073-5be043c7f9f8.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+        ref: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+      - contentHash: 69bae7102c0438a3a3c64644786292ce4c6d83778eafc19f52a055dc9c99d38e
+        ref: docs/superpowers/reports/improve-desktop-workflow-guidance.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/improve-desktop-workflow-guidance.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: e6cec8c133292d1c93faa960d173a022e06d6a049a9684062e1537b93718357b
+        cwd: .
+        deliveryInputs: {}
+        environment: cf873f88a9eb7ec19c569220704405dcf984d6441cdb91bc78081eb842e52d4a
+        exitCode: 0
+        inputAfter: 6212dbaf2c98fbecea089828e7b0a93e2166efc6c4b3f4ef90bc3df2614ad87d
+        inputBefore: 6212dbaf2c98fbecea089828e7b0a93e2166efc6c4b3f4ef90bc3df2614ad87d
+        manifestHash: 8aa13e1fc8b073a71f2ed6e840604330690d61875e5ae1499ddf7d69c5edb3c0
+        manifestRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/d7df3e1b-6d13-4a47-b6e2-6bb386e841cd.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/26b55fc0-02b8-4725-9820-47e7713e9d57.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: e6cec8c133292d1c93faa960d173a022e06d6a049a9684062e1537b93718357b
+        ref: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/26b55fc0-02b8-4725-9820-47e7713e9d57.log
+      - choice: pr
+        proposal:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档已验证的桌面工作流引导，将五阶段、下一步和当前观测的要求并入 desktop-observability-dashboard
+                主规格。在当前分支提交并推送归档，用 PR 交付至 origin/main。
+              targetBranch: comet/improve-desktop-workflow-guidance
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档已验证的桌面工作流引导，将五阶段、下一步和当前观测的要求并入 desktop-observability-dashboard
+          主规格。在当前分支提交并推送归档，用 PR 交付至 origin/main。
+        targetBranch: comet/improve-desktop-workflow-guidance
+      - baseCommit: f281453b95d741f8a538d4f3028535ffe1c6419b
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: comet/improve-desktop-workflow-guidance
+        verifiedBranch: comet/improve-desktop-workflow-guidance
+      - archiveDirectory: openspec/changes/archive/2026-11-24-improve-desktop-workflow-guidance
+      - sequence: 9
+        value:
+          boundBranch: comet/improve-desktop-workflow-guidance
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: improve-desktop-workflow-guidance
+              changeDir: openspec/changes/improve-desktop-workflow-guidance
+              workspaceBaseline:
+                ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+            outputs:
+              full.build.configure:
+                boundBranch: comet/improve-desktop-workflow-guidance
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: improve-desktop-workflow-guidance
+              changeDir: openspec/changes/improve-desktop-workflow-guidance
+              workspaceBaseline:
+                ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+                handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+                proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                  wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                  的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron 审批竖切，再用
+                  Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用 Open。
+                requirementsEvidence:
+                  contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                  ref: openspec/changes/improve-desktop-workflow-guidance
+                sourceEvidence:
+                  contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                  ref: openspec/changes/improve-desktop-workflow-guidance
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/improve-desktop-workflow-guidance/design.md
+      - sequence: 8
+        value:
+          contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+          ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+          handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+          proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+            wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+            的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron 审批竖切，再用
+            Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用 Open。
+          requirementsEvidence:
+            contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+            ref: openspec/changes/improve-desktop-workflow-guidance
+          sourceEvidence:
+            contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+            ref: openspec/changes/improve-desktop-workflow-guidance
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: improve-desktop-workflow-guidance
+              changeDir: openspec/changes/improve-desktop-workflow-guidance
+              workspaceBaseline:
+                ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+                ref: openspec/changes/improve-desktop-workflow-guidance
+      - sequence: 2
+        value:
+          contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+          ref: openspec/changes/improve-desktop-workflow-guidance
+      - sequence: 4
+        value:
+          contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+            ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+          plan: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+          planEvidence:
+            contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+            ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+          taskRevision: 7fdce092b31cdf8d5e7d120444d184479ba6f643df4c705661441bfd7dcd5140
+      - sequence: 12
+        value:
+          contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+          ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+          cwd: .
+          environment: daf827ea0dbb37395b38ce636198a61ec258ff610ff833da3ea63c18d1701428
+          exitCode: 0
+          inputAfter: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+          inputBefore: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+          manifestHash: 6d16a5ab38dffc8178cc669f8f2a81e1e64ea5f6a662fc2b05983ea57b46147b
+          manifestRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/82f35851-a026-4a1b-9073-5be043c7f9f8.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+          ref: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+      - sequence: 17
+        value:
+          contentHash: 69bae7102c0438a3a3c64644786292ce4c6d83778eafc19f52a055dc9c99d38e
+          ref: docs/superpowers/reports/improve-desktop-workflow-guidance.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/improve-desktop-workflow-guidance.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: e6cec8c133292d1c93faa960d173a022e06d6a049a9684062e1537b93718357b
+          cwd: .
+          deliveryInputs: {}
+          environment: cf873f88a9eb7ec19c569220704405dcf984d6441cdb91bc78081eb842e52d4a
+          exitCode: 0
+          inputAfter: 6212dbaf2c98fbecea089828e7b0a93e2166efc6c4b3f4ef90bc3df2614ad87d
+          inputBefore: 6212dbaf2c98fbecea089828e7b0a93e2166efc6c4b3f4ef90bc3df2614ad87d
+          manifestHash: 8aa13e1fc8b073a71f2ed6e840604330690d61875e5ae1499ddf7d69c5edb3c0
+          manifestRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/d7df3e1b-6d13-4a47-b6e2-6bb386e841cd.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/26b55fc0-02b8-4725-9820-47e7713e9d57.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          contentHash: e6cec8c133292d1c93faa960d173a022e06d6a049a9684062e1537b93718357b
+          ref: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/26b55fc0-02b8-4725-9820-47e7713e9d57.log
+      - sequence: 21
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: improve-desktop-workflow-guidance
+              changeDir: openspec/changes/improve-desktop-workflow-guidance
+              workspaceBaseline:
+                ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档已验证的桌面工作流引导，将五阶段、下一步和当前观测的要求并入 desktop-observability-dashboard
+                  主规格。在当前分支提交并推送归档，用 PR 交付至 origin/main。
+                targetBranch: comet/improve-desktop-workflow-guidance
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档已验证的桌面工作流引导，将五阶段、下一步和当前观测的要求并入 desktop-observability-dashboard
+            主规格。在当前分支提交并推送归档，用 PR 交付至 origin/main。
+          targetBranch: comet/improve-desktop-workflow-guidance
+      - sequence: 22
+        value:
+          baseCommit: f281453b95d741f8a538d4f3028535ffe1c6419b
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: comet/improve-desktop-workflow-guidance
+          verifiedBranch: comet/improve-desktop-workflow-guidance
+      - sequence: 23
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-24-improve-desktop-workflow-guidance
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 52
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 54
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 48
+        height: 5
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: 57
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 58
+        right: 51
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 53
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 59
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 22
+        left: 63
+        right: 64
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 65
+        right: 51
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 66
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 67
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 70
+        height: 2
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 72
+        right: 73
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 75
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 76
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 71
+        right: 77
+        height: 4
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: 79
+        right: 80
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 81
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 82
+        right: 77
+        height: 4
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 84
+        height: 2
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: 80
+        height: 2
+      - key: full.build.plan
+        value: 33
+        left: 85
+        right: 86
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 87
+        right: 77
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 89
+        right: 90
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 91
+        right: 84
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 92
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 77
+        height: 5
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: 96
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: 97
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 99
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 102
+        right: 96
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 101
+        right: 103
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 104
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 43
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 90
+        right: 84
+        height: 2
+      - key: full.build.check.evidence
+        value: 37
+        left: 109
+        right: 110
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 111
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 112
+        right: 105
+        height: 5
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: 114
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 115
+        right: 108
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 110
+        right: 86
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 116
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 118
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 45
+        left: 120
+        right: 121
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 122
+        right: 108
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 123
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 124
+        right: 105
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 127
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 129
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 132
+        right: 133
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 134
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 136
+        right: 137
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: 138
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 139
+        right: 130
+        height: 4
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: 141
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 145
+        height: 2
+      - key: full.open
+        value: 29
+        left: 143
+        right: 146
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 149
+        right: 150
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 148
+        right: 151
+        height: 3
+      - key: full.open
+        value: 29
+        left: 152
+        right: 146
+        height: 4
+      - key: full.archive.prepare
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: 154
+        right: 155
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: 158
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: 157
+        right: 159
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: 156
+        right: 160
+        height: 4
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 162
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 164
+        right: 165
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 163
+        right: 166
+        height: 3
+      - key: full.open
+        value: 29
+        left: 151
+        right: 167
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 161
+        right: 168
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 171
+        right: 172
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 175
+        height: 2
+      - key: full.open
+        value: 29
+        left: 173
+        right: 176
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 178
+        right: 179
+        height: 2
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 181
+        right: 182
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 180
+        right: 183
+        height: 3
+      - key: full.open
+        value: 29
+        left: 184
+        right: 176
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: 186
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: 188
+        right: 189
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 187
+        right: 190
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 176
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: 191
+        right: 192
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 194
+        right: 195
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 196
+        right: 190
+        height: 3
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: 198
+        height: 2
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 199
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 200
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 201
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 203
+        height: 2
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: 205
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 204
+        right: 206
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 207
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 208
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 56
+      - 62
+      - 68
+      - 78
+      - 83
+      - 88
+      - 94
+      - 100
+      - 106
+      - 113
+      - 119
+      - 125
+      - 128
+      - 131
+      - 135
+      - 140
+      - 142
+      - 147
+      - 153
+      - 169
+      - 170
+      - 177
+      - 185
+      - 193
+      - 202
+      - 209
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:11
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:13
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:14
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:16
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:18
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:20
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:22
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:23
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:4
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:5
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:7
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - improve-desktop-workflow-guidance:9
+          - results
+        map: 26
+      - path:
+          - outputs
+        map: 22
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 27
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 28
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 29
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 31
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 36
+  storageHash: d022c170e5cf47e03b6ce907a0feccd6a0440d64213006cb1c4be4b5b0658aa1
+check_epoch: 6
