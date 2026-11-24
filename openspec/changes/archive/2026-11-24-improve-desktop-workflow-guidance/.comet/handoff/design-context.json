@@ -1,0 +1,16 @@
+{
+  "change": "improve-desktop-workflow-guidance",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3",
+  "files": [
+    { "path": "openspec/changes/improve-desktop-workflow-guidance/proposal.md", "sha256": "e853bc9b3d63fb4cd20949b8c2e724f6e216219803530181fcfe920f1757c7b6" },
+    { "path": "openspec/changes/improve-desktop-workflow-guidance/design.md", "sha256": "21f2caa7ff1e05a490acd05a3761e40a60a527eb01bda461c2bcabf7f082eee8" },
+    { "path": "openspec/changes/improve-desktop-workflow-guidance/tasks.md", "sha256": "7fdce092b31cdf8d5e7d120444d184479ba6f643df4c705661441bfd7dcd5140" },
+    { "path": "openspec/changes/improve-desktop-workflow-guidance/.openspec.yaml", "sha256": "0b89965c6919ee9f0b3679bc8491b3c9efd623f2ceac7e5bd3929eff87f22215" },
+    { "path": "openspec/changes/improve-desktop-workflow-guidance/specs/desktop-observability-dashboard/spec.md", "sha256": "4053cba4b7a11755091647b9dc9e365ef645a2ee19f05c6176d22d88071a80c3" }
+  ]
+}

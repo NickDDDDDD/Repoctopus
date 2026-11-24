@@ -10,6 +10,10 @@ import {
 } from '../domains/trajectory/observation.js';
 import type { EvidenceTelemetryBatch } from '../domains/evidence/telemetry.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
+import {
+  createEmptyChangeProjection,
+  reduceChangeProjection,
+} from '../domains/trajectory/projection.js';
 
 const context: ObservationContext = {
   workspaceId: 'team-platform',
@@ -33,6 +37,35 @@ function event(type: TrajectoryEvent['type'], data: Record<string, unknown> = {}
 }
 
 describe('ObservationEnvelope', () => {
+  it('keeps the accepted lifecycle status when a same-stage cleanup clears reconciliation', () => {
+    const history = [
+      event('run.started', { phase: 'build' }),
+      event('recovery.reconciled', { reconciliation: { requiresReconciliation: true } }),
+      event('change.lifecycle.transitioned', {
+        changeLifecycleTransition: {
+          transitionId: 'build.runtime-output-cleanup-adopted',
+          from: { phase: 'build', status: 'running' },
+          to: { phase: 'build', status: 'running' },
+        },
+        workspaceReconciliationRequired: false,
+      }),
+    ].map((item, index) => ({ ...item, sequence: index + 1, eventId: 'cleanup-' + index }));
+    const observations = createWorkflowObservationEnvelopes(history, history, context);
+    expect(observations[2]?.attributes).toMatchObject({
+      healthStatus: 'blocked',
+      toStatus: 'running',
+      workspaceReconciliationRequired: false,
+    });
+    const projection = observations.reduce(
+      (snapshot, item) => reduceChangeProjection(snapshot, item).snapshot,
+      createEmptyChangeProjection(),
+    );
+    expect(projection.changes[0]).toMatchObject({
+      displayState: 'live',
+      lifecycle: { phase: 'build', status: 'running' },
+    });
+  });
+
   it('projects approved strategies, invalidation and complete rollback counts from accepted facts', () => {
     const start = {
       ...event('run.started', { phase: 'open', workflowRunResult: 'started' }),

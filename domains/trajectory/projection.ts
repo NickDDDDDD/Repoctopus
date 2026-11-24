@@ -1,4 +1,9 @@
-import { CHANGE_PHASES, type ChangePhase } from '../change-lifecycle/transition.js';
+import {
+  CHANGE_PHASES,
+  CHANGE_RUN_STATUSES,
+  type ChangePhase,
+  type RunStatus,
+} from '../change-lifecycle/transition.js';
 import type {
   ObservationBuildAction,
   ObservationEnvelope,
@@ -34,8 +39,24 @@ export type DashboardDisplayState =
   | 'stalled'
   | 'waiting'
   | 'rework'
+  | 'blocked'
   | 'complete'
   | 'failed';
+
+export interface ProjectedLifecycle {
+  phase: ChangePhase;
+  status: RunStatus;
+  decisionId: string | null;
+  reason: string | null;
+  rework: boolean;
+  observedAt: string;
+}
+
+export interface ProjectedBuildStrategy {
+  executionMode: 'autonomous' | 'subagent-driven-development';
+  tddMode: 'tdd' | 'direct';
+  isolation: 'current' | 'branch' | 'worktree';
+}
 
 export interface ProjectedAttempt {
   attempt: number;
@@ -61,6 +82,7 @@ export interface ProjectedBuildAction {
 
 export interface ProjectedWork {
   workId: string;
+  phase?: ChangePhase;
   workKind: string | null;
   packageId: string | null;
   taskId: string | null;
@@ -194,6 +216,10 @@ export interface ProjectedChange {
   changeId: string;
   runId: string;
   phase: ChangePhase | null;
+  lifecycle?: ProjectedLifecycle;
+  workspaceReconciliationRequired?: boolean;
+  buildStrategy?: ProjectedBuildStrategy | null;
+  buildProgress?: { total: number; completed: number } | null;
   buildAction: ObservationBuildAction | null;
   status: string | null;
   workId: string | null;
@@ -233,6 +259,7 @@ export interface ChangeProjectionSnapshot {
   };
   seenEnvelopeIds: string[];
   receivedSequences: Record<string, number[]>;
+  pendingEnvelopes?: Record<string, ObservationEnvelope[]>;
 }
 
 /** Bounded transport snapshot; deduplication and gap bookkeeping remain Host-internal. */
@@ -240,7 +267,15 @@ export function changeProjectionView(snapshot: ChangeProjectionSnapshot): Change
   return {
     schemaVersion: 1,
     version: snapshot.version,
-    changes: structuredClone(snapshot.changes),
+    changes: structuredClone(snapshot.changes).map((change) => {
+      if (
+        !change.lifecycle &&
+        (change.displayState === 'complete' || change.displayState === 'failed')
+      ) {
+        change.displayState = 'sparse';
+      }
+      return change;
+    }),
     freshness: structuredClone(snapshot.freshness),
     seenEnvelopeIds: [],
     receivedSequences: {},
@@ -303,17 +338,17 @@ export function createEmptyChangeProjection(): ChangeProjectionSnapshot {
   };
 }
 
-function gaps(sequencesByRun: Readonly<Record<string, readonly number[]>>): number[] {
-  const missing = new Set<number>();
-  for (const sequences of Object.values(sequencesByRun)) {
-    if (sequences.length === 0) continue;
-    const known = new Set(sequences);
-    const maximum = Math.max(...sequences);
-    for (let sequence = 1; sequence <= maximum; sequence += 1) {
-      if (!known.has(sequence)) missing.add(sequence);
-    }
+const MAX_REPORTED_GAPS = 1_000;
+
+function gaps(sequences: readonly number[]): number[] {
+  const missing: number[] = [];
+  let expected = 1;
+  for (const sequence of sequences) {
+    while (expected < sequence && missing.length < MAX_REPORTED_GAPS) missing.push(expected++);
+    if (missing.length === MAX_REPORTED_GAPS) break;
+    expected = sequence + 1;
   }
-  return [...missing].sort((left, right) => left - right);
+  return missing;
 }
 
 function projectionKey(envelope: ObservationEnvelope): string | null {
@@ -455,6 +490,7 @@ function workState(envelope: ObservationEnvelope): ProjectedTimelineState {
 }
 
 function projectWork(change: ProjectedChange, envelope: ObservationEnvelope): void {
+  if (envelope.eventType.startsWith('skill.')) return;
   const workId = envelope.correlation.workId;
   if (workId === undefined) return;
   const attempt = envelope.correlation.attempt ?? null;
@@ -494,12 +530,24 @@ function projectWork(change: ProjectedChange, envelope: ObservationEnvelope): vo
     (left, right) =>
       left.startedAt.localeCompare(right.startedAt) || left.workId.localeCompare(right.workId),
   );
-  change.currentWork = work;
+  const phase = envelope.correlation.phase;
+  if (phase) work.phase = phase;
+  if (!change.lifecycle || work.phase === change.lifecycle.phase) change.currentWork = work;
 }
 
 function projectBuildAction(change: ProjectedChange, envelope: ObservationEnvelope): void {
-  const fallback =
-    stringAttribute(envelope.attributes, 'observationKind')?.includes('fallback') === true;
+  if (envelope.eventType.startsWith('skill.')) return;
+  const observationKind = stringAttribute(envelope.attributes, 'observationKind');
+  const acceptedAction =
+    envelope.eventType === 'change.lifecycle.transitioned' &&
+    [
+      'build-binding-accepted',
+      'build-plan-accepted',
+      'build-plan-evidence-accepted',
+      'build-check-accepted',
+    ].includes(observationKind ?? '');
+  if (envelope.correlation.phase !== 'build' && !acceptedAction) return;
+  const fallback = observationKind?.includes('fallback') === true;
   const actionName =
     envelope.correlation.buildAction ??
     (envelope.correlation.workId !== undefined ? change.buildAction : null);
@@ -508,9 +556,11 @@ function projectBuildAction(change: ProjectedChange, envelope: ObservationEnvelo
   const attempt = envelope.correlation.attempt ?? action.attempts.at(-1)?.attempt ?? 1;
   const state = fallback
     ? 'rework'
-    : envelope.eventType === 'wait.started'
-      ? 'waiting'
-      : workState(envelope);
+    : acceptedAction
+      ? 'completed'
+      : envelope.eventType === 'wait.started'
+        ? 'waiting'
+        : workState(envelope);
   updateAttempt(action.attempts, attempt, state, envelope.observedAt);
   action.state = state;
   action.latestObservedAt = envelope.observedAt;
@@ -606,6 +656,21 @@ function projectDecision(change: ProjectedChange, envelope: ObservationEnvelope)
 }
 
 function projectBuildIdentity(change: ProjectedChange, envelope: ObservationEnvelope): void {
+  const configuration = stringAttribute(envelope.attributes, 'healthConfiguration');
+  if (configuration === 'approved') {
+    const executionMode = stringAttribute(envelope.attributes, 'executionMode');
+    const tddMode = stringAttribute(envelope.attributes, 'tddMode');
+    const isolation = stringAttribute(envelope.attributes, 'isolation');
+    if (
+      (executionMode === 'autonomous' || executionMode === 'subagent-driven-development') &&
+      (tddMode === 'tdd' || tddMode === 'direct') &&
+      (isolation === 'current' || isolation === 'branch' || isolation === 'worktree')
+    ) {
+      change.buildStrategy = { executionMode, tddMode, isolation };
+    }
+  } else if (configuration === 'unapproved' || configuration === 'unknown') {
+    change.buildStrategy = null;
+  }
   if (envelope.correlation.strategyId !== undefined) {
     change.strategyId = envelope.correlation.strategyId;
     change.strategyRevision = envelope.correlation.strategyRevision ?? change.strategyRevision;
@@ -629,9 +694,7 @@ function projectBuildIdentity(change: ProjectedChange, envelope: ObservationEnve
           : null;
   if (state === null) return;
   if (
-    change.bindingRevalidations.some(
-      (candidate) => candidate.eventId === envelope.identity.eventId,
-    )
+    change.bindingRevalidations.some((candidate) => candidate.eventId === envelope.identity.eventId)
   ) {
     return;
   }
@@ -792,11 +855,16 @@ function projectHealth(
   } else if (currentPhase?.state === 'blocked') {
     transitionReasons.push({ code: 'phase-blocked', phase: currentPhase.phase });
   }
-  if (change.decisions.some((decision) => decision.state === 'waiting')) {
+  if (
+    change.lifecycle
+      ? change.lifecycle.decisionId !== null
+      : change.decisions.some((decision) => decision.state === 'waiting')
+  ) {
     transitionReasons.push({ code: 'human-decision' });
   }
-  if (change.recoveries.length > 0) {
-    transitionReasons.push({ code: 'fallback', count: change.recoveries.length });
+  const fallbackCount = change.recoveries.filter((recovery) => recovery.kind === 'fallback').length;
+  if (fallbackCount > 0) {
+    transitionReasons.push({ code: 'fallback', count: fallbackCount });
   }
   change.health.transition =
     change.phase === null
@@ -831,8 +899,8 @@ function projectHealth(
       qualityReasons.push({ code: 'gate-failed', evidenceAttemptId: evidence.attemptId });
     }
   }
-  if (change.recoveries.some((recovery) => recovery.kind === 'fallback')) {
-    qualityReasons.push({ code: 'verification-rework', count: change.recoveries.length });
+  if (fallbackCount > 0) {
+    qualityReasons.push({ code: 'verification-rework', count: fallbackCount });
   }
   const specification = change.specification;
   if (Object.values(specification.artifacts).includes('missing')) {
@@ -886,23 +954,23 @@ function displayState(
   change: ProjectedChange,
   freshness: ChangeProjectionSnapshot['freshness'],
 ): DashboardDisplayState {
-  const currentPhase = change.phases.find((phase) => phase.phase === change.phase);
-  if (change.status === 'failed' || currentPhase?.state === 'failed') return 'failed';
-  if (
-    change.status === 'completed' ||
-    (currentPhase?.state === 'completed' && change.phase === 'archive')
-  ) {
-    return 'complete';
-  }
+  const lifecycle = change.lifecycle;
+  if (lifecycle?.status === 'failed') return 'failed';
+  if (lifecycle?.status === 'completed') return 'complete';
   if (freshness.status === 'error') return 'error';
   if (freshness.status === 'gap') return 'gap';
+  if (freshness.status === 'stale') return 'stale';
+  if (freshness.status === 'catching-up') return 'catching-up';
+  if (change.workspaceReconciliationRequired) return 'blocked';
+  if (lifecycle?.status === 'waiting') return 'waiting';
+  if (lifecycle?.status === 'blocked' || lifecycle?.status === 'migration_required')
+    return 'blocked';
+  if (lifecycle?.rework) return 'rework';
   if (change.health.execution.reasons.some((reason) => reason.code === 'work-stalled')) {
     return 'stalled';
   }
+  if (lifecycle) return 'live';
   if (change.decisions.some((decision) => decision.state === 'waiting')) return 'waiting';
-  if (change.recoveries.some((recovery) => recovery.kind === 'fallback')) return 'rework';
-  if (freshness.status === 'stale') return 'stale';
-  if (freshness.status === 'catching-up') return 'catching-up';
   if (
     change.workId === null &&
     change.decisions.length === 0 &&
@@ -912,6 +980,60 @@ function displayState(
     return 'sparse';
   }
   return 'live';
+}
+
+/** Run state changes only with an accepted lifecycle fact. Work results belong to Work. */
+function projectLifecycle(change: ProjectedChange, envelope: ObservationEnvelope): void {
+  const phase = envelope.correlation.phase;
+  if (
+    ['change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'].includes(
+      envelope.eventType,
+    )
+  ) {
+    const required = booleanAttribute(envelope.attributes, 'workspaceReconciliationRequired');
+    if (required !== null) change.workspaceReconciliationRequired = required;
+  }
+  if (!phase || !['change.lifecycle.transitioned', 'run.started'].includes(envelope.eventType))
+    return;
+  const isTransition = envelope.eventType === 'change.lifecycle.transitioned';
+  const status =
+    (isTransition ? stringAttribute(envelope.attributes, 'toStatus') : null) ??
+    stringAttribute(envelope.attributes, 'healthStatus') ??
+    (envelope.eventType === 'run.started' ? 'running' : null);
+  if (!CHANGE_RUN_STATUSES.includes(status as RunStatus)) return;
+  const from = changePhase(stringAttribute(envelope.attributes, 'fromPhase'));
+  const previousPhase = change.lifecycle?.phase ?? change.phase;
+  const waiting = status === 'waiting';
+  change.lifecycle = {
+    phase,
+    status: status as RunStatus,
+    decisionId: waiting ? (envelope.correlation.decisionId ?? null) : null,
+    reason:
+      stringAttribute(envelope.attributes, 'healthReason') ??
+      (waiting ? (envelope.correlation.decisionKind ?? null) : null),
+    rework:
+      status === 'running' && isTransition && from !== null && phaseIndex(from) > phaseIndex(phase),
+    observedAt: envelope.observedAt,
+  };
+  if (previousPhase !== phase) {
+    change.currentWork = null;
+    change.buildAction = null;
+  }
+  if (isTransition) {
+    const total = numberAttribute(envelope.attributes, 'buildPackageTotal');
+    const completed = numberAttribute(envelope.attributes, 'buildPackageCompleted');
+    change.buildProgress =
+      phase === 'build' &&
+      total !== null &&
+      Number.isSafeInteger(total) &&
+      total > 0 &&
+      completed !== null &&
+      Number.isSafeInteger(completed) &&
+      completed >= 0 &&
+      completed <= total
+        ? { total, completed }
+        : null;
+  }
 }
 
 function createProjectedChange(envelope: ObservationEnvelope): ProjectedChange | undefined {
@@ -973,9 +1095,13 @@ function projectChange(
   change.bindingRevalidations ??= [];
   const value = <T>(next: T | undefined, previous: T | null): T | null =>
     next === undefined ? previous : next;
-  change.phase = value(envelope.correlation.phase, change.phase);
-  change.buildAction = value(envelope.correlation.buildAction, change.buildAction);
+  projectLifecycle(change, envelope);
+  change.phase = change.lifecycle?.phase ?? value(envelope.correlation.phase, change.phase);
+  if (envelope.correlation.phase === 'build' && change.phase === 'build') {
+    change.buildAction = value(envelope.correlation.buildAction, change.buildAction);
+  }
   change.status =
+    change.lifecycle?.status ??
     stringAttribute(envelope.attributes, 'toStatus') ??
     stringAttribute(envelope.attributes, 'result') ??
     stringAttribute(envelope.attributes, 'status') ??
@@ -989,7 +1115,12 @@ function projectChange(
   change.continuation = value(envelope.correlation.continuation, change.continuation);
   change.latestSequence = envelope.identity.sequence;
   change.latestObservedAt = envelope.observedAt;
-  projectPhases(change, envelope);
+  if (
+    ['run.started', 'change.lifecycle.transitioned'].includes(envelope.eventType) ||
+    !change.lifecycle
+  ) {
+    projectPhases(change, envelope);
+  }
   projectWork(change, envelope);
   projectBuildAction(change, envelope);
   projectSkill(change, envelope);
@@ -1019,7 +1150,32 @@ function explicitFreshness(
   return null;
 }
 
-/** Pure reducer: duplicate observations are no-ops and arrival order does not rewrite newer facts. */
+function applyEnvelope(snapshot: ChangeProjectionSnapshot, envelope: ObservationEnvelope) {
+  const key = projectionKey(envelope);
+  if (key === null) return;
+  const index = snapshot.changes.findIndex(
+    (change) => `${change.workspaceId}\0${change.changeId}\0${change.runId}` === key,
+  );
+  if (isEvidenceStream(envelope)) {
+    const change = index < 0 ? createProjectedChange(envelope) : snapshot.changes[index];
+    if (!change) return;
+    projectEvidence(change, envelope);
+    if (index < 0) snapshot.changes.push(change);
+    return;
+  }
+  const projected = projectChange(index < 0 ? undefined : snapshot.changes[index], envelope);
+  if (!projected) return;
+  if (index < 0) snapshot.changes.push(projected);
+  else snapshot.changes[index] = projected;
+}
+
+function isEvidenceStream(envelope: ObservationEnvelope): boolean {
+  return (
+    envelope.eventType.startsWith('evidence.') && envelope.eventType !== 'evidence.invalidated'
+  );
+}
+
+/** Apply the contiguous prefix of each Run's trajectory before changing its current state. */
 export function reduceChangeProjection(
   current: ChangeProjectionSnapshot,
   envelope: ObservationEnvelope,
@@ -1031,30 +1187,47 @@ export function reduceChangeProjection(
   next.version += 1;
   next.seenEnvelopeIds.push(envelope.envelopeId);
   next.seenEnvelopeIds.sort();
-  const sequences = new Set(next.receivedSequences[envelope.identity.runId] ?? []);
-  sequences.add(envelope.identity.sequence);
-  next.receivedSequences[envelope.identity.runId] = [...sequences].sort(
-    (left, right) => left - right,
-  );
-
-  const key = projectionKey(envelope);
-  if (key !== null) {
-    const index = next.changes.findIndex(
-      (change) => `${change.workspaceId}\0${change.changeId}\0${change.runId}` === key,
+  const { runId, sequence } = envelope.identity;
+  const runKey = projectionKey(envelope);
+  if (sequence > 0 && !isEvidenceStream(envelope) && runKey !== null) {
+    const known = Object.hasOwn(next.receivedSequences, runId)
+      ? next.receivedSequences[runId]!
+      : [];
+    const sequences = [...new Set([...known, sequence])].sort((left, right) => left - right);
+    Object.defineProperty(next.receivedSequences, runId, {
+      value: sequences,
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
+    const firstMissing = gaps(sequences)[0] ?? Infinity;
+    const pending = [...(next.pendingEnvelopes?.[runKey] ?? []), envelope].sort(
+      (left, right) => left.identity.sequence - right.identity.sequence,
     );
-    const projected = projectChange(index < 0 ? undefined : next.changes[index], envelope);
-    if (projected !== undefined) {
-      if (index < 0) next.changes.push(projected);
-      else next.changes[index] = projected;
-      next.changes.sort(
-        (left, right) =>
-          left.workspaceId.localeCompare(right.workspaceId) ||
-          left.changeId.localeCompare(right.changeId) ||
-          left.runId.localeCompare(right.runId),
-      );
+    const remaining = pending.filter((item) => item.identity.sequence >= firstMissing);
+    for (const item of pending.slice(0, pending.length - remaining.length))
+      applyEnvelope(next, item);
+    if (!next.changes.some((change) => change.runId === runId)) {
+      const unconfirmed = createProjectedChange(envelope);
+      if (unconfirmed) next.changes.push(unconfirmed);
     }
+    if (remaining.length) (next.pendingEnvelopes ??= {})[runKey] = remaining;
+    else if (next.pendingEnvelopes) delete next.pendingEnvelopes[runKey];
+  } else {
+    applyEnvelope(next, envelope);
   }
-  const missing = gaps(next.receivedSequences);
+  next.changes.sort(
+    (left, right) =>
+      left.workspaceId.localeCompare(right.workspaceId) ||
+      left.changeId.localeCompare(right.changeId) ||
+      left.runId.localeCompare(right.runId),
+  );
+  const missingByRun = new Map(
+    Object.entries(next.receivedSequences).map(([key, sequences]) => [key, gaps(sequences)]),
+  );
+  const missing = [...new Set([...missingByRun.values()].flat())]
+    .sort((left, right) => left - right)
+    .slice(0, MAX_REPORTED_GAPS);
   const reportedFreshness = explicitFreshness(envelope);
   next.freshness = {
     status: missing.length > 0 ? 'gap' : (reportedFreshness ?? 'live'),
@@ -1066,8 +1239,13 @@ export function reduceChangeProjection(
     envelope.observedAt,
   );
   for (const change of next.changes) {
-    projectHealth(change, next.freshness, latestObservedAt);
-    change.displayState = displayState(change, next.freshness);
+    const missing = missingByRun.get(change.runId) ?? [];
+    const freshness: ChangeProjectionSnapshot['freshness'] = {
+      status: missing.length > 0 ? 'gap' : (reportedFreshness ?? 'live'),
+      missing,
+    };
+    projectHealth(change, freshness, latestObservedAt);
+    change.displayState = displayState(change, freshness);
   }
   return {
     snapshot: next,
@@ -1077,7 +1255,7 @@ export function reduceChangeProjection(
       version: next.version,
       eventId: envelope.identity.eventId,
       runId: envelope.identity.runId,
-      changeKey: key,
+      changeKey: runKey,
       freshness: structuredClone(next.freshness),
     },
   };

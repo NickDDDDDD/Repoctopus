@@ -251,6 +251,20 @@ function event(options: {
   state: RunState;
   data?: Record<string, unknown>;
 }): TrajectoryEvent {
+  const lifecycle = options.state.changeLifecycle;
+  const build = lifecycle?.phase === 'build' ? lifecycle.buildProtocol : undefined;
+  const progress =
+    options.type === 'change.lifecycle.transitioned' && build?.plan
+      ? {
+          buildPackageTotal: build.plan.packages.length,
+          buildPackageCompleted: build.packageCompletions.length,
+        }
+      : undefined;
+  const reconciliation =
+    lifecycle &&
+    ['change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'].includes(options.type)
+      ? { workspaceReconciliationRequired: options.state.reconciliationRequired }
+      : undefined;
   return {
     schemaVersion: 1,
     sequence: options.sequence,
@@ -260,7 +274,7 @@ function event(options: {
     runId: options.state.runId,
     stateVersion: options.state.stateVersion,
     compositionDigest: options.state.composition.compositionDigest,
-    data: options.data ?? {},
+    data: { ...options.data, ...progress, ...reconciliation },
   };
 }
 

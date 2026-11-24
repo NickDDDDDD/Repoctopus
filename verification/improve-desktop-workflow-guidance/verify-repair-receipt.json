@@ -1,0 +1,31 @@
+{
+  "kind": "WindowsMultirepoPackageE2E",
+  "status": "passed",
+  "startedAt": "2026-11-24T05:51:33.792Z",
+  "checks": [
+    {
+      "id": "init-to-archive",
+      "status": "passed"
+    },
+    {
+      "id": "build-cold-recovery",
+      "status": "passed"
+    },
+    {
+      "id": "publication-response-loss",
+      "status": "passed"
+    },
+    {
+      "id": "terminal-recovery",
+      "status": "passed"
+    }
+  ],
+  "candidate": {
+    "name": "repoctopus-0.1.4.tgz",
+    "size": 1419849,
+    "digest": "sha256:646ccdbc019b4c28e33064a1bc96342731058694d32b9d3de3730e26fe2505cd"
+  },
+  "runId": "change-workspace-verify-package-workflow-1084f1a8861b28e9",
+  "finalStatus": "completed",
+  "durationMs": 431354
+}

@@ -38,6 +38,33 @@ function project(events: ObservationEnvelope[]) {
 }
 
 describe('desktop projection journal', () => {
+  it('applies a missing lifecycle event and its buffered successors after compaction', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-projection-'));
+    roots.push(root);
+    const initial = event(1);
+    const late = {
+      ...event(2),
+      eventType: 'change.lifecycle.transitioned',
+      attributes: { toStatus: 'running' },
+    };
+    const future = event(3);
+    const buffered = project([initial, future]);
+    expect(buffered.freshness.missing).toEqual([2]);
+    const store = await ProjectionJournalStore.open(root, createEmptyChangeProjection());
+    await store.append([initial, future], buffered);
+    await store.close(buffered);
+    const reopened = await ProjectionJournalStore.open(root, createEmptyChangeProjection());
+    expect(reopened.snapshot.freshness.missing).toEqual([2]);
+    const completed = reduceChangeProjection(reopened.snapshot, late).snapshot;
+    expect(completed.freshness.status).toBe('live');
+    expect(completed.changes[0]).toMatchObject({
+      latestSequence: 3,
+      lifecycle: { phase: 'build', status: 'running' },
+      currentWork: { workId: 'work-3' },
+    });
+    await reopened.close(completed);
+  });
+
   it('atomically recovers snapshots, converges duplicates and removes temporary files', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-projection-'));
     roots.push(root);

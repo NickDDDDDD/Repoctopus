@@ -4,6 +4,15 @@ Repoctopus Desktop Dashboard 是 Windows x64 上的本地工作流观测界面�
 
 当前 change 的投影除五阶段、Work、Skill、Wait 和 Evidence 外，还直接消费 packet recovery 与 Specification Provider 观测：四类工件分别显示 `ready | skipped | missing`，验证显示最高严重级与 contract-conflict。`skipped` 是 Provider 明确证明的满足状态，不显示为缺失或错误；这些事实与 SigNoZ 来自同一个持久 Trajectory envelope。
 
+## 从首屏找到下一步
+
+在左侧选择一个 Change Run。阶段栏显示 Open（需求确认）、Design（设计）、Build（实现）、Verify（验证）和 Archive（归档），并标出当前阶段。需要关注的 Run 排在前面，已完成的 Run 可在「已完成」中展开。
+
+- **需要审批**时，点击「复制给 Agent」，回到当前 Agent 会话粘贴。Agent 会重新读取此 Run 的待处理请求、展示材料并等待你的决定。进入下一阶段后，旧请求的入口会自动消失。
+- **Build 进行中**时，可查看执行方式、TDD 配置、隔离方式与已完成的工作包。工作包计划尚未上报时，进度条会在收到计划后出现。
+- **当前 Skill**显示已选定、已交付和已确认读取的 Skill。展开「Skill 装填详情」可查看来源和校验。已确认读取表示 Runtime 验证了装填凭据。
+- **遇到返工、阻塞或接收中断**时，按「现在要做什么」核对当前 Run。展开「运行与诊断详情」可查看回退、验证证据和遥测健康。
+
 ## 状态含义
 
 界面只显示 Receiver 已接受的权威事实。缺少事实时显示“尚未上报”，而不是根据阶段顺序或文案猜测。
@@ -46,6 +55,8 @@ Host 先将允许列表内的 envelope 追加到本地 journal，再发布新的
 默认在 journal 达到 1,000 条或 4 MiB 时生成原子 snapshot 并压缩 journal。snapshot 与 journal 位于 Electron 用户级数据目录；它们不包含 Prompt、命令输出、Artifact 正文、凭据或 Workspace 绝对路径。卸载或显式清理可以删除这些本地投影数据；普通代码回滚不会隐式删除用户数据。
 
 桌面关闭不会阻塞工作流，也不会推进或重置远端 SigNoZ 的 cursor。本地目的地恢复后从自己的 cursor 追平；超过上游保留上限时显示明确 gap，而不是伪造连续历史。
+
+单个 Run 缺失事件时，后到的事实会在补齐序列后按顺序生效。其他 Run 可以继续更新。升级后若旧缓存缺少 Runtime 确认归档的事实，界面会显示状态待确认，直到收到相应事实。
 
 ## 故障检查
 

@@ -148,10 +148,13 @@ const OBSERVATION_NUMBER_KEYS = new Set<string>([
   'strategyRevision',
   'bindingRevision',
   'workflowRunDurationMs',
+  'buildPackageTotal',
+  'buildPackageCompleted',
   'durationMs',
   ...WORKFLOW_ROLLBACK_KEYS,
 ]);
 const OBSERVATION_BOOLEAN_KEYS = new Set<string>([
+  'workspaceReconciliationRequired',
   'redacted',
   'valid',
   'contractConflict',

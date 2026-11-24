@@ -57,11 +57,15 @@ export function App() {
       <header className="titlebar">
         <div className="brand-group">
           <div className="brand">Repoctopus</div>
-          <div className="surface-label">Workflow Observatory</div>
+          <div className="surface-label">工作流</div>
         </div>
         <div className="receiver-state" aria-live="polite">
           <span aria-hidden="true" />
-          {state.phase === 'ready' ? state.projection.freshness.status : state.phase}
+          {state.phase === 'ready'
+            ? '本地接收已连接'
+            : state.phase === 'starting'
+              ? '正在连接'
+              : '连接失败'}
         </div>
       </header>
       {state.phase === 'ready' ? (

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { ObservationEnvelope } from '../domains/trajectory/observation.js';
 import {
+  changeProjectionView,
   createEmptyChangeProjection,
   reduceChangeProjection,
 } from '../domains/trajectory/projection.js';
@@ -32,6 +33,174 @@ function observation(
 }
 
 describe('desktop change projection', () => {
+  it('does not show a Design validator as the Build Check', () => {
+    const identity = { workspaceId: 'team-platform', changeId: 'dashboard' };
+    const snapshot = [
+      observation(1, {
+        eventType: 'validator.completed',
+        correlation: { ...identity, phase: 'design', buildAction: 'check' },
+      }),
+      observation(2, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { ...identity, phase: 'build' },
+        attributes: { fromPhase: 'design', toStatus: 'running' },
+      }),
+    ].reduce(
+      (state, envelope) => reduceChangeProjection(state, envelope).snapshot,
+      createEmptyChangeProjection(),
+    );
+    expect(snapshot.changes[0]?.buildActions.find(({ action }) => action === 'check')?.state).toBe(
+      'not-reported',
+    );
+    expect(snapshot.changes[0]?.buildAction).toBeNull();
+  });
+
+  it('requires lifecycle evidence before presenting a restored Run as terminal', () => {
+    const snapshot = reduceChangeProjection(createEmptyChangeProjection(), observation(1)).snapshot;
+    snapshot.changes[0]!.displayState = 'complete';
+    expect(changeProjectionView(snapshot).changes[0]?.displayState).toBe('sparse');
+    expect(snapshot.changes[0]?.displayState).toBe('complete');
+  });
+
+  it('accepts only bounded counts from the current Build lifecycle and retires them on fallback', () => {
+    const identity = { workspaceId: 'team-platform', changeId: 'dashboard' };
+    let snapshot = createEmptyChangeProjection();
+    const transition = (
+      sequence: number,
+      phase: 'build' | 'design',
+      total?: number,
+      completed?: number,
+    ) => {
+      snapshot = reduceChangeProjection(
+        snapshot,
+        observation(sequence, {
+          eventType: 'change.lifecycle.transitioned',
+          correlation: { ...identity, phase },
+          attributes: {
+            toStatus: 'running',
+            ...(total === undefined ? {} : { buildPackageTotal: total }),
+            ...(completed === undefined ? {} : { buildPackageCompleted: completed }),
+          },
+        }),
+      ).snapshot;
+      return snapshot.changes[0];
+    };
+    expect(transition(1, 'build', 4, 2)).toMatchObject({
+      buildProgress: { total: 4, completed: 2 },
+    });
+    expect(transition(2, 'build', 4, 5)).toMatchObject({ buildProgress: null });
+    expect(transition(3, 'build', 4, 1)).toMatchObject({
+      buildProgress: { total: 4, completed: 1 },
+    });
+    expect(transition(4, 'design')).toMatchObject({ buildProgress: null });
+  });
+
+  it('retires the Design action on the accepted Build transition before wait.ended arrives', () => {
+    const identity = { workspaceId: 'team-platform', changeId: 'dashboard' };
+    const transition = (
+      sequence: number,
+      phase: 'design' | 'build',
+      attributes: ObservationEnvelope['attributes'],
+      decisionId?: string,
+    ) =>
+      observation(sequence, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { ...identity, phase, ...(decisionId ? { decisionId } : {}) },
+        attributes,
+      });
+    const waiting = reduceChangeProjection(
+      createEmptyChangeProjection(),
+      transition(
+        1,
+        'design',
+        { transitionId: 'design.await-approval', toStatus: 'waiting' },
+        'design-approval:current',
+      ),
+    ).snapshot;
+    expect(waiting.changes[0]).toMatchObject({
+      displayState: 'waiting',
+      lifecycle: { phase: 'design', status: 'waiting', decisionId: 'design-approval:current' },
+    });
+    const approved = reduceChangeProjection(
+      waiting,
+      transition(2, 'build', {
+        transitionId: 'design.approved',
+        fromPhase: 'design',
+        toStatus: 'running',
+      }),
+    ).snapshot;
+    const restored = structuredClone(approved);
+    const late = reduceChangeProjection(
+      restored,
+      observation(3, {
+        eventType: 'wait.ended',
+        correlation: { ...identity, phase: 'design', decisionId: 'design-approval:current' },
+        attributes: { status: 'completed' },
+      }),
+    ).snapshot;
+    expect(approved.changes[0]).toMatchObject({
+      displayState: 'live',
+      lifecycle: { phase: 'build', status: 'running', decisionId: null },
+    });
+    expect(late.changes[0]).toMatchObject({
+      displayState: 'live',
+      lifecycle: { phase: 'build', status: 'running', decisionId: null },
+    });
+    expect(late.changes[0]?.decisions[0]?.state).toBe('resolved');
+  });
+
+  it('keeps Archive active after a Work completes and clears rework on accepted progress', () => {
+    const identity = { workspaceId: 'team-platform', changeId: 'dashboard' };
+    const facts = [
+      observation(1, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { ...identity, phase: 'build' },
+        attributes: {
+          fromPhase: 'verify',
+          toStatus: 'running',
+          findingKind: 'implementation_failure',
+        },
+      }),
+      observation(2, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { ...identity, phase: 'build' },
+        attributes: {
+          transitionId: 'build.plan-accepted',
+          fromPhase: 'build',
+          toStatus: 'running',
+        },
+      }),
+      observation(3, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { ...identity, phase: 'archive' },
+        attributes: { fromPhase: 'verify', toStatus: 'running' },
+      }),
+      observation(4, {
+        eventType: 'work.completed',
+        correlation: { ...identity, phase: 'archive', workId: 'archive.prepare:one' },
+        attributes: { status: 'completed' },
+      }),
+      observation(5, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { ...identity, phase: 'archive' },
+        attributes: {
+          transitionId: 'archive.completed',
+          fromPhase: 'archive',
+          toStatus: 'completed',
+        },
+      }),
+    ];
+    let snapshot = createEmptyChangeProjection();
+    const states = facts.map((fact) => {
+      snapshot = reduceChangeProjection(snapshot, fact).snapshot;
+      return snapshot.changes[0]?.displayState;
+    });
+    expect(states).toEqual(['rework', 'live', 'live', 'live', 'complete']);
+    expect(snapshot.changes[0]?.recoveries).toContainEqual(
+      expect.objectContaining({ kind: 'fallback', fromPhase: 'verify', toPhase: 'build' }),
+    );
+  });
+
   it('converges for duplicate/out-of-order delivery and reports sequence gaps', () => {
     let snapshot = createEmptyChangeProjection();
     for (const item of [observation(2), observation(2), observation(1), observation(4)]) {
@@ -45,15 +214,108 @@ describe('desktop change projection', () => {
       runId: 'run-1',
       phase: 'build',
       buildAction: 'execute',
-      latestSequence: 4,
+      latestSequence: 2,
     });
     expect(snapshot.freshness).toEqual({ status: 'gap', missing: [3] });
 
     const restarted = structuredClone(snapshot);
     const recovered = reduceChangeProjection(restarted, observation(3));
     expect(recovered.snapshot.freshness).toEqual({ status: 'live', missing: [] });
+    expect(recovered.snapshot.changes[0]?.latestSequence).toBe(4);
     expect(recovered.delta?.previousVersion).toBe(3);
     expect(recovered.delta?.version).toBe(4);
+  });
+
+  it('applies a delayed Build transition before clearing that Run gap', () => {
+    const identity = { workspaceId: 'team-platform', changeId: 'dashboard' };
+    const waiting = observation(1, {
+      eventType: 'change.lifecycle.transitioned',
+      correlation: { ...identity, phase: 'design', decisionId: 'design-approval:one' },
+      attributes: { toStatus: 'waiting' },
+    });
+    const approved = observation(2, {
+      eventType: 'change.lifecycle.transitioned',
+      correlation: { ...identity, phase: 'build' },
+      attributes: { fromPhase: 'design', toStatus: 'running' },
+    });
+    const build = observation(3, {
+      eventType: 'work.host-started',
+      correlation: { ...identity, phase: 'build', workId: 'build.execute:one' },
+      attributes: { status: 'running' },
+    });
+    let snapshot = reduceChangeProjection(createEmptyChangeProjection(), waiting).snapshot;
+    const otherRun = observation(6, {
+      identity: { eventId: 'other-run', runId: 'other', sequence: 2 },
+      correlation: { ...identity, changeId: 'other-run', phase: 'open' },
+    });
+    snapshot = reduceChangeProjection(snapshot, otherRun).snapshot;
+    expect(snapshot.changes.find((entry) => entry.runId === 'run-1')?.displayState).toBe('waiting');
+    expect(snapshot.changes.find((entry) => entry.runId === 'other')).toMatchObject({
+      displayState: 'gap',
+      phase: null,
+      latestSequence: 0,
+    });
+    snapshot = reduceChangeProjection(snapshot, build).snapshot;
+    expect(snapshot.changes.find((entry) => entry.runId === 'run-1')?.displayState).toBe('gap');
+    snapshot = reduceChangeProjection(structuredClone(snapshot), approved).snapshot;
+    expect(snapshot.changes.find((entry) => entry.runId === 'run-1')).toMatchObject({
+      phase: 'build',
+      displayState: 'live',
+      lifecycle: { decisionId: null },
+      currentWork: { workId: 'build.execute:one' },
+    });
+    expect(snapshot.freshness.status).toBe('gap');
+  });
+
+  it('distinguishes checkpoint retirement from an actual workspace blocker', () => {
+    const identity = { workspaceId: 'team-platform', changeId: 'dashboard' };
+    const snapshot = [
+      observation(1, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { ...identity, phase: 'design', decisionId: 'design-approval:one' },
+        attributes: { toStatus: 'waiting' },
+      }),
+      observation(2, {
+        eventType: 'recovery.reconciled',
+        correlation: { ...identity, phase: 'design' },
+        attributes: { reasonCode: 'checkpoint-superseded', healthStatus: 'blocked' },
+      }),
+      observation(3, {
+        eventType: 'recovery.reconciled',
+        correlation: identity,
+        attributes: { workspaceReconciliationRequired: true },
+      }),
+      observation(4, {
+        eventType: 'run.resumed',
+        correlation: identity,
+        attributes: { workspaceReconciliationRequired: false },
+      }),
+      observation(5, {
+        eventType: 'recovery.reconciled',
+        correlation: identity,
+        attributes: { workspaceReconciliationRequired: true },
+      }),
+      observation(6, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { ...identity, phase: 'build' },
+        attributes: { toStatus: 'running', workspaceReconciliationRequired: false },
+      }),
+    ].reduce<ReturnType<typeof createEmptyChangeProjection>[]>(
+      (steps, envelope) => {
+        steps.push(reduceChangeProjection(steps.at(-1)!, envelope).snapshot);
+        return steps;
+      },
+      [createEmptyChangeProjection()],
+    );
+    expect(snapshot.slice(1).map((step) => step.changes[0]?.displayState)).toEqual([
+      'waiting',
+      'waiting',
+      'blocked',
+      'waiting',
+      'blocked',
+      'live',
+    ]);
+    expect(snapshot[4]?.changes[0]?.lifecycle?.decisionId).toBe('design-approval:one');
   });
 
   it('projects packet recovery and Specification status from the shared OTLP facts', () => {
@@ -141,6 +403,11 @@ describe('desktop change projection', () => {
         },
       }),
       observation(3, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { workspaceId: 'team-platform', changeId: 'dashboard', phase: 'build' },
+        attributes: { transitionId: 'design.approved', fromPhase: 'design', toStatus: 'running' },
+      }),
+      observation(4, {
         eventType: 'work.host-started',
         correlation: {
           workspaceId: 'team-platform',
@@ -159,7 +426,7 @@ describe('desktop change projection', () => {
         attributes: { result: 'running' },
       }),
       ...(['resolved', 'delivered', 'consumed'] as const).map((skillState, offset) =>
-        observation(4 + offset, {
+        observation(5 + offset, {
           eventType: `skill.${skillState}`,
           correlation: {
             workspaceId: 'team-platform',
@@ -176,7 +443,7 @@ describe('desktop change projection', () => {
           attributes: { skillState, result: 'succeeded' },
         }),
       ),
-      observation(7, {
+      observation(8, {
         eventType: 'wait.started',
         correlation: {
           workspaceId: 'team-platform',
@@ -188,7 +455,12 @@ describe('desktop change projection', () => {
         },
         attributes: { status: 'waiting' },
       }),
-      observation(8, {
+      observation(9, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { workspaceId: 'team-platform', changeId: 'dashboard', phase: 'verify' },
+        attributes: { transitionId: 'build.validated', fromPhase: 'build', toStatus: 'running' },
+      }),
+      observation(10, {
         eventType: 'evidence.artifact.recorded',
         correlation: {
           workspaceId: 'team-platform',
@@ -206,7 +478,8 @@ describe('desktop change projection', () => {
           gateStatus: 'failed',
         },
       }),
-      observation(9, {
+      observation(11, {
+        identity: { eventId: 'event-11', runId: 'run-1', sequence: 10 },
         eventType: 'change.lifecycle.transitioned',
         correlation: {
           workspaceId: 'team-platform',
@@ -223,7 +496,8 @@ describe('desktop change projection', () => {
           toStatus: 'running',
         },
       }),
-      observation(10, {
+      observation(12, {
+        identity: { eventId: 'event-12', runId: 'run-1', sequence: 11 },
         eventType: 'telemetry.destination.health',
         correlation: {
           workspaceId: 'team-platform',
@@ -248,7 +522,7 @@ describe('desktop change projection', () => {
 
     expect(change.phases.map(({ phase, state }) => [phase, state])).toEqual([
       ['open', 'completed'],
-      ['design', 'running'],
+      ['design', 'completed'],
       ['build', 'rework'],
       ['verify', 'rework'],
       ['archive', 'not-reported'],
@@ -258,14 +532,17 @@ describe('desktop change projection', () => {
       state: 'waiting',
       attempts: [{ attempt: 2 }],
     });
-    expect(change.currentWork).toMatchObject({
-      workId: 'build.execute:dashboard',
-      taskId: '5.1',
-      attempt: 2,
-      hostId: 'external:cli:codex-root',
-      validatorId: 'build.package-valid',
-      continuation: 'wait',
-    });
+    expect(change.currentWork).toBeNull();
+    expect(change.works).toContainEqual(
+      expect.objectContaining({
+        workId: 'build.execute:dashboard',
+        taskId: '5.1',
+        attempt: 2,
+        hostId: 'external:cli:codex-root',
+        validatorId: 'build.package-valid',
+        continuation: 'wait',
+      }),
+    );
     expect(change.skills).toContainEqual(
       expect.objectContaining({
         name: 'tdd',
@@ -314,13 +591,13 @@ describe('desktop change projection', () => {
       }),
     );
     expect(change.health.transition.status).toBe('attention');
-    expect(change.health.execution.status).toBe('attention');
+    expect(change.health.execution.status).toBe('not-reported');
     expect(change.health.quality.status).toBe('critical');
     expect(change.health.telemetry.status).toBe('attention');
     expect(change.health.telemetry.reasons).toContainEqual(
       expect.objectContaining({ code: 'destination-backlog' }),
     );
-    expect(change.displayState).toBe('waiting');
+    expect(change.displayState).toBe('rework');
     expect(JSON.stringify(change)).not.toMatch(/prompt|C:\\|source code|command output/iu);
   });
 
@@ -531,9 +808,7 @@ describe('desktop change projection', () => {
       strategyRevision: 1,
       executionBindingId: 'execution-binding:2',
       executionBindingRevision: 2,
-      bindingRevalidations: [
-        expect.objectContaining({ state: 'drifted', reasonClass: 'head' }),
-      ],
+      bindingRevalidations: [expect.objectContaining({ state: 'drifted', reasonClass: 'head' })],
     });
   });
 });

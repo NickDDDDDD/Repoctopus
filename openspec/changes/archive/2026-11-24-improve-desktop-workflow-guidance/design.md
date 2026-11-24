@@ -1,0 +1,52 @@
+---
+comet_change: improve-desktop-workflow-guidance
+role: technical-design
+canonical_spec: openspec
+archived-with: 2026-11-24-improve-desktop-workflow-guidance
+status: final
+---
+
+## Context
+
+以主线 v0.1.4 的桌面界面与之前确认的体验规划为基线。当前 Renderer 的首屏平铺五阶段、Build 子动作和多组元数据，等待审批时显示审批内部类别。桌面即时接收本地 OTLP。SigNoz 的降噪发生在远端投递边界。
+
+## Goals / Non-Goals
+
+- 开发者在首屏读清当前阶段、是谁在处理，以及自己如何继续。
+- 收到等待、恢复、回退、阻塞、终态或不完整数据时，展示与该 Run 一致的可读状态。
+- 通过现有宿主完成审批。桌面仅提供真实审批请求的定位指引。
+
+## Decisions
+
+1. 在现有桌面投影上确定当前阶段、等待和终态，再由 Renderer 写成用户文案。阶段转换、Work、Skill 完成和接收器健康分别使用自己的事实。最近一次观测缺失时保留最后已确认状态和时间。
+2. 主区依次展示 Change、五阶段、当前工作或下一步。Build 子动作只在需要时展开。左侧按 Workspace 展示 Run，待处理项靠前，保留已选中的 Run。详细身份、证据、历史和四类健康放到详情。
+3. 先贯通同一多仓 Run 的 Design 等待审批、现有宿主决定与 Build 开始。复制只提供 Run 和当前审批请求定位，审批材料和状态由原宿主重新读取。
+4. 用实际事实核对策略、工作包及归档结果后再决定是否扩展少量有界字段。复用同一 envelope、接收器、投影增量和远端降噪策略。
+
+## 当前状态与事实来源
+
+已完成的五仓验收 Run `change-workspace-verify-autonomous-direct-66c551c981ffb470` 中，`design.await-approval` 在序列 68 被接受，69 报告等待开始，71 接受 `design.approved` 并同时进入 Build，73 才报告等待结束。先根据 71 更新当前阶段并关闭首屏审批提示，73 只补记同一请求的结束历史。迟到的旧 Skill、Work 或 Wait 事实不能让首屏退回 Design。
+
+- 用已接受的生命周期转换和 Run 启动、恢复事实确定当前阶段与 Run 状态。一个 Archive Work 完成后还有可能等待发布确认，直到 Runtime 接受终态才显示归档完成。Work、Skill、Evidence 和历史继续使用原来的细粒度状态。
+- 当前审批来源与阶段及当前等待身份绑定。已结束和被替代的请求保留在历史。复制给 Agent 的文字只含稳定定位及读取当前请求的指引。审批仍由宿主现有工具收集，Runtime 校验后推进。复制失败要有可读的反馈和可选择的文本。
+- 在已知回退之后，按后续已接受的进展显示「正在执行」「等待」「阻塞」等当前状态。来源、目标、影响范围及次数继续留在详情。数据新鲜度是单独的提示，不能用绿色连接标记表示工作成功。静默等待继续显示最后确认阶段和时间。
+- 工作包进度依赖当前被接受的计划和完成事实。计划重做或局部失效时跟随 Runtime 的保留结果。缺少计划计数时只展示当前动作。已批准策略显示其执行模式、TDD 和隔离事实，Skill 的消费证明与 TDD 测试证据各自展示。
+- 优先复用 `domains/trajectory/observation.ts` 中已有的阶段、等待和分类字段。若实际安装包轨迹证明信息不足，只在状态变化时补有界的同源观测。Desktop Host 的本地持久化沿现有 journal 与 snapshot，旧 snapshot 缺少的新视图信息按已观察范围呈现。
+
+## 界面布局与交互
+
+沿用浅色 Windows 外观与现有色彩。用紧凑的五阶段轨道表达阶段路径，当前节点以文字和显著样式指出。首屏将「下一步」和当前工作放在同一上下文中。只有在需要人工决定时提供复制和反馈；运行中清楚写明由 Agent 处理。按 Workspace 分组，在列表中写明行内状态，多个同名 Change 用 Run 身份区分，用户选择不被新观测抢占。详情保留阶段尝试、当前工作、Skill、Evidence 与健康，键盘可展开。
+
+## 实现落点
+
+- `domains/trajectory/projection.ts` 提供可靠的当前状态，观察字段不足时在 `domains/trajectory/observation.ts` 核对真实来源后补齐。
+- `app/desktop/renderer/src/dashboard.tsx`、`styles.css` 负责状态文案与布局。复用应用的快照、增量和 IPC 边界，复制操作不会调用批准或发布。
+- 在现有投影、Renderer 和 Windows 实包测试中加入对应场景。覆盖真实 Design 等待到 Build 的事件先后关系，确保重复投递、重开窗口、部分观测、临时远端失败及历史返工不会改变正确的首屏结论。
+
+## Risks / Trade-offs
+
+等待是 Run 当前状态，连接新鲜度是观测状态。断线可能发生在审批或返工期间，需要同时说明最后确认的阶段和数据范围。收据与测试证明以 Runtime 的已接受事实为准。
+
+## Verification
+
+先用真实 Windows Electron 渲染和多仓 Run 核对审批竖切，保存同一 Run 待审和进入 Build 两张图及轨迹序列。再覆盖 Build、Verify 返工、Archive 终态、重放恢复与键盘和高 DPI 布局。通过回归核对远端降噪时本地仍即时更新。若实际已测状态缺少来源，在证明来源之前界面保持明确的未知状态。
