@@ -1,3 +1,9 @@
+---
+comet_change: improve-desktop-workflow-guidance
+role: technical-design
+canonical_spec: openspec
+---
+
 ## Context
 
 以主线 v0.1.4 的桌面界面与之前确认的体验规划为基线。当前 Renderer 的首屏平铺五阶段、Build 子动作和多组元数据，等待审批时显示审批内部类别。桌面即时接收本地 OTLP。SigNoz 的降噪发生在远端投递边界。
