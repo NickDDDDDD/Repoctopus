@@ -261,7 +261,8 @@ function event(options: {
         }
       : undefined;
   const reconciliation =
-    lifecycle && (options.type === 'recovery.reconciled' || options.type === 'run.resumed')
+    lifecycle &&
+    ['change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'].includes(options.type)
       ? { workspaceReconciliationRequired: options.state.reconciliationRequired }
       : undefined;
   return {

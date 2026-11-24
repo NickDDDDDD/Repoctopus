@@ -974,10 +974,13 @@ function displayState(
 /** Run state changes only with an accepted lifecycle fact. Work results belong to Work. */
 function projectLifecycle(change: ProjectedChange, envelope: ObservationEnvelope): void {
   const phase = envelope.correlation.phase;
-  if (envelope.eventType === 'recovery.reconciled' || envelope.eventType === 'run.resumed') {
+  if (
+    ['change.lifecycle.transitioned', 'recovery.reconciled', 'run.resumed'].includes(
+      envelope.eventType,
+    )
+  ) {
     const required = booleanAttribute(envelope.attributes, 'workspaceReconciliationRequired');
     if (required !== null) change.workspaceReconciliationRequired = required;
-    return;
   }
   if (!phase || !['change.lifecycle.transitioned', 'run.started'].includes(envelope.eventType))
     return;

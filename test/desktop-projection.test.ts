@@ -268,6 +268,16 @@ describe('desktop change projection', () => {
         correlation: identity,
         attributes: { workspaceReconciliationRequired: false },
       }),
+      observation(5, {
+        eventType: 'recovery.reconciled',
+        correlation: identity,
+        attributes: { workspaceReconciliationRequired: true },
+      }),
+      observation(6, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { ...identity, phase: 'build' },
+        attributes: { toStatus: 'running', workspaceReconciliationRequired: false },
+      }),
     ].reduce<ReturnType<typeof createEmptyChangeProjection>[]>(
       (steps, envelope) => {
         steps.push(reduceChangeProjection(steps.at(-1)!, envelope).snapshot);
@@ -280,6 +290,8 @@ describe('desktop change projection', () => {
       'waiting',
       'blocked',
       'waiting',
+      'blocked',
+      'live',
     ]);
     expect(snapshot[4]?.changes[0]?.lifecycle?.decisionId).toBe('design-approval:one');
   });
