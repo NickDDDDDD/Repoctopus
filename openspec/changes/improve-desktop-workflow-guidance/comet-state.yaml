@@ -2,7 +2,7 @@
 change_id: 7c840406-0128-49ec-96f9-07a9b452f191
 workflow: full
 language: zh-CN
-phase: build
+phase: verify
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 0361ec5c2685ee2106f371ad22a80bb976e159487c5eec175b5219e5558ece21
+  hash: fca9c321f80949474479190bbcf582864b93ddc7560dffa933f68d90146e89bb
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 2
+      checkEpoch: 3
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,7 +69,7 @@ run_checkpoint:
       handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
       isolation: worktree
       language: zh-CN
-      phase: build
+      phase: verify
       plan: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
       reviewMode: thorough
       subagentDispatch: null
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 13
+    sequence: 16
     actions:
       - attempt: 1
         claim:
@@ -588,6 +588,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-desktop-guidance-20261124
+          token: portable-22ca830bf631c2704b99e7b1aa5fbe1ebcb47f54cb151012afde1b133ef63a5a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: improve-desktop-workflow-guidance:13
         input:
           input:
@@ -696,15 +705,330 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
         inputHash: 69152bea66e9bdba75ae75a5651abe6ccefa31ad9f67692ce14738a85e7b6a0c
+        outcome:
+          actionId: improve-desktop-workflow-guidance:13
+          attempt: 1
+          claimToken: portable-22ca830bf631c2704b99e7b1aa5fbe1ebcb47f54cb151012afde1b133ef63a5a
+          inputHash: 69152bea66e9bdba75ae75a5651abe6ccefa31ad9f67692ce14738a85e7b6a0c
+          outcomeId: e4e45f2b-cd40-4a75-896b-87a37ba2f527
+          output:
+            event: build-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 8db6b9ca455325d3c75df8994920c5055d9332fba600471784f2dc210b48b0c1
+            outcomeId: e4e45f2b-cd40-4a75-896b-87a37ba2f527
         reconciliations: []
         ref: comet-build
         requiredCapabilities: []
         retry: manual
         runId: improve-desktop-workflow-guidance
-        status: pending
+        status: succeeded
         stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-dbe26aab3e9ae8cbdf934503636ca58eb376e5127b1d092c0af2a4b10d0dd227
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: improve-desktop-workflow-guidance:14
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs:
+            full.build.configure:
+              boundBranch: comet/improve-desktop-workflow-guidance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/improve-desktop-workflow-guidance
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+                ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+              plan: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+              planEvidence:
+                contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+                ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+              taskRevision: 7fdce092b31cdf8d5e7d120444d184479ba6f643df4c705661441bfd7dcd5140
+            full.build.plan.evidence:
+              contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+              ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+                    handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+                    proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                      wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                      的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron
+                      审批竖切，再用 Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用
+                      Open。
+                    requirementsEvidence:
+                      contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                      ref: openspec/changes/improve-desktop-workflow-guidance
+                    sourceEvidence:
+                      contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                      ref: openspec/changes/improve-desktop-workflow-guidance
+            full.design.document:
+              designDoc: openspec/changes/improve-desktop-workflow-guidance/design.md
+            full.design.evidence:
+              contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+              ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+              handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+              proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron 审批竖切，再用
+                Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用 Open。
+              requirementsEvidence:
+                contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                ref: openspec/changes/improve-desktop-workflow-guidance
+              sourceEvidence:
+                contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                ref: openspec/changes/improve-desktop-workflow-guidance
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+                    ref: openspec/changes/improve-desktop-workflow-guidance
+            full.open.evidence:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+              ref: openspec/changes/improve-desktop-workflow-guidance
+            full.open.revalidate:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+        inputHash: a5d520c0dd735844e029bed0143d0d37101b73e509a8767ee8cbf7b26abddaae
+        outcome:
+          actionId: improve-desktop-workflow-guidance:14
+          attempt: 1
+          claimToken: portable-dbe26aab3e9ae8cbdf934503636ca58eb376e5127b1d092c0af2a4b10d0dd227
+          inputHash: a5d520c0dd735844e029bed0143d0d37101b73e509a8767ee8cbf7b26abddaae
+          outcomeId: ff94bee6-815f-4191-a06d-a5f92e71fc09
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+            cwd: .
+            environment: daf827ea0dbb37395b38ce636198a61ec258ff610ff833da3ea63c18d1701428
+            exitCode: 0
+            inputAfter: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+            inputBefore: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+            manifestHash: 6d16a5ab38dffc8178cc669f8f2a81e1e64ea5f6a662fc2b05983ea57b46147b
+            manifestRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/82f35851-a026-4a1b-9073-5be043c7f9f8.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: da488fa9791b8f70db3399df0efcd354dbc506afc064176e973241919f0f48ea
+            outcomeId: ff94bee6-815f-4191-a06d-a5f92e71fc09
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        id: improve-desktop-workflow-guidance:16
+        input:
+          input:
+            change: improve-desktop-workflow-guidance
+            changeDir: openspec/changes/improve-desktop-workflow-guidance
+            workspaceBaseline:
+              ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+          outputs:
+            full.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+              cwd: .
+              environment: daf827ea0dbb37395b38ce636198a61ec258ff610ff833da3ea63c18d1701428
+              exitCode: 0
+              inputAfter: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+              inputBefore: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+              manifestHash: 6d16a5ab38dffc8178cc669f8f2a81e1e64ea5f6a662fc2b05983ea57b46147b
+              manifestRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/82f35851-a026-4a1b-9073-5be043c7f9f8.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            full.build.check.evidence:
+              contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+              ref: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+            full.build.configure:
+              boundBranch: comet/improve-desktop-workflow-guidance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/improve-desktop-workflow-guidance
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+                ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+              plan: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+              planEvidence:
+                contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+                ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+              taskRevision: 7fdce092b31cdf8d5e7d120444d184479ba6f643df4c705661441bfd7dcd5140
+            full.build.plan.evidence:
+              contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+              ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+                    handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+                    proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                      wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                      的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron
+                      审批竖切，再用 Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用
+                      Open。
+                    requirementsEvidence:
+                      contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                      ref: openspec/changes/improve-desktop-workflow-guidance
+                    sourceEvidence:
+                      contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                      ref: openspec/changes/improve-desktop-workflow-guidance
+            full.design.document:
+              designDoc: openspec/changes/improve-desktop-workflow-guidance/design.md
+            full.design.evidence:
+              contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+              ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+              handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+              proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron 审批竖切，再用
+                Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用 Open。
+              requirementsEvidence:
+                contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                ref: openspec/changes/improve-desktop-workflow-guidance
+              sourceEvidence:
+                contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                ref: openspec/changes/improve-desktop-workflow-guidance
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+                    ref: openspec/changes/improve-desktop-workflow-guidance
+            full.open.evidence:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+              ref: openspec/changes/improve-desktop-workflow-guidance
+            full.open.revalidate:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+        inputHash: c147813981c5bc9225999a584eee285b51f9f84d31ad1ac29dd2f60bc67579d6
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: improve-desktop-workflow-guidance
+        status: pending
+        stepId: full.verify.run
         type: invoke_skill
     actionContexts:
       improve-desktop-workflow-guidance:1:
@@ -946,6 +1270,294 @@ run_checkpoint:
             value:
               contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
         sequence: 13
+      improve-desktop-workflow-guidance:14:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/improve-desktop-workflow-guidance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/improve-desktop-workflow-guidance
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+                ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+              plan: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+              planEvidence:
+                contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+                ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+              taskRevision: 7fdce092b31cdf8d5e7d120444d184479ba6f643df4c705661441bfd7dcd5140
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+              ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+                    handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+                    proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                      wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                      的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron
+                      审批竖切，再用 Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用
+                      Open。
+                    requirementsEvidence:
+                      contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                      ref: openspec/changes/improve-desktop-workflow-guidance
+                    sourceEvidence:
+                      contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                      ref: openspec/changes/improve-desktop-workflow-guidance
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/improve-desktop-workflow-guidance/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+              ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+              handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+              proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron 审批竖切，再用
+                Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用 Open。
+              requirementsEvidence:
+                contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                ref: openspec/changes/improve-desktop-workflow-guidance
+              sourceEvidence:
+                contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                ref: openspec/changes/improve-desktop-workflow-guidance
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+                    ref: openspec/changes/improve-desktop-workflow-guidance
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+              ref: openspec/changes/improve-desktop-workflow-guidance
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+        sequence: 14
+      improve-desktop-workflow-guidance:16:
+        results:
+          full.build.check:
+            sequence: 14
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+              cwd: .
+              environment: daf827ea0dbb37395b38ce636198a61ec258ff610ff833da3ea63c18d1701428
+              exitCode: 0
+              inputAfter: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+              inputBefore: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+              manifestHash: 6d16a5ab38dffc8178cc669f8f2a81e1e64ea5f6a662fc2b05983ea57b46147b
+              manifestRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/82f35851-a026-4a1b-9073-5be043c7f9f8.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          full.build.check.evidence:
+            sequence: 15
+            value:
+              contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+              ref: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/improve-desktop-workflow-guidance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/improve-desktop-workflow-guidance
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+                ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+              plan: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+              planEvidence:
+                contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+                ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+              taskRevision: 7fdce092b31cdf8d5e7d120444d184479ba6f643df4c705661441bfd7dcd5140
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+              ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+                    handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+                    proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                      wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                      的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron
+                      审批竖切，再用 Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用
+                      Open。
+                    requirementsEvidence:
+                      contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                      ref: openspec/changes/improve-desktop-workflow-guidance
+                    sourceEvidence:
+                      contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                      ref: openspec/changes/improve-desktop-workflow-guidance
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/improve-desktop-workflow-guidance/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+              ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+              handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+              proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron 审批竖切，再用
+                Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用 Open。
+              requirementsEvidence:
+                contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                ref: openspec/changes/improve-desktop-workflow-guidance
+              sourceEvidence:
+                contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                ref: openspec/changes/improve-desktop-workflow-guidance
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+                    ref: openspec/changes/improve-desktop-workflow-guidance
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+              ref: openspec/changes/improve-desktop-workflow-guidance
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+        sequence: 16
       improve-desktop-workflow-guidance:4:
         results:
           full.open:
@@ -1613,9 +2225,197 @@ run_checkpoint:
           ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
           contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
           submissionId: 08ba3a09-0c5d-4ad9-92e4-13e4f13ce64e
+      - id: improve-desktop-workflow-guidance:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results:
+          full.build.check:
+            sequence: 14
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+              cwd: .
+              environment: daf827ea0dbb37395b38ce636198a61ec258ff610ff833da3ea63c18d1701428
+              exitCode: 0
+              inputAfter: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+              inputBefore: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+              manifestHash: 6d16a5ab38dffc8178cc669f8f2a81e1e64ea5f6a662fc2b05983ea57b46147b
+              manifestRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/82f35851-a026-4a1b-9073-5be043c7f9f8.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: comet/improve-desktop-workflow-guidance
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.build.configure:
+                    boundBranch: comet/improve-desktop-workflow-guidance
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+                ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+              plan: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+              planEvidence:
+                contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+                ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+              taskRevision: 7fdce092b31cdf8d5e7d120444d184479ba6f643df4c705661441bfd7dcd5140
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: ccf13a9390b8d1b1e659ac600c8b3a5608eb94fdf0582a8238d516f283269d4a
+              ref: docs/superpowers/plans/2026-11-24-improve-desktop-workflow-guidance.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+                    handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+                    proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                      wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                      的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron
+                      审批竖切，再用 Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用
+                      Open。
+                    requirementsEvidence:
+                      contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                      ref: openspec/changes/improve-desktop-workflow-guidance
+                    sourceEvidence:
+                      contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                      ref: openspec/changes/improve-desktop-workflow-guidance
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/improve-desktop-workflow-guidance/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 0613ec637b8021b8867c1b9fb7e5770600270b6ad4bd9e5db0fe3c7158652adc
+              ref: openspec/changes/improve-desktop-workflow-guidance/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/improve-desktop-workflow-guidance/.comet/handoff/design-context.json
+              handoffHash: a30a8db2f006aebf7de929fc3f61e85c19b9e7a630a7f99eb0b37f9d8c3302d3
+              proposal: 复用本地 OTLP，按已接受的生命周期事实投影当前状态；在真实 Design 审批中，design.approved 先于
+                wait.ended，首屏即时进入 Build 并撤下旧审批。精简五阶段首屏，给出操作文案、复制给 Agent
+                的只读定位与可展开的细节。工作包和终态展示依赖真实事实，远端降噪沿用现有投递。先通过本地 Electron 审批竖切，再用
+                Windows 安装包和真实多仓 Run 核对恢复、返工、归档、键盘、高 DPI。规格范围沿用 Open。
+              requirementsEvidence:
+                contentHash: d806627529f8797e16ca1846ae20a8afe09bbb1ecad50802e08cd55213089b24
+                ref: openspec/changes/improve-desktop-workflow-guidance
+              sourceEvidence:
+                contentHash: 6f011dcb70ee1c90ae39c358b6ff746dab28a5b36204f7dbfcd63b36e203fcf3
+                ref: openspec/changes/improve-desktop-workflow-guidance
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: improve-desktop-workflow-guidance
+                  changeDir: openspec/changes/improve-desktop-workflow-guidance
+                  workspaceBaseline:
+                    ref: 17cc9393-d43c-4c6c-8d47-3bdf5ba6699a
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+                    ref: openspec/changes/improve-desktop-workflow-guidance
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+              ref: openspec/changes/improve-desktop-workflow-guidance
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+          contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+          submissionId: 5d759ad9-d46f-4af3-bf80-7755ccdf110f
     ready: []
     joins: {}
     outputs:
+      full.build.check:
+        sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+          cwd: .
+          environment: daf827ea0dbb37395b38ce636198a61ec258ff610ff833da3ea63c18d1701428
+          exitCode: 0
+          inputAfter: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+          inputBefore: c1f0241fe12a5f372db30204b78a3c83605ecee65d95d57746fdace0379d7c9c
+          manifestHash: 6d16a5ab38dffc8178cc669f8f2a81e1e64ea5f6a662fc2b05983ea57b46147b
+          manifestRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/82f35851-a026-4a1b-9073-5be043c7f9f8.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      full.build.check.evidence:
+        sequence: 15
+        value:
+          contentHash: e466f03803468917973b78f32754cef1d8f5587042cb0199e9623c4b251023bf
+          ref: .comet/runtime/classic-sdk-checks/803106cdf68848c9012a18502c4f92b2e10eb3407a2478729c6112cc175f2ca3/a684c329-f5cf-492a-b84b-19a1eeeecad4.log
       full.build.configure:
         sequence: 9
         value:
@@ -1645,6 +2445,10 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
+      full.build.execute:
+        sequence: 13
+        value:
+          event: build-complete
       full.build.plan:
         sequence: 11
         value:
@@ -1740,6 +2544,6 @@ run_checkpoint:
           contentHash: 35235d333495b395c1e66bd46bb690b54ac3ed3c71ff3122ee9eec9a216ad0f4
     children: []
     lineage: []
-  sourceRevision: 19
-  sourceHash: fe7a2b1624ddb4f24f1bfbbc27b2f19fc500686ca1eeb5214f9934c2313ddd21
-check_epoch: 2
+  sourceRevision: 24
+  sourceHash: 9bd18d753049cab0cc39cad57edb985fc5b4ca7512e798fd236d58f3668ad4b3
+check_epoch: 3
