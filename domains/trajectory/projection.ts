@@ -537,8 +537,17 @@ function projectWork(change: ProjectedChange, envelope: ObservationEnvelope): vo
 
 function projectBuildAction(change: ProjectedChange, envelope: ObservationEnvelope): void {
   if (envelope.eventType.startsWith('skill.')) return;
-  const fallback =
-    stringAttribute(envelope.attributes, 'observationKind')?.includes('fallback') === true;
+  const observationKind = stringAttribute(envelope.attributes, 'observationKind');
+  const acceptedAction =
+    envelope.eventType === 'change.lifecycle.transitioned' &&
+    [
+      'build-binding-accepted',
+      'build-plan-accepted',
+      'build-plan-evidence-accepted',
+      'build-check-accepted',
+    ].includes(observationKind ?? '');
+  if (envelope.correlation.phase !== 'build' && !acceptedAction) return;
+  const fallback = observationKind?.includes('fallback') === true;
   const actionName =
     envelope.correlation.buildAction ??
     (envelope.correlation.workId !== undefined ? change.buildAction : null);
@@ -547,9 +556,11 @@ function projectBuildAction(change: ProjectedChange, envelope: ObservationEnvelo
   const attempt = envelope.correlation.attempt ?? action.attempts.at(-1)?.attempt ?? 1;
   const state = fallback
     ? 'rework'
-    : envelope.eventType === 'wait.started'
-      ? 'waiting'
-      : workState(envelope);
+    : acceptedAction
+      ? 'completed'
+      : envelope.eventType === 'wait.started'
+        ? 'waiting'
+        : workState(envelope);
   updateAttempt(action.attempts, attempt, state, envelope.observedAt);
   action.state = state;
   action.latestObservedAt = envelope.observedAt;

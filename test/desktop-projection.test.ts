@@ -33,6 +33,27 @@ function observation(
 }
 
 describe('desktop change projection', () => {
+  it('does not show a Design validator as the Build Check', () => {
+    const identity = { workspaceId: 'team-platform', changeId: 'dashboard' };
+    const snapshot = [
+      observation(1, {
+        eventType: 'validator.completed',
+        correlation: { ...identity, phase: 'design', buildAction: 'check' },
+      }),
+      observation(2, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: { ...identity, phase: 'build' },
+        attributes: { fromPhase: 'design', toStatus: 'running' },
+      }),
+    ].reduce(
+      (state, envelope) => reduceChangeProjection(state, envelope).snapshot,
+      createEmptyChangeProjection(),
+    );
+    expect(snapshot.changes[0]?.buildActions.find(({ action }) => action === 'check')?.state).toBe(
+      'not-reported',
+    );
+  });
+
   it('requires lifecycle evidence before presenting a restored Run as terminal', () => {
     const snapshot = reduceChangeProjection(createEmptyChangeProjection(), observation(1)).snapshot;
     snapshot.changes[0]!.displayState = 'complete';
