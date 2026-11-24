@@ -1,22 +1,22 @@
 # 桌面工作流引导验证
 
-Tested implementation commit: `4ec76f09a1137bee2a131978f423c263029f2d5a`
+Tested implementation commit: `1e40ba8d7dc5379c0edd75adceec8d57700f056d`
 
-Package content SHA-256: `535b2d5f9285d358a4cb53001e8d47aae7594b6d93bdbbe344af47cb263f18bb`
+Package content SHA-256: `1648485fd9fc81d717e5e6960a460f7ccefc132f935edb50b13caca2bf682e99`
 
 Package files: `490`
 
-Package content bytes: `6677230`
+Package content bytes: `6677251`
 
 ## Runtime 与桌面状态
 
 五仓 Run `change-workspace-verify-autonomous-direct-66c551c981ffb470` 的实际轨迹在序列 68 接受 Design 等待，69 记录等待开始，71 接受进入 Build，73 记录等待结束。Electron 通过本地 OTLP 重放，序列 71 已撤下审批入口，序列 73 没有恢复旧入口。序列 239 接受 Archive 终态后才显示归档完成。两张 Design 截图分别使用原尺寸和实际 Electron 200% 页面缩放。
 
-投影、Renderer、观测构造器、journal 恢复和远端遥测契约的 42 项聚焦回归通过。独立审查复现了乱序清除缺口、升级后旧快照误报终态、退役旧 checkpoint 误报阻塞和同阶段清理完成后仍受阻。修复后的回归覆盖这些边界，包括通过实际观测构造器保留 Runtime 接受的同阶段恢复状态。乱序缓冲按 Run 生效，journal 压缩与重启后仍能补齐迟到的事实。真实 Desktop 截图的检查还发现 Design 校验曾出现在 Build Check，已按阶段限制并补回归。
+投影、Renderer、观测构造器、journal 恢复、远端遥测契约及字段文档的 44 项聚焦回归通过。独立审查复现了乱序清除缺口、升级后旧快照误报终态、退役旧 checkpoint 误报阻塞和同阶段清理完成后仍受阻。修复后的回归覆盖这些边界，包括通过实际观测构造器保留 Runtime 接受的同阶段恢复状态。乱序缓冲按 Run 生效，journal 压缩与重启后仍能补齐迟到的事实。真实 Desktop 截图还发现 Design 校验曾出现在 Build Check，已按阶段约束动作来源并覆盖旧的部分投影。
 
 ## 包与验证方式
 
-最终 CLI 包 SHA-256 为 `8d834b3ef3892ee8d6f3d5e141a2278879e20d9144ef115d4eedd859cf441b5b`。返工实验使用候选 `646ccdbc019b4c28e33064a1bc96342731058694d32b9d3de3730e26fe2505cd`。随后刷新了 Comet 派生清单中的本地 Runtime 文件摘要，限制 Desktop Build 子动作的投影来源，补齐遥测字段类型与生成的文档。Comet 固定版本及上游来源身份沿用原值。
+最终 CLI 包 SHA-256 为 `09235b88d65e5ae349f1915f8f934c3012dcd5f791a7680d8e3ae7bd65e4623b`，Windows x64 安装器 SHA-256 为 `cbc48fe5d84272d939b53f2ed7362128f865b0a00f8060d83c9bbe9fd6e22b58`。返工实验使用候选 `646ccdbc019b4c28e33064a1bc96342731058694d32b9d3de3730e26fe2505cd`。随后刷新了 Comet 派生清单中的本地 Runtime 文件摘要，限制 Desktop Build 子动作的投影来源，补齐遥测字段类型与生成的文档。Comet 固定版本及上游来源身份沿用原值。
 
 本地隔离实验使用三个 Git 仓、真实 CLI、托管 API 夹具及确定性 Host，桌面通过实际接收器消费轨迹重放。远端选择策略由现有遥测契约回归覆盖。
 

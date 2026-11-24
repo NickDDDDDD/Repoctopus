@@ -4,8 +4,8 @@
   "taskId": "7.2",
   "runtimeRunId": "change-repoctopus-add-windows-desktop-dashboard-f5ddf312046dbfbb",
   "status": "passed",
-  "startedAt": "2026-11-24T06:00:28.936Z",
-  "completedAt": "2026-11-24T06:00:43.623Z",
+  "startedAt": "2026-11-24T06:06:15.374Z",
+  "completedAt": "2026-11-24T06:06:32.590Z",
   "environment": {
     "platform": "win32",
     "architecture": "x64",
@@ -15,31 +15,31 @@
   },
   "candidate": {
     "artifact": "dist/desktop-release/Repoctopus-Desktop-0.1.4-x64-Setup.exe",
-    "bytes": 116555185,
-    "digest": "sha256:4492452c7f45b73e306a7e54e5da2db0b429d5d07d876b4e1bb16b08e77f2ef9"
+    "bytes": 116555145,
+    "digest": "sha256:cbc48fe5d84272d939b53f2ed7362128f865b0a00f8060d83c9bbe9fd6e22b58"
   },
   "checks": [
     {
       "id": "install-candidate",
       "status": "passed",
-      "durationMs": 5947,
+      "durationMs": 8557,
       "protocolHandler": "repoctopus",
       "executableSource": "app-paths"
     },
     {
       "id": "run-activation",
       "status": "passed",
-      "durationMs": 328
+      "durationMs": 329
     },
     {
       "id": "otlp-receiver",
       "status": "passed",
-      "durationMs": 28
+      "durationMs": 30
     },
     {
       "id": "multirepo-guidance-replay",
       "status": "passed",
-      "durationMs": 942,
+      "durationMs": 837,
       "runId": "change-workspace-verify-package-workflow-1084f1a8861b28e9",
       "receipts": [
         {
@@ -128,27 +128,27 @@
     {
       "id": "single-instance",
       "status": "passed",
-      "durationMs": 177
+      "durationMs": 151
     },
     {
       "id": "tray-hide-and-restore",
       "status": "passed",
-      "durationMs": 1239
+      "durationMs": 1099
     },
     {
       "id": "direct-exit",
       "status": "passed",
-      "durationMs": 1843
+      "durationMs": 1894
     },
     {
       "id": "uninstall-candidate",
       "status": "passed",
-      "durationMs": 2599
+      "durationMs": 2703
     },
     {
       "id": "restore-registry-state",
       "status": "passed",
-      "durationMs": 82,
+      "durationMs": 102,
       "previousProtocolHandler": "absent",
       "previousAppPath": "absent"
     }
