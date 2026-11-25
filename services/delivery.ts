@@ -44,6 +44,12 @@ export interface ArchiveDeliveryPreparation extends DeliveryPreparation {
   intent: DeliveryIntentV3;
   execution: ArchiveExecutionContext;
   expectedRepositoryHeads: Readonly<Record<string, string>>;
+  authorizeBusinessEffect?: (facts: {
+    repositoryId: string;
+    sourceBranch: string;
+    head: string;
+    targetHead: string;
+  }) => Promise<void>;
 }
 
 export abstract class Delivery extends Service {

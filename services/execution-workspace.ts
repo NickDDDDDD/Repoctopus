@@ -148,6 +148,11 @@ export abstract class ExecutionWorkspaceService extends Service {
 
   abstract readTrackedInputs(checkoutPath: string, head: string): Promise<readonly string[]>;
   abstract isCheckoutClean(checkoutPath: string): Promise<boolean>;
+  abstract commitPaths(
+    checkoutPath: string,
+    previousHead: string,
+    head: string,
+  ): Promise<readonly string[]>;
   abstract observeCleanupCommit(
     checkoutPath: string,
     previousHead: string,

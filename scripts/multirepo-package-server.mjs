@@ -10,7 +10,7 @@ import { URL } from 'node:url';
 import { stopProcessTree } from './package-e2e-process.mjs';
 
 const root = process.argv[2];
-const repositories = new Set(['workspace', 'web-front', 'backend']);
+const repositories = new Set(['workspace', 'web-front', 'backend', 'framework', 'web-plugins']);
 const ledger = [];
 const children = new Set();
 const ingress = path.join(root, 'evidence', 'requests.jsonl');

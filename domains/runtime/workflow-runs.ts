@@ -1224,12 +1224,19 @@ export class WorkflowRunCoordinator {
     runId: string,
     observation: BuildWorkspaceRecovery,
     cleanup?: BuildRuntimeOutputCleanup,
+    reobserve?: (state: RunState) => Promise<void>,
   ): Promise<
     RuntimeResult<
       ResumeView & { reconciliation: ProjectReconciliation; reissuedWork?: WorkDescriptor }
     >
   > {
-    return this.reconcileBoundWorkspace(runId, observation, 'buildWorkspaceRecovery', cleanup);
+    return this.reconcileBoundWorkspace(
+      runId,
+      observation,
+      'buildWorkspaceRecovery',
+      cleanup,
+      reobserve,
+    );
   }
 
   async reconcileEvidenceWorkspace(
@@ -1244,6 +1251,7 @@ export class WorkflowRunCoordinator {
     observation: BuildWorkspaceRecovery | EvidenceWorkspaceRecovery,
     recoveryKind: 'buildWorkspaceRecovery' | 'evidenceWorkspaceRecovery',
     cleanup?: BuildRuntimeOutputCleanup,
+    reobserve?: (state: RunState) => Promise<void>,
   ): Promise<
     RuntimeResult<
       ResumeView & { reconciliation: ProjectReconciliation; reissuedWork?: WorkDescriptor }
@@ -1269,6 +1277,7 @@ export class WorkflowRunCoordinator {
           'Build workspace recovery observation is stale; retry from the current Run',
         );
       }
+      await reobserve?.(state);
       const previous = trajectory.findLast((entry) =>
         ['recovery.reconciled', 'run.resumed'].includes(entry.type),
       );

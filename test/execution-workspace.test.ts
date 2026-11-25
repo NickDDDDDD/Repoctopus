@@ -1,4 +1,9 @@
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { writeFile } from 'node:fs/promises';
+
+import { executionCommitPaths } from '../platform/git/execution-workspace.js';
+import { temporaryDirectory, removeTemporaryDirectory } from './helpers/fixtures.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
@@ -55,6 +60,48 @@ function facts(overrides: Partial<ExecutionCheckoutFacts> = {}): ExecutionChecko
     ...overrides,
   };
 }
+
+it('observes source-only commit paths even if a later commit reverts the extra content', async () => {
+  const root = await temporaryDirectory('repoctopus-git-scope-');
+  const git = (...argv: string[]) =>
+    execFileSync('git', argv, { cwd: root, encoding: 'utf8', stdio: 'pipe' }).trim();
+  const commit = (message: string) =>
+    git(
+      '-c',
+      'user.name=Fixture',
+      '-c',
+      'user.email=scope@example.invalid',
+      'commit',
+      '--no-gpg-sign',
+      '-m',
+      message,
+    );
+  try {
+    git('init', '-b', 'main');
+    await writeFile(path.join(root, 'README.md'), 'initial\n');
+    git('add', 'README.md');
+    commit('base');
+    const base = git('rev-parse', 'HEAD');
+    await writeFile(path.join(root, 'unrelated.txt'), 'external\n');
+    git('add', 'unrelated.txt');
+    commit('external');
+    const external = git('rev-parse', 'HEAD');
+    git('rm', 'unrelated.txt');
+    await writeFile(path.join(root, 'README.md'), 'implemented\n');
+    git('add', 'README.md');
+    commit('implementation');
+    const implementation = git('rev-parse', 'HEAD');
+
+    expect(git('diff', '--name-only', base, implementation)).toBe('README.md');
+    await expect(executionCommitPaths(root, base, implementation)).resolves.toEqual([
+      'README.md',
+      'unrelated.txt',
+    ]);
+    await expect(executionCommitPaths(root, external, external)).resolves.toEqual([]);
+  } finally {
+    await removeTemporaryDirectory(root);
+  }
+});
 
 describe('Execution Workspace binding', () => {
   it.each([
@@ -464,14 +511,12 @@ describe('Execution Workspace binding', () => {
       },
       coordinator: { value: { acceptChangeObservation } },
       loadChangePlanningBase: {
-        value: vi
-          .fn()
-          .mockResolvedValue({
-            workspaceRepositoryId: 'workspace',
-            workspaceRepositoryPath: workspaceCheckout,
-            remote: 'origin',
-            targetBranch: 'main',
-          }),
+        value: vi.fn().mockResolvedValue({
+          workspaceRepositoryId: 'workspace',
+          workspaceRepositoryPath: workspaceCheckout,
+          remote: 'origin',
+          targetBranch: 'main',
+        }),
       },
       ctx: {
         value: {

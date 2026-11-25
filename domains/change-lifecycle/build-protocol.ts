@@ -272,6 +272,7 @@ export interface BuildWorkspaceCheckpointRepository {
   repositoryId: string;
   branchRef: string;
   headRevision: string;
+  externalInputHead?: string;
 }
 
 /**
@@ -324,14 +325,25 @@ export function advanceBuildWorkspaceCheckpoint(input: {
   current: BuildWorkspaceCheckpoint;
   observed: readonly BuildWorkspaceCheckpointRepository[];
   writableRepositoryIds: readonly string[];
+  externalInputHeads?: ReadonlyMap<string, string>;
   relations: Readonly<Record<string, BuildWorkspaceHeadRelation>>;
 }): BuildWorkspaceCheckpoint {
   const observed = [...input.observed]
-    .map((repository) => ({
-      repositoryId: text(repository.repositoryId, 'Repository identity'),
-      branchRef: text(repository.branchRef, 'Repository branch'),
-      headRevision: text(repository.headRevision, 'Repository head'),
-    }))
+    .map((repository) => {
+      const original = input.current.repositories.find(
+        ({ repositoryId }) => repositoryId === repository.repositoryId,
+      );
+      const externalInputHead =
+        input.externalInputHeads?.get(repository.repositoryId) ?? original?.externalInputHead;
+      return {
+        repositoryId: text(repository.repositoryId, 'Repository identity'),
+        branchRef: text(repository.branchRef, 'Repository branch'),
+        headRevision: text(repository.headRevision, 'Repository head'),
+        ...(externalInputHead
+          ? { externalInputHead: text(externalInputHead, 'External input head') }
+          : {}),
+      };
+    })
     .sort((left, right) => left.repositoryId.localeCompare(right.repositoryId));
   if (
     observed.length !== input.current.repositories.length ||
@@ -359,7 +371,16 @@ export function advanceBuildWorkspaceCheckpoint(input: {
     if (next.headRevision !== previous.headRevision && relation === 'unchanged') {
       throw new Error('Build workspace changed head is not classified');
     }
-    if (!writable.has(previous.repositoryId) && relation !== 'unchanged') {
+    const external = input.externalInputHeads?.get(previous.repositoryId);
+    if (
+      external !== undefined &&
+      (external !== next.headRevision ||
+        relation !== 'fast-forward' ||
+        writable.has(previous.repositoryId))
+    ) {
+      throw new Error('External Build input must bind a separate fast-forward revision');
+    }
+    if (!writable.has(previous.repositoryId) && !external && relation !== 'unchanged') {
       throw new BuildWorkspaceProgressError(
         `Build workspace changed outside the Package write scope: ${previous.repositoryId}`,
         'unauthorized-head-change',
@@ -1097,6 +1118,11 @@ export type BuildProtocolObservation =
   | { kind: 'plan-rejected' }
   | { kind: 'runtime-output-cleanup-observed'; workspaceCheckpoint: BuildWorkspaceCheckpoint }
   | {
+      kind: 'build-read-inputs-reobserved';
+      workspaceCheckpoint: BuildWorkspaceCheckpoint;
+      invalidation: BuildInvalidation;
+    }
+  | {
       kind: 'package-completed';
       completion: PackageCompletionEvidence;
       workspaceCheckpoint: BuildWorkspaceCheckpoint;
@@ -1423,6 +1449,36 @@ export function advanceBuildProtocol(
       actionAttempt: 1,
       planEvidence: null,
       checkEvidence: null,
+      revision: state.revision + 1,
+    });
+  }
+  if (observation.kind === 'build-read-inputs-reobserved') {
+    if (
+      !state.plan ||
+      !state.planEvidence ||
+      !state.workspaceCheckpoint ||
+      state.verifyRepair ||
+      observation.invalidation.source !== 'workspace-input' ||
+      observation.invalidation.planDigest !== state.plan.digest ||
+      observation.workspaceCheckpoint.revision !== state.workspaceCheckpoint.revision + 1 ||
+      (state.currentAction !== 'execute' &&
+        state.currentAction !== 'check' &&
+        state.status !== 'ready-for-verify')
+    ) {
+      throw new Error('Build input recovery does not match its accepted Plan and checkpoint');
+    }
+    const retained = new Set(observation.invalidation.retainedCompletionIds);
+    return deepFreeze({
+      ...state,
+      status: 'active',
+      currentAction: 'execute',
+      actionAttempt: 1,
+      workspaceCheckpoint: observation.workspaceCheckpoint,
+      packageCompletions: state.packageCompletions.filter(({ completionId }) =>
+        retained.has(completionId),
+      ),
+      checkEvidence: null,
+      invalidations: [...state.invalidations, observation.invalidation],
       revision: state.revision + 1,
     });
   }
@@ -1840,7 +1896,7 @@ export interface BuildFinding {
 export interface BuildInvalidation {
   schemaVersion: 1;
   invalidationId: string;
-  source: 'build-check' | 'verify';
+  source: 'build-check' | 'verify' | 'workspace-input';
   planDigest: Digest;
   classification: BuildFindingClassification;
   affectedPackageIds: readonly string[];

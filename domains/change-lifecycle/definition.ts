@@ -546,6 +546,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'build.package-valid',
     },
     {
+      id: 'build.read-inputs-reobserved',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'running' },
+      trigger: 'build-read-inputs-reobserved',
+      requiredValidatorProfile: 'build.package-valid',
+    },
+    {
       id: 'build.package-completed',
       kind: 'self',
       from: { phase: 'build', statuses: ['running'] },

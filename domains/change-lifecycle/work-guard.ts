@@ -88,7 +88,7 @@ function normalizedRelativePath(value: string): string {
   return normalized;
 }
 
-function pathMatches(pattern: string, candidate: string): boolean {
+export function runtimeWritePathMatches(pattern: string, candidate: string): boolean {
   const normalizedPattern = normalizedRelativePath(pattern);
   if (normalizedPattern === '**') return true;
   if (normalizedPattern.endsWith('/**')) {
@@ -107,7 +107,7 @@ function assertWriteScope(
     (scope) =>
       scope.repositoryId === operation.repositoryId &&
       scope.operations.includes(operation.operation) &&
-      scope.paths.some((pattern) => pathMatches(pattern, candidate)),
+      scope.paths.some((pattern) => runtimeWritePathMatches(pattern, candidate)),
   );
   if (!allowed) {
     reject(

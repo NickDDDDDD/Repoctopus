@@ -12,7 +12,7 @@ metadata:
 
 # Execute one managed package
 
-Execute only the current package, repository bindings, and write scopes. Consume the delivered TDD augmentation when configured. Autonomous mode uses the current Host; subagent-driven-development may delegate only through the attested coordinator capability and must return structured delegation receipts to the parent claim. Do not modify the Plan, configuration, lifecycle phase, current Action, or OpenSpec completion checkbox. Return a structured Outcome bound to the claim and input digest.
+Execute only the current package, its declared repositories, and its write scopes. Surface an undeclared repository dependency to Runtime instead of consuming it silently. Consume the delivered TDD augmentation when configured. Autonomous mode uses the current Host; subagent-driven-development may delegate only through the attested coordinator capability and must return structured delegation receipts to the parent claim. Do not modify the Plan, configuration, lifecycle phase, current Action, or OpenSpec completion checkbox. Return a structured Outcome bound to the claim and input digest.
 
 For a CLI-mediated Host, save the actual delegation receipts as a JSON array and pass `run work-outcome --delegation-receipts-file <receipts.json>` together with the package result. Each receipt identifies its actual child execution and the current parent invocation. Do not invent receipts or substitute the parent execution identity for a child.
 
