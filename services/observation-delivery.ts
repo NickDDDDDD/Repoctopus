@@ -41,6 +41,8 @@ export interface ObservationDeliveryResult {
 
 /** Shared outbox boundary used by remote OTLP and the optional Desktop destination. */
 export class ObservationDelivery extends Service {
+  static inject = ['desktopInstanceProbe'];
+
   private pipeline: Promise<ObservationPipeline> | null = null;
   private deferredRemote: ObservationDestination | undefined;
   private deferRemote = false;
