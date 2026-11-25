@@ -2,7 +2,7 @@
 change_id: f7b60e85-a50f-47d3-b2f0-c12a29e22fb1
 workflow: full
 language: zh-CN
-phase: verify
+phase: archive
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -15,13 +15,13 @@ auto_transition: true
 base_ref: c0ff030035e40c2a7cbc76035b6bc8d2077e7bbe
 design_doc: openspec/changes/scope-build-workspace-drift/design.md
 plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-verify_result: pending
+verify_result: pass
 verify_failures: 0
-verification_report: null
+verification_report: docs/superpowers/reports/scope-build-workspace-drift.md
 branch_status: pending
 created_at: 2026-11-25
-verified_at: null
-archive_confirmation: null
+verified_at: 2026-11-25
+archive_confirmation: pending
 archived: false
 bound_branch: comet/scope-build-workspace-drift
 direct_override: false
@@ -30,8 +30,8 @@ handoff_hash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: 2bf016c8cd0816d8a4d517e35eaf159d5a69d173dcf8fd770e1b1a33fc0641b9
+  schema: comet.workflow-run-checkpoint.v2
+  hash: f628e88db0a7f5c32193ef2878cf55ea33683cdfc203b9f94e9a18d9dcfd4194
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -50,7 +50,7 @@ run_checkpoint:
       workspaceBaseline:
         ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
     state:
-      archiveConfirmation: null
+      archiveConfirmation: pending
       archived: false
       autoTransition: true
       baseRef: c0ff030035e40c2a7cbc76035b6bc8d2077e7bbe
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 3
+      checkEpoch: 4
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,19 +69,19 @@ run_checkpoint:
       handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
       isolation: worktree
       language: zh-CN
-      phase: verify
+      phase: archive
       plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
       reviewMode: thorough
       subagentDispatch: null
       tddMode: tdd
-      verificationReport: null
-      verifiedAt: null
+      verificationReport: docs/superpowers/reports/scope-build-workspace-drift.md
+      verifiedAt: 2026-11-25
       verifyFailures: 0
       verifyMode: null
-      verifyResult: pending
+      verifyResult: pass
       workflow: full
-    status: running
-    sequence: 16
+    status: waiting
+    sequence: 21
     actions:
       - attempt: 1
         claim:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/scope-build-workspace-drift
             workspaceBaseline:
               ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-            full.open.evidence:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
+          outputs: {}
         inputHash: 5ca49dfff7dd992a163e448de3a43fa5982991bc19333da7a4070224d0236715
         outcome:
           actionId: scope-build-workspace-drift:4
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/scope-build-workspace-drift
             workspaceBaseline:
               ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-            full.open.evidence:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-            full.open.revalidate:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+          outputs: {}
         inputHash: ff5ccc406e0782aeb8b2aff4a2e4f275d6e97e6659901f9669ba369cc798f277
         outcome:
           actionId: scope-build-workspace-drift:5
@@ -271,72 +231,7 @@ run_checkpoint:
             changeDir: openspec/changes/scope-build-workspace-drift
             workspaceBaseline:
               ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-            full.design.handoff:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-            full.open.evidence:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-            full.open.revalidate:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+          outputs: {}
         inputHash: d3d0e68e4a1ddf1c9918ee750bdfd32c754a5c309c3a8ca82ea63eb6a894a78b
         outcome:
           actionId: scope-build-workspace-drift:7
@@ -375,77 +270,7 @@ run_checkpoint:
             changeDir: openspec/changes/scope-build-workspace-drift
             workspaceBaseline:
               ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-            full.design.document:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-            full.design.evidence:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-            full.open.evidence:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-            full.open.revalidate:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+          outputs: {}
         inputHash: 799537df8e8a4e02e09732fa48d2e71665f9fee7c99b937e85b5fb6130339ffe
         outcome:
           actionId: scope-build-workspace-drift:9
@@ -490,102 +315,7 @@ run_checkpoint:
             changeDir: openspec/changes/scope-build-workspace-drift
             workspaceBaseline:
               ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-          outputs:
-            full.build.configure:
-              boundBranch: comet/scope-build-workspace-drift
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/scope-build-workspace-drift
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-            full.design.document:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-            full.design.evidence:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-            full.open.evidence:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-            full.open.revalidate:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+          outputs: {}
         inputHash: 6b28078a053cbde87ddeba445e63ce0a5cbeafb1f6a1be00805fad1e00cfe5dd
         outcome:
           actionId: scope-build-workspace-drift:11
@@ -632,114 +362,7 @@ run_checkpoint:
             changeDir: openspec/changes/scope-build-workspace-drift
             workspaceBaseline:
               ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-          outputs:
-            full.build.configure:
-              boundBranch: comet/scope-build-workspace-drift
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/scope-build-workspace-drift
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-                ref: openspec/changes/scope-build-workspace-drift/design.md
-              plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              planEvidence:
-                contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-                ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              taskRevision: 94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25
-            full.build.plan.evidence:
-              contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-              ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-            full.design.document:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-            full.design.evidence:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-            full.open.evidence:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-            full.open.revalidate:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+          outputs: {}
         inputHash: 7bc50c69fe09f4228352f25629da2146c9289b153c69c04836b90925c1bf58f3
         outcome:
           actionId: scope-build-workspace-drift:13
@@ -778,116 +401,7 @@ run_checkpoint:
             changeDir: openspec/changes/scope-build-workspace-drift
             workspaceBaseline:
               ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-          outputs:
-            full.build.configure:
-              boundBranch: comet/scope-build-workspace-drift
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/scope-build-workspace-drift
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.execute:
-              event: build-complete
-            full.build.plan:
-              designEvidence:
-                contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-                ref: openspec/changes/scope-build-workspace-drift/design.md
-              plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              planEvidence:
-                contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-                ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              taskRevision: 94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25
-            full.build.plan.evidence:
-              contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-              ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-            full.design.document:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-            full.design.evidence:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-            full.open.evidence:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-            full.open.revalidate:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+          outputs: {}
         inputHash: 8c475307acdd33466999bcb98097702ee578ff6056ef9d257257467d4ef3c55e
         outcome:
           actionId: scope-build-workspace-drift:14
@@ -931,6 +445,14 @@ run_checkpoint:
         stepId: full.build.check
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-82725b5e8f18a4c22f8a6396dea0c387344429ac5cca22cd78a5cb7b5da4c133
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: scope-build-workspace-drift:16
         input:
           input:
@@ -938,941 +460,168 @@ run_checkpoint:
             changeDir: openspec/changes/scope-build-workspace-drift
             workspaceBaseline:
               ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-          outputs:
-            full.build.check:
-              argv:
-                - node
-                - C:/nvm4w/nodejs/node_modules/npm/bin/npm-cli.js
-                - run
-                - build
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
-              cwd: .
-              environment: 3b8207ce3c4cdef4f8ac9d5a3c1e69dda995bc384a8d54b3540c8fde074243ec
-              exitCode: 0
-              inputAfter: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
-              inputBefore: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
-              manifestHash: ba374406ee6c171900029940cf0f149211c1201ba97c703966dc553fa1723f22
-              manifestRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/88bca21a-be23-4e8f-9db8-82addcf87061.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
-              reusable: true
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 2700000
-            full.build.check.evidence:
-              contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
-              ref: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
-            full.build.configure:
-              boundBranch: comet/scope-build-workspace-drift
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/scope-build-workspace-drift
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.execute:
-              event: build-complete
-            full.build.plan:
-              designEvidence:
-                contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-                ref: openspec/changes/scope-build-workspace-drift/design.md
-              plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              planEvidence:
-                contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-                ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              taskRevision: 94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25
-            full.build.plan.evidence:
-              contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-              ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-            full.design.document:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-            full.design.evidence:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-            full.open.evidence:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-            full.open.revalidate:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+          outputs: {}
         inputHash: 14cd0298fb0b00196c68e90a90f9a1b2de7fefe56d12786ade8bb0953e948cc1
+        outcome:
+          actionId: scope-build-workspace-drift:16
+          attempt: 1
+          claimToken: portable-82725b5e8f18a4c22f8a6396dea0c387344429ac5cca22cd78a5cb7b5da4c133
+          inputHash: 14cd0298fb0b00196c68e90a90f9a1b2de7fefe56d12786ade8bb0953e948cc1
+          outcomeId: 7bd11737-64ba-4d5a-bced-2bc16140653e
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/scope-build-workspace-drift.md
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: e7806ed62eb9061a7a7cd16ceeaf934a6957c8d9e29117410b3e8ccd2bf89dc8
+            outcomeId: 7bd11737-64ba-4d5a-bced-2bc16140653e
         reconciliations: []
         ref: comet-verify
         requiredCapabilities: []
         retry: manual
         runId: scope-build-workspace-drift
-        status: pending
+        status: succeeded
         stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-7567af2facdb90b610ef134a9ccaedc978f21dc31ef6e2497d8b52a0357c4b77
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: scope-build-workspace-drift:18
+        input:
+          input:
+            change: scope-build-workspace-drift
+            changeDir: openspec/changes/scope-build-workspace-drift
+            workspaceBaseline:
+              ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
+          outputs: {}
+        inputHash: 7616d5f10e78dfb98d447fd7878aa2edfa75c311692b0a98520ceb05f520ec06
+        outcome:
+          actionId: scope-build-workspace-drift:18
+          attempt: 1
+          claimToken: portable-7567af2facdb90b610ef134a9ccaedc978f21dc31ef6e2497d8b52a0357c4b77
+          inputHash: 7616d5f10e78dfb98d447fd7878aa2edfa75c311692b0a98520ceb05f520ec06
+          outcomeId: f74112a0-8f61-4526-8adb-87746de7253b
+          output:
+            argv:
+              - node
+              - C:/nvm4w/nodejs/node_modules/npm/bin/npm-cli.js
+              - run
+              - check:managed-execution-report
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: ebbfa089df5c5abf852ad01dd74c2ed18081e8d3ba4e73116f75e47f2636c014
+            cwd: .
+            deliveryInputs: {}
+            environment: 7ce1f352ab62a67eaedcdd9daced86a4531d021fd7f551af2a9cf2c39cd289e0
+            exitCode: 0
+            inputAfter: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
+            inputBefore: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
+            manifestHash: ba374406ee6c171900029940cf0f149211c1201ba97c703966dc553fa1723f22
+            manifestRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/3eb6a9ca-3cd7-432e-b508-cc31cf2990c6.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/a2153238-3031-4ad1-be10-76791520daaf.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: da4e7bafaaac1a8587d9b4b0f99d41152b474bed21c4ac7cdcb1c59549f9747c
+            outcomeId: f74112a0-8f61-4526-8adb-87746de7253b
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: scope-build-workspace-drift
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-32cbd6c9beb6f455f1db6a455db114a1ff04b8b9d776ebfed15bea74c1b41b1f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: scope-build-workspace-drift:20
+        input:
+          input:
+            change: scope-build-workspace-drift
+            changeDir: openspec/changes/scope-build-workspace-drift
+            workspaceBaseline:
+              ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
+          outputs: {}
+        inputHash: 803657a3f0926003eb4e3779443ffe6a3c8dbf700b45c0032301c5ede4eb2f5d
+        outcome:
+          actionId: scope-build-workspace-drift:20
+          attempt: 1
+          claimToken: portable-32cbd6c9beb6f455f1db6a455db114a1ff04b8b9d776ebfed15bea74c1b41b1f
+          inputHash: 803657a3f0926003eb4e3779443ffe6a3c8dbf700b45c0032301c5ede4eb2f5d
+          outcomeId: 3b4cd0be-f80d-46a6-ac07-503313173d4b
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 将 scope-build-workspace-drift 的 3 个要求并入 change-lifecycle 与
+              managed-work-execution 主规格，归档 OpenSpec Change，保留正式验收报告与候选包收据。8
+              项任务全部完成，Windows 同一候选四场景、全量 1333 项测试及 Comet Verify 通过。建议推送当前分支并向
+              origin/main 创建 PR，CI 通过后合入。
+            targetBranch: comet/scope-build-workspace-drift
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3869f20f38c6579e802b2006d86421ac8f9d53994146b9f76d7408deac5ce594
+            outcomeId: 3b4cd0be-f80d-46a6-ac07-503313173d4b
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: scope-build-workspace-drift
+        status: succeeded
+        stepId: full.archive.prepare
         type: invoke_skill
     actionContexts:
       scope-build-workspace-drift:1:
         results: {}
         sequence: 1
       scope-build-workspace-drift:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/scope-build-workspace-drift
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/scope-build-workspace-drift
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        results: {}
         sequence: 11
       scope-build-workspace-drift:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/scope-build-workspace-drift
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/scope-build-workspace-drift
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-                ref: openspec/changes/scope-build-workspace-drift/design.md
-              plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              planEvidence:
-                contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-                ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              taskRevision: 94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-              ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        results: {}
         sequence: 13
       scope-build-workspace-drift:14:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/scope-build-workspace-drift
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/scope-build-workspace-drift
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-                ref: openspec/changes/scope-build-workspace-drift/design.md
-              plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              planEvidence:
-                contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-                ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              taskRevision: 94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-              ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        results: {}
         sequence: 14
       scope-build-workspace-drift:16:
-        results:
-          full.build.check:
-            sequence: 14
-            value:
-              argv:
-                - node
-                - C:/nvm4w/nodejs/node_modules/npm/bin/npm-cli.js
-                - run
-                - build
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
-              cwd: .
-              environment: 3b8207ce3c4cdef4f8ac9d5a3c1e69dda995bc384a8d54b3540c8fde074243ec
-              exitCode: 0
-              inputAfter: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
-              inputBefore: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
-              manifestHash: ba374406ee6c171900029940cf0f149211c1201ba97c703966dc553fa1723f22
-              manifestRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/88bca21a-be23-4e8f-9db8-82addcf87061.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
-              reusable: true
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 2700000
-          full.build.check.evidence:
-            sequence: 15
-            value:
-              contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
-              ref: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/scope-build-workspace-drift
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/scope-build-workspace-drift
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-                ref: openspec/changes/scope-build-workspace-drift/design.md
-              plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              planEvidence:
-                contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-                ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              taskRevision: 94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-              ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        results: {}
         sequence: 16
+      scope-build-workspace-drift:18:
+        results: {}
+        sequence: 18
+      scope-build-workspace-drift:20:
+        results: {}
+        sequence: 20
       scope-build-workspace-drift:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
+        results: {}
         sequence: 4
       scope-build-workspace-drift:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        results: {}
         sequence: 5
       scope-build-workspace-drift:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        results: {}
         sequence: 7
       scope-build-workspace-drift:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        results: {}
         sequence: 9
     waits:
       - id: scope-build-workspace-drift:3
@@ -1895,16 +644,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
+        results: {}
         decision:
           id: classic-open-7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
           choice: approved
@@ -1941,55 +681,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        results: {}
         decision:
           id: classic-design-e9ad073a78086696806a99ade9b71aa5f68f3846aef9818a4e30aecf7c441546-approved
           choice: approved
@@ -2017,118 +709,45 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/scope-build-workspace-drift
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        results: {}
         decision:
           id: 31218450-1f0e-4746-a4b2-0ba8f2b3572a
           choice: approved
           proposalHash: 8d1f14c943ee0f716a85dcc76cf8f1180028df077fdaa8915ad791bad6ad19d2
+      - id: scope-build-workspace-drift:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: pending
+        proposal:
+          input:
+            change: scope-build-workspace-drift
+            changeDir: openspec/changes/scope-build-workspace-drift
+            workspaceBaseline:
+              ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 将 scope-build-workspace-drift 的 3 个要求并入 change-lifecycle 与
+                managed-work-execution 主规格，归档 OpenSpec Change，保留正式验收报告与候选包收据。8
+                项任务全部完成，Windows 同一候选四场景、全量 1333 项测试及 Comet Verify 通过。建议推送当前分支并向
+                origin/main 创建 PR，CI 通过后合入。
+              targetBranch: comet/scope-build-workspace-drift
+        proposalHash: 0d7098433d733ea5bdf66b3414bb18e979d6c978abc470a8e68e3c30a239fc87
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
     evidenceWaits:
       - id: scope-build-workspace-drift:2
         stepId: full.open.evidence
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/scope-build-workspace-drift
           contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
@@ -2138,88 +757,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        results: {}
         receipt:
           ref: openspec/changes/scope-build-workspace-drift/design.md
           contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
@@ -2229,133 +767,7 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/scope-build-workspace-drift
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/scope-build-workspace-drift
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-                ref: openspec/changes/scope-build-workspace-drift/design.md
-              plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              planEvidence:
-                contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-                ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              taskRevision: 94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-              handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-              proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有
-                Verify profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
-                与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
-                base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
-                清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条
-                Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open 范围和当前 worktree，delta spec 无补丁。建议
-                autonomous + TDD + thorough。
-              requirementsEvidence:
-                contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                ref: openspec/changes/scope-build-workspace-drift
-              sourceEvidence:
-                contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                ref: openspec/changes/scope-build-workspace-drift
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        results: {}
         receipt:
           ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
           contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
@@ -2365,121 +777,67 @@ run_checkpoint:
         sequence: 15
         kind: classic-build-check
         status: resolved
-        results:
-          full.build.check:
-            sequence: 14
-            value:
-              argv:
-                - node
-                - C:/nvm4w/nodejs/node_modules/npm/bin/npm-cli.js
-                - run
-                - build
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
-              cwd: .
-              environment: 3b8207ce3c4cdef4f8ac9d5a3c1e69dda995bc384a8d54b3540c8fde074243ec
-              exitCode: 0
-              inputAfter: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
-              inputBefore: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
-              manifestHash: ba374406ee6c171900029940cf0f149211c1201ba97c703966dc553fa1723f22
-              manifestRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/88bca21a-be23-4e8f-9db8-82addcf87061.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
-              reusable: true
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 2700000
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: comet/scope-build-workspace-drift
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.build.configure:
-                    boundBranch: comet/scope-build-workspace-drift
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-                ref: openspec/changes/scope-build-workspace-drift/design.md
-              plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              planEvidence:
-                contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-                ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-              taskRevision: 94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-              ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
-                    handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
-                    proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
-                      checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check
-                      输入和现有 Verify profile fingerprint 判断影响。无关快进保留有效
-                      Work、完成项与审批，外部 OID 与受管实现分离；实际输入变化局部复核，不凭 HEAD
-                      刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端 base/head、Git 历史和 PR
-                      差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace 清理、规划发布、Verify
-                      配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准 Open
-                      范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD +
-                      thorough。
-                    requirementsEvidence:
-                      contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
-                      ref: openspec/changes/scope-build-workspace-drift
-                    sourceEvidence:
-                      contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
-                      ref: openspec/changes/scope-build-workspace-drift
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-              ref: openspec/changes/scope-build-workspace-drift/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
+          contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
+          submissionId: 6b850050-0196-4db3-bc1b-804cda55cfdb
+      - id: scope-build-workspace-drift:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/scope-build-workspace-drift.md
+          contentHash: 1ddc92d0319a989114e4c57c5e802426347f5333c808baad8df2423639c73fab
+          submissionId: e0490cda-7306-4129-9831-b0a6faf7f50c
+      - id: scope-build-workspace-drift:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/a2153238-3031-4ad1-be10-76791520daaf.log
+          contentHash: ebbfa089df5c5abf852ad01dd74c2ed18081e8d3ba4e73116f75e47f2636c014
+          submissionId: f752bfbf-9238-4ca3-9c6d-1b98673f514b
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 32
+  sourceHash: 2e1beb1acaeafbd82cdf0e18293c07449e4f300fb7694140665599967bad693e
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: scope-build-workspace-drift
+            changeDir: openspec/changes/scope-build-workspace-drift
+            workspaceBaseline:
+              ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+              ref: openspec/changes/scope-build-workspace-drift
+      - contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+        ref: openspec/changes/scope-build-workspace-drift
+      - contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
+      - choice: approved
+        proposal:
+          input:
+            change: scope-build-workspace-drift
+            changeDir: openspec/changes/scope-build-workspace-drift
+            workspaceBaseline:
+              ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
               handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
               proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
@@ -2496,73 +854,110 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
                 ref: openspec/changes/scope-build-workspace-drift
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: scope-build-workspace-drift
-                  changeDir: openspec/changes/scope-build-workspace-drift
-                  workspaceBaseline:
-                    ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-                    ref: openspec/changes/scope-build-workspace-drift
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-              ref: openspec/changes/scope-build-workspace-drift
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-        receipt:
-          ref: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
-          contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
-          submissionId: 6b850050-0196-4db3-bc1b-804cda55cfdb
-    ready: []
-    joins: {}
-    outputs:
-      full.build.check:
-        sequence: 14
-        value:
-          argv:
-            - node
-            - C:/nvm4w/nodejs/node_modules/npm/bin/npm-cli.js
-            - run
-            - build
-          changedDuringExecution: []
-          checkEpoch: 2
-          contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
-          cwd: .
-          environment: 3b8207ce3c4cdef4f8ac9d5a3c1e69dda995bc384a8d54b3540c8fde074243ec
-          exitCode: 0
-          inputAfter: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
-          inputBefore: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
-          manifestHash: ba374406ee6c171900029940cf0f149211c1201ba97c703966dc553fa1723f22
-          manifestRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/88bca21a-be23-4e8f-9db8-82addcf87061.manifest
-          receiptRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
-          reusable: true
-          reused: false
-          scope: build
-          tier: full
-          timeoutMs: 2700000
-      full.build.check.evidence:
-        sequence: 15
-        value:
-          contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
-          ref: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
-      full.build.configure:
-        sequence: 9
+      - handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
+        handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
+        proposal: 统一 resume、next、Execute Outcome 与 Build Check 的 Runtime Git 漂移判定。先校验
+          checkout 身份、祖先关系、工作树与 Git 归属，再按 Plan 的完整包仓库范围、依赖闭包、Check 输入和现有 Verify
+          profile fingerprint 判断影响。无关快进保留有效 Work、完成项与审批，外部 OID
+          与受管实现分离；实际输入变化局部复核，不凭 HEAD 刷新规划；未知范围和未结算执行保留原进度。Archive 按实际远端
+          base/head、Git 历史和 PR 差异校验受管发布范围，阻断会混入发布的外部提交。复用已有 Workspace
+          清理、规划发布、Verify 配置和远端事实恢复。Windows 安装包验证两条 Issue、冷恢复、相关依赖及发布正反例。沿用已批准
+          Open 范围和当前 worktree，delta spec 无补丁。建议 autonomous + TDD + thorough。
+        requirementsEvidence:
+          contentHash: 58c711801d56f2bb53933822ccb92440f7998a7d0331492cd165e35520a1dc58
+          ref: openspec/changes/scope-build-workspace-drift
+        sourceEvidence:
+          contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
+          ref: openspec/changes/scope-build-workspace-drift
+      - designDoc: openspec/changes/scope-build-workspace-drift/design.md
+      - contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
+        ref: openspec/changes/scope-build-workspace-drift/design.md
+      - boundBranch: comet/scope-build-workspace-drift
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: scope-build-workspace-drift
+            changeDir: openspec/changes/scope-build-workspace-drift
+            workspaceBaseline:
+              ref: 06c46db6-6041-44ac-a89b-f4f7a5448830
+          outputs:
+            full.build.configure:
+              boundBranch: comet/scope-build-workspace-drift
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
+          ref: openspec/changes/scope-build-workspace-drift/design.md
+        plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
+        planEvidence:
+          contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
+          ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
+        taskRevision: 94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25
+      - contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
+        ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
+      - event: build-complete
+      - argv:
+          - node
+          - C:/nvm4w/nodejs/node_modules/npm/bin/npm-cli.js
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
+        cwd: .
+        environment: 3b8207ce3c4cdef4f8ac9d5a3c1e69dda995bc384a8d54b3540c8fde074243ec
+        exitCode: 0
+        inputAfter: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
+        inputBefore: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
+        manifestHash: ba374406ee6c171900029940cf0f149211c1201ba97c703966dc553fa1723f22
+        manifestRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/88bca21a-be23-4e8f-9db8-82addcf87061.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
+        ref: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
+      - contentHash: 1ddc92d0319a989114e4c57c5e802426347f5333c808baad8df2423639c73fab
+        ref: docs/superpowers/reports/scope-build-workspace-drift.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/scope-build-workspace-drift.md
+      - argv:
+          - node
+          - C:/nvm4w/nodejs/node_modules/npm/bin/npm-cli.js
+          - run
+          - check:managed-execution-report
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: ebbfa089df5c5abf852ad01dd74c2ed18081e8d3ba4e73116f75e47f2636c014
+        cwd: .
+        deliveryInputs: {}
+        environment: 7ce1f352ab62a67eaedcdd9daced86a4531d021fd7f551af2a9cf2c39cd289e0
+        exitCode: 0
+        inputAfter: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
+        inputBefore: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
+        manifestHash: ba374406ee6c171900029940cf0f149211c1201ba97c703966dc553fa1723f22
+        manifestRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/3eb6a9ca-3cd7-432e-b508-cc31cf2990c6.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/a2153238-3031-4ad1-be10-76791520daaf.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: ebbfa089df5c5abf852ad01dd74c2ed18081e8d3ba4e73116f75e47f2636c014
+        ref: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/a2153238-3031-4ad1-be10-76791520daaf.log
+      - sequence: 9
         value:
           boundBranch: comet/scope-build-workspace-drift
           buildMode: autonomous
@@ -2571,8 +966,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -2590,28 +984,7 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.execute:
-        sequence: 13
-        value:
-          event: build-complete
-      full.build.plan:
-        sequence: 11
-        value:
-          designEvidence:
-            contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
-            ref: openspec/changes/scope-build-workspace-drift/design.md
-          plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-          planEvidence:
-            contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-            ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-          taskRevision: 94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25
-      full.build.plan.evidence:
-        sequence: 12
-        value:
-          contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
-          ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
-      full.design.confirm:
-        sequence: 6
+      - sequence: 6
         value:
           choice: approved
           proposal:
@@ -2638,17 +1011,14 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
                   ref: openspec/changes/scope-build-workspace-drift
-      full.design.document:
-        sequence: 7
+      - sequence: 7
         value:
           designDoc: openspec/changes/scope-build-workspace-drift/design.md
-      full.design.evidence:
-        sequence: 8
+      - sequence: 8
         value:
           contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
           ref: openspec/changes/scope-build-workspace-drift/design.md
-      full.design.handoff:
-        sequence: 5
+      - sequence: 5
         value:
           handoffContext: openspec/changes/scope-build-workspace-drift/.comet/handoff/design-context.json
           handoffHash: db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f
@@ -2665,12 +1035,10 @@ run_checkpoint:
           sourceEvidence:
             contentHash: d1c90946972e06721472241981a7b45cc3848a1f921393202ecefe44040e1835
             ref: openspec/changes/scope-build-workspace-drift
-      full.open:
-        sequence: 1
+      - sequence: 1
         value:
           event: open-complete
-      full.open.confirm:
-        sequence: 3
+      - sequence: 3
         value:
           choice: approved
           proposal:
@@ -2685,17 +1053,1179 @@ run_checkpoint:
               full.open.evidence:
                 contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
                 ref: openspec/changes/scope-build-workspace-drift
-      full.open.evidence:
-        sequence: 2
+      - sequence: 2
         value:
           contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
           ref: openspec/changes/scope-build-workspace-drift
-      full.open.revalidate:
-        sequence: 4
+      - sequence: 4
         value:
           contentHash: 7c879fa6d733cadd4fd5f1f629564f141936e78a17eaa20b2a76d4d222b5d47d
-    children: []
-    lineage: []
-  sourceRevision: 24
-  sourceHash: f91bdb79b38604a19d61206d9f6b175ba181bd7a55a876a34cbab5ba9d909e86
-check_epoch: 3
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 2c9bb9af9dde126a9b85c200b8abaed92d4801fb052a00c46cf72fae61ebe8f4
+            ref: openspec/changes/scope-build-workspace-drift/design.md
+          plan: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
+          planEvidence:
+            contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
+            ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
+          taskRevision: 94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25
+      - sequence: 12
+        value:
+          contentHash: f5dbccf31379dc8e452f49d86f8d3c50ee7d03eb46ec9b30272407d9d392b848
+          ref: docs/superpowers/plans/2026-11-26-scope-build-workspace-drift.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - node
+            - C:/nvm4w/nodejs/node_modules/npm/bin/npm-cli.js
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
+          cwd: .
+          environment: 3b8207ce3c4cdef4f8ac9d5a3c1e69dda995bc384a8d54b3540c8fde074243ec
+          exitCode: 0
+          inputAfter: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
+          inputBefore: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
+          manifestHash: ba374406ee6c171900029940cf0f149211c1201ba97c703966dc553fa1723f22
+          manifestRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/88bca21a-be23-4e8f-9db8-82addcf87061.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: b0d95707889dbacf076431baa614b26d50894c7d0f4d11c8b79590c657348138
+          ref: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/f1382fc6-9d3b-4490-ad93-5698216ec5fd.log
+      - sequence: 17
+        value:
+          contentHash: 1ddc92d0319a989114e4c57c5e802426347f5333c808baad8df2423639c73fab
+          ref: docs/superpowers/reports/scope-build-workspace-drift.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/scope-build-workspace-drift.md
+      - sequence: 18
+        value:
+          argv:
+            - node
+            - C:/nvm4w/nodejs/node_modules/npm/bin/npm-cli.js
+            - run
+            - check:managed-execution-report
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: ebbfa089df5c5abf852ad01dd74c2ed18081e8d3ba4e73116f75e47f2636c014
+          cwd: .
+          deliveryInputs: {}
+          environment: 7ce1f352ab62a67eaedcdd9daced86a4531d021fd7f551af2a9cf2c39cd289e0
+          exitCode: 0
+          inputAfter: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
+          inputBefore: 0fbb8a7f2337bb7d88cb7e0866b94fee007c59f86d5a2b36e2853ba6e7943342
+          manifestHash: ba374406ee6c171900029940cf0f149211c1201ba97c703966dc553fa1723f22
+          manifestRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/3eb6a9ca-3cd7-432e-b508-cc31cf2990c6.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/a2153238-3031-4ad1-be10-76791520daaf.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          contentHash: ebbfa089df5c5abf852ad01dd74c2ed18081e8d3ba4e73116f75e47f2636c014
+          ref: .comet/runtime/classic-sdk-checks/0f6ec09b69c42c882c425e06078c699164073bb572cee993c0738e76e67f97d5/a2153238-3031-4ad1-be10-76791520daaf.log
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 将 scope-build-workspace-drift 的 3 个要求并入 change-lifecycle 与
+            managed-work-execution 主规格，归档 OpenSpec Change，保留正式验收报告与候选包收据。8
+            项任务全部完成，Windows 同一候选四场景、全量 1333 项测试及 Comet Verify 通过。建议推送当前分支并向
+            origin/main 创建 PR，CI 通过后合入。
+          targetBranch: comet/scope-build-workspace-drift
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.design.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: 53
+        right: 54
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: 56
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 57
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 52
+        right: 58
+        height: 4
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: 60
+        right: 61
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 62
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 63
+        right: 58
+        height: 4
+      - key: full.build.execute
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 65
+        height: 2
+      - key: full.build.plan.evidence
+        value: 30
+        left: null
+        right: 61
+        height: 2
+      - key: full.build.plan
+        value: 29
+        left: 66
+        right: 67
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 68
+        right: 58
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: 70
+        right: 71
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 72
+        right: 65
+        height: 3
+      - key: full.build.plan
+        value: 29
+        left: 73
+        right: 67
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 58
+        height: 5
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: 77
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: 76
+        right: 78
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 79
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 80
+        height: 5
+      - key: full.open.revalidate
+        value: 28
+        left: 76
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: 83
+        right: 77
+        height: 2
+      - key: full.verify.check
+        value: 36
+        left: 82
+        right: 84
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 85
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 86
+        height: 5
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 26
+        left: 88
+        right: 89
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: 91
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 88
+        right: 92
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: 94
+        right: 95
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 96
+        right: 92
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: 98
+        right: 99
+        height: 2
+      - key: full.design.handoff
+        value: 24
+        left: 100
+        right: 95
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 101
+        right: 92
+        height: 4
+      - key: full.archive.prepare
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 32
+        left: 103
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.execute
+        value: 31
+        left: 106
+        right: 109
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: 105
+        right: 110
+        height: 4
+      - key: full.design.handoff
+        value: 24
+        left: 99
+        right: 95
+        height: 2
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: 113
+        right: 114
+        height: 2
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: 116
+        height: 2
+      - key: full.verify.check.evidence
+        value: 37
+        left: 115
+        right: 117
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 112
+        right: 118
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 111
+        right: 119
+        height: 5
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: 121
+        height: 2
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 124
+        right: 125
+        height: 2
+      - key: full.open
+        value: 25
+        left: 123
+        right: 126
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: 129
+        right: 130
+        height: 2
+      - key: full.design.confirm
+        value: 21
+        left: 128
+        right: 131
+        height: 3
+      - key: full.open
+        value: 25
+        left: 132
+        right: 126
+        height: 4
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: 135
+        right: 136
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 138
+        right: 139
+        height: 2
+      - key: full.open
+        value: 25
+        left: 137
+        right: 140
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 142
+        right: 143
+        height: 2
+      - key: full.design.document
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: 145
+        right: 146
+        height: 2
+      - key: full.design.confirm
+        value: 21
+        left: 144
+        right: 147
+        height: 3
+      - key: full.open
+        value: 25
+        left: 148
+        right: 140
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: 150
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: 152
+        right: 153
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 151
+        right: 154
+        height: 3
+      - key: full.open
+        value: 25
+        left: 147
+        right: 140
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: 155
+        right: 156
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: 158
+        right: 159
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 160
+        right: 154
+        height: 3
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: 162
+        height: 2
+      - key: full.open.evidence
+        value: 27
+        left: 138
+        right: 163
+        height: 3
+      - key: full.open
+        value: 25
+        left: 147
+        right: 164
+        height: 4
+      - key: full.design.confirm
+        value: 21
+        left: 161
+        right: 165
+        height: 5
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 138
+        right: 167
+        height: 2
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 35
+        left: 169
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 36
+        left: 168
+        right: 170
+        height: 3
+      - key: full.open
+        value: 25
+        left: 147
+        right: 171
+        height: 4
+      - key: full.design.confirm
+        value: 21
+        left: 161
+        right: 172
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 59
+      - 64
+      - 69
+      - 75
+      - 81
+      - 87
+      - 90
+      - 93
+      - 97
+      - 102
+      - 120
+      - 122
+      - 127
+      - 133
+      - 134
+      - 141
+      - 149
+      - 157
+      - 166
+      - 173
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actionContexts
+          - scope-build-workspace-drift:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - scope-build-workspace-drift:11
+          - results
+        map: 11
+      - path:
+          - actionContexts
+          - scope-build-workspace-drift:13
+          - results
+        map: 12
+      - path:
+          - actionContexts
+          - scope-build-workspace-drift:14
+          - results
+        map: 13
+      - path:
+          - actionContexts
+          - scope-build-workspace-drift:16
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - scope-build-workspace-drift:18
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - scope-build-workspace-drift:20
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - scope-build-workspace-drift:4
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - scope-build-workspace-drift:5
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - scope-build-workspace-drift:7
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - scope-build-workspace-drift:9
+          - results
+        map: 20
+      - path:
+          - outputs
+        map: 21
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 22
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 23
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 24
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 21
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 25
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 26
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 27
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 28
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 29
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 30
+  storageHash: 13edbc766d7ff653a16e7cff8675614e885606c09370b47e59b0c5c790380d2c
+check_epoch: 4
