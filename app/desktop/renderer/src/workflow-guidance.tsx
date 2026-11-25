@@ -202,7 +202,7 @@ const WORK_STATUS = {
   unknown: '状态待确认',
 } as const;
 
-export function BuildConfiguration({ change }: { change: ProjectedChange }) {
+export function BuildStrategySummary({ change }: { change: ProjectedChange }) {
   const strategy = change.buildStrategy;
   if (!strategy) return null;
   const isolation = { current: '当前分支', branch: '分支隔离', worktree: 'Worktree 隔离' } as const;

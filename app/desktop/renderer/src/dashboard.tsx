@@ -16,7 +16,7 @@ import type {
   ProjectedTimelineState,
 } from '../../../../domains/trajectory/projection.js';
 import { AgentList, AgentStrip } from './delegations.js';
-import { BuildConfiguration, NextStep, PHASE_NAMES, workflowTone } from './workflow-guidance.js';
+import { BuildStrategySummary, NextStep, PHASE_NAMES, workflowTone } from './workflow-guidance.js';
 
 const PHASE_LABELS = {
   open: 'Open',
@@ -471,7 +471,7 @@ function SelectedChange({
         <div>
           <p className="breadcrumb">{change.workspaceId}</p>
           <h1 id={headingId}>{change.changeId}</h1>
-          <BuildConfiguration change={change} />
+          <BuildStrategySummary change={change} />
         </div>
         <div className="change-status" data-state={change.displayState}>
           <StatusDot state={change.displayState} />
@@ -597,7 +597,7 @@ function RunCard({
         </button>
       </header>
       <PhaseRail change={change} compact />
-      <BuildConfiguration change={change} />
+      <BuildStrategySummary change={change} />
       <div className="run-card__work">
         <NextStep change={change} compact />
         <AgentStrip agents={agents} />
