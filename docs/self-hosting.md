@@ -5,8 +5,8 @@ Repoctopus 使用自己的 Project composition 执行开发、Archive 发布和�
 ## 自举闭环
 
 ```text
-OpenSpec 四类规划产物
-  → 公开 Change 分支
+公开 Change 分支并启动 Run
+  → OpenSpec 四类规划产物
   → 可信用户批准 Open
   → 深化同一四类规划产物
   → 可信用户批准 Design
@@ -31,7 +31,7 @@ Archive 不等待任何 MR 合入，也不执行 merge。最终 Change MR 是 Wo
 
 公开分支、Planning approval、Delivery approval 与 MR merge 是不同授权边界。Change 是团队共享工作单元，不归 MR author、Git author、某台机器或某个 Agent 独占；具备相同 Workspace、持久状态和凭据的成员都可以安全恢复命令。
 
-规划阶段只公开分支并取得绑定精确 OID 的规划批准，不创建 Change MR。最终 Change MR 只由 Archive 在规格关闭后发布，用于评审已验证、已归档的完整结果。
+先公开 Change 分支，再启动 Run。规划审批核对当前分支与远端的 OID，并绑定实际审批的规划内容。Archive 在规格关闭后发布最终 Change MR，供团队评审归档结果。
 
 ## 1. 准备共享配置
 
@@ -59,18 +59,21 @@ GitHub Token 只由 Delivery/Consistency 平台 Adapter 读取。不要把值放
 
 ### 多仓验收默认：隔离安装包
 
-多仓验收默认采用 package-first：从当前提交构建并生成 tarball，把它安装到全新的消费者目录，再通过安装包公开的 `bin` 运行 CLI。这样验收对象是即将被其他仓库消费的包，而不是长期源码 checkout 中可能残留的忽略文件。下面的 `<change-id>` 和目标仓路径仍需替换为本轮验收值：
+多仓验收使用实际候选安装包。在源码根目录构建并安装到隔离目录，再把 CLI 指向已接入的验收 Workspace。先在该 Workspace 准备真实验收需求及已推送的 Change 分支。[启动条件](project-onboarding.md#启动和恢复-change)
 
 ```powershell
 $packageDirectory = Join-Path ([IO.Path]::GetTempPath()) ('repoctopus-pack-' + [guid]::NewGuid())
 $consumerDirectory = Join-Path ([IO.Path]::GetTempPath()) ('repoctopus-consumer-' + [guid]::NewGuid())
+$workspace = Read-Host '已接入的验收 Workspace 路径'
+$changeId = Read-Host '本轮验收的 Change ID'
+$target = Read-Host '验收目标分支'
 New-Item -ItemType Directory -Path $packageDirectory, $consumerDirectory | Out-Null
 
 npm run build
 $package = npm pack --json --pack-destination $packageDirectory | ConvertFrom-Json
 $tarball = Join-Path $packageDirectory $package[0].filename
 npm install --ignore-scripts --omit=dev --prefix $consumerDirectory $tarball
-node (Join-Path $consumerDirectory 'node_modules/repoctopus/bin/repoctopus.js') run start --workspace '<workspace-path>' --change '<change-id>' --target main --json
+node (Join-Path $consumerDirectory 'node_modules/repoctopus/bin/repoctopus.js') run start --workspace $workspace --change $changeId --target $target --json
 ```
 
 首次 checkout、`node_modules` 缺失或 `package-lock.json` 更新时，先执行 `npm ci`；依赖未变化时不要求每次验收都重复安装。验收结束后可以删除这两个唯一命名的临时目录。仓库的 `npm run test:package-e2e` 会自动执行同样的打包、隔离安装和公共 `bin` 边界检查，但不能替代针对真实多仓拓扑的生命周期验收。
@@ -83,9 +86,10 @@ node (Join-Path $consumerDirectory 'node_modules/repoctopus/bin/repoctopus.js') 
 npm ci
 npm run build
 node scripts/build.mjs --check
-node bin/repoctopus.js run start --workspace . --change '<change-id>' --target main --json
-node bin/repoctopus.js run status --workspace . --run '<run-id>' --json
-node bin/repoctopus.js run next --workspace . --run '<run-id>' --json
+$workspace = Read-Host '已接入的验收 Workspace 路径'
+$runId = Read-Host '原 Run ID'
+node bin/repoctopus.js run status --workspace $workspace --run $runId --json
+node bin/repoctopus.js run resume --workspace $workspace --run $runId --json
 ```
 
 `npm ci` 仍只在依赖需要恢复时执行；后两个构建命令则不能因为 `dist/` 已存在而省略。缺失 `dist/` 表示源码 CLI 尚未构建；历史 `dist/` 即使仍能启动，也可能属于旧提交，不能作为验证证据。CLI launcher 不会隐式重建源码。

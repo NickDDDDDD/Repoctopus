@@ -21,6 +21,8 @@ profiles:
         repository: app
         executable: npm
         args: [run, build]
+        # 用于正式 Verify 前，按真实验收范围填写 covers。
+        # 例如 covers: ['task:1.1'] 仅适用于这个构建能证明任务 1.1 的验收条件时。
 evidence:
   retention:
     maxAgeDays: 30
@@ -47,21 +49,16 @@ delivery:
 skillProviders:
   - id: skill-provider-matt
   - id: skill-provider-filesystem
-lifecycle:
-  skillBindings:
-    schemaVersion: 1
-    bindings:
-      - id: team-design-guidance
-        target: specification.plan
-        role: guidance
-        skill: team-code-guidance
-        order: 20
-      - id: team-design-method
-        target: specification.plan
-        role: augmentation-replacement
-        skill: team-codebase-design
-        slot: design-method
-        order: 10
+# 可选。先创建 .agents/skills/team-api-review/SKILL.md，再启用对应绑定。
+# lifecycle:
+#   skillBindings:
+#     schemaVersion: 1
+#     bindings:
+#       - id: team-api-review
+#         target: build.check
+#         role: guidance
+#         skill: team-api-review
+#         order: 20
 specificationProvider:
   id: specification-openspec
   store:
