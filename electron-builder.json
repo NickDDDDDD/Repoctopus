@@ -23,6 +23,14 @@
       "to": "product/domains/trajectory/projection.ts"
     },
     {
+      "from": "domains/trajectory/projection-view.ts",
+      "to": "product/domains/trajectory/projection-view.ts"
+    },
+    {
+      "from": "domains/work-execution/delegation-activity.ts",
+      "to": "product/domains/work-execution/delegation-activity.ts"
+    },
+    {
       "from": "services/desktop-receiver.ts",
       "to": "product/services/desktop-receiver.ts"
     },
