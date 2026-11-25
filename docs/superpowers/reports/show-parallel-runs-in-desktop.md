@@ -16,10 +16,11 @@
 
 实验过程中发现 Cordis 的两处依赖注入和销毁后的补发缺口。已修复并复验 CLI 报告、默认安全发现和接收。两个实验 Run 的初始 CLI 与修复后用于活动上报的 CLI 来自不同候选，沿用同一已接受父调用。Windows Electron 可见链路的验收没有使用 NSIS 安装器。
 
-最终候选 CLI 的自主执行 + TDD 三仓验收通过。Run 从 Init 走到 Archive 和终态恢复。冷恢复保留首包，模拟规格 PR 响应丢失后，三条隔离 PR 只各发布一次。
+最终候选 CLI 的自主执行 + TDD 三仓验收通过，耗时 264.75 秒。Run 从 Init 走到 Archive 和终态恢复。冷恢复保留首包，模拟规格 PR 响应丢失后，三条隔离 PR 只各发布一次。包内容身份见[候选包验证](../../../verification/show-parallel-runs-in-desktop/verification-report.md)。
 
 ## 自动化回归和独立审查
 
+- 首次正式 Verify 有 1,328 项测试通过、4 项跳过、3 项失败。桌面策略摘要的组件名命中了保护 Build Configuration 的架构检查，已改用更准确的名称。另两项失败发生在实际 CLI 的 Evidence OTLP 导出。桌面接收器发现服务改变了 Cordis 的激活顺序，Evidence 构造时读取未激活的投递服务，随后一直使用空导出器。修复后在实际导出时解析该可选服务，保留自定义导出器和独立组合。两种 OTLP 配置、三组独立 Evidence 验证及架构回归共 29 项通过、1 项跳过。
 - 先复现相同 Run ID 跨 Workspace 混用序列、子 Agent 任务覆盖父 Work，以及旧首屏没有宫格和待办色级，再启用实现使回归通过。
 - 投影与接收验证同 ID 的不同轨迹、当前 Run 独立 freshness、迟到数据、长任务的真实里程碑、过期、历史收敛及远端隔离。
 - 由旧投影快照升级时，仍能区分两个 Workspace 中碰巧相同的事件身份，后到 Workspace 连续推进到第三条事件。
