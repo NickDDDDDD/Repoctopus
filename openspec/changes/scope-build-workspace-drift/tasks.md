@@ -15,4 +15,4 @@
 ## 3. 端到端验证
 
 - [x] 3.1 在 Windows 安装实际候选包，在模拟多仓分别复现只读仓同步、包外业务提交和相关输入变化，覆盖冷恢复并验证真实发布差异。**Acceptance:** 两个无关快进场景均续跑原 Run 到 Archive，相关变化场景仅复核受影响的范围，发布差异不含外部业务改动。**Requirements:** managed-work-execution#Runtime 必须按 Package write scope 推进 workspace revision、change-lifecycle#多仓 Build 漂移仅失效受影响的有效进度 <!-- comet-task:27901fb0-8bd8-479b-bc51-a4dba75a9b8c -->
-- [ ] 3.2 运行相关回归、正式 Verify 和独立审查，核对规划发布、Verify 配置补齐、纯 Runtime 输出清理及旧证据复用路径。**Acceptance:** 附带公开验收步骤与实际证据，已知阻塞和范围限制均可追溯。**Requirements:** change-lifecycle#Build Check 必须验证最终 workspace checkpoint、change-lifecycle#多仓 Build 漂移仅失效受影响的有效进度 <!-- comet-task:1cf5b00d-249f-46b3-af85-e58cbbfe1444 -->
+- [x] 3.2 运行相关回归、正式 Verify 和独立审查，核对规划发布、Verify 配置补齐、纯 Runtime 输出清理及旧证据复用路径。**Acceptance:** 附带公开验收步骤与实际证据，已知阻塞和范围限制均可追溯。**Requirements:** change-lifecycle#Build Check 必须验证最终 workspace checkpoint、change-lifecycle#多仓 Build 漂移仅失效受影响的有效进度 <!-- comet-task:1cf5b00d-249f-46b3-af85-e58cbbfe1444 -->

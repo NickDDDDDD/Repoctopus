@@ -36,4 +36,6 @@ Package content bytes: `6824477`
 
 ## 全量验证
 
-正在执行全量 `npm run verify`。Comet Build Check 与 Verify Guard 的结论将在实际检查结束后记录。
+Windows 上的完整 `npm run verify` 退出码为 0。Vitest 通过 1333 项，跳过 4 项。类型检查、lint、构建、生成物、品牌、架构、来源、Dashboard 审计、OpenSpec 严格校验和候选包摘要均通过。OpenSpec 共 16 项通过。完整日志 SHA-256 为 `825a581b87a6f302f3871206ad618a5084f223abb32dbd1a8300ca85e3366799`。
+
+早一轮未完成稳定检出的诊断执行出现组合摘要漂移、并发环境下的测试超时及缺失 Electron 二进制。补齐 Electron、更新 Comet 改造来源摘要和新生命周期定义的测试固定值后冻结实现，以上全量结果来自该检出。正式 Comet Verify 核验的是同一候选报告与可复现包内容。
