@@ -1297,18 +1297,23 @@ export function reduceChangeProjection(
 ): ChangeProjectionReduction {
   const runKey = projectionKey(envelope);
   const receptionKey = observationReceptionKey(envelope);
-  if (
-    current.seenEnvelopeIds.includes(receptionKey) ||
-    (current.seenEnvelopeIds.includes(envelope.envelopeId) &&
-      current.changes.some((change) => changeKey(change) === runKey))
-  ) {
+  const { runId, sequence } = envelope.identity;
+  if (current.seenEnvelopeIds.includes(receptionKey)) {
     return { snapshot: current, delta: null };
+  }
+  if (runKey && current.seenEnvelopeIds.includes(envelope.envelopeId)) {
+    const owners = current.changes.filter((change) => change.runId === runId);
+    const legacy =
+      owners.length === 1 && changeKey(owners[0]!) === runKey
+        ? current.receivedSequences[runId]
+        : undefined;
+    const received = current.receivedSequences[runKey] ?? legacy;
+    if (received?.includes(sequence)) return { snapshot: current, delta: null };
   }
   const next = structuredClone(current);
   next.version += 1;
   next.seenEnvelopeIds.push(receptionKey);
   next.seenEnvelopeIds.sort();
-  const { sequence } = envelope.identity;
   for (const change of next.changes) {
     const legacy = next.receivedSequences[change.runId];
     if (Array.isArray(legacy)) {

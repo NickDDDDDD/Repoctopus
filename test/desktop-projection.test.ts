@@ -129,6 +129,28 @@ describe('desktop change projection', () => {
     );
   });
 
+  it('recovers scoped deduplication when a legacy snapshot contains colliding envelope IDs', () => {
+    const legacy = [observation(1), observation(2)].reduce(
+      (state, envelope) => reduceChangeProjection(state, envelope).snapshot,
+      createEmptyChangeProjection(),
+    );
+    legacy.receivedSequences = { 'run-1': [1, 2] };
+    legacy.seenEnvelopeIds = [observation(1).envelopeId, observation(2).envelopeId];
+    const restored = [1, 2, 3].reduce((state, sequence) => {
+      const next = observation(sequence);
+      return reduceChangeProjection(state, {
+        ...next,
+        correlation: { ...next.correlation, workspaceId: 'new-workspace' },
+      }).snapshot;
+    }, legacy);
+    expect(
+      restored.changes.find(({ workspaceId }) => workspaceId === 'new-workspace'),
+    ).toMatchObject({
+      latestSequence: 3,
+      displayState: 'live',
+    });
+  });
+
   it('keeps child progress separate from the current Work and retires it on return', () => {
     const first = observation(1, {
       eventType: 'change.lifecycle.transitioned',
