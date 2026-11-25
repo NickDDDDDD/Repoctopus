@@ -7,10 +7,10 @@
 
 ## 2. 统一 Build 漂移判定与提交
 
-- [ ] 2.1 实现共用的 checkout 与 Git 变化分类，验证仓库身份、祖先关系、受管写入和外部变化。**Acceptance:** 分支切换、改写和无法观测不会误判为无关快进。**Requirements:** managed-work-execution#Runtime 必须按 Package write scope 推进 workspace revision <!-- comet-task:f04ef1a9-1c51-42a4-866b-0154830d2b25 -->
-- [ ] 2.2 将继续入口和 Execute Outcome 接入同一判定，使用受管提交保留合法进度和处理失效范围。**Acceptance:** 同一 Run 冷恢复保留有效包与审批，并发、丢失响应和未结算执行不会重复写入或留下部分进度。**Requirements:** change-lifecycle#多仓 Build 漂移仅失效受影响的有效进度 <!-- comet-task:6a8d1740-bd32-44ec-8876-9db430784db3 -->
-- [ ] 2.3 让 Build Check 依据同一观察绑定有效输入，复用现有 Evidence 失效及依赖传播。**Acceptance:** 已知输入变化只复核相关包及依赖者，无关快进保留有效结果，实际规划变化仍受既有审批约束。**Requirements:** change-lifecycle#Build Check 必须验证最终 workspace checkpoint、change-lifecycle#多仓 Build 漂移仅失效受影响的有效进度 <!-- comet-task:f1c147d9-9c78-458e-8d5d-c6175a0fb9d0 -->
-- [ ] 2.4 保持 Git 交付坐标和范围可验证，补齐阻塞时的公开诊断与恢复说明。**Acceptance:** 外部提交不会计为受管实现或混入发布，无法安全隔离时给出可行动的诊断。**Requirements:** managed-work-execution#Runtime 必须按 Package write scope 推进 workspace revision <!-- comet-task:3f4afe50-a396-41dd-b49d-8126ccb411ba -->
+- [x] 2.1 实现共用的 checkout 与 Git 变化分类，验证仓库身份、祖先关系、受管写入和外部变化。**Acceptance:** 分支切换、改写和无法观测不会误判为无关快进。**Requirements:** managed-work-execution#Runtime 必须按 Package write scope 推进 workspace revision <!-- comet-task:f04ef1a9-1c51-42a4-866b-0154830d2b25 -->
+- [x] 2.2 将继续入口和 Execute Outcome 接入同一判定，使用受管提交保留合法进度和处理失效范围。**Acceptance:** 同一 Run 冷恢复保留有效包与审批，并发、丢失响应和未结算执行不会重复写入或留下部分进度。**Requirements:** change-lifecycle#多仓 Build 漂移仅失效受影响的有效进度 <!-- comet-task:6a8d1740-bd32-44ec-8876-9db430784db3 -->
+- [x] 2.3 让 Build Check 依据同一观察绑定有效输入，复用现有 Evidence 失效及依赖传播。**Acceptance:** 已知输入变化只复核相关包及依赖者，无关快进保留有效结果，实际规划变化仍受既有审批约束。**Requirements:** change-lifecycle#Build Check 必须验证最终 workspace checkpoint、change-lifecycle#多仓 Build 漂移仅失效受影响的有效进度 <!-- comet-task:f1c147d9-9c78-458e-8d5d-c6175a0fb9d0 -->
+- [x] 2.4 保持 Git 交付坐标和范围可验证，补齐阻塞时的公开诊断与恢复说明。**Acceptance:** 外部提交不会计为受管实现或混入发布，无法安全隔离时给出可行动的诊断。**Requirements:** managed-work-execution#Runtime 必须按 Package write scope 推进 workspace revision <!-- comet-task:3f4afe50-a396-41dd-b49d-8126ccb411ba -->
 
 ## 3. 端到端验证
 
