@@ -26,10 +26,12 @@ function AgentAvatar({ agent, index }: { agent: ProjectedDelegation; index: numb
 }
 
 function AgentFacts({ agent }: { agent: ProjectedDelegation }) {
+  const label =
+    agent.executionId.length > 20 ? `…${agent.executionId.slice(-10)}` : agent.executionId;
   return (
     <div className="agent-facts">
-      <strong>
-        {agentRoles[agent.role]} · {agent.executionId}
+      <strong title={agent.executionId}>
+        {agentRoles[agent.role]} · {label}
       </strong>
       <span>{agent.repositoryId ?? '仓库尚未上报'}</span>
       <span>{agent.taskId ? `任务 ${agent.taskId}` : '任务尚未上报'}</span>

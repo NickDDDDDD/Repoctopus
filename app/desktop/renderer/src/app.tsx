@@ -10,12 +10,18 @@ export function App() {
 
   useEffect(() => {
     let active = true;
-    void window.repoctopusDesktop.currentState().then((next) => {
-      if (active) setState(next);
-    });
-    const unsubscribe = window.repoctopusDesktop.onState((next) => {
-      if (active) setState(next);
-    });
+    const updateState = (next: DesktopShellState) => {
+      if (!active) return;
+      setState((current) =>
+        current.phase === 'ready' &&
+        next.phase === 'ready' &&
+        next.projection.version < current.projection.version
+          ? { ...next, projection: current.projection }
+          : next,
+      );
+    };
+    void window.repoctopusDesktop.currentState().then(updateState);
+    const unsubscribe = window.repoctopusDesktop.onState(updateState);
     const unsubscribeProjection = window.repoctopusDesktop.onProjection((update) => {
       if (!active) return;
       setState((current) => {

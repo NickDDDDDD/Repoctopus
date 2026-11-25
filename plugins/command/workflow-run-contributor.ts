@@ -159,7 +159,13 @@ const plugin = ((context: Context) => {
 }) as Plugin;
 
 Object.assign(plugin, {
-  inject: ['commandRouter', 'managedWorkExecutor', 'runStore', 'workflowRuns'],
+  inject: [
+    'commandRouter',
+    'managedWorkExecutor',
+    'runStore',
+    'workExecutionAuthority',
+    'workflowRuns',
+  ],
 });
 
 export default plugin;

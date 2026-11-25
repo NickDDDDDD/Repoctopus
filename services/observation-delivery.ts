@@ -44,6 +44,7 @@ export class ObservationDelivery extends Service {
   static inject = ['desktopInstanceProbe'];
 
   private pipeline: Promise<ObservationPipeline> | null = null;
+  private readonly desktopProbe: Context['desktopInstanceProbe'] | undefined;
   private deferredRemote: ObservationDestination | undefined;
   private deferRemote = false;
 
@@ -52,6 +53,7 @@ export class ObservationDelivery extends Service {
     private readonly config: { workspaceRoot?: string; workspaceOtlpEndpoint?: string } = {},
   ) {
     super(context, 'observationDelivery');
+    this.desktopProbe = context.get('desktopInstanceProbe');
   }
 
   get workspaceOtlpEndpoint(): string | undefined {
@@ -59,7 +61,7 @@ export class ObservationDelivery extends Service {
   }
 
   async desktopConnection(): Promise<DesktopReceiverConnection | null> {
-    return (await this.ctx.desktopInstanceProbe?.connection()) ?? null;
+    return (await this.desktopProbe?.connection()) ?? null;
   }
 
   async append(envelopes: readonly ObservationEnvelope[]): Promise<void> {

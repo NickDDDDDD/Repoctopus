@@ -582,7 +582,7 @@ function RunCard({
             </button>
           </h2>
           <p className="run-id" title={change.runId}>
-            Run {change.runId}
+            Run {change.runId.length > 24 ? `…${change.runId.slice(-12)}` : change.runId}
           </p>
         </div>
         <button
@@ -596,8 +596,8 @@ function RunCard({
           <span aria-hidden="true">↗</span>
         </button>
       </header>
-      <BuildConfiguration change={change} />
       <PhaseRail change={change} compact />
+      <BuildConfiguration change={change} />
       <div className="run-card__work">
         <NextStep change={change} compact />
         <AgentStrip agents={agents} />
