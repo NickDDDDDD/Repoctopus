@@ -2,6 +2,8 @@
 comet_change: show-parallel-runs-in-desktop
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-25-show-parallel-runs-in-desktop
+status: final
 ---
 
 ## Context

@@ -2,6 +2,7 @@
 change: show-parallel-runs-in-desktop
 design-doc: openspec/changes/show-parallel-runs-in-desktop/design.md
 base-ref: 406dee753136532fc60973c1d91129fe43001982
+archived-with: 2026-11-25-show-parallel-runs-in-desktop
 ---
 
 # 并行 Run 桌面工作台实施计划
