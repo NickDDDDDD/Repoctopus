@@ -10,14 +10,14 @@ Repoctopus 按团队配置推进需求确认、设计、实现、验证和归档
 
 ### 获取 CLI
 
-准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。下面的接入步骤适用于 `v0.1.4`。先在 GitHub Releases 确认该版本的安装包已公开，再任选一种方式安装。使用旧版时请查阅对应 Tag 的 README。[GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases)
+准备 Git，以及 Node.js 22.16 或更新的 22.x 版本，或 Node.js 24 及以上。下面的接入步骤适用于 `v0.1.5`。先在 GitHub Releases 确认该版本的安装包已公开，再任选一种方式安装。使用旧版时请查阅对应 Tag 的 README。[GitHub Releases](https://github.com/NickDDDDDD/Repoctopus/releases)
 
 **方式一：直接从发布地址安装**
 
 在任意目录打开 PowerShell，运行下面的命令。
 
 ```powershell
-npm.cmd install --global --ignore-scripts --legacy-peer-deps https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.4/repoctopus-0.1.4.tgz
+npm.cmd install --global --ignore-scripts --legacy-peer-deps https://github.com/NickDDDDDD/Repoctopus/releases/download/v0.1.5/repoctopus-0.1.4.tgz
 ```
 
 **方式二：手动下载 `.tgz` 后安装**
