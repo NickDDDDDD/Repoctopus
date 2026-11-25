@@ -183,6 +183,8 @@ const definitions: readonly BuiltinDefinition[] = [
       'services/observation-pipeline.ts',
       'domains/telemetry/observation-contract.ts',
       'domains/trajectory/observation.ts',
+      'domains/trajectory/projection-view.ts',
+      'domains/work-execution/delegation-activity.ts',
       'app/desktop/host/otlp-envelope-codec.ts',
     ],
   },
@@ -200,7 +202,12 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: { 'desktop-projection': '1' },
     },
     plugin: DesktopProjection,
-    sourceFiles: ['services/desktop-projection.ts', 'domains/trajectory/projection.ts'],
+    sourceFiles: [
+      'services/desktop-projection.ts',
+      'domains/trajectory/projection.ts',
+      'domains/trajectory/projection-view.ts',
+      'domains/work-execution/delegation-activity.ts',
+    ],
   },
   {
     descriptor: {

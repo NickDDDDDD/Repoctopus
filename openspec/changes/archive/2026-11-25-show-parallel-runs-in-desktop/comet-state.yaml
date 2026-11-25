@@ -1,0 +1,3977 @@
+# comet-execution: managed-run
+change_id: 140bb305-70f2-4f2c-bbba-aecb63005b91
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 406dee753136532fc60973c1d91129fe43001982
+design_doc: openspec/changes/archive/2026-11-25-show-parallel-runs-in-desktop/design.md
+plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+branch_status: pending
+created_at: 2026-11-25
+verified_at: 2026-11-25
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/show-parallel-runs-in-desktop
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-25-show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+handoff_hash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 11012d33a1140d39426a0e542c5cae976f12a68a323032ecdf00502b0a38895f
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: show-parallel-runs-in-desktop
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 932335d3ffe0941c6c90f1298ca192dd45ad2d288309d7919021773df66db4f5
+    input:
+      change: show-parallel-runs-in-desktop
+      changeDir: openspec/changes/show-parallel-runs-in-desktop
+      workspaceBaseline:
+        ref: 363964d7-56df-487a-ab2a-5687b14f9694
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: 406dee753136532fc60973c1d91129fe43001982
+      boundBranch: codex/show-parallel-runs-in-desktop
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 10
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-25
+      designDoc: openspec/changes/archive/2026-11-25-show-parallel-runs-in-desktop/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-25-show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+      handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+      isolation: worktree
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+      verifiedAt: 2026-11-25
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 38
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-f95ea9164e4a24ff9718d13dbecfa667c08461d94f61bc641710aebf85ead3d3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:1
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 83c90b1864569b744b94c995f0c10881874dc7fe32d0fa5b75cb74fa12189af5
+        outcome:
+          actionId: show-parallel-runs-in-desktop:1
+          attempt: 1
+          claimToken: portable-f95ea9164e4a24ff9718d13dbecfa667c08461d94f61bc641710aebf85ead3d3
+          inputHash: 83c90b1864569b744b94c995f0c10881874dc7fe32d0fa5b75cb74fa12189af5
+          outcomeId: 386bef5a-dbf9-4658-9e30-945e838c8599
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bc6122ab06f6b3831398dcf386731abd5179f2d8ffb99fb2182f1cf2e31cb769
+            outcomeId: 386bef5a-dbf9-4658-9e30-945e838c8599
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-641ae7761cce640dc87e500dffaeec58586acf8d66f9ffdf7b6007aaeb765c35
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:4
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: a2246e331346ede31b38660a3ec0255e4bb8a2473dd3fd4223b1c92ea7533f36
+        outcome:
+          actionId: show-parallel-runs-in-desktop:4
+          attempt: 1
+          claimToken: portable-641ae7761cce640dc87e500dffaeec58586acf8d66f9ffdf7b6007aaeb765c35
+          inputHash: a2246e331346ede31b38660a3ec0255e4bb8a2473dd3fd4223b1c92ea7533f36
+          outcomeId: show-parallel-runs-in-desktop:4:1:executor-result
+          output:
+            contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d098efeff3e4c10f1c514f4bc5455f17839968b308a45e19d10948ee9a19a18f
+            outcomeId: show-parallel-runs-in-desktop:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-3e67fdf5e5e7f41b584733eac73bf872cabdd0f92c836e161e1cb10dca6462dd
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:5
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 5fa968f725e3854e6689338a267665152b6dd8911795859073627e303a2b96e8
+        outcome:
+          actionId: show-parallel-runs-in-desktop:5
+          attempt: 1
+          claimToken: portable-3e67fdf5e5e7f41b584733eac73bf872cabdd0f92c836e161e1cb10dca6462dd
+          inputHash: 5fa968f725e3854e6689338a267665152b6dd8911795859073627e303a2b96e8
+          outcomeId: 0e88d5a5-5929-466a-97af-7f666d9d3306
+          output:
+            handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+            handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+            proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+              换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store 锁内校验受管 Host
+              的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent 边界并通过本地 OTLP
+              推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用 Windows 上实际可派发的宿主及
+              Electron 验证。设计见当前变更的 design.md。delta spec 无调整。
+            requirementsEvidence:
+              contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+              ref: openspec/changes/show-parallel-runs-in-desktop
+            sourceEvidence:
+              contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+              ref: openspec/changes/show-parallel-runs-in-desktop
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: dd0c7353e5f1f7aafe72b294243d7ce1a782108f6bfe3d68eb6577b2db48bb64
+            outcomeId: 0e88d5a5-5929-466a-97af-7f666d9d3306
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-2e7b2686557b4abf28c4fa9232c2f09c9fe79fbd511682308166960e40a7f3d3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:7
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: bb02985fa823652209f00e703ef1e3c329f87265cf9673f664cf92cdf0090215
+        outcome:
+          actionId: show-parallel-runs-in-desktop:7
+          attempt: 1
+          claimToken: portable-2e7b2686557b4abf28c4fa9232c2f09c9fe79fbd511682308166960e40a7f3d3
+          inputHash: bb02985fa823652209f00e703ef1e3c329f87265cf9673f664cf92cdf0090215
+          outcomeId: eab18bed-5ea5-4a24-9ba5-629324daa76e
+          output:
+            designDoc: openspec/changes/show-parallel-runs-in-desktop/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 641d7a67f912571773e51ed398121d169c5ea6a643ceb0bc6dcda5f1bffddcc8
+            outcomeId: eab18bed-5ea5-4a24-9ba5-629324daa76e
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-4ed3d6bda6deb2e29991312276cf3d3d8c9698e7f356c8ce804e36140ae2371f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:9
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 1579852d944f27e6d5494e870adf33bc9f1a6daec63a605d177732afc817c6b4
+        outcome:
+          actionId: show-parallel-runs-in-desktop:9
+          attempt: 1
+          claimToken: portable-4ed3d6bda6deb2e29991312276cf3d3d8c9698e7f356c8ce804e36140ae2371f
+          inputHash: 1579852d944f27e6d5494e870adf33bc9f1a6daec63a605d177732afc817c6b4
+          outcomeId: 6dfc95c6-ad49-4bfe-b27c-3c5aff68d509
+          output:
+            boundBranch: codex/show-parallel-runs-in-desktop
+            buildMode: autonomous
+            directOverride: false
+            isolation: worktree
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c072f0a2e1998ebf36cdb473e7e14ff0d3baea97f547795c18ebbf760f55b215
+            outcomeId: 6dfc95c6-ad49-4bfe-b27c-3c5aff68d509
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-3b6d77ca645c4e8b7a241fd1f1003987e3287f89e266eadb5c2ffee5040aae5a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:11
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 4fa240500e0fc24968c2d6c96a23417c13fd44b05e1a97c3f6706fa127c3d2be
+        outcome:
+          actionId: show-parallel-runs-in-desktop:11
+          attempt: 1
+          claimToken: portable-3b6d77ca645c4e8b7a241fd1f1003987e3287f89e266eadb5c2ffee5040aae5a
+          inputHash: 4fa240500e0fc24968c2d6c96a23417c13fd44b05e1a97c3f6706fa127c3d2be
+          outcomeId: 63f86555-415c-49d4-add8-a6c630d4e43b
+          output:
+            designEvidence:
+              contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+              ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+            plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+            planEvidence:
+              contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+              ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+            taskRevision: fabe9db3236359a4e97b5f87d809321bfe602ee623aefe90632d783f9bd9785f
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 08b5c90378c66356a178114bf0b5a57df4142b3bbf72eebf6627dcd508cc9bc5
+            outcomeId: 63f86555-415c-49d4-add8-a6c630d4e43b
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: show-parallel-runs-in-desktop-host-build
+          token: portable-606cd28fed720e80e625fd4c44f6a9946100685b06c3dd428588710aca808873
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:13
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 68800ec34b2b3dcde4531db036c4dcfe07ba2179228f37c73e154acfed5e844c
+        outcome:
+          actionId: show-parallel-runs-in-desktop:13
+          attempt: 1
+          claimToken: portable-606cd28fed720e80e625fd4c44f6a9946100685b06c3dd428588710aca808873
+          inputHash: 68800ec34b2b3dcde4531db036c4dcfe07ba2179228f37c73e154acfed5e844c
+          outcomeId: b7170f65-855f-4f05-ac00-b8a5b22bb27f
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 91d65d044efa0904940593e570217aa821adb04b54fc848f27572b470f2e38a9
+            outcomeId: b7170f65-855f-4f05-ac00-b8a5b22bb27f
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-b7f2f4c9f3858656cafeeb68ffcb50686a8220f9aa56e34add2ea7811f0117d6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:14
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 6388caa8a0bbc0a3220b0bb2d342653286b3ed159b6487436dad84c77244d8d4
+        outcome:
+          actionId: show-parallel-runs-in-desktop:14
+          attempt: 1
+          claimToken: portable-b7f2f4c9f3858656cafeeb68ffcb50686a8220f9aa56e34add2ea7811f0117d6
+          inputHash: 6388caa8a0bbc0a3220b0bb2d342653286b3ed159b6487436dad84c77244d8d4
+          outcomeId: 43861042-7b84-4223-992e-801c836aa896
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+            cwd: .
+            environment: 9094d05c0ba3b730fb8700a04b003e281829f844f14f42d291eb0c5fbbac04ce
+            exitCode: 0
+            inputAfter: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+            inputBefore: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+            manifestHash: 5398369cea258d74469dc567ddfa122df1c4a62d01b0a964929ca881ac6cdf47
+            manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/11888b83-6d2f-4e41-a2f6-2747e661c333.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 4a8378d346bf6004150fbd563ab352fc1a3842dbfd7309d6eeb7cf090278bf55
+            outcomeId: 43861042-7b84-4223-992e-801c836aa896
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-61679e7713367742362d1656b5da8459bb7600106d7d21affee09cce81e6643c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:16
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: e4b9d643e551dcc744413534ad49fa5aff323a6bdb5a9c2e07978f4f9742300c
+        outcome:
+          actionId: show-parallel-runs-in-desktop:16
+          attempt: 1
+          claimToken: portable-61679e7713367742362d1656b5da8459bb7600106d7d21affee09cce81e6643c
+          inputHash: e4b9d643e551dcc744413534ad49fa5aff323a6bdb5a9c2e07978f4f9742300c
+          outcomeId: 2c9e7de3-33e5-4ab9-88a6-02fa7508bcb3
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b395751e7b986e551a567de1b8c8b6bee6aef031fc0cf7bf5221ed2f642be456
+            outcomeId: 2c9e7de3-33e5-4ab9-88a6-02fa7508bcb3
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-b4d7239e2c7513e6663a1fa616939f355303293bc1788cdfdd6a37a93d3b6ac4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:18
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 70f302349597f9cc98d9b7c4fe81244a16d3691dbded2b27fe183f536f598b0c
+        outcome:
+          actionId: show-parallel-runs-in-desktop:18
+          attempt: 1
+          claimToken: portable-b4d7239e2c7513e6663a1fa616939f355303293bc1788cdfdd6a37a93d3b6ac4
+          inputHash: 70f302349597f9cc98d9b7c4fe81244a16d3691dbded2b27fe183f536f598b0c
+          outcomeId: d73eee8c-a3d7-4dbc-ac9b-983135b1dde6
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: badb7816558d1645a24902bfaca9aa838500ea9ca372815c0add60388003d2d8
+            cwd: .
+            deliveryInputs: {}
+            environment: f6e308f71352d9e64df00a1214325326a2aca18d1a1277c88d3895d24e5aa3b5
+            exitCode: 1
+            inputAfter: 7a11dddcc039192137f0f3c09590726b049db0f55c73dc11d337ede629761d97
+            inputBefore: 7a11dddcc039192137f0f3c09590726b049db0f55c73dc11d337ede629761d97
+            manifestHash: bb526d96aeecce5bb1def616b5569138b63d10d87928522dc3d5e1c01e84a817
+            manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/17425858-1a5f-4fac-afca-5937030e81e8.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/fabb2b45-3118-4b9a-83da-d928b36f1c64.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 461a17532d0e51d8858a7250599d6d882c4e70aa67cb4c36f46b785564e561a2
+            outcomeId: d73eee8c-a3d7-4dbc-ac9b-983135b1dde6
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-8e3bd9b0ed9662499780698f45a72372f9dcb43e5c07d2d34b5f9d0e45d58b2a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:19
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 608f7a5e8c402a670e8ce85bc5f7160de7ccfffa87fdca95511e2d44ba60859e
+        outcome:
+          actionId: show-parallel-runs-in-desktop:19
+          attempt: 1
+          claimToken: portable-8e3bd9b0ed9662499780698f45a72372f9dcb43e5c07d2d34b5f9d0e45d58b2a
+          inputHash: 608f7a5e8c402a670e8ce85bc5f7160de7ccfffa87fdca95511e2d44ba60859e
+          outcomeId: f516d43c-9dd0-45ea-a9d2-b5f48bbc488a
+          output:
+            designEvidence:
+              contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+              ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+            plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+            planEvidence:
+              contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+              ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+            taskRevision: fabe9db3236359a4e97b5f87d809321bfe602ee623aefe90632d783f9bd9785f
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8340b37f6588932efb14b8fe6d8b751c3e2950dc8ab28b79f0babe1494e3ebfc
+            outcomeId: f516d43c-9dd0-45ea-a9d2-b5f48bbc488a
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: show-parallel-runs-in-desktop-host-build-repair
+          token: portable-8ee9d9c3c36281283330bd5b9dd8e42d07fd20dfe68da195dec5d0709c9668c6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:21
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 608f7a5e8c402a670e8ce85bc5f7160de7ccfffa87fdca95511e2d44ba60859e
+        outcome:
+          actionId: show-parallel-runs-in-desktop:21
+          attempt: 1
+          claimToken: portable-8ee9d9c3c36281283330bd5b9dd8e42d07fd20dfe68da195dec5d0709c9668c6
+          inputHash: 608f7a5e8c402a670e8ce85bc5f7160de7ccfffa87fdca95511e2d44ba60859e
+          outcomeId: 4fb486a1-2d8a-4042-bdb1-f5ea02d97172
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3e451d7d5813cb6fe0621d9112022ceb41d7ec327958bdc83a61b151957e751f
+            outcomeId: 4fb486a1-2d8a-4042-bdb1-f5ea02d97172
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-0e93056f1c7a8bcdb719d4b5b8b89863ba9a9cfe0e6d09daf241ceef398707bd
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:22
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 608f7a5e8c402a670e8ce85bc5f7160de7ccfffa87fdca95511e2d44ba60859e
+        outcome:
+          actionId: show-parallel-runs-in-desktop:22
+          attempt: 1
+          claimToken: portable-0e93056f1c7a8bcdb719d4b5b8b89863ba9a9cfe0e6d09daf241ceef398707bd
+          inputHash: 608f7a5e8c402a670e8ce85bc5f7160de7ccfffa87fdca95511e2d44ba60859e
+          outcomeId: dedf3762-f0ff-4e7d-9e4a-664675ff3362
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 2dcf45bf97cb9f3614117f59f55b3999ab589ac883e32a4b36f4c2cd0fe68be1
+            cwd: .
+            environment: 9094d05c0ba3b730fb8700a04b003e281829f844f14f42d291eb0c5fbbac04ce
+            exitCode: 0
+            inputAfter: 934e8e692ebf9ee0ddc81898cfc839d10985e06a0b54e819f760e429024a61b0
+            inputBefore: 934e8e692ebf9ee0ddc81898cfc839d10985e06a0b54e819f760e429024a61b0
+            manifestHash: cd16cbbda718e2265e75da65018318a374f45d1e315984892c5f548dd4ca5eb4
+            manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/05f1eeaa-8181-47f2-950a-13bb244de456.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/4e1940f4-8f97-47b7-860e-d14db1d83c03.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1042cb329edd2180f856b1253de408eed0119529690c62cca90e5685d2e0225d
+            outcomeId: dedf3762-f0ff-4e7d-9e4a-664675ff3362
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-4e3682b44192c15087f929cf303d6e2529617e64cfa6393b23123a1173e1a180
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:24
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 065733b3780402d4a591b02cd612282d4a07ed716768665c82062649628f27c4
+        outcome:
+          actionId: show-parallel-runs-in-desktop:24
+          attempt: 1
+          claimToken: portable-4e3682b44192c15087f929cf303d6e2529617e64cfa6393b23123a1173e1a180
+          inputHash: 065733b3780402d4a591b02cd612282d4a07ed716768665c82062649628f27c4
+          outcomeId: ff65bbad-efdd-4e34-90f7-128d0d96e122
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1e1e4f7792f6efa1bd118d605e41499a6a44d84486ebde15172f2a2830421aed
+            outcomeId: ff65bbad-efdd-4e34-90f7-128d0d96e122
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-d025fb4e5661a18a9ce8ae6151480ed3fcb69ac392b52d583857b2ddfd10d634
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:26
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: cf55e1710a54c9c7b700015f15a1ec5dc1c806f07c37a0f8e739b2749b8bddc2
+        outcome:
+          actionId: show-parallel-runs-in-desktop:26
+          attempt: 1
+          claimToken: portable-d025fb4e5661a18a9ce8ae6151480ed3fcb69ac392b52d583857b2ddfd10d634
+          inputHash: cf55e1710a54c9c7b700015f15a1ec5dc1c806f07c37a0f8e739b2749b8bddc2
+          outcomeId: 808ffa1b-b784-47d5-8c17-acd1fc1a8f68
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: 0143c331d27b791a85d4eeeec5c010ee0732273344ef47987003838444e4e447
+            cwd: .
+            deliveryInputs: {}
+            environment: f6e308f71352d9e64df00a1214325326a2aca18d1a1277c88d3895d24e5aa3b5
+            exitCode: 0
+            inputAfter: 54659dba3a1e8638a47beaaf5fe0c8ba283f475376ccae3d42eca21d105d37bf
+            inputBefore: 54659dba3a1e8638a47beaaf5fe0c8ba283f475376ccae3d42eca21d105d37bf
+            manifestHash: 54c7f7c3b0542d27b3b781f9a338df0aa66d89c2f7c6a26cedb1df8a41881893
+            manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/3b04f6e0-8017-4cb3-918b-1af4a146492d.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/f63eddc3-ef8a-4532-8f22-13c61f837467.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a8cef7b84b7bdeb78cd469f4773998cf8245261d9e25582346c57ebacb5ed192
+            outcomeId: 808ffa1b-b784-47d5-8c17-acd1fc1a8f68
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-50dbe2249cfbaea58b0368243f436ee216bb9418a98202078b029d98f2b077f3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:28
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: d12f0945cad43eea8ddfa288bdbd893ab718586f0f0c0083f1a1fdf43e0ddf06
+        outcome:
+          actionId: show-parallel-runs-in-desktop:28
+          attempt: 1
+          claimToken: portable-50dbe2249cfbaea58b0368243f436ee216bb9418a98202078b029d98f2b077f3
+          inputHash: d12f0945cad43eea8ddfa288bdbd893ab718586f0f0c0083f1a1fdf43e0ddf06
+          outcomeId: 60e2af31-8515-42e0-a5c5-e19610e4b2c2
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档并行 Run 桌面工作台，将四项已验证要求并入 desktop-observability-dashboard 和
+              development-telemetry，推送本分支并创建目标为 origin/main 的 PR，CI 通过后合入。本次不发布
+              Release。
+            targetBranch: codex/show-parallel-runs-in-desktop
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 34643cf87587a8044378461010af8b115e0d061db2bf251b6bcc2d27107cbc4f
+            outcomeId: 60e2af31-8515-42e0-a5c5-e19610e4b2c2
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-5534109e4d514b7b0961b3b55abaf34b9590c6460a9636711f7b79f3632d888e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:30
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: dd8e8ced12d010e604daacc4d1bbacbfb4ef9ada7223501bf7e5f71f4e725fa0
+        outcome:
+          actionId: show-parallel-runs-in-desktop:30
+          attempt: 1
+          claimToken: portable-5534109e4d514b7b0961b3b55abaf34b9590c6460a9636711f7b79f3632d888e
+          inputHash: dd8e8ced12d010e604daacc4d1bbacbfb4ef9ada7223501bf7e5f71f4e725fa0
+          outcomeId: 7fff63b1-3453-4b70-b41b-af794e9feb4e
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2abd684d2eebdb304afb659f3d73c04d68bb8f9264364270c8f71b6bc92c7569
+            outcomeId: 7fff63b1-3453-4b70-b41b-af794e9feb4e
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-8015ee92391e951dd90d27a9948a78a4cded80e9cc9b7c7091095ff8c33ceef2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:32
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: dd8e8ced12d010e604daacc4d1bbacbfb4ef9ada7223501bf7e5f71f4e725fa0
+        outcome:
+          actionId: show-parallel-runs-in-desktop:32
+          attempt: 1
+          claimToken: portable-8015ee92391e951dd90d27a9948a78a4cded80e9cc9b7c7091095ff8c33ceef2
+          inputHash: dd8e8ced12d010e604daacc4d1bbacbfb4ef9ada7223501bf7e5f71f4e725fa0
+          outcomeId: 708db681-3418-472a-b888-967fc476ad65
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 7
+            contentHash: 4bc48f3975fbc35e26a95ed456a5989707e3baf0f735d1904df9dcc1eeadac71
+            cwd: .
+            deliveryInputs: {}
+            environment: f6e308f71352d9e64df00a1214325326a2aca18d1a1277c88d3895d24e5aa3b5
+            exitCode: 0
+            inputAfter: 41904e168b5b5c8c0065428c5137afce5abab0ef0ea552e5d700e9f366650a7c
+            inputBefore: 41904e168b5b5c8c0065428c5137afce5abab0ef0ea552e5d700e9f366650a7c
+            manifestHash: 0082b4f2ff635f69514a88647d64a0e900c15d52ab300fb83c57cc78f1a66e7b
+            manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/fbf292de-5e75-4d15-971b-b79ef757e89f.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/96b7bbde-68e8-42b8-ba7f-6e8e4515efd9.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 08dea1362809f1d75a8ec22c19358009a75972bd59b8565387d4862439b9c02e
+            outcomeId: 708db681-3418-472a-b888-967fc476ad65
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-c85b26c9cffd43ebad4ec5b84192060515f9271a0efcca7447e9adfdc85953b3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:34
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 4a46bb582e460a97cb52410464713b5abd474d174e1d9d5c64c9c1eb6691b438
+        outcome:
+          actionId: show-parallel-runs-in-desktop:34
+          attempt: 1
+          claimToken: portable-c85b26c9cffd43ebad4ec5b84192060515f9271a0efcca7447e9adfdc85953b3
+          inputHash: 4a46bb582e460a97cb52410464713b5abd474d174e1d9d5c64c9c1eb6691b438
+          outcomeId: 95e7d668-f218-4e92-bff6-74fe6ba16a37
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 归档并行 Run 桌面工作台，将四项已验证要求并入 desktop-observability-dashboard 和
+              development-telemetry，推送本分支并创建目标为 origin/main 的 PR，CI 通过后合入。本次不发布
+              Release。
+            targetBranch: codex/show-parallel-runs-in-desktop
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9c065cc1752795eac5255a9a2de819ba413fbff6e12da3a9aff6d69a4c0dae41
+            outcomeId: 95e7d668-f218-4e92-bff6-74fe6ba16a37
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-8599b68a2d47a97a9f787f2ea7253e6e2a1bdad2d6262a640d3334ee01f86544
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:36
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 118a140dafaba05d7f72f5a6c04e968b9b97bd3ef7c3a3898c061ec645b2a231
+        outcome:
+          actionId: show-parallel-runs-in-desktop:36
+          attempt: 1
+          claimToken: portable-8599b68a2d47a97a9f787f2ea7253e6e2a1bdad2d6262a640d3334ee01f86544
+          inputHash: 118a140dafaba05d7f72f5a6c04e968b9b97bd3ef7c3a3898c061ec645b2a231
+          outcomeId: 4f6c4f1c-ee41-4a66-8640-68f0a362bc6a
+          output:
+            baseCommit: a0f705ab9e3cf1c4ff7da196d4d6eb40e414dfea
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/show-parallel-runs-in-desktop
+            verifiedBranch: codex/show-parallel-runs-in-desktop
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f1879fde37bf91db0046a83d4779faebd55a68cbe6cf799528d46c3c1bcfe903
+            outcomeId: 4f6c4f1c-ee41-4a66-8640-68f0a362bc6a
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-28709b73e08dc6e922bd55b1ab574612e9164b0f1065c7a71f287ecde5223112
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:37
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 72e4e6c2d87a0c50c6917ee15f2b290ec04acdf7b6914757bc5bb83f298279a1
+        outcome:
+          actionId: show-parallel-runs-in-desktop:37
+          artifacts:
+            - sha256: dd5008b61358a8647b77b0577ee8f57e14ed228bf606bc98e8a35fd951f5df63
+              uri: openspec/changes/archive/2026-11-25-show-parallel-runs-in-desktop/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-28709b73e08dc6e922bd55b1ab574612e9164b0f1065c7a71f287ecde5223112
+          inputHash: 72e4e6c2d87a0c50c6917ee15f2b290ec04acdf7b6914757bc5bb83f298279a1
+          outcomeId: f81ba717-ba9d-458c-b927-63b65133f8df
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-25-show-parallel-runs-in-desktop
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9c1336da52b004c35e915f80eaa2c545c63ae88e8060dbb49dcd988da59b3ef5
+            outcomeId: f81ba717-ba9d-458c-b927-63b65133f8df
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: show-parallel-runs-in-desktop:38
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: b01b5269fb8dd15e44f6f9c5235a27ae0f0fa68092fbb22fc6207c2dd85c9b7c
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      show-parallel-runs-in-desktop:1:
+        results: {}
+        sequence: 1
+      show-parallel-runs-in-desktop:11:
+        results: {}
+        sequence: 11
+      show-parallel-runs-in-desktop:13:
+        results: {}
+        sequence: 13
+      show-parallel-runs-in-desktop:14:
+        results: {}
+        sequence: 14
+      show-parallel-runs-in-desktop:16:
+        results: {}
+        sequence: 16
+      show-parallel-runs-in-desktop:18:
+        results: {}
+        sequence: 18
+      show-parallel-runs-in-desktop:19:
+        results: {}
+        sequence: 19
+      show-parallel-runs-in-desktop:21:
+        results: {}
+        sequence: 21
+      show-parallel-runs-in-desktop:22:
+        results: {}
+        sequence: 22
+      show-parallel-runs-in-desktop:24:
+        results: {}
+        sequence: 24
+      show-parallel-runs-in-desktop:26:
+        results: {}
+        sequence: 26
+      show-parallel-runs-in-desktop:28:
+        results: {}
+        sequence: 28
+      show-parallel-runs-in-desktop:30:
+        results: {}
+        sequence: 30
+      show-parallel-runs-in-desktop:32:
+        results: {}
+        sequence: 32
+      show-parallel-runs-in-desktop:34:
+        results: {}
+        sequence: 34
+      show-parallel-runs-in-desktop:36:
+        results: {}
+        sequence: 36
+      show-parallel-runs-in-desktop:37:
+        results: {}
+        sequence: 37
+      show-parallel-runs-in-desktop:38:
+        results: {}
+        sequence: 38
+      show-parallel-runs-in-desktop:4:
+        results: {}
+        sequence: 4
+      show-parallel-runs-in-desktop:5:
+        results: {}
+        sequence: 5
+      show-parallel-runs-in-desktop:7:
+        results: {}
+        sequence: 7
+      show-parallel-runs-in-desktop:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: show-parallel-runs-in-desktop:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+              ref: openspec/changes/show-parallel-runs-in-desktop
+        proposalHash: db33aa92324ea78ecd8d4a0d47d89ac4400e9bb8201fb6197f607d47b3d152d8
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+          choice: approved
+          proposalHash: db33aa92324ea78ecd8d4a0d47d89ac4400e9bb8201fb6197f607d47b3d152d8
+      - id: show-parallel-runs-in-desktop:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+              handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+              proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store 锁内校验受管 Host
+                的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent 边界并通过本地 OTLP
+                推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用 Windows 上实际可派发的宿主及
+                Electron 验证。设计见当前变更的 design.md。delta spec 无调整。
+              requirementsEvidence:
+                contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                ref: openspec/changes/show-parallel-runs-in-desktop
+              sourceEvidence:
+                contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                ref: openspec/changes/show-parallel-runs-in-desktop
+        proposalHash: 1d223bdd8965c9b5a89bba79983fa60a1ff64462f80c3a964a66111919940e62
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-1d223bdd8965c9b5a89bba79983fa60a1ff64462f80c3a964a66111919940e62-approved
+          choice: approved
+          proposalHash: 1d223bdd8965c9b5a89bba79983fa60a1ff64462f80c3a964a66111919940e62
+      - id: show-parallel-runs-in-desktop:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.build.configure:
+              boundBranch: codex/show-parallel-runs-in-desktop
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: f31d963e271ddcee7bd300be8546afc8eed9ce507818f723d7bc6752a3cb909a
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 72984c1f-34bb-46e9-a9d9-a7bd3e61c943
+          choice: approved
+          proposalHash: f31d963e271ddcee7bd300be8546afc8eed9ce507818f723d7bc6752a3cb909a
+      - id: show-parallel-runs-in-desktop:29
+        stepId: full.archive.confirm
+        sequence: 29
+        status: resolved
+        proposal:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档并行 Run 桌面工作台，将四项已验证要求并入 desktop-observability-dashboard 和
+                development-telemetry，推送本分支并创建目标为 origin/main 的 PR，CI
+                通过后合入。本次不发布 Release。
+              targetBranch: codex/show-parallel-runs-in-desktop
+        proposalHash: 7c8ea96c0c250fa24c52e7f6c24b4d46787833ee63b638596cc9ad523ded252b
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-7c8ea96c0c250fa24c52e7f6c24b4d46787833ee63b638596cc9ad523ded252b-reverify
+          choice: reverify
+          proposalHash: 7c8ea96c0c250fa24c52e7f6c24b4d46787833ee63b638596cc9ad523ded252b
+      - id: show-parallel-runs-in-desktop:35
+        stepId: full.archive.confirm
+        sequence: 35
+        status: resolved
+        proposal:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档并行 Run 桌面工作台，将四项已验证要求并入 desktop-observability-dashboard 和
+                development-telemetry，推送本分支并创建目标为 origin/main 的 PR，CI
+                通过后合入。本次不发布 Release。
+              targetBranch: codex/show-parallel-runs-in-desktop
+        proposalHash: 7c8ea96c0c250fa24c52e7f6c24b4d46787833ee63b638596cc9ad523ded252b
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-7c8ea96c0c250fa24c52e7f6c24b4d46787833ee63b638596cc9ad523ded252b-pr
+          choice: pr
+          proposalHash: 7c8ea96c0c250fa24c52e7f6c24b4d46787833ee63b638596cc9ad523ded252b
+    evidenceWaits:
+      - id: show-parallel-runs-in-desktop:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/show-parallel-runs-in-desktop
+          contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+          submissionId: f92e1a24-1273-42fc-9ff2-569bbcc8ad3b
+      - id: show-parallel-runs-in-desktop:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+          contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+          submissionId: 47d561eb-c443-4fc6-a9b1-c4ba8b93a0ee
+      - id: show-parallel-runs-in-desktop:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+          contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+          submissionId: 80cb605b-cacd-459a-bece-11fb33d8eb73
+      - id: show-parallel-runs-in-desktop:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+          contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+          submissionId: 6f2a5488-3e63-408e-8afd-2c717db94fb4
+      - id: show-parallel-runs-in-desktop:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+          contentHash: ef226df4181626d77c387d0a5a5cef3b537b8f54e4cf600763fef24718d671ea
+          submissionId: ba27a20d-37b0-402d-a439-ff011a1752d2
+      - id: show-parallel-runs-in-desktop:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+          contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+          submissionId: d6d5ad62-9956-4f3e-8cb8-8cc9ee7d758a
+      - id: show-parallel-runs-in-desktop:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/4e1940f4-8f97-47b7-860e-d14db1d83c03.log
+          contentHash: 2dcf45bf97cb9f3614117f59f55b3999ab589ac883e32a4b36f4c2cd0fe68be1
+          submissionId: f6a3e6ee-859b-48e1-9333-de07928fd39a
+      - id: show-parallel-runs-in-desktop:25
+        stepId: full.verify.report.evidence
+        sequence: 25
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+          contentHash: 0dac6897aff14a1e1eb50d1cc4f96110bb90bccb70a4ac38f852e84cb1012344
+          submissionId: b1a8dc39-71d3-4547-bf66-08b3f400b27a
+      - id: show-parallel-runs-in-desktop:27
+        stepId: full.verify.check.evidence
+        sequence: 27
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/f63eddc3-ef8a-4532-8f22-13c61f837467.log
+          contentHash: 0143c331d27b791a85d4eeeec5c010ee0732273344ef47987003838444e4e447
+          submissionId: 57d7de0d-ed03-4324-8b1d-2b96c9561c49
+      - id: show-parallel-runs-in-desktop:31
+        stepId: full.verify.report.evidence
+        sequence: 31
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+          contentHash: 0dac6897aff14a1e1eb50d1cc4f96110bb90bccb70a4ac38f852e84cb1012344
+          submissionId: e38763b3-611e-40eb-8fba-e9d72c021658
+      - id: show-parallel-runs-in-desktop:33
+        stepId: full.verify.check.evidence
+        sequence: 33
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/96b7bbde-68e8-42b8-ba7f-6e8e4515efd9.log
+          contentHash: 4bc48f3975fbc35e26a95ed456a5989707e3baf0f735d1904df9dcc1eeadac71
+          submissionId: 8be59a77-2b57-4964-aef9-94727c57a089
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 59
+  sourceHash: 6de321675ccd85a217ef5c6fd2c65d657cdf8b9824ea9143380a311d204744d2
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+              ref: openspec/changes/show-parallel-runs-in-desktop
+      - contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+        ref: openspec/changes/show-parallel-runs-in-desktop
+      - contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+      - choice: approved
+        proposal:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+              handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+              proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store 锁内校验受管 Host
+                的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent 边界并通过本地 OTLP
+                推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用 Windows 上实际可派发的宿主及
+                Electron 验证。设计见当前变更的 design.md。delta spec 无调整。
+              requirementsEvidence:
+                contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                ref: openspec/changes/show-parallel-runs-in-desktop
+              sourceEvidence:
+                contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                ref: openspec/changes/show-parallel-runs-in-desktop
+      - handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+        handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+        proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+          换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store 锁内校验受管 Host 的父
+          invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent 边界并通过本地 OTLP
+          推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用 Windows 上实际可派发的宿主及
+          Electron 验证。设计见当前变更的 design.md。delta spec 无调整。
+        requirementsEvidence:
+          contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+          ref: openspec/changes/show-parallel-runs-in-desktop
+        sourceEvidence:
+          contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+          ref: openspec/changes/show-parallel-runs-in-desktop
+      - designDoc: openspec/changes/show-parallel-runs-in-desktop/design.md
+      - contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+        ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+      - boundBranch: codex/show-parallel-runs-in-desktop
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.build.configure:
+              boundBranch: codex/show-parallel-runs-in-desktop
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+          ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+        plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+        planEvidence:
+          contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+          ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+        taskRevision: fabe9db3236359a4e97b5f87d809321bfe602ee623aefe90632d783f9bd9785f
+      - contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+        ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+        cwd: .
+        environment: 9094d05c0ba3b730fb8700a04b003e281829f844f14f42d291eb0c5fbbac04ce
+        exitCode: 0
+        inputAfter: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+        inputBefore: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+        manifestHash: 5398369cea258d74469dc567ddfa122df1c4a62d01b0a964929ca881ac6cdf47
+        manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/11888b83-6d2f-4e41-a2f6-2747e661c333.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+        ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+      - contentHash: ef226df4181626d77c387d0a5a5cef3b537b8f54e4cf600763fef24718d671ea
+        ref: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: badb7816558d1645a24902bfaca9aa838500ea9ca372815c0add60388003d2d8
+        cwd: .
+        deliveryInputs: {}
+        environment: f6e308f71352d9e64df00a1214325326a2aca18d1a1277c88d3895d24e5aa3b5
+        exitCode: 1
+        inputAfter: 7a11dddcc039192137f0f3c09590726b049db0f55c73dc11d337ede629761d97
+        inputBefore: 7a11dddcc039192137f0f3c09590726b049db0f55c73dc11d337ede629761d97
+        manifestHash: bb526d96aeecce5bb1def616b5569138b63d10d87928522dc3d5e1c01e84a817
+        manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/17425858-1a5f-4fac-afca-5937030e81e8.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/fabb2b45-3118-4b9a-83da-d928b36f1c64.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 2dcf45bf97cb9f3614117f59f55b3999ab589ac883e32a4b36f4c2cd0fe68be1
+        cwd: .
+        environment: 9094d05c0ba3b730fb8700a04b003e281829f844f14f42d291eb0c5fbbac04ce
+        exitCode: 0
+        inputAfter: 934e8e692ebf9ee0ddc81898cfc839d10985e06a0b54e819f760e429024a61b0
+        inputBefore: 934e8e692ebf9ee0ddc81898cfc839d10985e06a0b54e819f760e429024a61b0
+        manifestHash: cd16cbbda718e2265e75da65018318a374f45d1e315984892c5f548dd4ca5eb4
+        manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/05f1eeaa-8181-47f2-950a-13bb244de456.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/4e1940f4-8f97-47b7-860e-d14db1d83c03.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 2dcf45bf97cb9f3614117f59f55b3999ab589ac883e32a4b36f4c2cd0fe68be1
+        ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/4e1940f4-8f97-47b7-860e-d14db1d83c03.log
+      - contentHash: 0dac6897aff14a1e1eb50d1cc4f96110bb90bccb70a4ac38f852e84cb1012344
+        ref: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: 0143c331d27b791a85d4eeeec5c010ee0732273344ef47987003838444e4e447
+        cwd: .
+        deliveryInputs: {}
+        environment: f6e308f71352d9e64df00a1214325326a2aca18d1a1277c88d3895d24e5aa3b5
+        exitCode: 0
+        inputAfter: 54659dba3a1e8638a47beaaf5fe0c8ba283f475376ccae3d42eca21d105d37bf
+        inputBefore: 54659dba3a1e8638a47beaaf5fe0c8ba283f475376ccae3d42eca21d105d37bf
+        manifestHash: 54c7f7c3b0542d27b3b781f9a338df0aa66d89c2f7c6a26cedb1df8a41881893
+        manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/3b04f6e0-8017-4cb3-918b-1af4a146492d.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/f63eddc3-ef8a-4532-8f22-13c61f837467.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 0143c331d27b791a85d4eeeec5c010ee0732273344ef47987003838444e4e447
+        ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/f63eddc3-ef8a-4532-8f22-13c61f837467.log
+      - choice: reverify
+        proposal:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档并行 Run 桌面工作台，将四项已验证要求并入 desktop-observability-dashboard 和
+                development-telemetry，推送本分支并创建目标为 origin/main 的 PR，CI
+                通过后合入。本次不发布 Release。
+              targetBranch: codex/show-parallel-runs-in-desktop
+      - prBaseBranch: main
+        remote: origin
+        summary: 归档并行 Run 桌面工作台，将四项已验证要求并入 desktop-observability-dashboard 和
+          development-telemetry，推送本分支并创建目标为 origin/main 的 PR，CI 通过后合入。本次不发布
+          Release。
+        targetBranch: codex/show-parallel-runs-in-desktop
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 7
+        contentHash: 4bc48f3975fbc35e26a95ed456a5989707e3baf0f735d1904df9dcc1eeadac71
+        cwd: .
+        deliveryInputs: {}
+        environment: f6e308f71352d9e64df00a1214325326a2aca18d1a1277c88d3895d24e5aa3b5
+        exitCode: 0
+        inputAfter: 41904e168b5b5c8c0065428c5137afce5abab0ef0ea552e5d700e9f366650a7c
+        inputBefore: 41904e168b5b5c8c0065428c5137afce5abab0ef0ea552e5d700e9f366650a7c
+        manifestHash: 0082b4f2ff635f69514a88647d64a0e900c15d52ab300fb83c57cc78f1a66e7b
+        manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/fbf292de-5e75-4d15-971b-b79ef757e89f.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/96b7bbde-68e8-42b8-ba7f-6e8e4515efd9.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 4bc48f3975fbc35e26a95ed456a5989707e3baf0f735d1904df9dcc1eeadac71
+        ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/96b7bbde-68e8-42b8-ba7f-6e8e4515efd9.log
+      - choice: pr
+        proposal:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 归档并行 Run 桌面工作台，将四项已验证要求并入 desktop-observability-dashboard 和
+                development-telemetry，推送本分支并创建目标为 origin/main 的 PR，CI
+                通过后合入。本次不发布 Release。
+              targetBranch: codex/show-parallel-runs-in-desktop
+      - baseCommit: a0f705ab9e3cf1c4ff7da196d4d6eb40e414dfea
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/show-parallel-runs-in-desktop
+        verifiedBranch: codex/show-parallel-runs-in-desktop
+      - archiveDirectory: openspec/changes/archive/2026-11-25-show-parallel-runs-in-desktop
+      - sequence: 9
+        value:
+          boundBranch: codex/show-parallel-runs-in-desktop
+          buildMode: autonomous
+          directOverride: false
+          isolation: worktree
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: show-parallel-runs-in-desktop
+              changeDir: openspec/changes/show-parallel-runs-in-desktop
+              workspaceBaseline:
+                ref: 363964d7-56df-487a-ab2a-5687b14f9694
+            outputs:
+              full.build.configure:
+                boundBranch: codex/show-parallel-runs-in-desktop
+                buildMode: autonomous
+                directOverride: false
+                isolation: worktree
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: show-parallel-runs-in-desktop
+              changeDir: openspec/changes/show-parallel-runs-in-desktop
+              workspaceBaseline:
+                ref: 363964d7-56df-487a-ab2a-5687b14f9694
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+                handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+                proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                  换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store 锁内校验受管
+                  Host 的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent 边界并通过本地 OTLP
+                  推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用 Windows 上实际可派发的宿主及
+                  Electron 验证。设计见当前变更的 design.md。delta spec 无调整。
+                requirementsEvidence:
+                  contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                  ref: openspec/changes/show-parallel-runs-in-desktop
+                sourceEvidence:
+                  contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                  ref: openspec/changes/show-parallel-runs-in-desktop
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/show-parallel-runs-in-desktop/design.md
+      - sequence: 8
+        value:
+          contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+          ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+          handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+          proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+            换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store 锁内校验受管 Host 的父
+            invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent 边界并通过本地 OTLP
+            推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用 Windows 上实际可派发的宿主及
+            Electron 验证。设计见当前变更的 design.md。delta spec 无调整。
+          requirementsEvidence:
+            contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+            ref: openspec/changes/show-parallel-runs-in-desktop
+          sourceEvidence:
+            contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+            ref: openspec/changes/show-parallel-runs-in-desktop
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: show-parallel-runs-in-desktop
+              changeDir: openspec/changes/show-parallel-runs-in-desktop
+              workspaceBaseline:
+                ref: 363964d7-56df-487a-ab2a-5687b14f9694
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+                ref: openspec/changes/show-parallel-runs-in-desktop
+      - sequence: 2
+        value:
+          contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+          ref: openspec/changes/show-parallel-runs-in-desktop
+      - sequence: 4
+        value:
+          contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+            ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+          plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+          planEvidence:
+            contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+            ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+          taskRevision: fabe9db3236359a4e97b5f87d809321bfe602ee623aefe90632d783f9bd9785f
+      - sequence: 12
+        value:
+          contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+          ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+          cwd: .
+          environment: 9094d05c0ba3b730fb8700a04b003e281829f844f14f42d291eb0c5fbbac04ce
+          exitCode: 0
+          inputAfter: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+          inputBefore: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+          manifestHash: 5398369cea258d74469dc567ddfa122df1c4a62d01b0a964929ca881ac6cdf47
+          manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/11888b83-6d2f-4e41-a2f6-2747e661c333.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+          ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+      - sequence: 17
+        value:
+          contentHash: ef226df4181626d77c387d0a5a5cef3b537b8f54e4cf600763fef24718d671ea
+          ref: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: badb7816558d1645a24902bfaca9aa838500ea9ca372815c0add60388003d2d8
+          cwd: .
+          deliveryInputs: {}
+          environment: f6e308f71352d9e64df00a1214325326a2aca18d1a1277c88d3895d24e5aa3b5
+          exitCode: 1
+          inputAfter: 7a11dddcc039192137f0f3c09590726b049db0f55c73dc11d337ede629761d97
+          inputBefore: 7a11dddcc039192137f0f3c09590726b049db0f55c73dc11d337ede629761d97
+          manifestHash: bb526d96aeecce5bb1def616b5569138b63d10d87928522dc3d5e1c01e84a817
+          manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/17425858-1a5f-4fac-afca-5937030e81e8.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/fabb2b45-3118-4b9a-83da-d928b36f1c64.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+            ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+          plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+          planEvidence:
+            contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+            ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+          taskRevision: fabe9db3236359a4e97b5f87d809321bfe602ee623aefe90632d783f9bd9785f
+      - sequence: 20
+        value:
+          contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+          ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 2dcf45bf97cb9f3614117f59f55b3999ab589ac883e32a4b36f4c2cd0fe68be1
+          cwd: .
+          environment: 9094d05c0ba3b730fb8700a04b003e281829f844f14f42d291eb0c5fbbac04ce
+          exitCode: 0
+          inputAfter: 934e8e692ebf9ee0ddc81898cfc839d10985e06a0b54e819f760e429024a61b0
+          inputBefore: 934e8e692ebf9ee0ddc81898cfc839d10985e06a0b54e819f760e429024a61b0
+          manifestHash: cd16cbbda718e2265e75da65018318a374f45d1e315984892c5f548dd4ca5eb4
+          manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/05f1eeaa-8181-47f2-950a-13bb244de456.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/4e1940f4-8f97-47b7-860e-d14db1d83c03.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 23
+        value:
+          contentHash: 2dcf45bf97cb9f3614117f59f55b3999ab589ac883e32a4b36f4c2cd0fe68be1
+          ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/4e1940f4-8f97-47b7-860e-d14db1d83c03.log
+      - sequence: 25
+        value:
+          contentHash: 0dac6897aff14a1e1eb50d1cc4f96110bb90bccb70a4ac38f852e84cb1012344
+          ref: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+      - sequence: 24
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: 0143c331d27b791a85d4eeeec5c010ee0732273344ef47987003838444e4e447
+          cwd: .
+          deliveryInputs: {}
+          environment: f6e308f71352d9e64df00a1214325326a2aca18d1a1277c88d3895d24e5aa3b5
+          exitCode: 0
+          inputAfter: 54659dba3a1e8638a47beaaf5fe0c8ba283f475376ccae3d42eca21d105d37bf
+          inputBefore: 54659dba3a1e8638a47beaaf5fe0c8ba283f475376ccae3d42eca21d105d37bf
+          manifestHash: 54c7f7c3b0542d27b3b781f9a338df0aa66d89c2f7c6a26cedb1df8a41881893
+          manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/3b04f6e0-8017-4cb3-918b-1af4a146492d.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/f63eddc3-ef8a-4532-8f22-13c61f837467.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 27
+        value:
+          contentHash: 0143c331d27b791a85d4eeeec5c010ee0732273344ef47987003838444e4e447
+          ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/f63eddc3-ef8a-4532-8f22-13c61f837467.log
+      - sequence: 29
+        value:
+          choice: reverify
+          proposal:
+            input:
+              change: show-parallel-runs-in-desktop
+              changeDir: openspec/changes/show-parallel-runs-in-desktop
+              workspaceBaseline:
+                ref: 363964d7-56df-487a-ab2a-5687b14f9694
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档并行 Run 桌面工作台，将四项已验证要求并入 desktop-observability-dashboard 和
+                  development-telemetry，推送本分支并创建目标为 origin/main 的 PR，CI
+                  通过后合入。本次不发布 Release。
+                targetBranch: codex/show-parallel-runs-in-desktop
+      - sequence: 28
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档并行 Run 桌面工作台，将四项已验证要求并入 desktop-observability-dashboard 和
+            development-telemetry，推送本分支并创建目标为 origin/main 的 PR，CI 通过后合入。本次不发布
+            Release。
+          targetBranch: codex/show-parallel-runs-in-desktop
+      - sequence: 31
+        value:
+          contentHash: 0dac6897aff14a1e1eb50d1cc4f96110bb90bccb70a4ac38f852e84cb1012344
+          ref: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+      - sequence: 30
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/show-parallel-runs-in-desktop.md
+      - sequence: 32
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 7
+          contentHash: 4bc48f3975fbc35e26a95ed456a5989707e3baf0f735d1904df9dcc1eeadac71
+          cwd: .
+          deliveryInputs: {}
+          environment: f6e308f71352d9e64df00a1214325326a2aca18d1a1277c88d3895d24e5aa3b5
+          exitCode: 0
+          inputAfter: 41904e168b5b5c8c0065428c5137afce5abab0ef0ea552e5d700e9f366650a7c
+          inputBefore: 41904e168b5b5c8c0065428c5137afce5abab0ef0ea552e5d700e9f366650a7c
+          manifestHash: 0082b4f2ff635f69514a88647d64a0e900c15d52ab300fb83c57cc78f1a66e7b
+          manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/fbf292de-5e75-4d15-971b-b79ef757e89f.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/96b7bbde-68e8-42b8-ba7f-6e8e4515efd9.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 33
+        value:
+          contentHash: 4bc48f3975fbc35e26a95ed456a5989707e3baf0f735d1904df9dcc1eeadac71
+          ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/96b7bbde-68e8-42b8-ba7f-6e8e4515efd9.log
+      - sequence: 35
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: show-parallel-runs-in-desktop
+              changeDir: openspec/changes/show-parallel-runs-in-desktop
+              workspaceBaseline:
+                ref: 363964d7-56df-487a-ab2a-5687b14f9694
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 归档并行 Run 桌面工作台，将四项已验证要求并入 desktop-observability-dashboard 和
+                  development-telemetry，推送本分支并创建目标为 origin/main 的 PR，CI
+                  通过后合入。本次不发布 Release。
+                targetBranch: codex/show-parallel-runs-in-desktop
+      - sequence: 34
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 归档并行 Run 桌面工作台，将四项已验证要求并入 desktop-observability-dashboard 和
+            development-telemetry，推送本分支并创建目标为 origin/main 的 PR，CI 通过后合入。本次不发布
+            Release。
+          targetBranch: codex/show-parallel-runs-in-desktop
+      - sequence: 36
+        value:
+          baseCommit: a0f705ab9e3cf1c4ff7da196d4d6eb40e414dfea
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/show-parallel-runs-in-desktop
+          verifiedBranch: codex/show-parallel-runs-in-desktop
+      - sequence: 37
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-25-show-parallel-runs-in-desktop
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.verify.report.evidence
+        value: 20
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 54
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 55
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 56
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 59
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 21
+        left: 58
+        right: 60
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 61
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 62
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 24
+        left: 64
+        right: 65
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 19
+        left: 66
+        right: 67
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 68
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 69
+        right: 62
+        height: 5
+      - key: full.verify.check.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 71
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 25
+        left: 58
+        right: 72
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 73
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 69
+        right: 74
+        height: 5
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 24
+        left: 76
+        right: 65
+        height: 2
+      - key: full.build.check.evidence
+        value: 19
+        left: 77
+        right: 67
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 78
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 79
+        right: 74
+        height: 5
+      - key: full.archive.preflight
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: 81
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 82
+        right: 65
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 67
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 83
+        right: 84
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 85
+        right: 74
+        height: 5
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 29
+        left: 87
+        right: 88
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 89
+        right: 65
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 90
+        right: 84
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 91
+        right: 74
+        height: 5
+      - key: full.build.configure
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 31
+        left: 93
+        right: 94
+        height: 2
+      - key: full.design.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 35
+        left: 96
+        right: 97
+        height: 2
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: null
+        right: 99
+        height: 2
+      - key: full.open.confirm
+        value: 37
+        left: 98
+        right: 100
+        height: 3
+      - key: full.design.document
+        value: 33
+        left: 95
+        right: 101
+        height: 4
+      - key: full.build.plan
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 41
+        left: 103
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 93
+        right: 105
+        height: 3
+      - key: full.design.document
+        value: 33
+        left: 106
+        right: 101
+        height: 4
+      - key: full.build.execute
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 31
+        left: 93
+        right: 108
+        height: 2
+      - key: full.build.plan.evidence
+        value: 41
+        left: null
+        right: 104
+        height: 2
+      - key: full.build.plan
+        value: 40
+        left: 109
+        right: 110
+        height: 3
+      - key: full.design.document
+        value: 33
+        left: 111
+        right: 101
+        height: 4
+      - key: full.build.check
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 44
+        left: 113
+        right: 114
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 115
+        right: 108
+        height: 3
+      - key: full.build.plan
+        value: 40
+        left: 116
+        right: 110
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 117
+        right: 101
+        height: 5
+      - key: full.open.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 45
+        left: null
+        right: 120
+        height: 2
+      - key: full.open.revalidate
+        value: 39
+        left: 119
+        right: 121
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 98
+        right: 122
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 117
+        right: 123
+        height: 5
+      - key: full.verify.check
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 45
+        left: 125
+        right: 120
+        height: 2
+      - key: full.open.revalidate
+        value: 39
+        left: 119
+        right: 126
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 98
+        right: 127
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 117
+        right: 128
+        height: 5
+      - key: full.build.plan.evidence
+        value: 49
+        left: null
+        right: 104
+        height: 2
+      - key: full.build.plan
+        value: 48
+        left: 116
+        right: 130
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 131
+        right: 128
+        height: 5
+      - key: full.build.execute
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 31
+        left: 115
+        right: 133
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: 134
+        right: 130
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 135
+        right: 128
+        height: 5
+      - key: full.build.check
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 52
+        left: 137
+        right: 114
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 138
+        right: 133
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: 139
+        right: 130
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 140
+        right: 128
+        height: 5
+      - key: full.verify.run
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 53
+        left: 125
+        right: 142
+        height: 2
+      - key: full.open.revalidate
+        value: 39
+        left: 119
+        right: 143
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 98
+        right: 144
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 140
+        right: 145
+        height: 5
+      - key: full.open.revalidate
+        value: 39
+        left: 119
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 53
+        left: 148
+        right: 142
+        height: 2
+      - key: full.verify.check
+        value: 55
+        left: 147
+        right: 149
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 98
+        right: 150
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 140
+        right: 151
+        height: 5
+      - key: full.archive.confirm
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 58
+        left: 153
+        right: 154
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 114
+        right: 133
+        height: 2
+      - key: full.build.check.evidence
+        value: 52
+        left: 155
+        right: 156
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: 157
+        right: 130
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 158
+        right: 151
+        height: 5
+      - key: full.verify.run
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 59
+        left: 148
+        right: 160
+        height: 2
+      - key: full.verify.check
+        value: 55
+        left: 147
+        right: 161
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 98
+        right: 162
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 158
+        right: 163
+        height: 5
+      - key: full.verify.check.evidence
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 59
+        left: 165
+        right: 160
+        height: 2
+      - key: full.verify.check
+        value: 61
+        left: 147
+        right: 166
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 98
+        right: 167
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 158
+        right: 168
+        height: 5
+      - key: full.archive.confirm
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 64
+        left: 170
+        right: 154
+        height: 2
+      - key: full.build.check.evidence
+        value: 52
+        left: 171
+        right: 156
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: 172
+        right: 130
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 173
+        right: 168
+        height: 5
+      - key: full.archive.preflight
+        value: 65
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 63
+        left: null
+        right: 175
+        height: 2
+      - key: full.archive.prepare
+        value: 64
+        left: 176
+        right: 154
+        height: 3
+      - key: full.build.plan
+        value: 48
+        left: 156
+        right: 130
+        height: 3
+      - key: full.build.check.evidence
+        value: 52
+        left: 177
+        right: 178
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 179
+        right: 168
+        height: 5
+      - key: full.archive.confirm
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 65
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 66
+        left: 181
+        right: 182
+        height: 2
+      - key: full.archive.prepare
+        value: 64
+        left: 183
+        right: 154
+        height: 3
+      - key: full.build.check.evidence
+        value: 52
+        left: 184
+        right: 178
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 185
+        right: 168
+        height: 5
+      - key: full.open
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 37
+        left: 187
+        right: 188
+        height: 2
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: null
+        right: 190
+        height: 2
+      - key: full.open.confirm
+        value: 37
+        left: 187
+        right: 191
+        height: 3
+      - key: full.design.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 35
+        left: 193
+        right: 194
+        height: 2
+      - key: full.open.confirm
+        value: 37
+        left: 195
+        right: 191
+        height: 3
+      - key: full.design.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 33
+        left: 197
+        right: 198
+        height: 2
+      - key: full.design.handoff
+        value: 35
+        left: 199
+        right: 194
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 200
+        right: 191
+        height: 4
+      - key: full.open.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 36
+        left: null
+        right: 202
+        height: 2
+      - key: full.design.handoff
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: 205
+        right: 206
+        height: 2
+      - key: full.open
+        value: 36
+        left: 204
+        right: 207
+        height: 3
+      - key: full.build.configure
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 34
+        left: 210
+        right: 211
+        height: 2
+      - key: full.design.confirm
+        value: 32
+        left: 209
+        right: 212
+        height: 3
+      - key: full.open
+        value: 36
+        left: 213
+        right: 207
+        height: 4
+      - key: full.archive.prepare
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 51
+        left: 215
+        right: 216
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 48
+        left: null
+        right: 219
+        height: 2
+      - key: full.build.execute
+        value: 50
+        left: 218
+        right: 220
+        height: 3
+      - key: full.build.configure
+        value: 30
+        left: 217
+        right: 221
+        height: 4
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: 205
+        right: 223
+        height: 2
+      - key: full.verify.check.evidence
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 53
+        left: 225
+        right: 226
+        height: 2
+      - key: full.verify.check
+        value: 55
+        left: 224
+        right: 227
+        height: 3
+      - key: full.open
+        value: 36
+        left: 212
+        right: 228
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 222
+        right: 229
+        height: 5
+      - key: full.archive.confirm
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 64
+        left: 231
+        right: null
+        height: 2
+      - key: full.build.check
+        value: 51
+        left: 232
+        right: 216
+        height: 3
+      - key: full.build.configure
+        value: 30
+        left: 233
+        right: 221
+        height: 4
+      - key: full.verify.check.evidence
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 59
+        left: 235
+        right: 236
+        height: 2
+      - key: full.verify.check
+        value: 61
+        left: 224
+        right: 237
+        height: 3
+      - key: full.open
+        value: 36
+        left: 212
+        right: 238
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 234
+        right: 239
+        height: 5
+      - key: full.open
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 33
+        left: 242
+        right: 243
+        height: 2
+      - key: full.open.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: 245
+        right: 246
+        height: 2
+      - key: full.open
+        value: 36
+        left: 244
+        right: 247
+        height: 3
+      - key: full.build.configure
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 31
+        left: 249
+        right: 250
+        height: 2
+      - key: full.design.document
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 34
+        left: 252
+        right: 253
+        height: 2
+      - key: full.design.confirm
+        value: 32
+        left: 251
+        right: 254
+        height: 3
+      - key: full.open
+        value: 36
+        left: 255
+        right: 247
+        height: 4
+      - key: full.build.check
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 30
+        left: 257
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 40
+        left: 259
+        right: 260
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 258
+        right: 261
+        height: 3
+      - key: full.open
+        value: 36
+        left: 254
+        right: 247
+        height: 3
+      - key: full.design.confirm
+        value: 32
+        left: 262
+        right: 263
+        height: 4
+      - key: full.build.check
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 44
+        left: 265
+        right: 266
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 267
+        right: 261
+        height: 3
+      - key: full.verify.run
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: 269
+        height: 2
+      - key: full.open.evidence
+        value: 38
+        left: 245
+        right: 270
+        height: 3
+      - key: full.open
+        value: 36
+        left: 254
+        right: 271
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 268
+        right: 272
+        height: 5
+      - key: full.build.plan
+        value: 48
+        left: 259
+        right: 260
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 267
+        right: 274
+        height: 3
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: 245
+        right: 276
+        height: 2
+      - key: full.verify.report.evidence
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 46
+        left: 278
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 47
+        left: 277
+        right: 279
+        height: 3
+      - key: full.open
+        value: 36
+        left: 254
+        right: 280
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 275
+        right: 281
+        height: 5
+      - key: full.build.check
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 44
+        left: 283
+        right: 266
+        height: 2
+      - key: full.build.execute
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 48
+        left: 285
+        right: 286
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 284
+        right: 287
+        height: 3
+      - key: full.design.confirm
+        value: 32
+        left: 288
+        right: 281
+        height: 5
+      - key: full.build.check.evidence
+        value: 52
+        left: 283
+        right: 266
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 290
+        right: 287
+        height: 3
+      - key: full.verify.run
+        value: 54
+        left: 278
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 47
+        left: 277
+        right: 292
+        height: 3
+      - key: full.open
+        value: 36
+        left: 254
+        right: 293
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 291
+        right: 294
+        height: 5
+      - key: full.verify.report.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 54
+        left: 296
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 55
+        left: 277
+        right: 297
+        height: 3
+      - key: full.open
+        value: 36
+        left: 254
+        right: 298
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 291
+        right: 299
+        height: 5
+      - key: full.archive.confirm
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 58
+        left: 301
+        right: 302
+        height: 2
+      - key: full.build.check.evidence
+        value: 52
+        left: 303
+        right: 266
+        height: 3
+      - key: full.build.confirm
+        value: 31
+        left: 304
+        right: 287
+        height: 4
+      - key: full.verify.check.evidence
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 53
+        left: 306
+        right: 307
+        height: 2
+      - key: full.verify.check
+        value: 55
+        left: 277
+        right: 308
+        height: 3
+      - key: full.open
+        value: 36
+        left: 254
+        right: 309
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 305
+        right: 310
+        height: 5
+      - key: full.verify.report.evidence
+        value: 59
+        left: 306
+        right: 307
+        height: 2
+      - key: full.verify.check
+        value: 61
+        left: 277
+        right: 312
+        height: 3
+      - key: full.open
+        value: 36
+        left: 254
+        right: 313
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 305
+        right: 314
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 57
+      - 63
+      - 70
+      - 75
+      - 80
+      - 86
+      - 92
+      - 102
+      - 107
+      - 112
+      - 118
+      - 124
+      - 129
+      - 132
+      - 136
+      - 141
+      - 146
+      - 152
+      - 159
+      - 164
+      - 169
+      - 174
+      - 180
+      - 186
+      - 189
+      - 192
+      - 196
+      - 201
+      - 203
+      - 208
+      - 214
+      - 230
+      - 240
+      - 241
+      - 248
+      - 256
+      - 264
+      - 273
+      - 282
+      - 289
+      - 295
+      - 300
+      - 311
+      - 315
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actions
+          - "21"
+          - input
+          - outputs
+        map: 18
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:11
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:13
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:14
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:16
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:18
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:19
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:21
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:22
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:24
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:26
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:28
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:30
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:32
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:34
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:36
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:37
+          - results
+        map: 34
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:38
+          - results
+        map: 35
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:4
+          - results
+        map: 36
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:5
+          - results
+        map: 37
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:7
+          - results
+        map: 38
+      - path:
+          - actionContexts
+          - show-parallel-runs-in-desktop:9
+          - results
+        map: 39
+      - path:
+          - outputs
+        map: 35
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 40
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 41
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 42
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 43
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 44
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 45
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 46
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 47
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 48
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 49
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 50
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 51
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 52
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 53
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 54
+      - path:
+          - evidenceWaits
+          - "10"
+          - results
+        map: 55
+  storageHash: b55353845a67c4aad9ab08b0fa98a59b0a2c9832b933f2d6b39b988ca656215b
+check_epoch: 10

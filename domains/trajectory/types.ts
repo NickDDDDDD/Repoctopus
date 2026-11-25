@@ -40,6 +40,7 @@ export type TrajectoryEventType =
   | 'work.outcome-accepted'
   | 'work.outcome-processing-error'
   | 'delegation.completed'
+  | 'delegation.activity'
   | 'work.completed'
   | 'skill.resolved'
   | 'skill.delivered'

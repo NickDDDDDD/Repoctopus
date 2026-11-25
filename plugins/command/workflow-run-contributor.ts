@@ -46,6 +46,15 @@ const plugin = ((context: Context) => {
           ),
       }),
       context.commandRouter.register({
+        name: 'run.work.activity',
+        execute: ({ input }) =>
+          context.workExecutionAuthority.recordExternalDelegationActivity(
+            input as Parameters<
+              typeof context.workExecutionAuthority.recordExternalDelegationActivity
+            >[0],
+          ),
+      }),
+      context.commandRouter.register({
         name: 'run.work.outcome',
         execute: ({ input }) =>
           context.managedWorkExecutor.acceptExternalOutcome(input as ExternalWorkExecutionOutcome),
@@ -150,7 +159,13 @@ const plugin = ((context: Context) => {
 }) as Plugin;
 
 Object.assign(plugin, {
-  inject: ['commandRouter', 'managedWorkExecutor', 'runStore', 'workflowRuns'],
+  inject: [
+    'commandRouter',
+    'managedWorkExecutor',
+    'runStore',
+    'workExecutionAuthority',
+    'workflowRuns',
+  ],
 });
 
 export default plugin;

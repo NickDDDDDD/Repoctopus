@@ -10,6 +10,13 @@ import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { DeliveryEvent } from '../delivery/ports.js';
 import type { EvidenceTelemetryBatch } from '../evidence/telemetry.js';
 import type { TrajectoryEvent } from './types.js';
+import {
+  DELEGATION_ACTIVITY_EVENT,
+  isDelegationIdentifier,
+  isDelegationResult,
+  isDelegationRole,
+  isDelegationStage,
+} from '../work-execution/delegation-activity.js';
 
 export const OBSERVATION_SCHEMA_VERSION = 1 as const;
 
@@ -76,6 +83,8 @@ export interface ObservationCorrelation {
   evidenceAttemptId?: string;
   recovery?: string;
   invocationId?: string;
+  childExecutionId?: string;
+  repositoryId?: string;
   parentWorkId?: string;
   receiptId?: string;
   artifactId?: string;
@@ -178,6 +187,9 @@ export const OBSERVATION_ATTRIBUTE_KEYS = [
   'ruleCategory',
   'ruleApplicable',
   'ruleExpected',
+  'delegationRole',
+  'delegationStage',
+  'delegationResult',
   'ruleTriggered',
   'ruleResult',
   'workflowName',
@@ -364,6 +376,12 @@ function correlation(event: TrajectoryEvent, context: ObservationContext): Obser
   assign('decisionKind', id(event.data.decisionKind) ?? waitKind);
   assign('evidenceAttemptId', id(event.data.evidenceAttemptId));
   assign('invocationId', id(event.data.invocationId));
+  if (event.type === DELEGATION_ACTIVITY_EVENT) {
+    if (isDelegationIdentifier(event.data.childExecutionId))
+      assign('childExecutionId', event.data.childExecutionId);
+    if (isDelegationIdentifier(event.data.repositoryId))
+      assign('repositoryId', event.data.repositoryId);
+  }
   assign('parentWorkId', id(event.data.parentWorkId));
   assign('receiptId', id(event.data.receiptId));
   assign('artifactId', id(event.data.artifactId));
@@ -391,8 +409,18 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
   if (DIGEST.test(event.compositionDigest)) result.compositionDigest = event.compositionDigest;
   for (const key of OBSERVATION_ATTRIBUTE_KEYS) {
     if (key === 'reason' || key.startsWith('health') || key.startsWith('rollback')) continue;
+    if (key === 'delegationRole' || key === 'delegationStage' || key === 'delegationResult')
+      continue;
     const value = scalar(event.data[key]);
     if (value !== undefined) result[key] = value;
+  }
+  if (event.type === DELEGATION_ACTIVITY_EVENT) {
+    if (isDelegationRole(event.data.delegationRole))
+      result.delegationRole = event.data.delegationRole;
+    if (isDelegationStage(event.data.delegationStage))
+      result.delegationStage = event.data.delegationStage;
+    if (isDelegationResult(event.data.delegationResult))
+      result.delegationResult = event.data.delegationResult;
   }
   if (result.workspaceReconciliationRequired === undefined) {
     const reconciliation = record(event.data.reconciliation);

@@ -198,19 +198,16 @@ export class EvidenceCoordinator extends Service {
   private readonly leases: FileResourceLeaseManager;
   private readonly telemetryOutbox: FileEvidenceTelemetryOutbox;
   private readonly workspace: string;
-  private readonly telemetry: EvidenceTelemetryPort;
+  private readonly telemetry: EvidenceTelemetryPort | undefined;
+  private readonly environment: NodeJS.ProcessEnv;
   private readonly operations: OperationOwnership;
 
   constructor(context: Context, config: EvidenceCoordinatorConfig) {
     super(context, 'evidenceCoordinator');
     this.operations = bindOperationOwnership(context, 'evidenceCoordinator');
     this.workspace = path.resolve(config.workspaceRoot);
-    const observationDelivery = context.get('observationDelivery');
-    this.telemetry =
-      config.telemetry ??
-      (observationDelivery
-        ? new EvidenceObservationTelemetry(observationDelivery, config.environment ?? process.env)
-        : { async export() {} });
+    this.telemetry = config.telemetry;
+    this.environment = config.environment ?? process.env;
     this.store = new FileEvidenceStore(this.workspace);
     this.journal = new FileEvidenceJournal(this.workspace);
     this.leases = new FileResourceLeaseManager(this.workspace);
@@ -1207,7 +1204,12 @@ export class EvidenceCoordinator extends Service {
     const events = batch.events.filter((event) => event.sequence > cursor.offset);
     if (events.length === 0) return { status: 'exported', exportedEvents: 0 };
     try {
-      await this.telemetry.export({ ...batch, events });
+      // Resolve optional delivery after Cordis starts the project services.
+      const delivery = this.ctx.get('observationDelivery');
+      const telemetry =
+        this.telemetry ??
+        (delivery && new EvidenceObservationTelemetry(delivery, this.environment));
+      await telemetry?.export({ ...batch, events });
       const last = events.at(-1)!;
       await this.telemetryOutbox.writeCursor({
         schemaVersion: 1,

@@ -1,13 +1,22 @@
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+
 import type { DesktopApplicationSnapshot } from '../../../../services/desktop-application.js';
+import {
+  activeDelegations,
+  changeKey,
+  WORK_ACTIVITY_FRESHNESS_MS,
+} from '../../../../domains/trajectory/projection-view.js';
 import type {
   ChangeProjectionSnapshot,
   ProjectedAttempt,
   ProjectedChange,
+  ProjectedDelegation,
   ProjectedHealthDimension,
   ProjectedHealthReason,
   ProjectedTimelineState,
 } from '../../../../domains/trajectory/projection.js';
-import { NextStep, PHASE_NAMES, workflowGuidance } from './workflow-guidance.js';
+import { AgentList, AgentStrip } from './delegations.js';
+import { BuildStrategySummary, NextStep, PHASE_NAMES, workflowTone } from './workflow-guidance.js';
 
 const PHASE_LABELS = {
   open: 'Open',
@@ -151,114 +160,12 @@ function StatusDot({ state }: { state: string }) {
   return <span className="status-dot" data-state={state} aria-hidden="true" />;
 }
 
-function ChangeNavigation({
-  snapshot,
-  application,
-}: {
-  snapshot: ChangeProjectionSnapshot;
-  application: DesktopApplicationSnapshot;
-}) {
-  const selected = application.selectedContext;
-  const workspaces = [...new Set(snapshot.changes.map((change) => change.workspaceId))].sort();
-  const needsAttention = (change: ProjectedChange) =>
-    ['waiting', 'blocked', 'stalled', 'failed'].includes(change.displayState);
-  const isSelected = (change: ProjectedChange) =>
-    selected?.workspaceId === change.workspaceId &&
-    selected.changeId === change.changeId &&
-    selected.runId === change.runId;
-  const select = (change: ProjectedChange) => {
-    window.repoctopusDesktop.selectChange({
-      schemaVersion: 1,
-      workspaceId: change.workspaceId,
-      changeId: change.changeId,
-      runId: change.runId,
-    });
-  };
-  const renderRows = (changes: ProjectedChange[], workspaceChanges: ProjectedChange[]) =>
-    changes.map((change) => (
-      <button
-        className="change-row"
-        type="button"
-        aria-pressed={isSelected(change)}
-        key={`${change.changeId}\0${change.runId}`}
-        onClick={() => select(change)}
-      >
-        <StatusDot state={change.displayState} />
-        <span className="change-row__copy">
-          <span className="change-row__name" title={change.changeId}>
-            {change.changeId}
-          </span>
-          <span className="change-row__meta">
-            {needsAttention(change)
-              ? workflowGuidance(change).title
-              : `${change.phase ? PHASE_NAMES[change.phase] + ' · ' : ''}${DISPLAY_LABELS[change.displayState]}`}
-          </span>
-          {workspaceChanges.some(
-            (other) => other.changeId === change.changeId && other.runId !== change.runId,
-          ) ? (
-            <span className="change-row__meta" title={change.runId}>
-              Run …{change.runId.slice(-12)}
-            </span>
-          ) : null}
-        </span>
-      </button>
-    ));
-  const list = (scope: string) => (
-    <div className="change-list" role="list">
-      {workspaces.map((workspaceId) => {
-        const workspaceChanges = snapshot.changes.filter(
-          (change) => change.workspaceId === workspaceId,
-        );
-        const active = workspaceChanges.filter((change) => change.displayState !== 'complete');
-        const completed = workspaceChanges.filter((change) => change.displayState === 'complete');
-        active.sort(
-          (left, right) =>
-            Number(needsAttention(right)) - Number(needsAttention(left)) ||
-            right.latestObservedAt.localeCompare(left.latestObservedAt),
-        );
-        return (
-          <section
-            className="workspace-group"
-            key={workspaceId}
-            aria-labelledby={`${scope}-workspace-${workspaceId}`}
-          >
-            <h2 id={`${scope}-workspace-${workspaceId}`}>{workspaceId}</h2>
-            <div className="workspace-changes">{renderRows(active, workspaceChanges)}</div>
-            {completed.length > 0 ? (
-              <details className="completed-runs" open={completed.some(isSelected)}>
-                <summary>已完成 · {completed.length}</summary>
-                <div className="workspace-changes">{renderRows(completed, workspaceChanges)}</div>
-              </details>
-            ) : null}
-          </section>
-        );
-      })}
-    </div>
-  );
-
+function PhaseRail({ change, compact = false }: { change: ProjectedChange; compact?: boolean }) {
   return (
-    <>
-      <aside className="change-sidebar" aria-label="Workspace 与 change">
-        <div className="sidebar-heading">
-          <p>当前工作</p>
-          <span>{snapshot.changes.length} 条 Run</span>
-        </div>
-        {list('desktop')}
-      </aside>
-      <details className="mobile-change-nav">
-        <summary>
-          <span>切换 change</span>
-          <span>{selected?.changeId ?? '尚未选择'}</span>
-        </summary>
-        {list('compact')}
-      </details>
-    </>
-  );
-}
-
-function PhaseRail({ change }: { change: ProjectedChange }) {
-  return (
-    <section className="phase-region" aria-label="工作流阶段">
+    <section
+      className={compact ? 'phase-region phase-region--compact' : 'phase-region'}
+      aria-label="工作流阶段"
+    >
       <ol className="phase-rail" role="list">
         {change.phases.map((phase) => {
           const current = phase.phase === change.phase;
@@ -269,16 +176,22 @@ function PhaseRail({ change }: { change: ProjectedChange }) {
               key={phase.phase}
               aria-current={current ? 'step' : undefined}
             >
-              <StatusDot state={phase.state} />
+              {!compact ? <StatusDot state={phase.state} /> : null}
               <div className="phase-step__body">
                 <div className="phase-step__title">
-                  <h3>{PHASE_LABELS[phase.phase]}</h3>
+                  {compact ? (
+                    <span>{PHASE_LABELS[phase.phase]}</span>
+                  ) : (
+                    <h3>{PHASE_LABELS[phase.phase]}</h3>
+                  )}
                 </div>
-                <p>
-                  {PHASE_NAMES[phase.phase]}
-                  {current ? ' · 当前' : ''}
-                </p>
-                {phase.state !== 'not-reported' ? (
+                {!compact ? (
+                  <p>
+                    {PHASE_NAMES[phase.phase]}
+                    {current ? ' · 当前' : ''}
+                  </p>
+                ) : null}
+                {!compact && phase.state !== 'not-reported' ? (
                   <span className="phase-step__state">{STATE_LABELS[phase.state]}</span>
                 ) : null}
               </div>
@@ -540,14 +453,25 @@ function HealthSummary({ change }: { change: ProjectedChange }) {
   );
 }
 
-function SelectedChange({ change }: { change: ProjectedChange }) {
+function SelectedChange({
+  change,
+  agents,
+  headingId,
+}: {
+  change: ProjectedChange;
+  agents: ProjectedDelegation[];
+  headingId: string;
+}) {
   const hasBuildHistory = change.buildActions.some((action) => action.state !== 'not-reported');
+  const multiAgent = change.buildStrategy?.executionMode === 'subagent-driven-development';
+  const history = (change.delegations ?? []).filter((agent) => !agents.includes(agent));
   return (
     <div className="change-view">
       <header className="change-header">
         <div>
           <p className="breadcrumb">{change.workspaceId}</p>
-          <h1>{change.changeId}</h1>
+          <h1 id={headingId}>{change.changeId}</h1>
+          <BuildStrategySummary change={change} />
         </div>
         <div className="change-status" data-state={change.displayState}>
           <StatusDot state={change.displayState} />
@@ -556,16 +480,15 @@ function SelectedChange({ change }: { change: ProjectedChange }) {
         </div>
       </header>
       <PhaseRail change={change} />
-      <div className="overview">
-        <NextStep change={change} />
-        <CurrentSkills change={change} />
-      </div>
-      {change.phase === 'build' ? <BuildTimeline change={change} /> : null}
+      <NextStep change={change} />
+      {multiAgent || agents.length > 0 ? <AgentList agents={agents} /> : null}
       <details className="secondary-panel run-details">
         <summary>运行与诊断详情</summary>
         <MetadataList items={[['Run', change.runId]]} />
         <PhaseHistory change={change} />
-        {change.phase !== 'build' && hasBuildHistory ? <BuildTimeline change={change} /> : null}
+        {hasBuildHistory ? <BuildTimeline change={change} /> : null}
+        <CurrentSkills change={change} />
+        {history.length > 0 ? <AgentList agents={history} history /> : null}
         {change.recoveries.length > 0 ? (
           <MetadataList
             items={change.recoveries.map((item) => [
@@ -590,17 +513,148 @@ function SelectedChange({ change }: { change: ProjectedChange }) {
   );
 }
 
-function NoSelection({ application }: { application: DesktopApplicationSnapshot }) {
+function RunFocus({
+  change,
+  agents,
+  dismiss,
+}: {
+  change: ProjectedChange;
+  agents: ProjectedDelegation[];
+  dismiss: () => void;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const headingId = useId();
+  useLayoutEffect(() => {
+    const dialog = ref.current!;
+    dialog.showModal();
+    return () => dialog.close();
+  }, []);
   return (
-    <section className="empty-state" aria-live="polite">
-      <h1>{application.activeContext ? '等待启动来源的首个观测' : '选择一个 change'}</h1>
-      <p>
-        {application.activeContext
-          ? '收到这条 Run 的状态后，界面会自动显示当前阶段和下一步。'
-          : '在 Agent 会话启动或恢复 Change，或者从列表选择一条已有 Run。'}
-      </p>
-    </section>
+    <dialog
+      ref={ref}
+      className="run-focus"
+      aria-labelledby={headingId}
+      onCancel={(event) => {
+        event.preventDefault();
+        dismiss();
+      }}
+    >
+      <div className="run-focus__toolbar">
+        <button type="button" onClick={dismiss} autoFocus>
+          <span aria-hidden="true">←</span> 全部 Run <kbd>Esc</kbd>
+        </button>
+      </div>
+      <SelectedChange change={change} agents={agents} headingId={headingId} />
+    </dialog>
   );
+}
+
+function RunCard({
+  change,
+  agents,
+  recent,
+  open,
+}: {
+  change: ProjectedChange;
+  agents: ProjectedDelegation[];
+  recent: boolean;
+  open: (change: ProjectedChange, trigger: HTMLButtonElement) => void;
+}) {
+  const id = useId();
+  const label = `放大 ${change.changeId}，Workspace ${change.workspaceId}，Run ${change.runId}`;
+  return (
+    <article
+      className="run-card"
+      data-tone={workflowTone(change)}
+      data-recent={recent}
+      aria-labelledby={id}
+    >
+      <header className="run-card__header">
+        <div>
+          <p className="breadcrumb">{change.workspaceId}</p>
+          <h2 id={id}>
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              onClick={(event) => open(change, event.currentTarget)}
+            >
+              {change.changeId}
+            </button>
+          </h2>
+          <p className="run-id" title={change.runId}>
+            Run {change.runId.length > 24 ? `…${change.runId.slice(-12)}` : change.runId}
+          </p>
+        </div>
+        <button
+          type="button"
+          className="run-card__expand"
+          aria-haspopup="dialog"
+          aria-label={label}
+          title="放大 Run"
+          onClick={(event) => open(change, event.currentTarget)}
+        >
+          <span aria-hidden="true">↗</span>
+        </button>
+      </header>
+      <PhaseRail change={change} compact />
+      <BuildStrategySummary change={change} />
+      <div className="run-card__work">
+        <NextStep change={change} compact />
+        <AgentStrip agents={agents} />
+      </div>
+    </article>
+  );
+}
+
+function RunGrid({
+  changes,
+  activeKey,
+  now,
+  open,
+}: {
+  changes: ProjectedChange[];
+  activeKey: string | null;
+  now: number;
+  open: (change: ProjectedChange, trigger: HTMLButtonElement) => void;
+}) {
+  const count = changes.length;
+  const columns = count >= 10 ? 4 : count >= 5 ? 3 : count >= 2 ? 2 : 1;
+  return (
+    <div className="run-grid" data-columns={columns}>
+      {changes.map((change) => (
+        <RunCard
+          key={changeKey(change)}
+          change={change}
+          recent={changeKey(change) === activeKey}
+          agents={activeDelegations(change, now)}
+          open={open}
+        />
+      ))}
+    </div>
+  );
+}
+
+function useObservationClock(changes: ProjectedChange[]) {
+  const [, refresh] = useState(0);
+  const now = Date.now();
+  useEffect(() => {
+    let expiration = Infinity;
+    for (const change of changes) {
+      for (const agent of activeDelegations(change, now)) {
+        expiration = Math.min(
+          expiration,
+          Date.parse(agent.observedAt) + WORK_ACTIVITY_FRESHNESS_MS,
+        );
+      }
+    }
+    if (!Number.isFinite(expiration)) return;
+    const timer = window.setTimeout(
+      () => refresh((value) => value + 1),
+      Math.max(0, expiration - Date.now()),
+    );
+    return () => window.clearTimeout(timer);
+  }, [changes, now]);
+  return now;
 }
 
 export function Dashboard({
@@ -610,29 +664,71 @@ export function Dashboard({
   projection: ChangeProjectionSnapshot;
   application: DesktopApplicationSnapshot;
 }) {
-  const selected = application.selectedContext;
-  const change = selected
-    ? (projection.changes.find(
-        (candidate) =>
-          candidate.workspaceId === selected.workspaceId &&
-          candidate.changeId === selected.changeId &&
-          candidate.runId === selected.runId,
-      ) ?? null)
-    : null;
-
+  const [focusedKey, setFocusedKey] = useState<string | null>(null);
+  const opener = useRef<HTMLButtonElement | null>(null);
+  const historySummary = useRef<HTMLElement | null>(null);
+  const board = useRef<HTMLElement | null>(null);
+  const now = useObservationClock(projection.changes);
+  const activeKey = application.activeContext ? changeKey(application.activeContext) : null;
+  const isTerminal = (change: ProjectedChange) =>
+    change.lifecycle?.status === 'completed' || change.lifecycle?.status === 'failed';
+  const active = projection.changes.filter((change) => !isTerminal(change));
+  const history = projection.changes.filter(isTerminal);
+  const focused = projection.changes.find((change) => changeKey(change) === focusedKey);
+  const waiting = active.filter((change) => workflowTone(change) === 'decision').length;
+  const waitingForActivation =
+    activeKey !== null && !projection.changes.some((change) => changeKey(change) === activeKey);
+  const open = (change: ProjectedChange, trigger: HTMLButtonElement) => {
+    opener.current = trigger;
+    setFocusedKey(changeKey(change));
+    window.repoctopusDesktop.selectChange({
+      schemaVersion: 1,
+      workspaceId: change.workspaceId,
+      changeId: change.changeId,
+      runId: change.runId,
+    });
+  };
+  const dismiss = () => {
+    setFocusedKey(null);
+    window.requestAnimationFrame(() => {
+      const target = opener.current?.isConnected
+        ? opener.current
+        : (historySummary.current ?? board.current);
+      target?.focus({ preventScroll: true });
+    });
+  };
   return (
-    <div className="workspace-layout">
-      <ChangeNavigation snapshot={projection} application={application} />
-      <main className="dashboard-main">
-        {change ? (
-          <SelectedChange
-            key={`${change.workspaceId}\0${change.changeId}\0${change.runId}`}
-            change={change}
-          />
-        ) : (
-          <NoSelection application={application} />
-        )}
-      </main>
-    </div>
+    <main className="dashboard-main" ref={board} tabIndex={-1}>
+      {active.length > 0 ? (
+        <section className="run-board" aria-label="活动 Run">
+          <div className="run-board__status">
+            <span>{active.length} 条活动 Run</span>
+            {waiting > 0 ? (
+              <span className="run-board__waiting">{waiting} 条需要你决定</span>
+            ) : null}
+          </div>
+          <RunGrid changes={active} activeKey={activeKey} now={now} open={open} />
+        </section>
+      ) : (
+        <section className="empty-state" aria-live="polite">
+          <h1>{waitingForActivation ? '等待启动来源的首个观测' : '暂无活动 Run'}</h1>
+          <p>在 Agent 会话启动或恢复 Change 后，运行状态会显示在这里。</p>
+        </section>
+      )}
+      {waitingForActivation && active.length > 0 ? (
+        <p className="pending-run" role="status">
+          等待启动来源的首个观测
+        </p>
+      ) : null}
+      {history.length > 0 ? (
+        <details className="history-board">
+          <summary ref={historySummary}>历史 Run · {history.length}</summary>
+          <RunGrid changes={history} activeKey={activeKey} now={now} open={open} />
+        </details>
+      ) : null}
+      {focused ? (
+        <RunFocus change={focused} agents={activeDelegations(focused, now)} dismiss={dismiss} />
+      ) : null}
+    </main>
   );
 }

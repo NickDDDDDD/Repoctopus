@@ -1,0 +1,17 @@
+{
+  "change": "show-parallel-runs-in-desktop",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379",
+  "files": [
+    { "path": "openspec/changes/show-parallel-runs-in-desktop/proposal.md", "sha256": "69fd344f896d8ce6347a5f5b10cfa5cea719e0c9b562e0fb48dd2881e6164081" },
+    { "path": "openspec/changes/show-parallel-runs-in-desktop/design.md", "sha256": "7854e81836391f5c4491fe69b00a7a9cd69403f1265930018989300402ea5691" },
+    { "path": "openspec/changes/show-parallel-runs-in-desktop/tasks.md", "sha256": "fabe9db3236359a4e97b5f87d809321bfe602ee623aefe90632d783f9bd9785f" },
+    { "path": "openspec/changes/show-parallel-runs-in-desktop/.openspec.yaml", "sha256": "3c3c72cd1a100807c59ef8347538654b4d2d22269f59561c985b01cb44c39491" },
+    { "path": "openspec/changes/show-parallel-runs-in-desktop/specs/desktop-observability-dashboard/spec.md", "sha256": "6a12df6caf248ad71b325238385766905e366caafbeb8c49ead64b53a055e41e" },
+    { "path": "openspec/changes/show-parallel-runs-in-desktop/specs/development-telemetry/spec.md", "sha256": "d648e848c2a8f0547d865f70e17fabee6ecbe8455ab2d0365797512d40e695be" }
+  ]
+}

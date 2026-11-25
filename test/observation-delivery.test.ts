@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { Context } from '@deepseek-ai/cordis';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { decodeObservationOtlpJson } from '../app/desktop/host/otlp-envelope-codec.js';
 import type { ObservationEnvelope } from '../domains/trajectory/observation.js';
@@ -49,6 +49,19 @@ async function receiver(target: ObservationEnvelope[]) {
 }
 
 describe('desktop observation delivery slice', () => {
+  it('can resolve the authenticated local receiver when close emits its final observation', async () => {
+    const context = new Context();
+    const connection = vi.fn().mockResolvedValue({
+      schemaVersion: 1,
+      endpoint: 'http://127.0.0.1:4319',
+      sessionToken: 'receiver-fixture-token',
+    });
+    const get = vi.spyOn(context, 'get').mockReturnValue({ connection });
+    const delivery = new ObservationDelivery(context);
+    get.mockReturnValue(undefined);
+    expect(await delivery.desktopConnection()).toMatchObject({ endpoint: 'http://127.0.0.1:4319' });
+  });
+
   it('replays one canonical envelope independently to local and remote OTLP destinations', async () => {
     const directory = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-delivery-'));
     const remote: ObservationEnvelope[] = [];

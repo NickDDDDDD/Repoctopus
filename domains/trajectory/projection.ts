@@ -1,4 +1,9 @@
 import {
+  changeKey,
+  observationReceptionKey,
+  WORK_ACTIVITY_FRESHNESS_MS,
+} from './projection-view.js';
+import {
   CHANGE_PHASES,
   CHANGE_RUN_STATUSES,
   type ChangePhase,
@@ -10,6 +15,17 @@ import type {
   ObservationScalar,
   ObservationSkillRole,
 } from './observation.js';
+import {
+  DELEGATION_ACTIVITY_EVENT,
+  DELEGATION_STAGES,
+  isDelegationIdentifier,
+  isDelegationResult,
+  isDelegationRole,
+  isDelegationStage,
+  type DelegationRole,
+  type DelegationResult,
+  type DelegationStage,
+} from '../work-execution/delegation-activity.js';
 
 export const PROJECTION_BUILD_ACTIONS = [
   'configure',
@@ -88,12 +104,26 @@ export interface ProjectedWork {
   taskId: string | null;
   attempt: number | null;
   hostId: string | null;
+  activeInvocationId?: string | null;
   validatorId: string | null;
   continuation: string | null;
   state: ProjectedTimelineState;
   startedAt: string;
   latestObservedAt: string;
   completedAt: string | null;
+}
+
+export interface ProjectedDelegation {
+  workId: string;
+  attempt: number;
+  invocationId: string;
+  executionId: string;
+  role: DelegationRole;
+  stage: DelegationStage;
+  result?: DelegationResult;
+  taskId: string | null;
+  repositoryId: string | null;
+  observedAt: string;
 }
 
 export interface ProjectedSkill {
@@ -236,6 +266,7 @@ export interface ProjectedChange {
   buildActions: ProjectedBuildAction[];
   works: ProjectedWork[];
   currentWork: ProjectedWork | null;
+  delegations?: ProjectedDelegation[];
   skills: ProjectedSkill[];
   decisions: ProjectedDecision[];
   bindingRevalidations: ProjectedBindingRevalidation[];
@@ -244,6 +275,7 @@ export interface ProjectedChange {
   destinations: ProjectedDestinationHealth[];
   specification: ProjectedSpecification;
   health: ProjectedHealth;
+  observedFreshness?: ChangeProjectionSnapshot['freshness']['status'];
   displayState: DashboardDisplayState;
   latestSequence: number;
   latestObservedAt: string;
@@ -258,6 +290,7 @@ export interface ChangeProjectionSnapshot {
     missing: number[];
   };
   seenEnvelopeIds: string[];
+  receiverFreshness?: ChangeProjectionSnapshot['freshness']['status'];
   receivedSequences: Record<string, number[]>;
   pendingEnvelopes?: Record<string, ObservationEnvelope[]>;
 }
@@ -296,8 +329,6 @@ export interface ChangeProjectionReduction {
   snapshot: ChangeProjectionSnapshot;
   delta: ChangeProjectionDelta | null;
 }
-
-const STALLED_WORK_MS = 15 * 60 * 1_000;
 
 function emptyHealth(): ProjectedHealth {
   const dimension = (): ProjectedHealthDimension => ({ status: 'not-reported', reasons: [] });
@@ -353,7 +384,9 @@ function gaps(sequences: readonly number[]): number[] {
 
 function projectionKey(envelope: ObservationEnvelope): string | null {
   const { workspaceId, changeId } = envelope.correlation;
-  return workspaceId && changeId ? `${workspaceId}\0${changeId}\0${envelope.identity.runId}` : null;
+  return workspaceId && changeId
+    ? changeKey({ workspaceId, changeId, runId: envelope.identity.runId })
+    : null;
 }
 
 function stringAttribute(
@@ -532,7 +565,82 @@ function projectWork(change: ProjectedChange, envelope: ObservationEnvelope): vo
   );
   const phase = envelope.correlation.phase;
   if (phase) work.phase = phase;
+  if (envelope.eventType === 'work.host-started') {
+    work.activeInvocationId = envelope.correlation.invocationId ?? null;
+  } else if (
+    state === 'completed' ||
+    state === 'failed' ||
+    [
+      'work.host-completed',
+      'work.outcome-submitted',
+      'work.outcome-rejected',
+      'work.outcome-accepted',
+      'reconcile.started',
+    ].includes(envelope.eventType)
+  ) {
+    work.activeInvocationId = null;
+  }
   if (!change.lifecycle || work.phase === change.lifecycle.phase) change.currentWork = work;
+}
+
+function projectDelegation(change: ProjectedChange, envelope: ObservationEnvelope): void {
+  const { workId, attempt, invocationId, childExecutionId, taskId, repositoryId } =
+    envelope.correlation;
+  const { delegationRole: role, delegationStage: stage } = envelope.attributes;
+  const status = envelope.attributes.delegationResult;
+  const result = stage === 'returned' && isDelegationResult(status) ? status : undefined;
+  if (
+    !workId ||
+    attempt === undefined ||
+    !invocationId ||
+    !isDelegationIdentifier(childExecutionId) ||
+    !isDelegationRole(role) ||
+    !isDelegationStage(stage) ||
+    (taskId !== undefined && !isDelegationIdentifier(taskId)) ||
+    (repositoryId !== undefined && !isDelegationIdentifier(repositoryId))
+  ) {
+    return;
+  }
+  const delegations = (change.delegations ??= []);
+  const prior = delegations.find(
+    (item) => item.invocationId === invocationId && item.executionId === childExecutionId,
+  );
+  if (prior) {
+    if (
+      prior.workId === workId &&
+      prior.attempt === attempt &&
+      prior.role === role &&
+      (result ||
+        (prior.taskId === (taskId ?? null) && prior.repositoryId === (repositoryId ?? null))) &&
+      (result || DELEGATION_STAGES.indexOf(stage) > DELEGATION_STAGES.indexOf(prior.stage))
+    ) {
+      prior.stage = stage;
+      prior.observedAt = envelope.observedAt;
+      if (result) prior.result = result;
+    } else return;
+  } else if (stage === 'started' || result) {
+    delegations.push({
+      workId,
+      attempt,
+      invocationId,
+      executionId: childExecutionId,
+      role,
+      stage,
+      ...(result ? { result } : {}),
+      taskId: taskId ?? null,
+      repositoryId: repositoryId ?? null,
+      observedAt: envelope.observedAt,
+    });
+  } else return;
+  const work = change.currentWork;
+  if (
+    work?.workId === workId &&
+    work.attempt === attempt &&
+    work.activeInvocationId === invocationId
+  ) {
+    work.latestObservedAt = envelope.observedAt;
+    change.latestObservedAt = envelope.observedAt;
+  }
 }
 
 function projectBuildAction(change: ProjectedChange, envelope: ObservationEnvelope): void {
@@ -878,7 +986,7 @@ function projectHealth(
   } else if (
     currentWork !== null &&
     ['pending', 'running'].includes(currentWork.state) &&
-    elapsed(currentWork.latestObservedAt, observedAt) >= STALLED_WORK_MS
+    elapsed(currentWork.latestObservedAt, observedAt) >= WORK_ACTIVITY_FRESHNESS_MS
   ) {
     executionReasons.push({
       code: 'work-stalled',
@@ -1088,6 +1196,15 @@ function projectChange(
 ): ProjectedChange | undefined {
   const change = current ?? createProjectedChange(envelope);
   if (change === undefined || envelope.identity.sequence < change.latestSequence) return change;
+  change.observedFreshness = explicitFreshness(envelope) ?? 'live';
+  if (
+    envelope.eventType === DELEGATION_ACTIVITY_EVENT ||
+    envelope.eventType === 'delegation.completed'
+  ) {
+    change.latestSequence = envelope.identity.sequence;
+    if (envelope.eventType === DELEGATION_ACTIVITY_EVENT) projectDelegation(change, envelope);
+    return change;
+  }
   change.strategyId ??= null;
   change.strategyRevision ??= null;
   change.executionBindingId ??= null;
@@ -1153,9 +1270,7 @@ function explicitFreshness(
 function applyEnvelope(snapshot: ChangeProjectionSnapshot, envelope: ObservationEnvelope) {
   const key = projectionKey(envelope);
   if (key === null) return;
-  const index = snapshot.changes.findIndex(
-    (change) => `${change.workspaceId}\0${change.changeId}\0${change.runId}` === key,
-  );
+  const index = snapshot.changes.findIndex((change) => changeKey(change) === key);
   if (isEvidenceStream(envelope)) {
     const change = index < 0 ? createProjectedChange(envelope) : snapshot.changes[index];
     if (!change) return;
@@ -1180,21 +1295,36 @@ export function reduceChangeProjection(
   current: ChangeProjectionSnapshot,
   envelope: ObservationEnvelope,
 ): ChangeProjectionReduction {
-  if (current.seenEnvelopeIds.includes(envelope.envelopeId)) {
+  const runKey = projectionKey(envelope);
+  const receptionKey = observationReceptionKey(envelope);
+  const { runId, sequence } = envelope.identity;
+  if (current.seenEnvelopeIds.includes(receptionKey)) {
     return { snapshot: current, delta: null };
+  }
+  if (runKey && current.seenEnvelopeIds.includes(envelope.envelopeId)) {
+    const owners = current.changes.filter((change) => change.runId === runId);
+    const legacy =
+      owners.length === 1 && changeKey(owners[0]!) === runKey
+        ? current.receivedSequences[runId]
+        : undefined;
+    const received = current.receivedSequences[runKey] ?? legacy;
+    if (received?.includes(sequence)) return { snapshot: current, delta: null };
   }
   const next = structuredClone(current);
   next.version += 1;
-  next.seenEnvelopeIds.push(envelope.envelopeId);
+  next.seenEnvelopeIds.push(receptionKey);
   next.seenEnvelopeIds.sort();
-  const { runId, sequence } = envelope.identity;
-  const runKey = projectionKey(envelope);
+  for (const change of next.changes) {
+    const legacy = next.receivedSequences[change.runId];
+    if (Array.isArray(legacy)) {
+      next.receivedSequences[changeKey(change)] ??= legacy;
+      delete next.receivedSequences[change.runId];
+    }
+  }
   if (sequence > 0 && !isEvidenceStream(envelope) && runKey !== null) {
-    const known = Object.hasOwn(next.receivedSequences, runId)
-      ? next.receivedSequences[runId]!
-      : [];
+    const known = next.receivedSequences[runKey] ?? [];
     const sequences = [...new Set([...known, sequence])].sort((left, right) => left - right);
-    Object.defineProperty(next.receivedSequences, runId, {
+    Object.defineProperty(next.receivedSequences, runKey, {
       value: sequences,
       enumerable: true,
       writable: true,
@@ -1207,7 +1337,7 @@ export function reduceChangeProjection(
     const remaining = pending.filter((item) => item.identity.sequence >= firstMissing);
     for (const item of pending.slice(0, pending.length - remaining.length))
       applyEnvelope(next, item);
-    if (!next.changes.some((change) => change.runId === runId)) {
+    if (!next.changes.some((change) => changeKey(change) === runKey)) {
       const unconfirmed = createProjectedChange(envelope);
       if (unconfirmed) next.changes.push(unconfirmed);
     }
@@ -1229,24 +1359,31 @@ export function reduceChangeProjection(
     .sort((left, right) => left - right)
     .slice(0, MAX_REPORTED_GAPS);
   const reportedFreshness = explicitFreshness(envelope);
-  next.freshness = {
-    status: missing.length > 0 ? 'gap' : (reportedFreshness ?? 'live'),
-    missing,
-  };
+  if (reportedFreshness && runKey === null) next.receiverFreshness = reportedFreshness;
   const latestObservedAt = next.changes.reduce(
     (latest, change) =>
       change.latestObservedAt.localeCompare(latest) > 0 ? change.latestObservedAt : latest,
     envelope.observedAt,
   );
+  const receiverStatus = next.receiverFreshness === 'live' ? undefined : next.receiverFreshness;
+  const observedStatuses = new Set<ChangeProjectionSnapshot['freshness']['status'] | undefined>([
+    receiverStatus,
+  ]);
   for (const change of next.changes) {
-    const missing = missingByRun.get(change.runId) ?? [];
+    const missing = missingByRun.get(changeKey(change)) ?? [];
     const freshness: ChangeProjectionSnapshot['freshness'] = {
-      status: missing.length > 0 ? 'gap' : (reportedFreshness ?? 'live'),
+      status: missing.length > 0 ? 'gap' : (receiverStatus ?? change.observedFreshness ?? 'live'),
       missing,
     };
+    observedStatuses.add(freshness.status);
     projectHealth(change, freshness, latestObservedAt);
     change.displayState = displayState(change, freshness);
   }
+  const order = ['error', 'gap', 'stale', 'catching-up'] as const;
+  next.freshness = {
+    status: order.find((status) => observedStatuses.has(status)) ?? 'live',
+    missing,
+  };
   return {
     snapshot: next,
     delta: {

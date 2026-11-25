@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import type { ObservationEnvelope } from '../domains/trajectory/observation.js';
+import { createWorkflowObservationEnvelopes } from '../domains/trajectory/observation.js';
+import { activeDelegations } from '../domains/trajectory/projection-view.js';
+import {
+  decodeObservationOtlpJson,
+  encodeObservationOtlpJson,
+} from '../app/desktop/host/otlp-envelope-codec.js';
 import {
   changeProjectionView,
   createEmptyChangeProjection,
@@ -33,6 +39,163 @@ function observation(
 }
 
 describe('desktop change projection', () => {
+  it('decodes and deduplicates same-ID canonical events within their own Workspace only', () => {
+    const event = {
+      schemaVersion: 1 as const,
+      eventId: 'shared-start',
+      runId: 'same-run',
+      sequence: 1,
+      stateVersion: 1,
+      compositionDigest: 'composition',
+      timestamp: '2026-10-28T00:00:00.000Z',
+      type: 'run.started' as const,
+      data: { phase: 'open' },
+    };
+    const events = ['workspace-a', 'workspace-b'].flatMap((workspaceId) =>
+      createWorkflowObservationEnvelopes([event], [event], {
+        workspaceId,
+        changeId: 'same-change',
+      }),
+    );
+    const received = decodeObservationOtlpJson(
+      encodeObservationOtlpJson([...events, ...events], 'log'),
+    );
+    expect(received).toHaveLength(2);
+    const next = received.reduce(
+      (snapshot, item) => reduceChangeProjection(snapshot, item).snapshot,
+      createEmptyChangeProjection(),
+    );
+    expect(
+      next.changes.map(({ workspaceId, latestSequence }) => [workspaceId, latestSequence]),
+    ).toEqual([
+      ['workspace-a', 1],
+      ['workspace-b', 1],
+    ]);
+  });
+
+  it('keeps a run-scoped freshness report from withdrawing another Run’s decision', () => {
+    const waiting = observation(1, {
+      eventType: 'change.lifecycle.transitioned',
+      correlation: {
+        workspaceId: 'team',
+        changeId: 'waiting',
+        phase: 'design',
+        decisionId: 'decision-1',
+      },
+      attributes: { toStatus: 'waiting' },
+    });
+    const stale = observation(2, {
+      eventType: 'telemetry.freshness',
+      identity: { eventId: 'stale', runId: 'run-2', sequence: 1 },
+      correlation: { workspaceId: 'other', changeId: 'running' },
+      attributes: { freshness: 'stale' },
+    });
+    let state = reduceChangeProjection(createEmptyChangeProjection(), waiting).snapshot;
+    state = reduceChangeProjection(state, stale).snapshot;
+    const next = reduceChangeProjection(
+      state,
+      observation(3, {
+        ...waiting,
+        envelopeId: `sha256:${'3'.repeat(64)}`,
+        identity: { ...waiting.identity, eventId: 'still-waiting', sequence: 2 },
+      }),
+    ).snapshot;
+    expect(next.changes.find(({ runId }) => runId === 'run-1')?.displayState).toBe('waiting');
+    expect(next.changes.find(({ runId }) => runId === 'run-2')?.displayState).toBe('stale');
+  });
+
+  it('keeps the independent streams of two Workspaces that use the same Run ID', () => {
+    const first = observation(1);
+    const second = observation(2, {
+      eventType: 'work.host-started',
+      correlation: { ...first.correlation, workspaceId: 'other-workspace' },
+    });
+    const snapshot = [first, second].reduce(
+      (state, envelope) => reduceChangeProjection(state, envelope).snapshot,
+      createEmptyChangeProjection(),
+    );
+    expect(snapshot.changes).toHaveLength(2);
+    expect(
+      snapshot.changes.find((change) => change.workspaceId === 'other-workspace'),
+    ).toMatchObject({
+      displayState: 'gap',
+      currentWork: null,
+    });
+    expect(snapshot.changes.find((change) => change.workspaceId === 'team-platform')).toMatchObject(
+      {
+        latestSequence: 1,
+        displayState: 'live',
+      },
+    );
+  });
+
+  it('recovers scoped deduplication when a legacy snapshot contains colliding envelope IDs', () => {
+    const legacy = [observation(1), observation(2)].reduce(
+      (state, envelope) => reduceChangeProjection(state, envelope).snapshot,
+      createEmptyChangeProjection(),
+    );
+    legacy.receivedSequences = { 'run-1': [1, 2] };
+    legacy.seenEnvelopeIds = [observation(1).envelopeId, observation(2).envelopeId];
+    const restored = [1, 2, 3].reduce((state, sequence) => {
+      const next = observation(sequence);
+      return reduceChangeProjection(state, {
+        ...next,
+        correlation: { ...next.correlation, workspaceId: 'new-workspace' },
+      }).snapshot;
+    }, legacy);
+    expect(
+      restored.changes.find(({ workspaceId }) => workspaceId === 'new-workspace'),
+    ).toMatchObject({
+      latestSequence: 3,
+      displayState: 'live',
+    });
+  });
+
+  it('keeps child progress separate from the current Work and retires it on return', () => {
+    const first = observation(1, {
+      eventType: 'change.lifecycle.transitioned',
+      attributes: { toStatus: 'running' },
+    });
+    const parent = { ...first.correlation, invocationId: 'invocation-1' };
+    const activity = (sequence: number, stage: string, executionId = 'child-1') =>
+      observation(sequence, {
+        eventType: 'delegation.activity',
+        correlation: {
+          ...parent,
+          taskId: '3.6',
+          repositoryId: 'frontend',
+          childExecutionId: executionId,
+        },
+        attributes: { delegationRole: 'implementer', delegationStage: stage },
+      });
+    let snapshot = [
+      first,
+      observation(2, { eventType: 'work.host-started', correlation: parent }),
+    ].reduce(
+      (state, envelope) => reduceChangeProjection(state, envelope).snapshot,
+      createEmptyChangeProjection(),
+    );
+    snapshot = reduceChangeProjection(snapshot, activity(3, 'started')).snapshot;
+    const verifying = { ...activity(4, 'verifying'), observedAt: '2026-10-28T00:17:00.000Z' };
+    snapshot = reduceChangeProjection(snapshot, verifying).snapshot;
+    snapshot = reduceChangeProjection(snapshot, verifying).snapshot;
+    expect(snapshot.changes[0]?.currentWork).toMatchObject({ taskId: '3.5', state: 'running' });
+    expect(snapshot.changes[0]?.delegations).toMatchObject([
+      { executionId: 'child-1', stage: 'verifying', taskId: '3.6', repositoryId: 'frontend' },
+    ]);
+    expect(activeDelegations(snapshot.changes[0]!, Date.parse(verifying.observedAt))).toHaveLength(
+      1,
+    );
+    expect(
+      activeDelegations(snapshot.changes[0]!, Date.parse('2026-10-28T00:32:00.000Z')),
+    ).toHaveLength(0);
+    snapshot = reduceChangeProjection(snapshot, activity(5, 'returned')).snapshot;
+    snapshot = reduceChangeProjection(snapshot, activity(6, 'verifying')).snapshot;
+    expect(snapshot.changes[0]?.delegations).toMatchObject([
+      { executionId: 'child-1', stage: 'returned' },
+    ]);
+  });
+
   it('does not show a Design validator as the Build Check', () => {
     const identity = { workspaceId: 'team-platform', changeId: 'dashboard' };
     const snapshot = [

@@ -13,6 +13,8 @@ const outputRoot = check ? `${expectedOutputRoot}.check-${process.pid}` : expect
 const productSourceFiles = [
   'services/desktop-projection.ts',
   'domains/trajectory/projection.ts',
+  'domains/trajectory/projection-view.ts',
+  'domains/work-execution/delegation-activity.ts',
   'services/desktop-receiver.ts',
   'app/desktop/host/otlp-http-receiver.ts',
   'app/desktop/host/otlp-envelope-codec.ts',

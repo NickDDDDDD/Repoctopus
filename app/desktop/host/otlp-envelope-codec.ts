@@ -1,4 +1,5 @@
 import type { OtlpSignal } from './otlp-http-receiver.js';
+import { observationReceptionKey } from '../../../domains/trajectory/projection-view.js';
 import { PRODUCT_VERSION } from '../../../platform/product/version.js';
 import {
   isObservationEnvelope,
@@ -508,6 +509,6 @@ export function decodeObservationOtlpJson(body: Uint8Array): readonly Observatio
   const payload: unknown = JSON.parse(Buffer.from(body).toString('utf8'));
   const observations: ObservationEnvelope[] = [];
   collect(payload, observations);
-  const unique = new Map(observations.map((item) => [item.envelopeId, item]));
+  const unique = new Map(observations.map((item) => [observationReceptionKey(item), item]));
   return [...unique.values()];
 }
