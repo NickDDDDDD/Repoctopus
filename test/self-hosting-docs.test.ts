@@ -37,7 +37,8 @@ describe('self-hosting documentation', () => {
     const documentation = await readFile(documentationPath, 'utf8');
     const links = [...documentation.matchAll(/\[[^\]]+\]\(([^)]+)\)/gu)]
       .map((match) => match[1]!)
-      .filter((target) => !/^[a-z]+:/iu.test(target) && !target.startsWith('#'));
+      .filter((target) => !/^[a-z]+:/iu.test(target) && !target.startsWith('#'))
+      .map((target) => target.split('#')[0]!);
     for (const target of links) {
       await expect(
         access(path.resolve(path.dirname(documentationPath), target)),

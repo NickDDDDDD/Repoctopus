@@ -69,6 +69,6 @@ Host 先将允许列表内的 envelope 追加到本地 journal，再发布新的
 3. 重新启动 Desktop；旧 discovery 会在 Host 退出时删除，新 Host 使用新端口和 token。
 4. 若 snapshot 或 journal 损坏，保留诊断后可清理本地投影目录并由仍在保留期内的 envelope 重建。
 
-首个正式支持范围是 Windows 10/11 x64。macOS、Linux 和 Windows ARM64 在本 change 中不承诺安装、托盘或生命周期支持。
+桌面安装、托盘和生命周期支持适用于 Windows 10/11 x64。请用与你的安装包对应的 Git Tag 查看该版本桌面的操作说明。
 
 源码与安装态启动步骤见[启动或恢复 Desktop Dashboard](desktop-activation.md)。

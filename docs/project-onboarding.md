@@ -43,19 +43,45 @@ OpenSpec Store 是 Workspace 内规格树的逻辑身份。团队共用同一个
 repoctopus.cmd skill install-init --entry-hosts codex
 ```
 
-从 Workspace Git 根调用 Init Skill，告诉 Agent 是单仓还是多仓。预览列出 Workspace、所选仓、Store、业务仓指向和入口路径。批准后，Runtime 初始化或复用 OpenSpec Store，写入最小配置、所选宿主的 Skill 和三份本地引导。先把接入产物提交并推送到团队仓库，再启动第一个 Change。单仓只处理当前仓。多仓可选择扫描目录内的部分仓库。
+从 Workspace Git 根调用 Init Skill，告诉 Agent 是单仓还是多仓。预览列出 Workspace、所选仓、Store、业务仓指向和入口路径。批准后，Runtime 初始化或复用 OpenSpec Store，写入最小配置、所选宿主的 Skill 和三份本地引导。单仓只处理当前仓。多仓可选择扫描目录内的部分仓库。
 
-终端可完成同一流程。在 Workspace 根按布局执行一条 Init 命令，再审查该请求。多仓示例选择 `web` 和 `backend`。需要查询实际仓库 ID 时，先运行 `repoctopus.cmd project detect --layout multi --scan-root .. --json`。
+终端可完成同一流程。在 Workspace 根，按项目布局选一条命令准备接入请求。
+
+**单仓**
 
 ```powershell
-# 单仓
 $prepared = repoctopus.cmd project init --layout single --entry-hosts codex --json | ConvertFrom-Json
-# 多仓
-$prepared = repoctopus.cmd project init --layout multi --scan-root .. --repositories web,backend --entry-hosts codex --json | ConvertFrom-Json
+```
+
+**多仓**
+
+准备命令前确认要接入的仓库 ID。需要查询时，可先运行 `repoctopus.cmd project detect --layout multi --scan-root .. --json`。多个 ID 用逗号分隔。
+
+```powershell
+$repositories = Read-Host '要接入的仓库 ID，多个 ID 用逗号分隔'
+$prepared = repoctopus.cmd project init --layout multi --scan-root .. --repositories $repositories --entry-hosts codex --json | ConvertFrom-Json
+```
+
+准备成功后审查返回的请求。
+
+```powershell
+if (-not $prepared.ok) { throw '接入请求准备失败，请先查看诊断' }
 repoctopus.cmd project review --request $prepared.result.file
 ```
 
 检查目录时运行 `git rev-parse --show-toplevel`。如果显示父级业务仓，当前目录是普通子目录。单仓从业务仓根接入，多仓使用独立 Workspace Git 根。重跑 Init 会为新的配置或选仓形成当前请求。
+
+## 检查接入结果
+
+打开 Workspace 根目录的 `README.md` 和 `docs/repoctopus/workspace-guide.md`，核对仓库 ID、路径和团队 Store ID。若需确认本机 OpenSpec Store 对应的 checkout，按[只读检查](specification.md#workspacestore-与实现仓)核对路径。
+
+```powershell
+repoctopus.cmd skill preview --workspace .
+```
+
+预览会检查工作流的 Skill 绑定并显示各步骤的加载顺序。可以在宿主的 Workspace 新会话查看入口 Skill 是否可用。若团队配置了可执行插件，只读预览会提示不可用，继续核对仓库、Store 和宿主入口即可。[预览与宿主安装](skills.md)
+
+检查后，将获批的共享配置、规格、引导文件及宿主 Skill 一起提交、推送并合入团队目标分支。多仓接入生成的业务仓指向文件，在各自业务仓提交。需要实际开发时再[启动 Change](#启动和恢复-change)。
 
 ## 按需配置 Verify
 
@@ -74,7 +100,9 @@ repoctopus.cmd project review --request $prepared.result.file
 以下例子演示省略 `--layout` 的旧式扩展探测。它扫描 `--scan-root` 的直接子 Git 仓库，也探测验证命令。Workspace 必须位于扫描目录下一级。首次接入使用上面的轻量 Init。刷新引导时显式指定布局，见[补齐或更新 Workspace 引导](#补齐或更新-workspace-引导)。
 
 ```powershell
-$detected = repoctopus project detect --scan-root .. --workspace . --store team-platform --json | ConvertFrom-Json
+$storeId = Read-Host '本次探测使用的团队 Store ID'
+$detected = repoctopus.cmd project detect --scan-root .. --workspace . --store $storeId --json | ConvertFrom-Json
+if (-not $detected.ok) { throw '项目探测失败，请先查看诊断' }
 $draft = $detected.result.file
 $draft
 ```
@@ -112,11 +140,12 @@ Profile 必须至少有一个声明 coverage 的 required 节点；optional 节�
 ### 3. 准备人工决定
 
 ```powershell
-$prepared = repoctopus project prepare `
+$prepared = repoctopus.cmd project prepare `
   --workspace . `
   --draft $draft `
   --candidate .repoctopus/drafts/project-candidate.yaml `
   --json | ConvertFrom-Json
+if (-not $prepared.ok) { throw '配置候选准备失败，请先查看诊断' }
 $request = $prepared.result.file
 ```
 
@@ -125,7 +154,7 @@ Repoctopus 会再次解析完整候选，计算候选摘要，并把当前正式
 ### 4. 由用户确认
 
 ```powershell
-repoctopus project review --workspace . --request $request
+repoctopus.cmd project review --workspace . --request $request
 ```
 
 手工运行 `project review` 时，在真实交互终端审阅。宿主从真实用户取得决定后，可用 `project review --response-file` 提交绑定当前请求和 `snapshotDigest` 的响应。批准后，Runtime 才原子写入 `repoctopus.yaml`。
@@ -138,19 +167,23 @@ repoctopus project review --workspace . --request $request
 4. 在 Workspace 安装 `README.md`、`AGENTS.md` 的 Repoctopus 受管区块与 `docs/repoctopus/workspace-guide.md` 本地教程；保留团队原有文本。引导目标在 Store 副作用前统一预检，冲突或不安全路径会阻断。
 5. 引导和 `.gitignore` 成功后才发布 `repoctopus.yaml` 与完成状态。
 
-流程绝不调用会删除目录的命令，也不使用 `store setup` 或手工拼装 OpenSpec 私有文件。进程若在官方初始化、登记或 pointer 写入与 Receipt 之间退出，重试会从同一 request 的 Intent 和当前真实状态重新观察：只有可证明由该初始化产生的标准 manifest 或完全相同的 pointer 内容才能补记 `recovered`；出现用户文件、部分根、Store 冲突或身份漂移时停止并保留诊断，不覆盖或删除。生成的 Workspace Root、Store metadata 和业务仓 pointer 仍是各仓普通 Git 变化，必须走后续正常 Change/Delivery 发布流程，接入 apply 本身不 commit、push 或创建 MR。
+进程若在官方初始化、登记或 pointer 写入与 Receipt 之间退出，重试原请求会核对现有文件和登记。只有确认属于原请求的写入才会标记为 `recovered`。发现用户文件、部分初始化的根目录或登记冲突时，按诊断排查并保留现有数据。接入获批后，按团队 Git 流程提交 Workspace 和业务仓各自产生的文件，将接入结果合入开发的目标分支。
 
 如果看到 `store_register_root_unhealthy`，说明使用的是尚未具备 Root bootstrap 的旧接入路径，或当前 `openspec/` 已是部分根。不要手工修改 `.repoctopus/` journal，也不要删除已有 `openspec/`。升级后重新运行 `project detect`；缺失根会得到可审批的初始化计划，已存在的不健康根则会给出阻断诊断。
 
-需要从本机安全移除登记时，先停止引用该 Workspace 的 CLI/Desktop，运行 `npx --yes --package @fission-ai/openspec@1.14.3 openspec context --store <store-id> --json` 核对精确路径，再运行 `npx --yes --package @fission-ai/openspec@1.14.3 openspec store unregister <store-id> --json`。该命令不删除 checkout；禁止把 `store remove` 当作清理命令。业务仓 pointer 的删除必须作为普通 Git change 单独评审。
+需要移除本机登记时，先停止引用该 Workspace 的 CLI 和 Desktop，再按[注销本机 Store 登记](specification.md#注销本机-store-登记)操作。
 
-## 5. 运行首次 Evidence
+## 验证已配置的 Profile
+
+已经配置 `verify` Profile 时，可以先预览，再按需手动运行一次。以下命令实际执行项目检查并生成 Evidence。等待工作流正式 Verify 时，使用该 Run 的当前步骤。
 
 ```powershell
-repoctopus evidence plan --workspace . --profile verify --json
-$run = repoctopus evidence run --workspace . --profile verify --json | ConvertFrom-Json
-repoctopus evidence status --workspace . --attempt $run.runId --json
-repoctopus evidence inspect --workspace . --attempt $run.runId --json
+repoctopus.cmd evidence plan --workspace . --profile verify --json
+$run = repoctopus.cmd evidence run --workspace . --profile verify --json | ConvertFrom-Json
+if ($run.runId) {
+    repoctopus.cmd evidence status --workspace . --attempt $run.runId --json
+    repoctopus.cmd evidence inspect --workspace . --attempt $run.runId --json
+}
 ```
 
 `plan` 在副作用前完成配置解析、DAG 校验和输入指纹采集。`run` 将 Attempt、Receipt、Artifact 和 Bundle 保存到 `.repoctopus/evidence/`。若进程在运行中中断，使用 `evidence resume --attempt <id>`；恢复不会静默重跑已开始但没有 Receipt 的命令。
@@ -181,7 +214,7 @@ repoctopus evidence inspect --workspace . --attempt $run.runId --json
 
    确认 context 返回当前 Workspace 路径和团队 Store ID。登记只写本机 registry。出现冲突时请团队核对 ID 和 checkout。[OpenSpec Store](specification.md#workspacestore-与实现仓)
 
-4. 用宿主打开 Workspace，调用团队已提交的 `repoctopus` Skill。缺少所用的宿主入口时可[单独补装](skills.md#在宿主中调用-repoctopus)。从启动 Agent 或 CLI 的进程环境注入所需凭据。团队配置了 Verify Profile 时，可用 `repoctopus.cmd evidence plan --workspace . --profile verify --json` 预览。
+4. 用宿主打开 Workspace，确认团队已提交的 `repoctopus` Skill 可用。缺少所用的宿主入口时可[单独补装](skills.md#在宿主中调用-repoctopus)。需要凭据时，在启动 Agent 或 CLI 的进程环境中设置。团队已配置 Verify Profile 时，可用 `repoctopus.cmd evidence plan --workspace . --profile verify --json` 预览。实际开发时再[启动或恢复 Change](#启动和恢复-change)。
 
 ## 补齐或更新 Workspace 引导
 
@@ -190,11 +223,13 @@ repoctopus evidence inspect --workspace . --attempt $run.runId --json
 ```powershell
 $storeId = Read-Host 'repoctopus.yaml 中的团队 Store ID'
 $entryHosts = Read-Host '本次使用的 Host ID，多个值用逗号分隔'
-# 单仓
-$detected = repoctopus.cmd project detect --layout single --scan-root . --entry-hosts $entryHosts --store $storeId --json | ConvertFrom-Json
-# 多仓
-$detected = repoctopus.cmd project detect --layout multi --scan-root .. --entry-hosts $entryHosts --store $storeId --json | ConvertFrom-Json
+$layout = Read-Host '项目布局（single 或 multi）'
+if ($layout -notin @('single', 'multi')) { throw '请输入 single 或 multi' }
+$scanRoot = if ($layout -eq 'single') { '.' } else { '..' }
+$detected = repoctopus.cmd project detect --layout $layout --scan-root $scanRoot --entry-hosts $entryHosts --store $storeId --json | ConvertFrom-Json
+if (-not $detected.ok) { throw '项目探测失败，请先查看诊断' }
 $prepared = repoctopus.cmd project prepare --workspace . --draft $detected.result.file --candidate repoctopus.yaml --json | ConvertFrom-Json
+if (-not $prepared.ok) { throw '引导刷新准备失败，请先查看诊断' }
 repoctopus.cmd project review --workspace . --request $prepared.result.file
 ```
 
@@ -202,19 +237,28 @@ repoctopus.cmd project review --workspace . --request $prepared.result.file
 
 团队自己的说明和 Agent 规则写在受管区块外。残缺或重复标记、目录占位、符号链接以及文件并发变化会返回明确冲突，不会直接覆盖。接入中断时重试原未完成请求，可以补齐剩余文件；已完成请求只返回原结果，升级后要更新引导则重新准备并批准一个请求。
 
-## 启动第一个 Change
+## 启动和恢复 Change
 
-在已接入的 Workspace 中，从团队目标分支创建并推送一个 Change 分支。下面以 `main` 为目标，`fix-settings-save-message` 为 Change ID。推送后可以在宿主直接调用 Workspace 的 `repoctopus` Skill，提供需求、Change ID 和目标分支。需要在终端显式启动时，使用以下完整示例。
+手头有要实施的需求时，在 Workspace 根同步已包含接入文件的团队目标分支，再为这项需求创建并推送 Change 分支。Change ID 使用英文短横线分隔，例如由实际需求命名的 `add-invoice-export`。
 
 ```powershell
-git switch main
-git pull --ff-only origin main
-git switch -c change/fix-settings-save-message
+$target = Read-Host '本次 Change 的目标分支'
+$changeId = Read-Host '本次真实需求的 Change ID'
+git fetch origin
+if ($LASTEXITCODE) { throw '目标远端同步失败' }
+git switch -c "change/$changeId" "origin/$target"
+if ($LASTEXITCODE) { throw 'Change 分支创建失败' }
 git push -u origin HEAD
+if ($LASTEXITCODE) { throw 'Change 分支推送失败' }
+```
 
-$started = repoctopus run start --workspace . --change fix-settings-save-message --target main --json | ConvertFrom-Json
+推送成功后，在宿主的新 Workspace 会话调用 `repoctopus` Skill，提供实际需求、Change ID 和目标分支。需要从终端明确启动时，在同一终端使用刚才的变量。
+
+```powershell
+$started = repoctopus.cmd run start --workspace . --change $changeId --target $target --json | ConvertFrom-Json
+if (-not $started.ok) { throw 'Run 启动失败，请先查看诊断' }
 $runId = $started.runId
-repoctopus run status --workspace . --run $runId --json
+repoctopus.cmd run status --workspace . --run $runId --json
 ```
 
 如果由终端启动，把需求、`changeId` 和 `runId` 交给 Agent，调用 `repoctopus` 续跑。Agent 用 `run next` 请求 Runtime 派发下一步，按返回的 continuation 领取 Work、装填当前 Action 对应的 Skill 并提交 Outcome。Open 和 Design 各有一次独立审批。宿主可展示原生选项并回传你的选择，也可以通过交互式终端完成。[审批方式](human-decision.md#可信通道)

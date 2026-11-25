@@ -19,7 +19,7 @@ $policyFile = Join-Path $workspace 'delivery-policy.yaml'
 运行 `delivery migration-plan`，并保存完整 JSON 供人工审查：
 
 ```powershell
-node bin/repoctopus.js delivery migration-plan --workspace $workspace --change $changeId --policy $policyFile --json
+repoctopus.cmd delivery migration-plan --workspace $workspace --change $changeId --policy $policyFile --json
 ```
 
 命令只读取 v2 状态和必要的平台事实。成功响应中的 `platformMutations` 必须为空，`reuseLegacyApproval` 与 `reuseLegacyEvidenceBundles` 必须为 `false`。

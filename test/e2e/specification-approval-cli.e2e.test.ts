@@ -84,12 +84,11 @@ describe('specification approval CLI', () => {
       path.join(packageRoot, 'docs', 'specification.md'),
       'utf8',
     );
-    expect(documentation).toContain('spec approval prepare --workspace . --run <run-id> --json');
-    expect(documentation).toContain('run decision --workspace . --run <run-id> --json');
+    expect(documentation).toContain("spec approval prepare --workspace . --run '<run-id>' --json");
+    expect(documentation).toContain("run decision --workspace . --run '<run-id>' --json");
     const selfHosting = await readFile(path.join(packageRoot, 'docs', 'self-hosting.md'), 'utf8');
-    expect(selfHosting).toContain(
-      '规划阶段只公开分支并取得绑定精确 OID 的规划批准，不创建 Change MR',
-    );
+    expect(selfHosting).toContain('先公开 Change 分支，再启动 Run。');
+    expect(selfHosting).toContain('Archive 在规格关闭后发布最终 Change MR');
 
     const root = await temporaryDirectory('repoctopus-specification-approval-cli-');
     cleanup.push(root);

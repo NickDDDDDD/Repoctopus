@@ -4,8 +4,11 @@
 
 一个 Workspace/change 只有一个由二者确定性派生的权威 Change Run。它按 `Open → Design → Build → Verify → Archive` 推进，`phase`、`status`、`checkEpoch`、当前 Work、Task progress、wait、blocker、Evidence 和 next actions 都来自同一条 accepted trajectory。Specification、Delivery、CLI、Desktop 与 OTLP 只能提交事实或读取 `ChangeRunProjection`，不能维护另一套阶段状态。
 
+在 Workspace 根目录用原 Run ID 查看状态。
+
 ```powershell
-node bin/repoctopus.js run status --workspace . --run <run-id> --json
+$runId = Read-Host '原 Run ID'
+repoctopus.cmd run status --workspace . --run $runId --json
 ```
 
 文本和 JSON 输出使用同一投影。`freshness.stateVersion` 与 `freshness.trajectoryOffset` 表示投影对应的持久版本；看到等待或阻断时应处理投影给出的 next action，不能通过编辑 `.repoctopus/`、分支名或 MR 状态跳过转换。
@@ -29,7 +32,7 @@ node bin/repoctopus.js run status --workspace . --run <run-id> --json
 
 Runtime 不再用一个聚合 planning snapshot 授权所有后续状态。Change Run v2 分别保存 planning semantic、validation observation、approval authority、composition、Build Configuration、Build Plan、execution checkpoint、verification input 和 publication provenance 身份。每个身份只有一个领域 owner；代码固定的依赖矩阵决定哪些后继事实依赖它。
 
-`next`、`resume`、CLI JSON 和 Desktop 投影只读取已提交 checkpoint。它们不会扫描 OpenSpec、Git diff 或最新 packet 来猜下一步。相同 revision 的重复调用返回同一 Work、Wait 或 reconciliation；相同 idempotency key 携带不同 payload 时返回冲突。
+CLI 的 `run status` 和桌面读取已提交的状态。需要继续工作时，`run next` 和 `run resume` 从当前 checkpoint 出发，按所在阶段核对 Git、规格和有效的验证输入，再返回当前 Work、等待或恢复步骤。当前输入等价时可复用原工作。相同幂等标识提交不同内容时返回冲突。
 
 Design 返工会把现有 Build Protocol 标记为 `suspended-for-design`。该候选保留 Configuration、Plan 和 package completion，但不可 claim 或 dispatch。新 Design 批准后，Runtime 从 Configuration 开始逐层重验；配置仍兼容时直接回到 Plan，新 Plan 只保留 package identity 和输入都匹配的 completion。无法证明精确范围时，Runtime 使用保守失效或 Human Decision，不静默采用旧 completion。
 

@@ -12,16 +12,16 @@ Host 负责如实关联真实答复或仍覆盖当前提案的明确委托。CLI
 
 ## Change 生命周期
 
-Host 遇到 `ask` 时，先读取当前请求。以下命令中的 `<run-id>` 使用启动或恢复输出中的身份：
+以下 PowerShell 命令在 Workspace 根运行。把带尖括号的值替换为实际标识或文件路径，保留引号。Host 遇到 `ask` 时，先用当前 Run ID 读取请求。
 
 ```powershell
-repoctopus run decision --workspace . --run <run-id> --json
+repoctopus.cmd run decision --workspace . --run '<run-id>' --json
 ```
 
 视图提供评审材料、允许选择、条件输入、`responseTemplate`、完整命令 argv 和 Host 指引。Host 展示材料并取得真实答复后，填写模板，将其保存为本机响应文件，再提交：
 
 ```powershell
-repoctopus run decide --workspace . --run <run-id> --response-file ./response.json --json
+repoctopus.cmd run decide --workspace . --run '<run-id>' --response-file ./response.json --json
 ```
 
 响应合同见 [生命周期决定 Schema](schemas/lifecycle-human-decision-response.schema.json)。文件上限 64 KiB，拒绝未知字段；`decision`、渠道、授权依据和答复引用必须填写。Open 与意图替换的批准还要求选择 `current | branch | worktree` 隔离。引用只保存摘要，自由评论不能超过 4096 字符。
@@ -31,7 +31,7 @@ repoctopus run decide --workspace . --run <run-id> --response-file ./response.js
 接受决定后按返回的 `commands.next` 发起下一次 pull。提交不执行下一项 Agent Work，也不允许 Host 选择目标 phase。若回包丢失，先用原请求身份核对结果：
 
 ```powershell
-repoctopus run decision --workspace . --run <run-id> --request-id <request-id> --proposal-hash <proposal-hash> --json
+repoctopus.cmd run decision --workspace . --run '<run-id>' --request-id '<request-id>' --proposal-hash '<proposal-hash>' --json
 ```
 
 相同选择的重试返回原决定；冲突选择或隔离拒绝。`superseded` 是历史事实，不能授权当前内容。没有待决定请求时返回 `none`，读取不会新建审批。
@@ -39,7 +39,7 @@ repoctopus run decision --workspace . --run <run-id> --request-id <request-id> -
 终端回退保持原有用法：
 
 ```powershell
-repoctopus run decide --workspace . --run <run-id>
+repoctopus.cmd run decide --workspace . --run '<run-id>'
 ```
 
 ## 项目配置
@@ -47,15 +47,15 @@ repoctopus run decide --workspace . --run <run-id>
 `project prepare` 把完整候选、reconcile diff、未决项、候选摘要和当前正式配置摘要组成请求。批准后才写 `repoctopus.yaml`。等待期间正式配置变化会使请求失效。流程见 [项目接入](project-onboarding.md)。
 
 ```powershell
-node bin/repoctopus.js project review --workspace . --request <request-file>
+repoctopus.cmd project review --workspace . --request '<request-file>'
 ```
 
 ## 交付发布
 
-开发 checkpoint 会立即把当前 HEAD 普通 push 到策略远端并核对精确 OID，这项备份动作不需要逐次人工批准。创建或更新 MR 仍必须先提交绑定当前多仓快照的验证报告，并通过交互式审批；merge 始终由人执行。详情见 [交付治理](delivery.md)。
+开发 checkpoint 将当前 HEAD 推送到策略远端并核对精确 OID。发布 MR 前，先将验证报告绑定到当前多仓快照并取得本次发布批准。合入由团队成员或托管平台在发布后处理。[交付治理](delivery.md)
 
 ```powershell
-node bin/repoctopus.js approval review --workspace . --change <change-id>
+repoctopus.cmd approval review --workspace . --change '<change-id>'
 ```
 
 ## 权威资料冲突

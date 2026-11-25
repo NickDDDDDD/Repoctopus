@@ -19,11 +19,11 @@ GitHub Credential 使用 `delivery.publication.apiCredential` 引用环境变量
 
 ## Archive preflight 与批准
 
-`archive-prepare` 只接受已经通过 Design、Build 与 Verify 的 Change Run。验证报告必须被 Intent 选中的业务仓跟踪，相关工作树必须干净：
+`archive-prepare` 只接受已经通过 Design、Build 与 Verify 的 Change Run。验证报告必须被 Intent 选中的业务仓跟踪，相关工作树必须干净。以下命令在 Workspace 根运行，先把带尖括号的值替换为实际标识或路径，保留引号。
 
 ```powershell
-node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --evidence-attempt <attempt-id> --intent <intent.yaml> --json
-node bin/repoctopus.js approval review --workspace . --change <change-id>
+repoctopus.cmd run archive-prepare --workspace . --run '<run-id>' --evidence-attempt '<attempt-id>' --intent '<intent.yaml>' --json
+repoctopus.cmd approval review --workspace . --change '<change-id>'
 ```
 
 `--evidence-attempt` 明确引用 Verify 的 Evidence Attempt。规格关闭在由 Closure Receipt 绑定的隔离 checkout 中执行；不会把归档 diff 复制回 Business source branch，也不会为业务发布放宽 clean worktree 条件。
@@ -37,7 +37,7 @@ node bin/repoctopus.js approval review --workspace . --change <change-id>
 批准后执行：
 
 ```powershell
-node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --work-attempt 1 --json
+repoctopus.cmd run archive-publish --workspace . --run '<run-id>' --work-attempt 1 --json
 ```
 
 协议按固定顺序执行：
@@ -81,8 +81,8 @@ Repoctopus 采用 Comet 0.5.1 的恢复原则：外部调用与本地 checkpoint
 MR 合入、代码审查或 CI 修复可能发生在 Publication Receipt 之后。显式命令和下一次正常 `run start` 都可以执行有界检查：
 
 ```powershell
-node bin/repoctopus.js change reconcile --workspace . --json
-node bin/repoctopus.js change reconcile --workspace . --change <change-id> --json
+repoctopus.cmd change reconcile --workspace . --json
+repoctopus.cmd change reconcile --workspace . --change '<change-id>' --json
 ```
 
 Reconciler 按已完成 Change 的 Receipt 查询业务 MR 当前 head/state，并与发布事实比较。它不监听 Webhook、不轮询、不创建 wait，也不把已完成 Run 回退到 Archive。平台暂时不可用只产生诊断。

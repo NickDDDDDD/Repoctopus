@@ -48,7 +48,6 @@ describe('Workspace guide ownership', () => {
     const text = tutorial!.content;
     for (const command of [
       'skill install-init --entry-hosts',
-      'project init --layout single',
       'project init --layout multi',
       "store register . --id 'team-store' --json",
       'project install-entry-skills --entry-hosts',
@@ -66,11 +65,15 @@ describe('Workspace guide ownership', () => {
       expect(text).toContain(command);
     }
     expect(text.indexOf('调用 `repoctopus` Skill')).toBeLessThan(text.indexOf('run start'));
+    expect(text.indexOf('## 检查接入结果')).toBeLessThan(text.indexOf('## 启动和恢复 Change'));
+    expect(text).not.toContain('project init --layout single');
     const single = renderWorkspaceGuides(
       { ...config, repositories: config.repositories.slice(0, 1) },
       versions,
     );
     expect(single[2]?.content).toContain('project detect --layout single --scan-root . ');
+    expect(single[2]?.content).toContain('project init --layout single');
+    expect(single[2]?.content).not.toContain('project init --layout multi');
   });
 
   it('preserves exact mixed-ending user prefix/suffix and does not duplicate its own block', () => {

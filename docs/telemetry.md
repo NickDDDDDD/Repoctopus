@@ -41,12 +41,16 @@ telemetry:
 
 ## 确认 SigNoz 已收到数据
 
-在已接入的 Workspace 启动一次真实 Change。也可以打开细粒度诊断后执行团队已有的 `verify` Profile，验证三种信号的接收链路。该命令实际执行 Profile 的检查。
+可以使用团队正在做的 Change 核对工作流事件。仅验证接收链路时，在已接入且有 `verify` Profile 的 Workspace 打开细粒度诊断，手动运行一次 Profile。该命令实际执行 Profile 的检查。
 
 ```powershell
-$env:REPOCTOPUS_OTLP_DIAGNOSTICS = 'full'
-repoctopus evidence run --workspace . --profile verify --json
-Remove-Item Env:REPOCTOPUS_OTLP_DIAGNOSTICS
+$previousDiagnostics = $env:REPOCTOPUS_OTLP_DIAGNOSTICS
+try {
+    $env:REPOCTOPUS_OTLP_DIAGNOSTICS = 'full'
+    repoctopus.cmd evidence run --workspace . --profile verify --json
+} finally {
+    $env:REPOCTOPUS_OTLP_DIAGNOSTICS = $previousDiagnostics
+}
 ```
 
 1. 在 SigNoz 选中覆盖这次执行的时间范围。在 **Logs Explorer** 搜索 `service.name = 'repoctopus-runtime'`。如果团队设置了 `OTEL_SERVICE_NAME`，改用实际服务名。
@@ -60,8 +64,8 @@ Remove-Item Env:REPOCTOPUS_OTLP_DIAGNOSTICS
 先取得与团队 CLI 版本对应的 `deploy/signoz/workflow-health.json`。
 
 - 全局 npm 安装时，在 PowerShell 运行 `Join-Path (npm.cmd root --global) 'repoctopus/deploy/signoz/workflow-health.json'` 定位文件。
-- 从团队提供的 `.tgz` 提取时，在包所在目录运行 `tar -xzf ./repoctopus-0.1.3.tgz package/deploy/signoz/workflow-health.json`。文件名使用团队的实际版本，提取后从 `package/deploy/signoz/` 取文件。
-- 临时使用 npx 时，也可在对应 Git Tag 下载 JSON。[v0.1.3 看板 JSON](https://github.com/NickDDDDDD/Repoctopus/blob/v0.1.3/deploy/signoz/workflow-health.json)
+- 从团队提供的 `.tgz` 提取时，在包所在目录运行 `tar -xzf ./repoctopus-0.1.4.tgz package/deploy/signoz/workflow-health.json`。文件名使用团队的实际版本，提取后从 `package/deploy/signoz/` 取文件。
+- 临时使用 npx 时，也可从团队使用版本的 Git Tag 下载 JSON。[v0.1.4 看板 JSON](https://github.com/NickDDDDDD/Repoctopus/blob/v0.1.4/deploy/signoz/workflow-health.json)
 
 在 SigNoz v0.135.0 或更新版本打开 **Dashboards → New dashboard → Import JSON**，上传取得的文件。看板使用 Repoctopus 的规范 OTLP Logs 和 SigNoz 的 ClickHouse 查询。团队可用 [SigNoz 导入指南](https://signoz.io/docs/dashboards/import-dashboard/)核对界面步骤。
 
