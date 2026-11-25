@@ -6,7 +6,7 @@ import { clearTimeout, setTimeout } from 'node:timers';
 
 import { app } from 'electron';
 
-const expectedHeading = '选择一个 change';
+const expectedHeading = '暂无活动 Run';
 const screenshot = process.env.REPOCTOPUS_DESKTOP_SMOKE_SCREENSHOT;
 let finished = false;
 
@@ -32,10 +32,7 @@ async function inspect(window) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
-  if (
-    state?.heading !== expectedHeading ||
-    !state.body.includes('本地状态来自同一套 Repoctopus OTLP 事实流')
-  ) {
+  if (state?.heading !== expectedHeading || !state.body.includes('本地接收已连接')) {
     throw new Error(`Desktop did not reach the Host-ready state: ${JSON.stringify(state)}`);
   }
   if (

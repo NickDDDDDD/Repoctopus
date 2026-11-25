@@ -4,6 +4,7 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 
 import { encodeObservationOtlpJson } from '../app/desktop/host/otlp-envelope-codec.js';
 import type { ObservationEnvelope } from '../domains/trajectory/observation.js';
+import type { DesktopReceiverConnection } from './desktop-receiver.js';
 import { ObservationPipeline } from './observation-pipeline.js';
 import type {
   ObservationDestinationMode,
@@ -53,6 +54,10 @@ export class ObservationDelivery extends Service {
 
   get workspaceOtlpEndpoint(): string | undefined {
     return this.config.workspaceOtlpEndpoint;
+  }
+
+  async desktopConnection(): Promise<DesktopReceiverConnection | null> {
+    return (await this.ctx.desktopInstanceProbe?.connection()) ?? null;
   }
 
   async append(envelopes: readonly ObservationEnvelope[]): Promise<void> {
@@ -208,6 +213,7 @@ export class ObservationDelivery extends Service {
         const send = () =>
           fetch(endpoint, {
             method: 'POST',
+            redirect: destination.id === 'desktop' ? 'error' : 'follow',
             headers: {
               'content-type': 'application/json',
               ...(destination.signalHeaders?.[signal] ?? destination.headers ?? {}),

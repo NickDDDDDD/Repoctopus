@@ -20,13 +20,11 @@ export function App() {
       if (!active) return;
       setState((current) => {
         if (current.phase !== 'ready') return current;
-        if (update.delta.version <= current.projection.version) return current;
-        if (update.delta.previousVersion !== current.projection.version) {
-          void window.repoctopusDesktop.currentState().then((next) => {
-            if (active) setState(next);
-          });
+        if (
+          update.snapshot.version !== update.delta.version ||
+          update.snapshot.version <= current.projection.version
+        )
           return current;
-        }
         return { ...current, projection: update.snapshot };
       });
     });
@@ -57,7 +55,6 @@ export function App() {
       <header className="titlebar">
         <div className="brand-group">
           <div className="brand">Repoctopus</div>
-          <div className="surface-label">工作流</div>
         </div>
         <div className="receiver-state" aria-live="polite">
           <span aria-hidden="true" />
@@ -91,7 +88,6 @@ export function App() {
           </section>
         </main>
       )}
-      <footer>本地状态来自同一套 Repoctopus OTLP 事实流；不查询 SigNoZ，不扫描 Workspace。</footer>
     </div>
   );
 }

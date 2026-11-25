@@ -100,7 +100,7 @@ const PRODUCT_ROOT = realpathSync.native(
     : path.resolve(DIST_DIR, '..', '..'),
 );
 const USAGE =
-  'Usage: repoctopus project <init|detect|prepare|install-entry-skills|configure-verify|decision|review> | skill <list|get|preview|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|revise-strategy|record|resume|work-claim|work-content|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <init|detect|prepare|install-entry-skills|configure-verify|decision|review> | skill <list|get|preview|project|install-init> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decision|decide|revise-strategy|record|resume|work-claim|work-content|work-activity|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const COMMANDS = new Set([
   'project init',
   'project detect',
@@ -133,6 +133,7 @@ const COMMANDS = new Set([
   'run archive-publish',
   'run work-claim',
   'run work-content',
+  'run work-activity',
   'run work-outcome',
   'run work-reconcile',
   'run decide',
@@ -198,6 +199,11 @@ const CLI_FLAGS = new Set([
   'proposal-hash',
   'findings-file',
   'delegation-receipts-file',
+  'child-execution-id',
+  'delegation-role',
+  'delegation-stage',
+  'task-id',
+  'repository-id',
   'candidate',
   'branch',
   'draft',
@@ -226,6 +232,19 @@ const REQUIRED_FLAGS = new Map<string, readonly string[]>([
   ['run decision', ['run']],
   ['run decide', ['run']],
   ['run revise-strategy', ['run']],
+  [
+    'run work-activity',
+    [
+      'run',
+      'runner',
+      'host-id',
+      'invocation-id',
+      'packet-digest',
+      'child-execution-id',
+      'delegation-role',
+      'delegation-stage',
+    ],
+  ],
   ['run archive-prepare', ['run', 'intent']],
   ['run archive-publish', ['run']],
   ['delivery status', ['change']],
@@ -1460,6 +1479,39 @@ async function runWorkClaim(parsed: ParsedArguments): Promise<CliEnvelope<unknow
   }
 }
 
+async function runWorkActivity(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('run.work.activity', {
+      runId,
+      invocationId: stringFlag(parsed, 'invocation-id', { required: true })!,
+      hostId: stringFlag(parsed, 'host-id', { required: true })!,
+      packetDigest: qualifiedSha256(
+        stringFlag(parsed, 'packet-digest', { required: true })!,
+        'Packet digest',
+      ),
+      executor: {
+        actorId: userInfo().username,
+        runnerId: stringFlag(parsed, 'runner', { required: true })!,
+        source: 'cli',
+        authenticated: true,
+      },
+      activity: {
+        executionId: stringFlag(parsed, 'child-execution-id', { required: true })!,
+        role: stringFlag(parsed, 'delegation-role', { required: true })!,
+        stage: stringFlag(parsed, 'delegation-stage', { required: true })!,
+        taskId: stringFlag(parsed, 'task-id'),
+        repositoryId: stringFlag(parsed, 'repository-id'),
+      },
+    });
+    return successEnvelope({ command: 'run work-activity', runId, result });
+  } finally {
+    await app.close();
+  }
+}
+
 async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const runId = stringFlag(parsed, 'run', { required: true })!;
@@ -1957,6 +2009,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run archive-publish') return runArchivePublish(parsed);
   if (command === 'run work-claim') return runWorkClaim(parsed);
   if (command === 'run work-content') return runWorkContent(parsed);
+  if (command === 'run work-activity') return runWorkActivity(parsed);
   if (command === 'run work-outcome') return runWorkOutcome(parsed);
   if (command === 'run work-reconcile') return runWorkReconcile(parsed);
   if (command === 'run decide') return runDecide(parsed);

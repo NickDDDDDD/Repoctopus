@@ -1,17 +1,17 @@
 # Desktop Dashboard
 
-Repoctopus Desktop Dashboard 是 Windows x64 上的本地工作流观测界面。它与团队 SigNoZ 消费同一套标准 OTLP envelope，但用途不同：Desktop 聚焦当前 change 的即时状态，SigNoZ 用于团队历史、趋势和流程改进。Desktop 不查询 SigNoZ，也不扫描 Workspace、Git 或 OpenSpec 文件补造状态。
+Repoctopus Desktop Dashboard 是 Windows x64 上的本地工作流观测界面。桌面通过标准 OTLP 接收多条 Run 的即时状态。团队用 SigNoZ 查看同一观测流支持的历史指标和趋势。
 
 当前 change 的投影除五阶段、Work、Skill、Wait 和 Evidence 外，还直接消费 packet recovery 与 Specification Provider 观测：四类工件分别显示 `ready | skipped | missing`，验证显示最高严重级与 contract-conflict。`skipped` 是 Provider 明确证明的满足状态，不显示为缺失或错误；这些事实与 SigNoZ 来自同一个持久 Trajectory envelope。
 
 ## 从首屏找到下一步
 
-在左侧选择一个 Change Run。阶段栏显示 Open（需求确认）、Design（设计）、Build（实现）、Verify（验证）和 Archive（归档），并标出当前阶段。需要关注的 Run 排在前面，已完成的 Run 可在「已完成」中展开。
+每个格子是一条 Run，可以同时查看多个 Workspace 的活动。阶段栏标出 Open（需求确认）、Design（设计）、Build（实现）、Verify（验证）或 Archive（归档）。终态记录在「历史 Run」中。点击 Run 的名称或展开按钮可查看全窗口详情，按 Esc 或点击「全部 Run」回到原来的位置。
 
-- **需要审批**时，点击「复制给 Agent」，回到当前 Agent 会话粘贴。Agent 会重新读取此 Run 的待处理请求、展示材料并等待你的决定。进入下一阶段后，旧请求的入口会自动消失。
+- **需要审批**时，Run 会出现琥珀色提示。Agent 会话是审批入口。需要重新找到待处理请求时，可以点击「复制给 Agent」，回到当前会话粘贴。Runtime 接受决定后，桌面会撤下原提示。
 - **Build 进行中**时，可查看执行方式、TDD 配置、隔离方式与已完成的工作包。工作包计划尚未上报时，进度条会在收到计划后出现。
-- **当前 Skill**显示已选定、已交付和已确认读取的 Skill。展开「Skill 装填详情」可查看来源和校验。已确认读取表示 Runtime 验证了装填凭据。
-- **遇到返工、阻塞或接收中断**时，按「现在要做什么」核对当前 Run。展开「运行与诊断详情」可查看回退、验证证据和遥测健康。
+- **多 Agent 协作**时，把指针移到子 Agent 头像上，或通过键盘聚焦，即可查看已上报的任务、仓库和进展。放大 Run 后可以直接查看这些信息。超过最近观测窗口或父 Work 结束后，子 Agent 会从活跃人数中移除，历史仍可查看。
+- **运行与诊断详情**包含当前 Skill、审批和验证记录、回退及遥测健康。「Skill 装填详情」里的已确认读取表示 Runtime 校验了装填凭据。
 
 ## 状态含义
 
@@ -29,7 +29,7 @@ Dashboard 分别展示五阶段、Build 的五个 action、当前 Work、Skill �
 
 ## 本地接收与安全边界
 
-Desktop Host 在 `127.0.0.1` 的随机端口接收 OTLP/HTTP，并为每次 Host 启动生成新的高熵 Bearer token。用户级 discovery 记录只在验证以下条件后才可使用：
+Desktop Host 在 `127.0.0.1` 的随机端口接收 OTLP/HTTP，并为每次 Host 启动生成新的高熵 Bearer token。CLI 自动发现本机 Receiver。发现失败时，本地事件留在现有保留窗口内，后续 CLI 调用可以补发。用户级 discovery 记录需满足以下条件。
 
 - 文件由当前 Windows 用户拥有，且 ACL 收紧到该用户；
 - 记录处于 freshness 窗口内；
@@ -37,6 +37,8 @@ Desktop Host 在 `127.0.0.1` 的随机端口接收 OTLP/HTTP，并为每次 Host
 - 回环监听端口仍由该 PID 拥有；若 Windows 网络 compartment 隐藏端口表，Receiver 必须用短期 token 证明同一 PID。
 
 伪造、过期、进程复用、端口劫持或错误凭据都会 fail closed。Renderer 启用 sandbox 与 `contextIsolation`，关闭 Node integration，使用封闭 CSP；Preload 只公开固定的版本化 IPC allowlist。Cordis composition、Receiver 与 Projection 只存在于独立 Desktop Host，不在 Electron Main 或 Renderer 中运行。
+
+子 Agent 的 `delegation.activity` 只用于本地工作台，包含有界的子执行标识、角色、里程碑和已确认的任务及仓库标识。使用受管 Build Execute 的宿主通过 `run work-activity` 上报真实活动，既有 `delegation.completed` 继续记录完成回执。SigNoZ 的工作流指标保持原口径。
 
 ## 关闭行为
 

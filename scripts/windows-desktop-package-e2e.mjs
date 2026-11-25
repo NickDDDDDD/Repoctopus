@@ -385,8 +385,19 @@ async function waitForText(page, text) {
 async function waitForSelectedChange(page, changeId) {
   return waitFor(
     async () =>
-      (await page.evaluate("document.querySelector('main h1')?.textContent")) === changeId,
+      (await page.evaluate("document.querySelector('.run-focus[open] h1')?.textContent")) ===
+      changeId,
     `selected change ${changeId}`,
+  );
+}
+
+async function waitForRecentRun(page, changeId) {
+  return waitFor(
+    async () =>
+      (await page.evaluate(
+        `[...document.querySelectorAll('.run-card[data-recent="true"] h2 button')].some((button) => button.textContent === ${JSON.stringify(changeId)})`,
+      )) || null,
+    `recent Run ${changeId}`,
   );
 }
 
@@ -581,7 +592,9 @@ async function main() {
         throw new Error(`${error.message}; body: ${body}; state: ${JSON.stringify(state)}`);
       });
       await waitForSelectedChange(page, 'add-windows-desktop-dashboard');
-      await page.evaluate("document.querySelector('details.run-details').open = true");
+      await page.evaluate(
+        "document.querySelector('.run-focus[open] details.run-details').open = true",
+      );
       const body = await waitForText(page, runtimeRunId);
       assert(
         body.includes('build.execute:417ed2ee777f'),
@@ -590,7 +603,7 @@ async function main() {
       assert(body.includes('repoctopus-build-execute'), 'Action Skill was not rendered');
       assert(body.includes('tdd'), 'Augmentation Skill was not rendered');
       const phases = await page.evaluate(`Object.fromEntries(
-        [...document.querySelectorAll('.phase-step')].map((node) => [
+        [...document.querySelectorAll('.run-focus[open] .phase-step')].map((node) => [
           node.querySelector('h3')?.textContent,
           node.getAttribute('data-state'),
         ]),
@@ -645,7 +658,7 @@ async function main() {
       runId: 'run-installed-e2e-secondary',
     });
     await postOtlp(discovery, 'installed-e2e-secondary', 'run-installed-e2e-secondary');
-    await waitForSelectedChange(page, 'installed-e2e-secondary').catch(async (error) => {
+    await waitForRecentRun(page, 'installed-e2e-secondary').catch(async (error) => {
       const state = await page.evaluate('window.repoctopusDesktop.currentState()');
       throw new Error(`${error.message}; state: ${JSON.stringify(state)}`);
     });
@@ -664,7 +677,7 @@ async function main() {
       runId: 'run-installed-e2e-restored',
     });
     await postOtlp(discovery, 'installed-e2e-restored', 'run-installed-e2e-restored');
-    await waitForSelectedChange(page, 'installed-e2e-restored');
+    await waitForRecentRun(page, 'installed-e2e-restored');
     const after = await readDiscovery(trayUserData, trayProcess);
     assert(after.pid === discovery.pid, 'Tray restore replaced the Receiver');
   });

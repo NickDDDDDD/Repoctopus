@@ -95,6 +95,8 @@ export const OBSERVATION_CORRELATION_KEYS = [
   'evidenceAttemptId',
   'recovery',
   'invocationId',
+  'childExecutionId',
+  'repositoryId',
   'parentWorkId',
   'receiptId',
   'artifactId',
@@ -163,6 +165,9 @@ const OBSERVATION_BOOLEAN_KEYS = new Set<string>([
   'ruleTriggered',
 ]);
 const OBSERVATION_ENUMS: Readonly<Record<string, readonly string[]>> = {
+  delegationRole: ['implementer', 'reviewer'],
+  delegationStage: ['started', 'verifying', 'returned'],
+  delegationResult: ['succeeded', 'failed', 'unknown'],
   healthFact: ['state', 'configuration', 'unchanged'],
   healthStatus: [
     'running',

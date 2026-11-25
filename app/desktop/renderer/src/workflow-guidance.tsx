@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import type { ProjectedChange } from '../../../../domains/trajectory/projection.js';
 
@@ -147,9 +147,9 @@ export function workflowGuidance(change: ProjectedChange): {
   }
 }
 
-function ApprovalHandoff({ runId, decisionId }: { runId: string; decisionId: string }) {
+function ApprovalHandoff({ change, decisionId }: { change: ProjectedChange; decisionId: string }) {
   const [result, setResult] = useState<'idle' | 'copied' | 'failed'>('idle');
-  const prompt = `请读取 Repoctopus Run ${JSON.stringify(runId)} 的当前审批请求。桌面上报的请求为 ${JSON.stringify(decisionId)}。请先核对它仍是待处理请求，再展示材料并等待我的选择。`;
+  const prompt = `请读取 Workspace ${JSON.stringify(change.workspaceId)} 的 Repoctopus Run ${JSON.stringify(change.runId)} 的当前审批请求。桌面上报的请求为 ${JSON.stringify(decisionId)}。请先核对它仍是待处理请求，再展示材料并等待我的选择。`;
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(prompt);
@@ -174,40 +174,89 @@ function ApprovalHandoff({ runId, decisionId }: { runId: string; decisionId: str
   );
 }
 
-export function NextStep({ change }: { change: ProjectedChange }) {
+export function workflowTone(change: ProjectedChange, guidance = workflowGuidance(change)) {
+  if (guidance.decisionId) return 'decision';
+  switch (change.displayState) {
+    case 'live':
+      return 'active';
+    case 'waiting':
+      return 'waiting';
+    case 'failed':
+    case 'blocked':
+    case 'stalled':
+    case 'rework':
+      return 'attention';
+    case 'complete':
+      return 'complete';
+    default:
+      return 'unknown';
+  }
+}
+
+const WORK_STATUS = {
+  decision: '需要你决定',
+  active: '进行中',
+  waiting: '等待中',
+  attention: '需关注',
+  complete: '已完成',
+  unknown: '状态待确认',
+} as const;
+
+export function BuildConfiguration({ change }: { change: ProjectedChange }) {
+  const strategy = change.buildStrategy;
+  if (!strategy) return null;
+  const isolation = { current: '当前分支', branch: '分支隔离', worktree: 'Worktree 隔离' } as const;
+  return (
+    <p className="next-step__strategy">
+      {strategy.executionMode === 'autonomous' ? '自主执行' : '多 Agent 协作'}
+      {' · '}
+      {strategy.tddMode === 'tdd' ? 'TDD' : '直接验证'}
+      {' · '}
+      {isolation[strategy.isolation]}
+    </p>
+  );
+}
+
+export function NextStep({
+  change,
+  compact = false,
+}: {
+  change: ProjectedChange;
+  compact?: boolean;
+}) {
+  const headingId = useId();
   const guidance = workflowGuidance(change);
-  const strategy = change.phase === 'build' ? change.buildStrategy : null;
+  const tone = workflowTone(change, guidance);
+  const action = change.phase === 'build' ? change.buildAction : null;
+  const title = compact && tone === 'active' && action ? ACTIVE_WORK[action] : guidance.title;
   const progress = change.phase === 'build' ? change.buildProgress : null;
   const progressLabel = ['gap', 'stale', 'catching-up', 'error'].includes(change.displayState)
     ? '上次确认的工作包进度'
     : '工作包已完成';
-  const isolation = { current: '当前分支', branch: '分支隔离', worktree: 'Worktree 隔离' } as const;
+  const Heading = compact ? 'h3' : 'h2';
   return (
     <section
       className="next-step"
       data-state={change.displayState}
-      aria-labelledby="next-step-heading"
+      data-tone={tone}
+      aria-labelledby={headingId}
     >
-      <p className="next-step__label">现在要做什么</p>
-      <div aria-live="polite">
-        <h2 id="next-step-heading">{guidance.title}</h2>
-        <p>{guidance.description}</p>
+      <div className="next-step__copy" aria-live="polite">
+        <p className="next-step__label">
+          <span className="work-status-mark" aria-hidden="true" />
+          {tone === 'active' && change.currentWork?.state === 'running' && change.currentWork.hostId
+            ? 'Agent 执行中'
+            : WORK_STATUS[tone]}
+        </p>
+        <Heading id={headingId}>{title}</Heading>
+        {!compact || tone === 'decision' ? <p>{guidance.description}</p> : null}
       </div>
       {guidance.decisionId ? (
         <ApprovalHandoff
           key={guidance.decisionId}
-          runId={change.runId}
+          change={change}
           decisionId={guidance.decisionId}
         />
-      ) : null}
-      {strategy ? (
-        <p className="next-step__strategy">
-          {strategy.executionMode === 'autonomous' ? '自主执行' : '多 Agent 协作'}
-          {' · '}
-          {strategy.tddMode === 'tdd' ? 'TDD' : '直接验证'}
-          {' · '}
-          {isolation[strategy.isolation]}
-        </p>
       ) : null}
       {progress ? (
         <label className="next-step__progress">

@@ -1,6 +1,7 @@
 import { Service, type Context } from '@deepseek-ai/cordis';
 
 import type { DesktopInstanceProbe } from '../shared/instance-probe.js';
+import type { DesktopReceiverConnection } from '../../../services/desktop-receiver.js';
 import { DesktopReceiverDiscovery } from './receiver-discovery.js';
 
 export interface DesktopReceiverInstanceProbeConfig {
@@ -12,6 +13,8 @@ export interface DesktopReceiverInstanceProbeConfig {
 export class DesktopReceiverInstanceProbe extends Service implements DesktopInstanceProbe {
   private readonly environment: NodeJS.ProcessEnv;
   private readonly platform: NodeJS.Platform;
+  private validated?: { connection: DesktopReceiverConnection; expiresAt: number };
+  private resolving: Promise<DesktopReceiverConnection | null> | undefined;
 
   constructor(context: Context, config: DesktopReceiverInstanceProbeConfig = {}) {
     super(context, 'desktopInstanceProbe');
@@ -20,14 +23,29 @@ export class DesktopReceiverInstanceProbe extends Service implements DesktopInst
   }
 
   async isAvailable(): Promise<boolean> {
+    return (await this.connection()) !== null;
+  }
+
+  async connection(): Promise<DesktopReceiverConnection | null> {
+    if (this.validated && Date.now() < this.validated.expiresAt) return this.validated.connection;
+    this.resolving ??= this.discoverConnection().finally(() => {
+      this.resolving = undefined;
+    });
+    return this.resolving;
+  }
+
+  private async discoverConnection(): Promise<DesktopReceiverConnection | null> {
     try {
       const discovery = new DesktopReceiverDiscovery({
         environment: this.environment,
         platform: this.platform,
       });
-      return (await discovery.discover()).status === 'available';
+      const result = await discovery.discover();
+      if (result.status !== 'available') return null;
+      this.validated = { connection: result.connection, expiresAt: Date.now() + 5_000 };
+      return result.connection;
     } catch {
-      return false;
+      return null;
     }
   }
 }

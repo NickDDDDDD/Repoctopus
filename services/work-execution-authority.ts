@@ -2,7 +2,12 @@ import { createHash } from 'node:crypto';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
 
-import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from '../domains/action/types.js';
+import type {
+  ActionIntent,
+  ActionReceipt,
+  ClaimedActionOutcome,
+  WorkExecutorIdentity,
+} from '../domains/action/types.js';
 import type { RunState } from '../domains/engine/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import { classifyWorkContinuation } from '../domains/change-lifecycle/continuation.js';
@@ -15,6 +20,13 @@ import type {
 } from '../domains/specification/types.js';
 import type { TrajectoryEvent, TrajectoryEventType } from '../domains/trajectory/types.js';
 import { createRuleEvaluationReceipt } from '../domains/telemetry/rule-evaluation.js';
+import {
+  DELEGATION_ACTIVITY_EVENT,
+  DELEGATION_STAGES,
+  isDelegationIdentifier,
+  isDelegationStage,
+  parseDelegationActivity,
+} from '../domains/work-execution/delegation-activity.js';
 import type {
   AgentCoordinationCheckpoint,
   AgentCoordinationCheckpointView,
@@ -870,6 +882,129 @@ export class WorkExecutionAuthority extends Service {
     }
   }
 
+  async recordExternalDelegationActivity(input: {
+    runId: string;
+    invocationId: string;
+    hostId: string;
+    packetDigest: string;
+    executor: WorkExecutorIdentity;
+    activity: unknown;
+  }): Promise<{ status: 'recorded' | 'duplicate' }> {
+    const activity = parseDelegationActivity(input.activity);
+    const { intent, packet } = await this.loadAuthoritativePacket(input.runId);
+    const { work } = packet;
+    const status = await this.ctx.runStore.commitGuarded(input.runId, ({ state, trajectory }) => {
+      assertActivePacket(state, packet);
+      const checkpoint = state.workExecution;
+      const invocation = checkpoint?.hostInvocation;
+      const owner = invocation?.executor ?? intent.executor;
+      const { executor } = input;
+      if (
+        !checkpoint ||
+        checkpoint.status !== 'invoking' ||
+        state.reconciliationRequired ||
+        !invocation ||
+        invocation.invocationId !== input.invocationId ||
+        invocation.host.id !== input.hostId ||
+        invocation.host.id !== `external:${executor.source}:${executor.runnerId}` ||
+        invocation.packet.packetDigest !== input.packetDigest ||
+        checkpoint.packet.packetDigest !== input.packetDigest ||
+        packet.identity.packetDigest !== input.packetDigest ||
+        !executor.authenticated ||
+        !owner?.authenticated ||
+        owner.actorId !== executor.actorId ||
+        owner.runnerId !== executor.runnerId ||
+        owner.source !== executor.source
+      ) {
+        throw new Error('Child Agent activity must match the active invocation and its owner');
+      }
+      assertSameClaim(checkpoint, intent);
+      const protocol = state.changeLifecycle?.buildProtocol;
+      if (
+        work.kind !== 'build.execute' ||
+        protocol?.strategy?.executionMode !== 'subagent-driven-development' ||
+        !invocation.host.capabilities.includes('subagent.dispatch.attested') ||
+        activity.executionId === invocation.invocationId
+      ) {
+        throw new Error('Child Agent activity requires managed delegated Build Execute');
+      }
+      const scope = protocol.plan?.packages.find(
+        (candidate) => candidate.packageId === work.packageId,
+      );
+      if (
+        !scope ||
+        (activity.taskId && !scope.taskIds.includes(activity.taskId)) ||
+        (activity.repositoryId && !scope.repositoryIds.includes(activity.repositoryId))
+      ) {
+        throw new Error('Child Agent activity escaped the current Work Package');
+      }
+      const previous = trajectory.findLast(
+        (event) =>
+          event.type === DELEGATION_ACTIVITY_EVENT &&
+          event.data.invocationId === invocation.invocationId &&
+          event.data.childExecutionId === activity.executionId,
+      );
+      if (previous) {
+        if (
+          previous.data.delegationRole !== activity.role ||
+          previous.data.taskId !== activity.taskId ||
+          previous.data.repositoryId !== activity.repositoryId
+        ) {
+          throw new Error('Child Agent activity conflicts with the original assignment');
+        }
+      } else if (activity.stage !== 'started') {
+        throw new Error('Child Agent activity requires an observed start');
+      }
+      const identity = [
+        work.workId,
+        String(checkpoint.attempt),
+        invocation.invocationId,
+        activity.executionId,
+        activity.stage,
+      ];
+      const eventId = digest(input.runId, DELEGATION_ACTIVITY_EVENT, ...identity);
+      if (trajectory.some((event) => event.eventId === eventId)) {
+        return { value: 'duplicate' as const };
+      }
+      const priorStage = previous?.data.delegationStage;
+      if (
+        isDelegationStage(priorStage) &&
+        DELEGATION_STAGES.indexOf(priorStage) >= DELEGATION_STAGES.indexOf(activity.stage)
+      ) {
+        throw new Error('Child Agent activity has already advanced past that milestone');
+      }
+      const timestamp = new Date().toISOString();
+      const nextState = { ...state, stateVersion: state.stateVersion + 1, updatedAt: timestamp };
+      return {
+        state: nextState,
+        event: executionEvent({
+          state: nextState,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: DELEGATION_ACTIVITY_EVENT,
+          identity,
+          data: {
+            phase: work.phase,
+            workId: work.workId,
+            workKind: work.kind,
+            buildAction: work.buildAction,
+            attempt: checkpoint.attempt,
+            packageId: scope.packageId,
+            invocationId: invocation.invocationId,
+            childExecutionId: activity.executionId,
+            delegationRole: activity.role,
+            delegationStage: activity.stage,
+            ...(activity.taskId ? { taskId: activity.taskId } : {}),
+            ...(activity.repositoryId ? { repositoryId: activity.repositoryId } : {}),
+          },
+        }),
+        value: 'recorded' as const,
+      };
+    });
+    await this.flushTelemetry(input.runId);
+    return { status };
+  }
+
   async recordDelegationFacts(
     packet: WorkExecutionPacket,
     outcome: WorkExecutionHostOutcome,
@@ -893,6 +1028,32 @@ export class WorkExecutionAuthority extends Service {
         },
         [receipt.receiptId, receipt.outcomeDigest],
       );
+      if (isDelegationIdentifier(receipt.executionId)) {
+        try {
+          await this.recordEvent(
+            packet.claim.runId,
+            packet.claim.intentId,
+            DELEGATION_ACTIVITY_EVENT,
+            {
+              phase: packet.work.phase,
+              workId: packet.work.workId,
+              workKind: packet.work.kind,
+              buildAction: packet.work.buildAction,
+              attempt: packet.claim.attempt,
+              invocationId: outcome.invocationId,
+              packageId: receipt.packageId,
+              childExecutionId: receipt.executionId,
+              delegationRole: receipt.role,
+              delegationStage: 'returned',
+              delegationResult: receipt.status,
+            },
+            [outcome.invocationId, receipt.executionId, 'receipt'],
+          );
+        } catch {
+          // The accepted parent submission and its original delegation fact are authoritative.
+          // An optional local history observation cannot alter outcome processing.
+        }
+      }
     }
   }
 

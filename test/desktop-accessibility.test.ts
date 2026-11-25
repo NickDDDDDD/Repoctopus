@@ -54,17 +54,14 @@ describe('desktop dashboard accessibility and resilient content', () => {
 
     const markup = renderToStaticMarkup(createElement(Dashboard, { projection, application }));
     expect(markup).toContain('<main');
-    expect(markup).toContain('<aside');
-    expect(markup).toContain('aria-label="Workspace 与 change"');
-    expect(markup).toContain('aria-pressed="true"');
+    expect(markup).toContain('aria-label="活动 Run"');
+    expect(markup).toContain('aria-haspopup="dialog"');
     expect(markup).toContain('aria-current="step"');
-    expect(markup).toContain('现在要做什么');
+    expect(markup).toContain('执行工作包');
     expect(markup).toContain('<button');
-    expect(markup).toContain('<summary>');
     expect(markup).toContain(workspaceId);
     expect(markup).toContain(changeId);
     expect(markup).toContain(runId);
-    expect(markup).toContain(String(Number.MAX_SAFE_INTEGER));
   });
 
   it('puts current approval guidance on the main screen and withdraws it as soon as Build starts', async () => {
@@ -104,6 +101,8 @@ describe('desktop dashboard accessibility and resilient content', () => {
     );
     expect(waitingMarkup).toContain('请审核设计方案');
     expect(waitingMarkup).toContain('复制给 Agent');
+    expect(waitingMarkup).toContain('需要你决定');
+    expect(waitingMarkup).toContain('data-tone="decision"');
     const build = reduceChangeProjection(waiting, {
       ...design,
       envelopeId: `sha256:${'3'.repeat(64)}`,
@@ -120,6 +119,7 @@ describe('desktop dashboard accessibility and resilient content', () => {
     );
     expect(buildMarkup).toContain('实现进行中');
     expect(buildMarkup).not.toContain('复制给 Agent');
+    expect(buildMarkup).not.toContain('data-tone="decision"');
   });
 
   it('keeps keyboard focus visible and supports narrow/high-DPI reflow without fixed zoom', async () => {

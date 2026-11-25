@@ -17,7 +17,9 @@ import {
   type ObservationEnvelope,
 } from '../domains/trajectory/observation.js';
 import type { ObservationDelivery, ObservationDestination } from './observation-delivery.js';
+import type { DesktopReceiverConnection } from './desktop-receiver.js';
 import type { LifecycleTelemetryEvent, LifecycleTelemetryPort } from './lifecycle-diagnostics.js';
+import { DELEGATION_ACTIVITY_EVENT } from '../domains/work-execution/delegation-activity.js';
 import {
   createRepoctopusResource,
   resolveOtlpDeployment,
@@ -27,6 +29,7 @@ import {
 export function observationDestinationsFromEnvironment(
   environment: NodeJS.ProcessEnv,
   workspaceEndpoint?: string,
+  desktopConnection?: DesktopReceiverConnection | null,
 ): readonly ObservationDestination[] {
   const destinations: ObservationDestination[] = [];
   const deployment = resolveOtlpDeployment(environment, workspaceEndpoint);
@@ -52,12 +55,9 @@ export function observationDestinationsFromEnvironment(
             ...(explicitSignals.trace ? { trace: explicitSignals.trace } : {}),
             ...(explicitSignals.metric ? { metric: explicitSignals.metric } : {}),
           },
-      ...(!diagnosticMode
-        ? {
-            select: (envelope, signal) =>
-              Boolean(explicitSignals[signal]) || workflowHealthLog(envelope),
-          }
-        : {}),
+      select: (envelope, signal) =>
+        envelope.eventType !== DELEGATION_ACTIVITY_EVENT &&
+        (diagnosticMode || Boolean(explicitSignals[signal]) || workflowHealthLog(envelope)),
       signalHeaders: {
         trace: deployment.traces.headers,
         log: deployment.logs.headers,
@@ -74,9 +74,12 @@ export function observationDestinationsFromEnvironment(
       >,
     });
   }
-  const desktop = environment.REPOCTOPUS_DESKTOP_OTLP_ENDPOINT?.trim();
+  const explicitDesktop = environment.REPOCTOPUS_DESKTOP_OTLP_ENDPOINT?.trim();
+  const desktop = explicitDesktop || desktopConnection?.endpoint;
   if (desktop) {
-    const token = environment.REPOCTOPUS_DESKTOP_OTLP_TOKEN?.trim();
+    const token = explicitDesktop
+      ? environment.REPOCTOPUS_DESKTOP_OTLP_TOKEN?.trim()
+      : desktopConnection?.sessionToken;
     destinations.push({
       id: 'desktop',
       endpoint: desktop,
@@ -123,21 +126,30 @@ abstract class CanonicalObservationTelemetry {
   ) {}
 
   protected async deliver(): Promise<void> {
+    const desktopMode = this.environment.REPOCTOPUS_DESKTOP_OTLP_MODE?.trim();
+    const discover =
+      desktopMode !== 'paused' &&
+      desktopMode !== 'removed' &&
+      !this.environment.REPOCTOPUS_DESKTOP_OTLP_ENDPOINT?.trim();
     const destinations = observationDestinationsFromEnvironment(
       this.environment,
       this.delivery.workspaceOtlpEndpoint,
+      discover ? await this.delivery.desktopConnection() : null,
     );
     const configured = new Set(destinations.map((destination) => destination.id));
-    const desktopMode = this.environment.REPOCTOPUS_DESKTOP_OTLP_MODE?.trim();
     await Promise.all([
       this.delivery.setMode('remote', configured.has('remote') ? 'enabled' : 'removed'),
       this.delivery.setMode(
         'desktop',
         desktopMode === 'paused'
           ? 'paused'
-          : desktopMode === 'removed' || !configured.has('desktop')
+          : desktopMode === 'removed'
             ? 'removed'
-            : 'enabled',
+            : configured.has('desktop')
+              ? 'enabled'
+              : process.platform === 'win32'
+                ? 'paused'
+                : 'removed',
       ),
     ]);
     await this.delivery.deliver(destinations);

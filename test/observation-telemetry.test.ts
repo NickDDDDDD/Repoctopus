@@ -1,9 +1,33 @@
 import { describe, expect, it } from 'vitest';
 import metadata from '../package.json' with { type: 'json' };
+import type { ObservationEnvelope } from '../domains/trajectory/observation.js';
 
 import { observationDestinationsFromEnvironment } from '../services/observation-telemetry.js';
 
 describe('canonical observation destination configuration', () => {
+  it('uses the verified desktop endpoint and keeps child activity local in full diagnostics', () => {
+    const [remote, desktop] = observationDestinationsFromEnvironment(
+      {
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4318',
+        OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: 'http://collector:4318/traces',
+        REPOCTOPUS_OTLP_DIAGNOSTICS: 'full',
+      },
+      undefined,
+      { schemaVersion: 1, endpoint: 'http://127.0.0.1:65123', sessionToken: 'local-session' },
+    );
+    expect(desktop).toMatchObject({
+      id: 'desktop',
+      endpoint: 'http://127.0.0.1:65123',
+      headers: { authorization: 'Bearer local-session' },
+    });
+    const activity = { eventType: 'delegation.activity', attributes: {} } as ObservationEnvelope;
+    const receipt = { ...activity, eventType: 'delegation.completed' };
+    for (const signal of ['log', 'trace', 'metric'] as const) {
+      expect(remote?.select?.(activity, signal)).toBe(false);
+      expect(remote?.select?.(receipt, signal)).toBe(true);
+    }
+  });
+
   it('reports the product package version for remote and desktop while preserving service naming', () => {
     const destinations = observationDestinationsFromEnvironment({
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4318',
