@@ -67,6 +67,17 @@ export function isReadOnlyBuildInput(state: RunState, repositoryId: string): boo
   );
 }
 
+export function hasRejectedStaleBuildInputOutcome(state: RunState): boolean {
+  const execution = state.workExecution;
+  return (
+    execution?.workId === state.changeLifecycle?.currentWork?.workId &&
+    execution?.status === 'invoking' &&
+    execution.continuation === 'awaiting-correction' &&
+    execution.pendingSubmission === null &&
+    execution.rejectedSubmissions?.at(-1)?.rejection.reasonCode === 'workspace-read-input-stale'
+  );
+}
+
 export function canReobserveBuildInputs(state: RunState): boolean {
   const lifecycle = state.changeLifecycle;
   const protocol = lifecycle?.buildProtocol;
@@ -79,7 +90,9 @@ export function canReobserveBuildInputs(state: RunState): boolean {
     !protocol.verifyRepair &&
     !lifecycle.waitCondition &&
     !lifecycle.blocker &&
-    (!execution || execution.status === 'not-executed') &&
+    (!execution ||
+      execution.status === 'not-executed' ||
+      hasRejectedStaleBuildInputOutcome(state)) &&
     (protocol.currentAction === 'execute' ||
       protocol.currentAction === 'check' ||
       protocol.status === 'ready-for-verify')

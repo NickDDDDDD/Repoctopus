@@ -2,8 +2,8 @@
 
 ## 1. 确定观察和恢复契约
 
-- [ ] 1.1 用公开 CLI 和真实 Git fixture 复现两条 Issue，梳理 resume、next、Execute Outcome、Build Check 的原有判定及提交边界，并先记录失败回归。**Acceptance:** 两个独立场景均复现全仓 HEAD 阻塞，当前实现和 Comet 对照可追溯。**Requirements:** managed-work-execution#Runtime 必须按 Package write scope 推进 workspace revision <!-- comet-task:00eeee26-8802-43bf-8131-21e5bb1591ce -->
-- [ ] 1.2 在正式 Design 明确可核验的 Package 输入、Check 输入和发布边界，以及未知范围、工作树修改和历史改写时的处理。**Acceptance:** 每类判定均有真实输入来源、允许动作和失败路径，对缺少读范围的仓库有保守策略。**Requirements:** change-lifecycle#多仓 Build 漂移仅失效受影响的有效进度 <!-- comet-task:a4b03b35-e844-4f7f-9f88-2ddf58bd424a -->
+- [x] 1.1 用公开 CLI 和真实 Git fixture 复现两条 Issue，梳理 resume、next、Execute Outcome、Build Check 的原有判定及提交边界，并先记录失败回归。**Acceptance:** 两个独立场景均复现全仓 HEAD 阻塞，当前实现和 Comet 对照可追溯。**Requirements:** managed-work-execution#Runtime 必须按 Package write scope 推进 workspace revision <!-- comet-task:00eeee26-8802-43bf-8131-21e5bb1591ce -->
+- [x] 1.2 在正式 Design 明确可核验的 Package 输入、Check 输入和发布边界，以及未知范围、工作树修改和历史改写时的处理。**Acceptance:** 每类判定均有真实输入来源、允许动作和失败路径，对缺少读范围的仓库有保守策略。**Requirements:** change-lifecycle#多仓 Build 漂移仅失效受影响的有效进度 <!-- comet-task:a4b03b35-e844-4f7f-9f88-2ddf58bd424a -->
 
 ## 2. 统一 Build 漂移判定与提交
 

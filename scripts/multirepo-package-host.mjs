@@ -17,21 +17,34 @@ const workspaceId = 'workspace';
 const workspace = path.join(project, workspaceId);
 const driftScenario = process.env.REPOCTOPUS_WORKFLOW_E2E_DRIFT;
 assert(
-  [undefined, 'readonly-sync', 'external-commit', 'future-backend', 'read-input'].includes(
-    driftScenario,
-  ),
+  [
+    undefined,
+    'readonly-sync',
+    'external-commit',
+    'future-backend',
+    'read-input',
+    'active-read-input',
+    'completed-read-input',
+  ].includes(driftScenario),
 );
-const observer = ['readonly-sync', 'read-input'].includes(driftScenario)
-  ? 'web-plugins'
-  : driftScenario === 'external-commit'
-    ? 'backend'
-    : null;
+const readConsumer =
+  driftScenario === 'completed-read-input'
+    ? 'web-front'
+    : ['read-input', 'active-read-input'].includes(driftScenario)
+      ? 'backend'
+      : null;
+const observer =
+  readConsumer || driftScenario === 'readonly-sync'
+    ? 'web-plugins'
+    : driftScenario === 'external-commit'
+      ? 'backend'
+      : null;
 const business = ['web-front', observer === 'backend' ? 'framework' : 'backend'];
 const participants = observer ? [...business, observer] : business;
 const expectedDecisions = [
   'specification-open',
   'specification-design',
-  ...(driftScenario === 'read-input' ? ['build-plan-risk'] : []),
+  ...(readConsumer ? ['build-plan-risk'] : []),
 ];
 const names = [workspaceId, ...participants];
 const changeId = 'verify-package-workflow';
@@ -329,7 +342,7 @@ function inputFor(claim) {
   const layer = claim.packet.context.layers.find((x) => x.kind === 'change-inputs');
   return JSON.parse(layer.content);
 }
-function submit(claim, structured, message) {
+function submit(claim, structured, message, outcomeStatus = 'succeeded') {
   const i = claim.invocation;
   const layers = claim.packet.context.layers.filter((x) =>
     ['action-skill', 'augmentation-skill'].includes(x.kind),
@@ -349,7 +362,7 @@ function submit(claim, structured, message) {
     '--packet-digest',
     claim.packet.identity.packetDigest,
     '--status',
-    'succeeded',
+    outcomeStatus,
     '--summary',
     message,
     '--consumed-layers',
@@ -453,8 +466,7 @@ function build(claim) {
         return {
           packageKey: name,
           taskIds: [task.taskId],
-          repositoryIds:
-            driftScenario === 'read-input' && name === 'backend' ? [name, observer] : [name],
+          repositoryIds: name === readConsumer ? [name, observer] : [name],
           writeScopes: [{ repositoryId: name, paths: [markerPath] }],
           acceptanceRefs: task.acceptanceCriteria.map((x) => x.acceptanceId),
           expectedOutcomes: [name + ' diagnostic marker'],
@@ -489,10 +501,71 @@ function build(claim) {
       git('backend', 'push', 'origin', head + ':refs/heads/' + target);
       write('future-backend-drift', { activePackage: selected.packageId, previousHead, head });
     }
-    if (driftScenario === 'read-input' && name === 'backend') {
-      const bytes = fs.readFileSync(path.join(repository(observer), externalPath), 'utf8');
-      assert.equal(bytes, 'frontend team sync\n');
-      write('used-read-input', { packageId: selected.packageId, hash: hash(bytes) });
+    if (
+      driftScenario === 'active-read-input' &&
+      name === readConsumer &&
+      !exists('stale-execute')
+    ) {
+      observeOutsideChange();
+      const stopped = pull('resume').result;
+      assert.equal(stopped.state.reconciliationRequired, false);
+      assert.equal(lifecycle(stopped).currentWork.workId, claim.packet.work.workId);
+      write('stale-execute', {
+        originalWorkId: claim.packet.work.workId,
+        invocation: claim.invocation.invocationId,
+      });
+      return submit(
+        claim,
+        null,
+        'Read input advanced during this invocation. No repository writes occurred.',
+        'failed',
+      );
+    }
+    if (name === readConsumer) {
+      const observedPath = path.join(repository(observer), externalPath);
+      const current = fs.existsSync(observedPath);
+      const bytes = fs.readFileSync(
+        current ? observedPath : path.join(repository(observer), 'README.md'),
+        'utf8',
+      );
+      assert.equal(bytes, current ? 'frontend team sync\n' : '# ' + observer + '\n');
+      log('used-read-input.jsonl', { packageId: selected.packageId, hash: hash(bytes), current });
+    }
+    if (input.build.revalidateCompletion) {
+      const previous = input.build.revalidateCompletion;
+      assert.equal(driftScenario, 'completed-read-input');
+      assert.equal(previous.packageId, selected.packageId);
+      const green = check(name, 0);
+      const regression = check(name, 0);
+      assert.equal(git(name, 'rev-parse', 'HEAD'), before);
+      assert.equal(git(name, 'status', '--porcelain'), '');
+      const invocation = claim.invocation.invocationId;
+      result = {
+        schemaVersion: 1,
+        kind: 'build-package-completion',
+        packageId: selected.packageId,
+        acceptanceEvidenceIds: [invocation + '-green'],
+        testEvidenceIds: [invocation + '-regression'],
+        tddEvidence: {
+          redEvidenceId: previous.tddEvidence.redEvidenceId,
+          greenEvidenceId: invocation + '-green',
+          regressionEvidenceId: invocation + '-regression',
+        },
+        implementationDigest: hash(fs.readFileSync(path.join(repository(name), markerPath))),
+      };
+      write('input-revalidation', {
+        packageId: selected.packageId,
+        previous,
+        result,
+        unchangedHead: before,
+        green: { pid: green.pid, code: green.status },
+        regression: { pid: regression.pid, code: regression.status },
+      });
+      return submit(
+        claim,
+        result,
+        'Revalidated the affected package with fresh GREEN and regression on the new read input.',
+      );
     }
     const red = check(name, 1);
     const absolute = path.join(repository(name), markerPath);
@@ -786,6 +859,17 @@ function recoverPublication() {
   });
 }
 
+function recordsAtTrajectory() {
+  return fs
+    .readFileSync(
+      path.join(workspace, '.repoctopus', 'runs', state.runId, 'trajectory.jsonl'),
+      'utf8',
+    )
+    .trim()
+    .split(/\r?\n/u)
+    .map(JSON.parse);
+}
+
 function verifyTerminal() {
   assert.deepEqual(
     records('skills.jsonl').map((item) => item.kind),
@@ -796,6 +880,9 @@ function verifyTerminal() {
       'build.plan',
       'build.execute',
       'build.execute',
+      ...(['active-read-input', 'completed-read-input'].includes(driftScenario)
+        ? ['build.execute']
+        : []),
       'build.check',
       'evidence.verify',
       'specification.close',
@@ -807,6 +894,25 @@ function verifyTerminal() {
     records('decisions.jsonl').map((item) => item.kind),
     expectedDecisions,
   );
+  if (driftScenario === 'active-read-input') {
+    const stale = read('stale-execute');
+    const rejected = recordsAtTrajectory().find((item) =>
+      JSON.stringify(item).includes('workspace-read-input-stale'),
+    );
+    assert(rejected, 'The stale invocation must have an attributable, durable rejection');
+    assert(JSON.stringify(rejected).includes(stale.invocation));
+  }
+  if (driftScenario === 'completed-read-input') {
+    const verification = read('input-revalidation');
+    assert.equal(
+      verification.previous.tddEvidence.redEvidenceId,
+      verification.result.tddEvidence.redEvidenceId,
+    );
+    assert.notEqual(
+      verification.previous.tddEvidence.greenEvidenceId,
+      verification.result.tddEvidence.greenEvidenceId,
+    );
+  }
   const receipt = read('published-receipt');
   assert.equal(receipt.items.length, 3);
   for (const item of receipt.items) {
@@ -917,37 +1023,39 @@ function inspectPacket(claim) {
   });
 }
 
+function observeOutsideChange() {
+  const previousHead = git(observer, 'rev-parse', 'HEAD');
+  if (driftScenario !== 'external-commit') {
+    const sibling = path.join(root, 'another-team');
+    git(observer, 'worktree', 'add', '-b', 'other-team', sibling, previousHead);
+    fs.writeFileSync(path.join(sibling, externalPath), 'frontend team sync\n');
+    run('git', ['add', '--', externalPath], sibling);
+    run('git', ['commit', '--no-gpg-sign', '-m', 'docs: external team sync'], sibling);
+    run('git', ['push', 'origin', 'HEAD:refs/heads/' + branch], sibling);
+    git(observer, 'pull', '--ff-only', 'origin', branch);
+  } else {
+    fs.writeFileSync(path.join(repository(observer), externalPath), 'separate backend work\n');
+    git(observer, 'add', '--', externalPath);
+    git(observer, 'commit', '--no-gpg-sign', '-m', 'docs: separate backend change');
+  }
+  const head = git(observer, 'rev-parse', 'HEAD');
+  assert.notEqual(head, previousHead);
+  git(observer, 'merge-base', '--is-ancestor', previousHead, head);
+  write('outside-package-change', {
+    scenario: driftScenario,
+    repositoryId: observer,
+    previousHead,
+    head,
+  });
+}
+
 if (mode === 'first') {
   initialize();
   write('first-driver', { pid: process.pid, runId: state.runId });
 } else {
   assert.equal(mode, 'finish');
   const before = read('cold-before');
-  if (observer) {
-    const previousHead = git(observer, 'rev-parse', 'HEAD');
-    if (['readonly-sync', 'read-input'].includes(driftScenario)) {
-      const sibling = path.join(root, 'another-team');
-      git(observer, 'worktree', 'add', '-b', 'other-team', sibling, previousHead);
-      fs.writeFileSync(path.join(sibling, externalPath), 'frontend team sync\n');
-      run('git', ['add', '--', externalPath], sibling);
-      run('git', ['commit', '--no-gpg-sign', '-m', 'docs: external team sync'], sibling);
-      run('git', ['push', 'origin', 'HEAD:refs/heads/' + branch], sibling);
-      git(observer, 'pull', '--ff-only', 'origin', branch);
-    } else {
-      fs.writeFileSync(path.join(repository(observer), externalPath), 'separate backend work\n');
-      git(observer, 'add', '--', externalPath);
-      git(observer, 'commit', '--no-gpg-sign', '-m', 'docs: separate backend change');
-    }
-    const head = git(observer, 'rev-parse', 'HEAD');
-    assert.notEqual(head, previousHead);
-    git(observer, 'merge-base', '--is-ancestor', previousHead, head);
-    write('outside-package-change', {
-      scenario: driftScenario,
-      repositoryId: observer,
-      previousHead,
-      head,
-    });
-  }
+  if (observer && driftScenario !== 'active-read-input') observeOutsideChange();
   const action = driftScenario === 'external-commit' ? 'next' : 'resume';
   const recoveredView = pull(action).result;
   assert.equal(
@@ -958,8 +1066,13 @@ if (mode === 'first') {
   const recovered = snapshot(recoveredView);
   assert.equal(recovered.runId, before.runId);
   assert.equal(recovered.planId, before.planId);
-  assert.deepEqual(recovered.completions, before.completions);
-  if (driftScenario === 'read-input') {
+  if (driftScenario === 'completed-read-input') {
+    assert.equal(before.completions.length, 1, 'An original TDD completion must exist');
+    assert.deepEqual(recovered.completions, []);
+  } else {
+    assert.deepEqual(recovered.completions, before.completions);
+  }
+  if (['read-input', 'completed-read-input'].includes(driftScenario)) {
     const changed = read('outside-package-change');
     const accepted = recovered.checkpoint.repositories.find(
       ({ repositoryId }) => repositoryId === observer,

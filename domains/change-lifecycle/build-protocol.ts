@@ -1030,6 +1030,7 @@ export interface BuildProtocolState {
   plan: BuildPlan | null;
   planEvidence: PlanEvidence | null;
   packageCompletions: readonly PackageCompletionEvidence[];
+  readInputRevalidations?: readonly PackageCompletionEvidence[];
   checkEvidence: BuildCheckEvidence | null;
   invalidations: readonly BuildInvalidation[];
   verifyRepair: VerifyRepair | null;
@@ -1066,7 +1067,8 @@ export function assertBuildProtocolState(value: unknown): asserts value is Build
     !Array.isArray(state.plans)
   )
     throw new Error('Invalid Build Protocol shape');
-  for (const completion of state.packageCompletions as readonly PackageCompletionEvidence[]) {
+  const valid = state.packageCompletions as readonly PackageCompletionEvidence[];
+  for (const completion of [...valid, ...(state.readInputRevalidations ?? [])]) {
     const workPackage = state.plans
       .flatMap((p: BuildPlan) => p.packages)
       .find((p) => p.packageId === completion.packageId && p.digest === completion.packageDigest);
@@ -1468,8 +1470,13 @@ export function advanceBuildProtocol(
       throw new Error('Build input recovery does not match its accepted Plan and checkpoint');
     }
     const retained = new Set(observation.invalidation.retainedCompletionIds);
+    const revalidations = [
+      ...(state.readInputRevalidations ?? []),
+      ...state.packageCompletions.filter(({ completionId }) => !retained.has(completionId)),
+    ];
     return deepFreeze({
       ...state,
+      ...(revalidations.length ? { readInputRevalidations: revalidations } : {}),
       status: 'active',
       currentAction: 'execute',
       actionAttempt: 1,
@@ -1532,6 +1539,13 @@ export function advanceBuildProtocol(
       currentAction: allCompleted ? 'check' : 'execute',
       actionAttempt: 1,
       packageCompletions,
+      ...(state.readInputRevalidations
+        ? {
+            readInputRevalidations: state.readInputRevalidations.filter(
+              ({ packageId }) => packageId !== observation.completion.packageId,
+            ),
+          }
+        : {}),
       workspaceCheckpoint: observation.workspaceCheckpoint,
       invalidations: observation.retentionInvalidation
         ? [...state.invalidations, observation.retentionInvalidation]

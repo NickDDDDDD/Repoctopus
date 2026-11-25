@@ -32,6 +32,7 @@ import {
   canAcceptBuildRuntimeCleanup,
   canReobserveBuildInputs,
   classifyBuildWorkspaceRecovery,
+  hasRejectedStaleBuildInputOutcome,
   isRuntimeOutputCleanupConflict,
   isIndependentBuildRepository,
   isReadOnlyBuildInput,
@@ -2165,6 +2166,19 @@ export class WorkflowRuns extends Service {
         observed.repositories.map(async (repository) => {
           const current = currentById.get(repository.repositoryId);
           if (!current) return [repository.repositoryId, 'non-fast-forward'] as const;
+          const rechecking = lifecycle.buildProtocol?.readInputRevalidations?.some(
+            ({ packageId }) => packageId === activePackage?.packageId,
+          );
+          if (
+            rechecking &&
+            writableRepositoryIds.includes(repository.repositoryId) &&
+            !(await this.ctx.executionWorkspace.isCheckoutClean(repository.checkoutPath))
+          ) {
+            throw new BuildWorkspaceProgressError(
+              `Cannot revalidate an uncommitted implementation in ${repository.repositoryId}.`,
+              'unauthorized-head-change',
+            );
+          }
           if (current.headRevision === repository.head || ignored.has(repository.repositoryId)) {
             return [repository.repositoryId, 'unchanged'] as const;
           }
@@ -2492,8 +2506,45 @@ export class WorkflowRuns extends Service {
           }
         : {}),
     });
-    const refreshedInputs = await this.reobserveBuildReadInputs(state, previous, classified);
-    if (refreshedInputs) return refreshedInputs;
+    if (
+      classified.readInputHeads?.length === classified.conflicts.length &&
+      classified.conflicts.length
+    ) {
+      const active = state.workExecution;
+      if (
+        entrypoint === 'next' &&
+        active?.status === 'submitted' &&
+        active.pendingSubmission &&
+        active.pendingSubmission.outcome.status !== 'unknown'
+      ) {
+        await this.buildOutcomeAcceptance.reject(runId, {
+          kind: 'correctable-rejection',
+          reasonCode: 'workspace-read-input-stale',
+          diagnostic: 'This Outcome used a stale Build read input and cannot advance the Run.',
+        });
+        return this.recoverBoundBuildWorkspace(runId, entrypoint);
+      }
+      const refreshed = await this.reobserveBuildReadInputs(state, previous, classified);
+      if (refreshed) return refreshed;
+      const status = await this.coordinator.status(runId);
+      const execution = await this.ctx.workExecutionAuthority.recovery(runId);
+      return {
+        value: {
+          ...status,
+          continuation: { ...execution, continuation: 'reobserve', reason: 'project-drift' },
+          reconciliation: { ...classified.reconciliation, requiresReconciliation: false },
+          execution,
+        },
+        diagnostics: [
+          {
+            level: 'warning',
+            code: 'change.build-read-input-recovery-pending',
+            message:
+              'Build read inputs changed while a Work is unresolved. Settle the original invocation first; inspect any existing writes before retrying.',
+          },
+        ],
+      };
+    }
     const target = state.trigger?.facts.targetBranch as { repositoryId?: string } | undefined;
     let result;
     try {
@@ -2594,6 +2645,32 @@ export class WorkflowRuns extends Service {
     const lifecycle = state.changeLifecycle!;
     const protocol = lifecycle.buildProtocol!;
     const { plan, workspaceCheckpoint, strategy, binding } = protocol;
+    const isSettled = async (run: RunState, observed: ExecutionWorkspaceBinding) => {
+      if (!hasRejectedStaleBuildInputOutcome(run)) return true;
+      const work = run.changeLifecycle!.currentWork!;
+      if (work.kind === 'build.check') return true;
+      const active = plan!.packages.find((entry) => entry.packageId === work.packageId);
+      if (!active || active.sideEffectClass !== 'repository-write') return false;
+      for (const { repositoryId } of active.writeScopes) {
+        const live = observed.repositories.find((entry) => entry.repositoryId === repositoryId);
+        const accepted = workspaceCheckpoint!.repositories.find(
+          (entry) => entry.repositoryId === repositoryId,
+        );
+        if (
+          !live ||
+          live.head !== accepted?.headRevision ||
+          !(await this.ctx.executionWorkspace.isCheckoutClean(live.checkoutPath))
+        )
+          return false;
+      }
+      return true;
+    };
+    const currentProject = await this.ctx.project.snapshot(this.projectInput!);
+    if (
+      !(await isSettled(state, await this.bindExecutionWorkspace(state, lifecycle, currentProject)))
+    ) {
+      return null;
+    }
     const planning = await this.observeChangePlanning(state, lifecycle);
     if (planning.status === 'unavailable') return this.planningObservationUnavailable(state.runId);
     if (planning.status !== 'authorized') return null;
@@ -2696,12 +2773,21 @@ export class WorkflowRuns extends Service {
             latest.changeLifecycle!,
             current,
           );
+          if (!(await isSettled(latest, observed))) {
+            throw new Error('Build writes appeared before the stale input recovery commit');
+          }
+          const publication = await this.approvedVerificationConfigPublication(
+            latest,
+            observed,
+            previous,
+          );
           const repeated = classifyBuildWorkspaceRecovery({
             state: latest,
             previous,
             current,
             observed,
             verifiedHeads: await this.observeExternalBuildHeads(latest, observed),
+            ...(publication ? { verificationConfigPublication: publication } : {}),
           });
           if (repeated.observationDigest !== observation.observationDigest) {
             throw new Error('Build read inputs changed during recovery; retry the same Run');
@@ -5166,6 +5252,48 @@ export class WorkflowRuns extends Service {
                     },
                   ],
                 };
+              }
+              const revalidation = protocol.readInputRevalidations?.find(
+                (entry) => entry.packageId === workPackage.packageId,
+              );
+              if (
+                revalidation?.tddEvidence &&
+                result.tddEvidence?.redEvidenceId === revalidation.tddEvidence.redEvidenceId
+              ) {
+                const unchanged = workPackage.writeScopes.every(
+                  ({ repositoryId }) =>
+                    workspaceCheckpoint.repositories.find(
+                      (entry) => entry.repositoryId === repositoryId,
+                    )?.headRevision ===
+                    protocol.workspaceCheckpoint!.repositories.find(
+                      (entry) => entry.repositoryId === repositoryId,
+                    )?.headRevision,
+                );
+                const prior = revalidation.tddEvidence;
+                if (
+                  !unchanged ||
+                  revalidation.implementationDigest !== result.implementationDigest ||
+                  result.tddEvidence.greenEvidenceId === prior.greenEvidenceId ||
+                  result.tddEvidence.regressionEvidenceId === prior.regressionEvidenceId
+                ) {
+                  const diagnostic =
+                    'Reusing historical RED requires identical implementation and fresh GREEN and regression evidence.';
+                  await this.buildOutcomeAcceptance.reject(runId, {
+                    kind: 'correctable-rejection',
+                    reasonCode: 'outcome-rejected',
+                    diagnostic,
+                  });
+                  return {
+                    value: await this.coordinator.status(runId),
+                    diagnostics: [
+                      {
+                        level: 'warning',
+                        code: 'change.build-package-outcome-rejected',
+                        message: diagnostic,
+                      },
+                    ],
+                  };
+                }
               }
               const implementerExecutionIds = (executeHostOutcome.delegationReceipts ?? [])
                 .filter(

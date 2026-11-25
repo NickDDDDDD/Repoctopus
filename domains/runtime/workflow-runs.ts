@@ -7,6 +7,7 @@ import { hashWorkflowDefinition } from '../workflow-contract/hash.js';
 import {
   advanceRuntimeOutputCleanupCheckpoint,
   canAcceptBuildRuntimeCleanup,
+  hasRejectedStaleBuildInputOutcome,
   isRuntimeOutputCleanupConflict,
   type BuildWorkspaceRecovery,
   type RuntimeOutputCleanupProof,
@@ -203,6 +204,8 @@ function retireMismatchedExecution(
   ) {
     return { state, fact: null };
   }
+  const staleBuildInputCanBeRetired =
+    observationKind === 'build-read-inputs-reobserved' && hasRejectedStaleBuildInputOutcome(state);
   const rejectedCorrectionCanBeRetired =
     execution.status === 'invoking' &&
     execution.continuation === 'awaiting-correction' &&
@@ -219,7 +222,8 @@ function retireMismatchedExecution(
     ) === true;
   if (
     ['invoking', 'submitted', 'unknown'].includes(execution.status) &&
-    !rejectedCorrectionCanBeRetired
+    !rejectedCorrectionCanBeRetired &&
+    !staleBuildInputCanBeRetired
   ) {
     throw new Error(
       'Lifecycle cannot replace an unresolved Work execution; reconcile the authoritative invocation first',

@@ -45,6 +45,8 @@ import {
   type PublicationJournalStore,
 } from './publication-journal.js';
 import { observeMergeRequest, observeOrCreateMergeRequest } from './stable-publication.js';
+import { PublicationNotAppliedError } from './publication-not-applied.js';
+import type { PublicationSideEffectStage } from './publication-result-unknown.js';
 import type { PublicationProvenance, PublicationReceiptItem } from './publication-receipt.js';
 
 export interface DeliveryV3Preparation {
@@ -343,16 +345,36 @@ export class DeliveryServiceV3 {
             verifiedAt: this.clock().toISOString(),
           }
         : null;
-    const authorize = async (item: PublicationJournalItemIntent) => {
+    const authorize = async (
+      item: PublicationJournalItemIntent,
+      stage: PublicationSideEffectStage,
+    ) => {
       if (!options.authorizeBusinessEffect) return;
       const { delivery, repository } = resolve(item);
-      const current = await this.git.inspect(repository, businessIntent(delivery), options.policy);
-      await options.authorizeBusinessEffect({
-        repositoryId: repository.id,
-        sourceBranch: item.sourceBranch,
-        head: item.expectedOid,
-        targetHead: current.remoteTargetOid,
-      });
+      try {
+        const current = await this.git.inspect(
+          repository,
+          businessIntent(delivery),
+          options.policy,
+        );
+        if (stage === 'merge-request' && current.remoteSourceOid !== item.expectedOid) {
+          throw new Error('Remote source no longer points to the frozen Business OID');
+        }
+        await options.authorizeBusinessEffect({
+          repositoryId: repository.id,
+          sourceBranch: item.sourceBranch,
+          head: item.expectedOid,
+          targetHead: current.remoteTargetOid,
+        });
+      } catch (error) {
+        throw new PublicationNotAppliedError(
+          item.publicationId,
+          stage,
+          'request_rejected',
+          error instanceof Error ? error.message : String(error),
+          { cause: error },
+        );
+      }
     };
     const adapter: PublicationItemExecutor = {
       observePush: async (item) => {
@@ -361,7 +383,7 @@ export class DeliveryServiceV3 {
           .remoteSourceOid;
       },
       push: async (item) => {
-        await authorize(item);
+        await authorize(item, 'push');
         const { repository, push } = resolve(item);
         return this.git.push(repository, push, options.policy);
       },
@@ -373,7 +395,7 @@ export class DeliveryServiceV3 {
         );
       },
       createMergeRequest: async (item) => {
-        await authorize(item);
+        await authorize(item, 'merge-request');
         const { request, identity } = resolve(item);
         return receipt(
           item,

@@ -54,17 +54,29 @@ export async function executionCommitPaths(
 ): Promise<string[]> {
   assertObjectId(previousHead);
   assertObjectId(head);
-  const paths = await readGitRecords(checkoutPath, [
-    'log',
-    '--format=',
-    '--name-only',
-    '--no-renames',
-    '--diff-merges=first-parent',
-    '--ignore-submodules=none',
-    '-z',
-    `${previousHead}..${head}`,
-    '--',
+  const [history, tree] = await Promise.all([
+    readGitRecords(checkoutPath, [
+      'log',
+      '--format=',
+      '--name-only',
+      '--no-renames',
+      '--diff-merges=combined',
+      '--ignore-submodules=none',
+      '-z',
+      `${previousHead}..${head}`,
+      '--',
+    ]),
+    readGitRecords(checkoutPath, [
+      'diff',
+      '--name-only',
+      '--no-renames',
+      '--ignore-submodules=none',
+      '-z',
+      `${previousHead}...${head}`,
+      '--',
+    ]),
   ]);
+  const paths = [...history, ...tree];
   if (paths.some((file) => !file || file.includes('�') || file.includes('\\'))) {
     throw new Error('Cannot safely read all committed Build paths');
   }
