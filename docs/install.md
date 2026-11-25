@@ -20,11 +20,11 @@ npx --yes --ignore-scripts --legacy-peer-deps --package=https://github.com/NickD
 
 ## 安装到用户目录
 
-如果希望在后续会话直接使用 `repoctopus`，下载固定版本的 `.tgz`，对照该 Release 的 `SHA256SUMS` 核对文件，再安装到独立用户目录。以下是 Windows PowerShell 示例。
+如果希望在后续会话直接使用 `repoctopus`，下载固定版本的 `.tgz`，对照该 Release 的 `SHA256SUMS` 核对文件，再在安装包所在目录打开 PowerShell。
 
 ```powershell
 $repoctopusInstall = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.repoctopus-cli'
-npm.cmd install --ignore-scripts --omit=dev --prefix $repoctopusInstall ./repoctopus-0.1.4.tgz
+npm.cmd install --ignore-scripts --legacy-peer-deps --omit=dev --prefix $repoctopusInstall ./repoctopus-0.1.4.tgz
 $repoctopusBin = Join-Path $repoctopusInstall 'node_modules/.bin'
 $env:Path = "$repoctopusBin$([IO.Path]::PathSeparator)$env:Path"
 repoctopus.cmd --help
@@ -33,7 +33,7 @@ repoctopus.cmd --version
 
 可以从该终端启动 Agent，让它继承 `PATH`。若从桌面图标启动，在 Windows 用户环境变量 `Path` 中加入 `$repoctopusBin` 对应的目录，再重启 Agent。macOS 和 Linux 同样可以用 `npm install --ignore-scripts --omit=dev --prefix` 安装到独立用户目录，并把其中的 `node_modules/.bin` 加入 `PATH`。
 
-安装成功后，按[首次接入](project-onboarding.md)或[快速开始](../README.md#快速开始)操作。高级文档中的 `node bin/repoctopus.js` 可以换成已安装的 `repoctopus`，或使用固定版本的 `npx` 命令。
+安装成功后，按[首次接入](project-onboarding.md)或[快速开始](../README.md#快速开始)操作。PowerShell 使用 `repoctopus.cmd`，macOS 或 Linux 终端使用 `repoctopus`。临时安装时使用上文的固定版本 `npx` 前缀。维护者在验收 Repoctopus 源码时才需要运行源码目录中的 `node bin/repoctopus.js`。
 
 ## 可选的 Windows Dashboard
 

@@ -5,7 +5,7 @@
 一个 Workspace/change 只有一个由二者确定性派生的权威 Change Run。它按 `Open → Design → Build → Verify → Archive` 推进，`phase`、`status`、`checkEpoch`、当前 Work、Task progress、wait、blocker、Evidence 和 next actions 都来自同一条 accepted trajectory。Specification、Delivery、CLI、Desktop 与 OTLP 只能提交事实或读取 `ChangeRunProjection`，不能维护另一套阶段状态。
 
 ```powershell
-node bin/repoctopus.js run status --workspace . --run <run-id> --json
+repoctopus.cmd run status --workspace . --run '<run-id>' --json
 ```
 
 文本和 JSON 输出使用同一投影。`freshness.stateVersion` 与 `freshness.trajectoryOffset` 表示投影对应的持久版本；看到等待或阻断时应处理投影给出的 next action，不能通过编辑 `.repoctopus/`、分支名或 MR 状态跳过转换。

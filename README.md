@@ -66,24 +66,21 @@ team-platform/
 
 在宿主打开业务仓 Git 根目录，说「用 Repoctopus Init 接入当前单仓」。核对接入计划后批准。该仓同时作为 Workspace，保存代码、共享配置和规格。
 
+### 检查接入结果
+
+打开初始化生成的 `docs/repoctopus/workspace-guide.md`，核对业务仓列表和 Store ID。再从 Workspace 根目录只读预览工作流 Skill。
+
+```powershell
+repoctopus.cmd skill preview --workspace .
+```
+
+预览会按工作步骤列出已配置的 Skill。在宿主的 Workspace 新会话里确认可以找到 `repoctopus` 入口。[接入检查](docs/project-onboarding.md#检查接入结果)
+
 ### 提交接入结果
 
 把共享配置、规格、生成的 README、AGENTS 和本地使用指南提交并推送。一起提交所选宿主的 Skill 目录、资源和同级的 `.repoctopus-workflow-skills/` 管理记录。多仓接入如获批生成业务仓的 `openspec/config.yaml`，把文件提交到它所属的仓。
 
-初始化完成后即可开发。到需要正式验证时，在 Workspace 调用 `repoctopus-configure-verify`，按项目实际命令配置 Verify，再恢复原 Run。团队已经配置好 Profile 时可直接执行 Verify。 [接入和配置详情](docs/project-onboarding.md)
-
-### 启动第一个 Change
-
-在 Workspace 根目录操作。确认远端目标分支已包含初始化文件，再从同步后的本地目标分支创建并推送 Change 分支。以下以 `origin/main` 和一个小修复为例。
-
-```powershell
-git switch main
-git pull --ff-only origin main
-git switch -c change/fix-settings-save-message
-git push -u origin HEAD
-```
-
-在宿主的新会话中调用 Workspace 的 `repoctopus` Skill，提供需求、Change ID `fix-settings-save-message` 和目标分支 `main`。保留返回的 Run ID，中断后用同一个 ID 续跑。Agent 会在 Open 和 Design 分别展示审批，多仓实现提交到各自的业务仓。[终端启动与恢复](docs/project-onboarding.md#启动第一个-change)
+接入产物合入团队目标分支后，等实际需求准备好再启动 Change。需要配置 Verify 时，调用 Workspace 的 `repoctopus-configure-verify`。如果某条 Run 正在等这份配置，获批提交后用原 Run ID 继续。[启动和恢复 Change](docs/project-onboarding.md#启动和恢复-change) · [配置 Verify](docs/project-onboarding.md#按需配置-verify)
 
 ## 接入已有团队项目
 

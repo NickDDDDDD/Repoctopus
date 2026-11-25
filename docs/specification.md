@@ -11,11 +11,20 @@ Repoctopus 通过唯一的 Cordis `specification` Service 读取、校验和关�
 Store registration 是每台机器的本地登记，不随 Git clone 同步。首次接入先判断 Workspace 是否已有健康 OpenSpec Root：缺失时由 `project review` 通过固定 OpenSpec `init` 创建最小根并重新验证；健康后才通过 `store register` 幂等登记当前 checkout。已有部分根、metadata 冲突或相同 Store ID 指向另一 checkout 时接入会阻断，不会自动覆盖。每位团队成员、CI 节点和开发机都要各自登记，并用下面的只读命令核对路径：
 
 ```powershell
-npx openspec context --store <store-id> --json
-npx openspec doctor --store <store-id> --json
+$storeId = Read-Host 'repoctopus.yaml 中的团队 Store ID'
+npx.cmd --yes --package=@fission-ai/openspec@1.14.3 openspec context --store $storeId --json
+npx.cmd --yes --package=@fission-ai/openspec@1.14.3 openspec doctor --store $storeId --json
 ```
 
-废弃某台机器上的 checkout 时，先停止使用该 Workspace 的 CLI 和 Desktop Host，确认 `context` 指向准备注销的精确目录，再执行 `npx openspec store unregister <store-id> --json`。`unregister` 只忘记本机登记，不删除文件；不要使用会删除 Store 目录的 `store remove`。业务仓 pointer 是普通受版本控制文件，需要通过 change 删除或调整，注销登记不会代替 Git 变更。
+### 注销本机 Store 登记
+
+先停止使用该 Workspace 的 CLI 和 Desktop Host。用上面的 `context` 命令确认路径指向准备注销的 checkout，再在同一终端运行下面的命令。
+
+```powershell
+npx.cmd --yes --package=@fission-ai/openspec@1.14.3 openspec store unregister $storeId --json
+```
+
+`unregister` 只移除本机登记，保留 checkout 和规格文件。`store remove` 会删除 Store 目录。需要删除或调整业务仓的 pointer 时，单独走 Git 评审。
 
 ## 规划产物与决策记录
 
@@ -27,11 +36,11 @@ Provider 把四类工件规范化为 `ready | skipped | missing`。`ready` 必�
 
 ## 检查与校验变更
 
-在 Repoctopus workspace 中运行：
+在 Workspace 根目录运行。将命令中带尖括号的值替换成实际标识，保留 PowerShell 引号。
 
 ```powershell
-node bin/repoctopus.js spec inspect --workspace . --change <change-id> --json
-node bin/repoctopus.js spec validate --workspace . --change <change-id> --json
+repoctopus.cmd spec inspect --workspace . --change '<change-id>' --json
+repoctopus.cmd spec validate --workspace . --change '<change-id>' --json
 ```
 
 `spec inspect` 返回规范化的 change 身份、规划产物状态、受影响能力和语义摘要。结果不暴露 Provider 的绝对路径。
@@ -42,13 +51,13 @@ Open 与 Design gate 不直接拼接 `inspect`、目录或 CLI 输出，而只�
 
 ## 公开 Change 分支与规划批准
 
-规划完成后，先把 Change 分支普通 push 到 Workspace，不创建 MR。公开分支提供团队可见、可恢复的协作边界；它不是批准，也不授权实施、发布或合入。准备批准时，工作区必须正检出该分支、没有未提交文件，并且本地 HEAD 精确等于远端 OID：
+规划完成后，将 Workspace 中当前的 Change 分支推送到远端。准备批准时，工作区必须检出该分支并保持干净，本地 HEAD 必须与远端 OID 一致。使用本次工作的真实 Run ID。
 
 ```powershell
-git push -u origin spec/<change-id>
-repoctopus spec approval prepare --workspace . --run <run-id> --json
-repoctopus run decision --workspace . --run <run-id> --json
-repoctopus run decide --workspace . --run <run-id>
+git push -u origin HEAD
+repoctopus.cmd spec approval prepare --workspace . --run '<run-id>' --json
+repoctopus.cmd run decision --workspace . --run '<run-id>' --json
+repoctopus.cmd run decide --workspace . --run '<run-id>'
 ```
 
 Design Work 完成后，`spec approval prepare --run` 返回同一 Run 的当前 Design 请求，展示实际执行模式、TDD、理由和偏好来源。它不从默认参数创建另一份配置，不创建 MR，也不能替代当前 Work。尚未形成候选时，先沿 Run 返回的 continuation 完成 Design。需要改变策略时使用 `run revise-strategy`，不能通过 prepare 覆盖它。

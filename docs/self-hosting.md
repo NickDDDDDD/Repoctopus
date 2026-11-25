@@ -70,7 +70,7 @@ npm run build
 $package = npm pack --json --pack-destination $packageDirectory | ConvertFrom-Json
 $tarball = Join-Path $packageDirectory $package[0].filename
 npm install --ignore-scripts --omit=dev --prefix $consumerDirectory $tarball
-node (Join-Path $consumerDirectory 'node_modules/repoctopus/bin/repoctopus.js') run start --workspace <workspace-path> --change <change-id> --target main --json
+node (Join-Path $consumerDirectory 'node_modules/repoctopus/bin/repoctopus.js') run start --workspace '<workspace-path>' --change '<change-id>' --target main --json
 ```
 
 首次 checkout、`node_modules` 缺失或 `package-lock.json` 更新时，先执行 `npm ci`；依赖未变化时不要求每次验收都重复安装。验收结束后可以删除这两个唯一命名的临时目录。仓库的 `npm run test:package-e2e` 会自动执行同样的打包、隔离安装和公共 `bin` 边界检查，但不能替代针对真实多仓拓扑的生命周期验收。
@@ -83,9 +83,9 @@ node (Join-Path $consumerDirectory 'node_modules/repoctopus/bin/repoctopus.js') 
 npm ci
 npm run build
 node scripts/build.mjs --check
-node bin/repoctopus.js run start --workspace . --change <change-id> --target main --json
-node bin/repoctopus.js run status --workspace . --run <run-id> --json
-node bin/repoctopus.js run next --workspace . --run <run-id> --json
+node bin/repoctopus.js run start --workspace . --change '<change-id>' --target main --json
+node bin/repoctopus.js run status --workspace . --run '<run-id>' --json
+node bin/repoctopus.js run next --workspace . --run '<run-id>' --json
 ```
 
 `npm ci` 仍只在依赖需要恢复时执行；后两个构建命令则不能因为 `dist/` 已存在而省略。缺失 `dist/` 表示源码 CLI 尚未构建；历史 `dist/` 即使仍能启动，也可能属于旧提交，不能作为验证证据。CLI launcher 不会隐式重建源码。
@@ -140,8 +140,8 @@ Plan 因可写仓仍在受保护分支而拒绝时，Runner 负责创建、切�
 Archive 使用两个公共入口：
 
 ```powershell
-node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --evidence-attempt <attempt-id> --intent <intent.yaml> --json
-node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --work-attempt 1 --json
+node bin/repoctopus.js run archive-prepare --workspace . --run '<run-id>' --evidence-attempt '<attempt-id>' --intent '<intent.yaml>' --json
+node bin/repoctopus.js run archive-publish --workspace . --run '<run-id>' --work-attempt 1 --json
 ```
 
 `archive-prepare` 冻结已经验证的代码、报告、Delivery Intent、远端基线与人工授权请求。批准后，`archive-publish` 在隔离 checkout 关闭规格，依次发布业务分支/MR 和专用规格 archive branch/MR，并在接受完整 Publication Receipt 后完成 Run。响应丢失时递增 `--work-attempt` 重跑；Publication Journal 会观察 commit、远端 branch 与 MR，复用已经完成的项，不推进或污染当前开发分支。
@@ -150,7 +150,7 @@ node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --work-a
 
 ```powershell
 node bin/repoctopus.js change reconcile --workspace . --json
-node bin/repoctopus.js change reconcile --workspace . --change <change-id> --json
+node bin/repoctopus.js change reconcile --workspace . --change '<change-id>' --json
 ```
 
 候选来自已完成 Change 的 Publication Receipt，不按 MR 作者过滤。检查结果为 `unchanged`、结构化审查请求或暂时不可用诊断；它不会回退已完成 Run。影响结论是 `no-spec-impact`、`spec-update-required` 或 `uncertain`。后两者需要可信用户参与；需要修正规格时创建引用原 Change、Receipt 与受影响 MR 的普通后续 Change。

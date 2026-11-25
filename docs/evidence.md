@@ -137,13 +137,15 @@ visual:
 
 ## CLI
 
+从 Workspace 根目录运行。以下命令假设已有 `verify` Profile。查看或恢复具体 Attempt 时，将 `'<attempt-id>'` 换成原执行返回的 ID。`evidence clean` 会按指定保留条件清理本地证据。
+
 ```powershell
-node bin/repoctopus.js evidence plan --workspace . --profile verify --json
-node bin/repoctopus.js evidence run --workspace . --profile verify --json
-node bin/repoctopus.js evidence status --workspace . --attempt <attempt-id> --json
-node bin/repoctopus.js evidence inspect --workspace . --attempt <attempt-id> --json
-node bin/repoctopus.js evidence resume --workspace . --attempt <attempt-id> --json
-node bin/repoctopus.js evidence clean --workspace . --max-age-days 30 --max-bytes 1073741824 --json
+repoctopus.cmd evidence plan --workspace . --profile verify --json
+repoctopus.cmd evidence run --workspace . --profile verify --json
+repoctopus.cmd evidence status --workspace . --attempt '<attempt-id>' --json
+repoctopus.cmd evidence inspect --workspace . --attempt '<attempt-id>' --json
+repoctopus.cmd evidence resume --workspace . --attempt '<attempt-id>' --json
+repoctopus.cmd evidence clean --workspace . --max-age-days 30 --max-bytes 1073741824 --json
 ```
 
 若 Evidence 用于推进现有工作流 Run，`evidence run` 必须增加 `--workflow-run <run-id>`。该 Run 必须正等待一个声明相同 Profile 的动作；Attempt 会绑定当前 Action、Step 和 `stateVersion`。状态代次变化后，即使项目文件未变化，旧 Attempt 也不能推进工作流。

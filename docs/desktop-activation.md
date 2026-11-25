@@ -1,10 +1,21 @@
 # 启动或恢复 Desktop Dashboard
 
-本指南帮助 Windows x64 开发者从源码或已安装应用自动打开当前 Change。正常路径不需要设置 `REPOCTOPUS_DESKTOP_EXECUTABLE`：Runtime 在 Change Run 创建或恢复后选择受控启动目标，并把 Workspace、change 和 Run identity 交给唯一桌面实例。
+Windows x64 用户安装 CLI 和桌面应用后，可以在同一桌面窗口查看工作流。启动或恢复 Change 时，CLI 会把对应的 Workspace、Change 和 Run 交给桌面应用。[安装指南](install.md#可选的-windows-dashboard)
+
+## 使用已安装应用
+
+打开团队 Workspace，在宿主中调用 `repoctopus` 处理实际需求。已有 Run 时，提供原 Run ID。若需要从终端恢复，在 Workspace 根目录运行。
+
+```powershell
+$runId = Read-Host '原 Run ID'
+repoctopus.cmd run resume --workspace . --run $runId --json
+```
+
+Windows 安装器登记 `repoctopus://` 和用户级 `App Paths\Repoctopus.exe`，CLI 通过该登记启动应用或把 Run 转交给已打开的实例。
 
 ## 从源码启动
 
-开始前，请安装仓库声明的 Node.js 版本并确认当前目录是 Repoctopus Product Root。
+此节面向测试源码改动的维护者。从 Repoctopus 源码根目录构建，再指定用于验收的 Workspace。
 
 1. 安装固定依赖并生成 CLI 与 Desktop artifact：
 
@@ -14,10 +25,12 @@
    npm run check:generated
    ```
 
-2. 启动或恢复一个 Change Run：
+2. 用预先准备的验收 Workspace 和原 Run ID 恢复：
 
    ```powershell
-   node bin/repoctopus.js run start --workspace . --change <change-id> --target main --json
+   $workspace = Read-Host '验收 Workspace 的路径'
+   $runId = Read-Host '原 Run ID'
+   node bin/repoctopus.js run resume --workspace $workspace --run $runId --json
    ```
 
 3. 在 JSON 响应的 `diagnostics` 中检查桌面激活结果：
@@ -31,11 +44,9 @@
 
 `started` 和 `activated` 只表示操作系统接受了请求，不表示 Renderer 已绘制或 Desktop Host 已 ready。Dashboard 就绪后会从同一套 OTLP 事实流显示当前 Change。
 
-## 使用已安装应用
+## 验证安装包
 
-Windows 安装器同时登记 `repoctopus://` 用户级协议和标准 `App Paths\\Repoctopus.exe`。安装完成后，在已接入的 Workspace 中使用已安装的 CLI 运行 `repoctopus run start` 或续接已有 Run。Runtime 通过绝对 `SystemRoot\\System32\\reg.exe` 读取 App Paths，校验产品 executable 和协议 handler，再直接以独立 URI 参数启动应用或把上下文转交给现有实例。
-
-若要在发布前验证安装路径：
+维护者在 Repoctopus 源码根目录运行安装态验收。
 
 1. 构建并检查安装包：
 
@@ -56,11 +67,10 @@ Windows 安装器同时登记 `repoctopus://` 用户级协议和标准 `App Path
 
 Desktop activation 是应用级的 best-effort 副作用，不是 Change 生命周期 Gate。`unavailable` 或 `unsupported` 只产生 warning；已经创建或恢复的 Run、当前 Work 和远端 OTLP 目的地继续运行。
 
-1. 运行 `npm run build`，确认源码 `dist/desktop/main.js` 与固定 Electron executable 同时存在。
-2. 对安装态运行 `reg.exe query "HKCU\Software\Microsoft\Windows\CurrentVersion\App Paths\Repoctopus.exe" /ve`，确认默认值是可访问的绝对 `Repoctopus.exe` 路径；再运行 `reg.exe query HKCR\repoctopus\shell\open\command /ve`，确认协议处理器存在并转交 `%1`。
-3. 检查系统托盘，确认窗口不是以 `tray` 偏好隐藏。
-4. 运行 `node bin/repoctopus.js run status --workspace . --run <run-id> --json`，确认 Run 仍处于权威状态。
-5. 修复本地桌面后再次运行 `run start`；稳定 Run identity 会恢复同一 Run，不会创建平行生命周期。
+1. 检查系统托盘，确认窗口是否已隐藏。
+2. 使用安装器时，运行 `reg.exe query "HKCU\Software\Microsoft\Windows\CurrentVersion\App Paths\Repoctopus.exe" /ve`，确认默认值指向可访问的应用文件。再运行 `reg.exe query HKCR\repoctopus\shell\open\command /ve`，核对协议处理器和 `%1` 参数。
+3. 运行源码时，在源码根执行 `npm run build`，确认 `dist/desktop/main.js` 和固定版本的 Electron 已准备好。
+4. 用原 Run ID 查看 `run status`。修复桌面后，按[已安装应用](#使用已安装应用)或[源码](#从源码启动)步骤恢复同一 Run。
 
 `REPOCTOPUS_DESKTOP_EXECUTABLE` 只保留给受控测试和运维覆盖。不要把它写进团队配置、Workspace 文件或正常开发说明。
 

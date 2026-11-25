@@ -41,11 +41,11 @@ CodeArts 码道使用智能体模式，在「技能与规则」核对目标 Skil
 
 ## 查看有效 Skill
 
-在项目 workspace 中运行：
+在已接入的 Workspace 根运行，可按需要用 `--audience model` 查看 Agent 可用的 Skill。
 
 ```powershell
-node bin/repoctopus.js skill list --workspace . --audience user --json
-node bin/repoctopus.js skill get --workspace . --audience user --name tdd --json
+repoctopus.cmd skill list --workspace . --audience user --json
+repoctopus.cmd skill get --workspace . --audience user --name tdd --json
 ```
 
 `skill list` 返回当前目录下完成优先级裁决后的目录。`skill get` 返回正文和内容摘要；传入 `--run <run-id>` 时，Repoctopus 会把首次使用的 Skill 快照绑定到该 Run。
@@ -127,10 +127,10 @@ Runtime 在 change 开始时冻结并绑定有效组合身份，但只把当前 
 
 这两个配置轴独立，多仓 Workspace 也可以只用一个 Agent。缺少测试基础设施需要说明并处理，不能直接等同于不用测试。已经明确的偏好会一并展示；建议不是批准，缺少所选执行能力时 Runtime 会阻断，不静默改选。
 
-需要主动改选时，在原 Workspace 执行：
+需要主动改选时，在原 Workspace 执行，把 `'<run-id>'` 换成实际 Run ID。
 
 ```powershell
-repoctopus run revise-strategy --run <run-id> --tdd-mode direct --json
+repoctopus.cmd run revise-strategy --run '<run-id>' --tdd-mode direct --json
 ```
 
 未给的轴沿用已批准策略；首次 Design 尚未批准时，取当前完整待审候选。审批材料同时展示初始偏好、本次明确改选的轴及最终建议，不能把 Host 未批准的建议当作你的明确选择。Runtime 在可安全停止的 Design、Build 或 Verify 边界创建 Design 修订，当前提案批准后才采用新策略。在途调用或未知结果需要先核对；Archive 和终态不接受改选。
@@ -187,8 +187,8 @@ lifecycle:
 Repoctopus 可以把相同的有效目录投影成 Codex 或 OpenCode 能发现的文件：
 
 ```powershell
-node bin/repoctopus.js skill project --workspace . --target codex --json
-node bin/repoctopus.js skill project --workspace . --target opencode --json
+repoctopus.cmd skill project --workspace . --target codex --json
+repoctopus.cmd skill project --workspace . --target opencode --json
 ```
 
 Codex 投影到 `.agents/skills`，OpenCode 投影到 `.opencode/skills`。Repoctopus 在 `.repoctopus/skill-projections/` 保存受管文件清单。重新投影前，它会验证原文件摘要；如果你直接修改受管文件，命令会停止并报告冲突，避免覆盖本地修改。
