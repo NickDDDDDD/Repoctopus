@@ -1,0 +1,204 @@
+{
+  "candidate": "sha256:87d03f7b33593fb246a53a7d7e129af7dd4123b22b1ba06271adc7ea1831d6c6",
+  "cases": [
+    {
+      "id": "readonly-pull",
+      "runId": "change-workspace-verify-package-workflow-1084f1a8861b28e9",
+      "finalStatus": "completed",
+      "checks": [
+        {
+          "id": "init-to-archive",
+          "status": "passed"
+        },
+        {
+          "id": "build-cold-recovery",
+          "status": "passed"
+        },
+        {
+          "id": "publication-response-loss",
+          "status": "passed"
+        },
+        {
+          "id": "terminal-recovery",
+          "status": "passed"
+        }
+      ],
+      "durationMs": 350213,
+      "cold": {
+        "firstPID": 46960,
+        "secondPID": 43188,
+        "sameWork": true,
+        "samePlan": true,
+        "packagesBefore": 1,
+        "packagesAfter": 1
+      },
+      "createdPullRequests": 3,
+      "noDuplicatePublication": true,
+      "businessDiffs": [
+        {
+          "repositoryId": "backend",
+          "base": "067b7ed1ba7be056df2070ac23db8ac17ea496c4",
+          "head": "c7ecad3ca6a8698330a46a3eb3da9620ce8e1da3",
+          "diff": "docs/acceptance.txt"
+        },
+        {
+          "repositoryId": "web-front",
+          "base": "c93b18361d107859a9fa82acd673ae98112be7a6",
+          "head": "b98af0f89bd8030494d92845aaeda63713a29fed",
+          "diff": "docs/acceptance.txt"
+        }
+      ]
+    },
+    {
+      "id": "separate-backend-commit",
+      "runId": "change-workspace-verify-package-workflow-1084f1a8861b28e9",
+      "finalStatus": "completed",
+      "checks": [
+        {
+          "id": "init-to-archive",
+          "status": "passed"
+        },
+        {
+          "id": "build-cold-recovery",
+          "status": "passed"
+        },
+        {
+          "id": "publication-response-loss",
+          "status": "passed"
+        },
+        {
+          "id": "terminal-recovery",
+          "status": "passed"
+        }
+      ],
+      "durationMs": 450303,
+      "cold": {
+        "firstPID": 25036,
+        "secondPID": 30304,
+        "sameWork": true,
+        "samePlan": true,
+        "packagesBefore": 1,
+        "packagesAfter": 1
+      },
+      "createdPullRequests": 3,
+      "noDuplicatePublication": true,
+      "businessDiffs": [
+        {
+          "repositoryId": "framework",
+          "base": "826b6a9158fcc6dd1c5622772081cb8000a2e200",
+          "head": "dc38119eeb3a0982ed07a0894c9b20e8e737059c",
+          "diff": "docs/acceptance.txt"
+        },
+        {
+          "repositoryId": "web-front",
+          "base": "979950aa0efe1a061a8a66f1057f73e9eda17a43",
+          "head": "8391c8a279785602934b29b46d8498222675870a",
+          "diff": "docs/acceptance.txt"
+        }
+      ],
+      "rejectedOutsideScope": "Archive would publish an unaccepted Business revision in backend: the target does not contain the external source history. Sync the target or isolate external commits, then prepare Archive again."
+    },
+    {
+      "id": "future-package-backend",
+      "runId": "change-workspace-verify-package-workflow-1084f1a8861b28e9",
+      "finalStatus": "completed",
+      "checks": [
+        {
+          "id": "init-to-archive",
+          "status": "passed"
+        },
+        {
+          "id": "build-cold-recovery",
+          "status": "passed"
+        },
+        {
+          "id": "publication-response-loss",
+          "status": "passed"
+        },
+        {
+          "id": "terminal-recovery",
+          "status": "passed"
+        }
+      ],
+      "durationMs": 296632,
+      "cold": {
+        "firstPID": 47360,
+        "secondPID": 41456,
+        "sameWork": true,
+        "samePlan": true,
+        "packagesBefore": 1,
+        "packagesAfter": 1
+      },
+      "createdPullRequests": 3,
+      "noDuplicatePublication": true,
+      "businessDiffs": [
+        {
+          "repositoryId": "backend",
+          "base": "70153483d46a3d53466d3965858243361c8ecda5",
+          "head": "ba5a641fcfdf511da15505e2835152dc275aaed5",
+          "diff": "docs/acceptance.txt"
+        },
+        {
+          "repositoryId": "web-front",
+          "base": "6cd7aabb6ff583cee7e2768b4535dcdd090be368",
+          "head": "ed6eb063fa0ee744c89b09629dac01ba60dd22a6",
+          "diff": "docs/acceptance.txt"
+        }
+      ],
+      "acceptedExternalInput": "70153483d46a3d53466d3965858243361c8ecda5"
+    },
+    {
+      "id": "settled-active-read",
+      "runId": "change-workspace-verify-package-workflow-1084f1a8861b28e9",
+      "finalStatus": "completed",
+      "checks": [
+        {
+          "id": "init-to-archive",
+          "status": "passed"
+        },
+        {
+          "id": "build-cold-recovery",
+          "status": "passed"
+        },
+        {
+          "id": "publication-response-loss",
+          "status": "passed"
+        },
+        {
+          "id": "terminal-recovery",
+          "status": "passed"
+        }
+      ],
+      "durationMs": 461277,
+      "cold": {
+        "firstPID": 5400,
+        "secondPID": 47580,
+        "sameWork": true,
+        "samePlan": true,
+        "packagesBefore": 1,
+        "packagesAfter": 1
+      },
+      "createdPullRequests": 3,
+      "noDuplicatePublication": true,
+      "businessDiffs": [
+        {
+          "repositoryId": "backend",
+          "base": "2af6cc6b6566152af64e2d98ade8b8e6871eba43",
+          "head": "c5d68a45edba5f8f6ef26d8d011be8ff26e736a4",
+          "diff": "docs/acceptance.txt"
+        },
+        {
+          "repositoryId": "web-front",
+          "base": "4f4e9b9b58d4807a6fa352832c6a6693a9b3c775",
+          "head": "892bc8a3b9b7418f1bbb707809337e0f60515e01",
+          "diff": "docs/acceptance.txt"
+        }
+      ],
+      "failedInvocation": {
+        "originalWorkId": "build.execute:a92ff4c98e9a",
+        "invocation": "sha256:ca57d92fc50db3f9c51b48a5c2eae3193c3806790b887ed13268237d5d7d969a",
+        "outcome": "failed"
+      }
+    }
+  ]
+}

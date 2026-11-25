@@ -25,11 +25,12 @@ Package content bytes: `6824477`
 | --- | --- |
 | #114 只读仓从另一个工作树同步 | 通过。冷 `resume` 保留 1/2 个已完成包和当前 Work，最终 completed。 |
 | #115 Backend 独立提交 | 通过。冷 `next` 保留 1/2 个已完成包和当前 Work。额外构造包含 Backend 的 Archive intent，在派发任何发布副作用前被拒绝。正常 intent 完成。 |
+| Backend 仅供后续包使用 | 通过。在 Web Front 执行期间引入 Backend 的独立提交。当前包先验收，后续包用新的输入基线执行，Backend PR 只包含其受管实现。 |
 | 当前 Work 运行时读取依赖变化 | 通过。原 Work 保持到 Host 回传已知失败。CLI 重新读取了持久化的原 invocation，Runtime 在证明无剩余写入后派发新 Work，原 Run 完成。 |
 
-三个候选场景的真实 PR base/head 都通过 Git 远端 OID 核对。两条业务 PR 的三点差异各只有 `docs/acceptance.txt`，另有一条规格 PR。包括规格 PR 响应丢失后的去重及重复终态恢复。
+四个候选场景的真实 PR base/head 都通过 Git 远端 OID 核对。两条业务 PR 的三点差异各只有 `docs/acceptance.txt`，另有一条规格 PR。包括规格 PR 响应丢失后的去重及重复终态恢复。
 
-补充回归在本次实现的前序候选已通过。后续包使用 Backend 时当前包先验收，随后包从新的输入基线执行。未授权 checkout 被拦截，切回原分支后可重观待执行包。已完成包的读取依赖变化时，原实现 OID 和历史 RED 保留，重新取得 GREEN 和 regression 证据。
+完整的包摘要、冷恢复及实际 PR 坐标见 [Windows 验收收据](windows-acceptance.json)。补充回归在本次实现的前序候选已通过。未授权 checkout 被拦截，切回原分支后可重观待执行包。已完成包的读取依赖变化时，原实现 OID 和历史 RED 保留，重新取得 GREEN 和 regression 证据。
 
 独立审查复核了运行中读输入漂移、精确 submission 拒绝、恢复到绑定 checkout、历史 RED 复用以及 PR 创建前的远端 source/target 校验，未留下阻断项。Git 路径回归覆盖外部提交之后又撤销的路径，发布回归覆盖远端 source 临时变化以及修复后同一发布 journal 重试。
 
