@@ -1,3 +1,9 @@
+---
+comet_change: scope-build-workspace-drift
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
