@@ -2,7 +2,7 @@
 
 ## 实施范围
 
-按本次 [OpenSpec 设计](../../openspec/changes/show-parallel-runs-in-desktop/design.md) 实现并行 Run 宫格、全窗口 Run、当前人工待办、子 Agent 活动及诊断。刷新数据沿现有本地 OTLP、Desktop Host 和 IPC 路径。新增子 Agent 活动从团队目的地中排除，完成回执沿用原契约。
+按本次 [OpenSpec 设计](../../../openspec/changes/show-parallel-runs-in-desktop/design.md) 实现并行 Run 宫格、全窗口 Run、当前人工待办、子 Agent 活动及诊断。刷新数据沿现有本地 OTLP、Desktop Host 和 IPC 路径。新增子 Agent 活动从团队目的地中排除，完成回执沿用原契约。
 
 ## 真实 Windows 验收
 
@@ -15,6 +15,8 @@
 - 真实窗口中进入放大视图，核对当前 Build、子 Agent 和诊断入口，再用 Escape 返回原卡片按钮。独立离屏 Electron 检查覆盖 12 条 Run、五位子 Agent 在 1472 CSS 像素按 4+1 换行、490 CSS 像素逐行排列，以及返回时恢复焦点和滚动位置。
 
 实验过程中发现 Cordis 的两处依赖注入和销毁后的补发缺口。已修复并复验 CLI 报告、默认安全发现和接收。两个实验 Run 的初始 CLI 与修复后用于活动上报的 CLI 来自不同候选，沿用同一已接受父调用。Windows Electron 可见链路的验收没有使用 NSIS 安装器。
+
+最终候选 CLI 的自主执行 + TDD 三仓验收通过。Run 从 Init 走到 Archive 和终态恢复。冷恢复保留首包，模拟规格 PR 响应丢失后，三条隔离 PR 只各发布一次。
 
 ## 自动化回归和独立审查
 

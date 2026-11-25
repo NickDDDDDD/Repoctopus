@@ -2,7 +2,7 @@
 change_id: 140bb305-70f2-4f2c-bbba-aecb63005b91
 workflow: full
 language: zh-CN
-phase: build
+phase: verify
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 546cf5e5a3622064b916ddc00941f5c7da26a1c26c924518cd62a5a7431f0da4
+  hash: 7aa416438ef58d82ea72e5a3d1eb3d3bcd7eaa335e12d765ebb2144e5d0b0dfb
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 2
+      checkEpoch: 3
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,7 +69,7 @@ run_checkpoint:
       handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
       isolation: worktree
       language: zh-CN
-      phase: build
+      phase: verify
       plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
       reviewMode: thorough
       subagentDispatch: null
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 13
+    sequence: 16
     actions:
       - attempt: 1
         claim:
@@ -595,6 +595,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: show-parallel-runs-in-desktop-host-build
+          token: portable-606cd28fed720e80e625fd4c44f6a9946100685b06c3dd428588710aca808873
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: show-parallel-runs-in-desktop:13
         input:
           input:
@@ -705,15 +714,334 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
         inputHash: 68800ec34b2b3dcde4531db036c4dcfe07ba2179228f37c73e154acfed5e844c
+        outcome:
+          actionId: show-parallel-runs-in-desktop:13
+          attempt: 1
+          claimToken: portable-606cd28fed720e80e625fd4c44f6a9946100685b06c3dd428588710aca808873
+          inputHash: 68800ec34b2b3dcde4531db036c4dcfe07ba2179228f37c73e154acfed5e844c
+          outcomeId: b7170f65-855f-4f05-ac00-b8a5b22bb27f
+          output:
+            event: build-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 91d65d044efa0904940593e570217aa821adb04b54fc848f27572b470f2e38a9
+            outcomeId: b7170f65-855f-4f05-ac00-b8a5b22bb27f
         reconciliations: []
         ref: comet-build
         requiredCapabilities: []
         retry: manual
         runId: show-parallel-runs-in-desktop
-        status: pending
+        status: succeeded
         stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-b7f2f4c9f3858656cafeeb68ffcb50686a8220f9aa56e34add2ea7811f0117d6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: show-parallel-runs-in-desktop:14
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.build.configure:
+              boundBranch: codex/show-parallel-runs-in-desktop
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/show-parallel-runs-in-desktop
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+                ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+              plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+              planEvidence:
+                contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+                ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+              taskRevision: fabe9db3236359a4e97b5f87d809321bfe602ee623aefe90632d783f9bd9785f
+            full.build.plan.evidence:
+              contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+              ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+                    handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+                    proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                      换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store
+                      锁内校验受管 Host 的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent
+                      边界并通过本地 OTLP 推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用
+                      Windows 上实际可派发的宿主及 Electron 验证。设计见当前变更的 design.md。delta
+                      spec 无调整。
+                    requirementsEvidence:
+                      contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                      ref: openspec/changes/show-parallel-runs-in-desktop
+                    sourceEvidence:
+                      contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                      ref: openspec/changes/show-parallel-runs-in-desktop
+            full.design.document:
+              designDoc: openspec/changes/show-parallel-runs-in-desktop/design.md
+            full.design.evidence:
+              contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+              ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+              handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+              proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store 锁内校验受管 Host
+                的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent 边界并通过本地 OTLP
+                推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用 Windows 上实际可派发的宿主及
+                Electron 验证。设计见当前变更的 design.md。delta spec 无调整。
+              requirementsEvidence:
+                contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                ref: openspec/changes/show-parallel-runs-in-desktop
+              sourceEvidence:
+                contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                ref: openspec/changes/show-parallel-runs-in-desktop
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+                    ref: openspec/changes/show-parallel-runs-in-desktop
+            full.open.evidence:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+              ref: openspec/changes/show-parallel-runs-in-desktop
+            full.open.revalidate:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+        inputHash: 6388caa8a0bbc0a3220b0bb2d342653286b3ed159b6487436dad84c77244d8d4
+        outcome:
+          actionId: show-parallel-runs-in-desktop:14
+          attempt: 1
+          claimToken: portable-b7f2f4c9f3858656cafeeb68ffcb50686a8220f9aa56e34add2ea7811f0117d6
+          inputHash: 6388caa8a0bbc0a3220b0bb2d342653286b3ed159b6487436dad84c77244d8d4
+          outcomeId: 43861042-7b84-4223-992e-801c836aa896
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+            cwd: .
+            environment: 9094d05c0ba3b730fb8700a04b003e281829f844f14f42d291eb0c5fbbac04ce
+            exitCode: 0
+            inputAfter: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+            inputBefore: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+            manifestHash: 5398369cea258d74469dc567ddfa122df1c4a62d01b0a964929ca881ac6cdf47
+            manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/11888b83-6d2f-4e41-a2f6-2747e661c333.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 4a8378d346bf6004150fbd563ab352fc1a3842dbfd7309d6eeb7cf090278bf55
+            outcomeId: 43861042-7b84-4223-992e-801c836aa896
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        id: show-parallel-runs-in-desktop:16
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs:
+            full.build.check:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+              cwd: .
+              environment: 9094d05c0ba3b730fb8700a04b003e281829f844f14f42d291eb0c5fbbac04ce
+              exitCode: 0
+              inputAfter: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+              inputBefore: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+              manifestHash: 5398369cea258d74469dc567ddfa122df1c4a62d01b0a964929ca881ac6cdf47
+              manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/11888b83-6d2f-4e41-a2f6-2747e661c333.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+            full.build.check.evidence:
+              contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+              ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+            full.build.configure:
+              boundBranch: codex/show-parallel-runs-in-desktop
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/show-parallel-runs-in-desktop
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+                ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+              plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+              planEvidence:
+                contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+                ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+              taskRevision: fabe9db3236359a4e97b5f87d809321bfe602ee623aefe90632d783f9bd9785f
+            full.build.plan.evidence:
+              contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+              ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+                    handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+                    proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                      换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store
+                      锁内校验受管 Host 的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent
+                      边界并通过本地 OTLP 推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用
+                      Windows 上实际可派发的宿主及 Electron 验证。设计见当前变更的 design.md。delta
+                      spec 无调整。
+                    requirementsEvidence:
+                      contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                      ref: openspec/changes/show-parallel-runs-in-desktop
+                    sourceEvidence:
+                      contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                      ref: openspec/changes/show-parallel-runs-in-desktop
+            full.design.document:
+              designDoc: openspec/changes/show-parallel-runs-in-desktop/design.md
+            full.design.evidence:
+              contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+              ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+              handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+              proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store 锁内校验受管 Host
+                的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent 边界并通过本地 OTLP
+                推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用 Windows 上实际可派发的宿主及
+                Electron 验证。设计见当前变更的 design.md。delta spec 无调整。
+              requirementsEvidence:
+                contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                ref: openspec/changes/show-parallel-runs-in-desktop
+              sourceEvidence:
+                contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                ref: openspec/changes/show-parallel-runs-in-desktop
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+                    ref: openspec/changes/show-parallel-runs-in-desktop
+            full.open.evidence:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+              ref: openspec/changes/show-parallel-runs-in-desktop
+            full.open.revalidate:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+        inputHash: e4b9d643e551dcc744413534ad49fa5aff323a6bdb5a9c2e07978f4f9742300c
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: pending
+        stepId: full.verify.run
         type: invoke_skill
     actionContexts:
       show-parallel-runs-in-desktop:1:
@@ -959,6 +1287,298 @@ run_checkpoint:
             value:
               contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
         sequence: 13
+      show-parallel-runs-in-desktop:14:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/show-parallel-runs-in-desktop
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/show-parallel-runs-in-desktop
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+                ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+              plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+              planEvidence:
+                contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+                ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+              taskRevision: fabe9db3236359a4e97b5f87d809321bfe602ee623aefe90632d783f9bd9785f
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+              ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+                    handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+                    proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                      换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store
+                      锁内校验受管 Host 的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent
+                      边界并通过本地 OTLP 推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用
+                      Windows 上实际可派发的宿主及 Electron 验证。设计见当前变更的 design.md。delta
+                      spec 无调整。
+                    requirementsEvidence:
+                      contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                      ref: openspec/changes/show-parallel-runs-in-desktop
+                    sourceEvidence:
+                      contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                      ref: openspec/changes/show-parallel-runs-in-desktop
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/show-parallel-runs-in-desktop/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+              ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+              handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+              proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store 锁内校验受管 Host
+                的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent 边界并通过本地 OTLP
+                推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用 Windows 上实际可派发的宿主及
+                Electron 验证。设计见当前变更的 design.md。delta spec 无调整。
+              requirementsEvidence:
+                contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                ref: openspec/changes/show-parallel-runs-in-desktop
+              sourceEvidence:
+                contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                ref: openspec/changes/show-parallel-runs-in-desktop
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+                    ref: openspec/changes/show-parallel-runs-in-desktop
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+              ref: openspec/changes/show-parallel-runs-in-desktop
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+        sequence: 14
+      show-parallel-runs-in-desktop:16:
+        results:
+          full.build.check:
+            sequence: 14
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+              cwd: .
+              environment: 9094d05c0ba3b730fb8700a04b003e281829f844f14f42d291eb0c5fbbac04ce
+              exitCode: 0
+              inputAfter: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+              inputBefore: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+              manifestHash: 5398369cea258d74469dc567ddfa122df1c4a62d01b0a964929ca881ac6cdf47
+              manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/11888b83-6d2f-4e41-a2f6-2747e661c333.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          full.build.check.evidence:
+            sequence: 15
+            value:
+              contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+              ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/show-parallel-runs-in-desktop
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/show-parallel-runs-in-desktop
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+                ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+              plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+              planEvidence:
+                contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+                ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+              taskRevision: fabe9db3236359a4e97b5f87d809321bfe602ee623aefe90632d783f9bd9785f
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+              ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+                    handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+                    proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                      换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store
+                      锁内校验受管 Host 的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent
+                      边界并通过本地 OTLP 推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用
+                      Windows 上实际可派发的宿主及 Electron 验证。设计见当前变更的 design.md。delta
+                      spec 无调整。
+                    requirementsEvidence:
+                      contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                      ref: openspec/changes/show-parallel-runs-in-desktop
+                    sourceEvidence:
+                      contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                      ref: openspec/changes/show-parallel-runs-in-desktop
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/show-parallel-runs-in-desktop/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+              ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+              handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+              proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store 锁内校验受管 Host
+                的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent 边界并通过本地 OTLP
+                推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用 Windows 上实际可派发的宿主及
+                Electron 验证。设计见当前变更的 design.md。delta spec 无调整。
+              requirementsEvidence:
+                contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                ref: openspec/changes/show-parallel-runs-in-desktop
+              sourceEvidence:
+                contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                ref: openspec/changes/show-parallel-runs-in-desktop
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+                    ref: openspec/changes/show-parallel-runs-in-desktop
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+              ref: openspec/changes/show-parallel-runs-in-desktop
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+        sequence: 16
       show-parallel-runs-in-desktop:4:
         results:
           full.open:
@@ -1638,9 +2258,199 @@ run_checkpoint:
           ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
           contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
           submissionId: 80cb605b-cacd-459a-bece-11fb33d8eb73
+      - id: show-parallel-runs-in-desktop:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results:
+          full.build.check:
+            sequence: 14
+            value:
+              argv:
+                - npm.cmd
+                - run
+                - build
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+              cwd: .
+              environment: 9094d05c0ba3b730fb8700a04b003e281829f844f14f42d291eb0c5fbbac04ce
+              exitCode: 0
+              inputAfter: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+              inputBefore: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+              manifestHash: 5398369cea258d74469dc567ddfa122df1c4a62d01b0a964929ca881ac6cdf47
+              manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/11888b83-6d2f-4e41-a2f6-2747e661c333.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 2700000
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/show-parallel-runs-in-desktop
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/show-parallel-runs-in-desktop
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+                ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+              plan: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+              planEvidence:
+                contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+                ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+              taskRevision: fabe9db3236359a4e97b5f87d809321bfe602ee623aefe90632d783f9bd9785f
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 35a27dde43c49eea7748c4473a971e6279cf29d9fac71f4f9a48bd4d96fd1b4e
+              ref: docs/superpowers/plans/2026-11-25-show-parallel-runs-in-desktop.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+                    handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+                    proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                      换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store
+                      锁内校验受管 Host 的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent
+                      边界并通过本地 OTLP 推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用
+                      Windows 上实际可派发的宿主及 Electron 验证。设计见当前变更的 design.md。delta
+                      spec 无调整。
+                    requirementsEvidence:
+                      contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                      ref: openspec/changes/show-parallel-runs-in-desktop
+                    sourceEvidence:
+                      contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                      ref: openspec/changes/show-parallel-runs-in-desktop
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/show-parallel-runs-in-desktop/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 96eb028a3c0478c6052130ae9451d71f5e330d4b18f149015a8de103930744bd
+              ref: openspec/changes/show-parallel-runs-in-desktop/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/show-parallel-runs-in-desktop/.comet/handoff/design-context.json
+              handoffHash: 66b3dd95a5fed9c8d8802e7f2a9b081a1754f9b80aec287143fd0471ffdea379
+              proposal: 沿用已批准的 Open 范围和原型：按 Workspace/Change/Run 分卡，保留全窗口当前工作、子 Agent
+                换行、返回焦点和原诊断。仅有效人工决定采用琥珀色并由宿主审阅。Runtime 在现有 Run Store 锁内校验受管 Host
+                的父 invocation、Work 和冻结任务/仓库范围，幂等记录真实子 Agent 边界并通过本地 OTLP
+                推送。迟到、重复、过期和中断状态不计为当前活跃，既有完成回执与远端指标沿用原口径。使用 Windows 上实际可派发的宿主及
+                Electron 验证。设计见当前变更的 design.md。delta spec 无调整。
+              requirementsEvidence:
+                contentHash: 8a5fefc398d5a33494aafaf501eb54211943fd444e72a58c6cca313ad0842135
+                ref: openspec/changes/show-parallel-runs-in-desktop
+              sourceEvidence:
+                contentHash: db97fd9b636ddecdb4ef031c991986fe6c933c9a3d7b1e8f0037e41b2325dc23
+                ref: openspec/changes/show-parallel-runs-in-desktop
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: show-parallel-runs-in-desktop
+                  changeDir: openspec/changes/show-parallel-runs-in-desktop
+                  workspaceBaseline:
+                    ref: 363964d7-56df-487a-ab2a-5687b14f9694
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+                    ref: openspec/changes/show-parallel-runs-in-desktop
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+              ref: openspec/changes/show-parallel-runs-in-desktop
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+          contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+          submissionId: 6f2a5488-3e63-408e-8afd-2c717db94fb4
     ready: []
     joins: {}
     outputs:
+      full.build.check:
+        sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+          cwd: .
+          environment: 9094d05c0ba3b730fb8700a04b003e281829f844f14f42d291eb0c5fbbac04ce
+          exitCode: 0
+          inputAfter: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+          inputBefore: 286bf0c40df9a3b8d47d91fdf920e4ce0a32010356e79871cebb5d5aee4e919e
+          manifestHash: 5398369cea258d74469dc567ddfa122df1c4a62d01b0a964929ca881ac6cdf47
+          manifestRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/11888b83-6d2f-4e41-a2f6-2747e661c333.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      full.build.check.evidence:
+        sequence: 15
+        value:
+          contentHash: 3b20043e18c3791a46efa174dba91dd53c72c87df081276dfea7108fa1552dd6
+          ref: .comet/runtime/classic-sdk-checks/cde097e233a464f86ee04f8930697e52cb72ae04c7bf9edb3130e0bf154b5d81/73d9bd77-2fc9-4a55-ad57-a444419160de.log
       full.build.configure:
         sequence: 9
         value:
@@ -1670,6 +2480,10 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
+      full.build.execute:
+        sequence: 13
+        value:
+          event: build-complete
       full.build.plan:
         sequence: 11
         value:
@@ -1767,6 +2581,6 @@ run_checkpoint:
           contentHash: 7f7f5e22b1d6d073145b182a18585f6f7f3df906542b5365f776f598c9cf3491
     children: []
     lineage: []
-  sourceRevision: 19
-  sourceHash: 49694fdde9106df137cc98ceec2fbd279b6d852548c40aa534ae8d25d67eabbe
-check_epoch: 2
+  sourceRevision: 24
+  sourceHash: 3a33df3ce29df5a93dac2f2c840e122e6adf782604b437e6ca489d5831372c46
+check_epoch: 3
