@@ -118,11 +118,12 @@ describe('Delivery v3 Archive publication', () => {
         number: 42,
         url: 'https://github.com/team/workspace/pull/42',
       };
+      const create = vi.fn(() => Promise.resolve(mergeRequest));
       const mergeRequests: MergeRequestPort = {
         capability: () => Promise.reject(new Error('not used')),
         find: () => Promise.resolve(null),
         findAll: () => Promise.resolve([]),
-        create: vi.fn(() => Promise.resolve(mergeRequest)),
+        create,
         update: () => Promise.reject(new Error('not used')),
         status: () =>
           Promise.resolve({
@@ -181,7 +182,7 @@ describe('Delivery v3 Archive publication', () => {
       }
       if (moveSource) {
         await expect(publication()).rejects.toMatchObject({ code: 'publication-not-applied' });
-        expect(mergeRequests.create).not.toHaveBeenCalled();
+        expect(create).not.toHaveBeenCalled();
         peerChangedSource = false;
       }
       await expect(publication()).resolves.toMatchObject({
