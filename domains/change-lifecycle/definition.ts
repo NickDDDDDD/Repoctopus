@@ -55,6 +55,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
   version: '4.11.0',
+  compatibleDigests: ['sha256:7ed98c7cc6de17182839e862c8ca8c2ec2b213e891209a2ac9b5176574d9d925'],
   phases: [
     {
       phase: 'open',
