@@ -46,9 +46,7 @@ delivery:
     apiCredential:
       provider: environment
       variable: REPOCTOPUS_GITHUB_TOKEN
-skillProviders:
-  - id: skill-provider-matt
-  - id: skill-provider-filesystem
+# 使用默认 Skill Provider，包含工作流 Action、Matt Skills 和项目 Skill。
 # 可选。先创建 .agents/skills/team-api-review/SKILL.md，再启用对应绑定。
 # lifecycle:
 #   skillBindings:

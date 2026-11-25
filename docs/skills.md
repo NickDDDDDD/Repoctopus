@@ -56,6 +56,8 @@ repoctopus.cmd skill get --workspace . --audience user --name tdd --json
 
 同名 Skill 只保留优先级最高的定义。该规则用于目录发现，不等于同名 Skill 自动获得团队生命周期权限。
 
+普通的团队 Skill 接入沿用默认 Provider，按[提供项目 Skill](#提供项目-skill)绑定即可。显式填写 `skillProviders` 会替换整份默认列表，团队自定义来源时需要保留工作流所需的 Provider。
+
 | 优先级 | 来源                         | 用途                         |
 | -----: | ---------------------------- | ---------------------------- |
 |    100 | `<workspace>/.agents/skills` | 项目为团队替换或新增 Skill   |
