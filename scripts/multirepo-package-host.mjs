@@ -510,16 +510,23 @@ function build(claim) {
       const stopped = pull('resume').result;
       assert.equal(stopped.state.reconciliationRequired, false);
       assert.equal(lifecycle(stopped).currentWork.workId, claim.packet.work.workId);
-      write('stale-execute', {
-        originalWorkId: claim.packet.work.workId,
-        invocation: claim.invocation.invocationId,
-      });
-      return submit(
+      const outcome = submit(
         claim,
         null,
         'Read input advanced during this invocation. No repository writes occurred.',
         'failed',
-      );
+      ).result;
+      assert.equal(outcome.hostOutcome.status, 'failed');
+      const stored = status().state.workExecution;
+      assert.equal(stored.status, 'outcome');
+      assert.equal(stored.hostInvocation.invocationId, claim.invocation.invocationId);
+      assert.equal(stored.hostOutcome.status, 'failed');
+      write('stale-execute', {
+        originalWorkId: claim.packet.work.workId,
+        invocation: claim.invocation.invocationId,
+        outcome: stored.hostOutcome.status,
+      });
+      return;
     }
     if (name === readConsumer) {
       const observedPath = path.join(repository(observer), externalPath);
@@ -896,17 +903,13 @@ function verifyTerminal() {
   );
   if (driftScenario === 'active-read-input') {
     const stale = read('stale-execute');
-    const events = recordsAtTrajectory();
-    assert(
-      events.some((event) => {
-        const durable = JSON.stringify(event);
-        return (
-          durable.includes(stale.invocation) && durable.includes('No repository writes occurred')
-        );
-      }),
-      'The failed invocation must have a durable outcome',
+    assert.equal(stale.outcome, 'failed');
+    const recovered = recordsAtTrajectory().find(
+      (event) =>
+        event.data?.changeLifecycleTransition?.transitionId === 'build.read-inputs-reobserved',
     );
-    assert(events.some((event) => JSON.stringify(event).includes('build.read-inputs-reobserved')));
+    assert(recovered, 'Build read-input recovery must leave a persisted transition');
+    assert.notEqual(recovered.data.changeLifecycleTransition.workId, stale.originalWorkId);
   }
   if (driftScenario === 'completed-read-input') {
     const verification = read('input-revalidation');
