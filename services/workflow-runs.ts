@@ -2489,13 +2489,14 @@ export class WorkflowRuns extends Service {
           : 'checkout-observation-failed';
     }
     const publication = await this.approvedVerificationConfigPublication(state, observed, previous);
+    const verifiedHeads = await this.observeExternalBuildHeads(state, observed);
     const classified = classifyBuildWorkspaceRecovery({
       ...(publication ? { verificationConfigPublication: publication } : {}),
       state,
       previous,
       current,
       observed,
-      verifiedHeads: await this.observeExternalBuildHeads(state, observed),
+      verifiedHeads,
       ...(observationError ? { observationError } : {}),
       ...(planning?.snapshot
         ? {
@@ -2506,19 +2507,49 @@ export class WorkflowRuns extends Service {
           }
         : {}),
     });
+    const reobserveGit = async (latest: RunState) => {
+      const live = await this.ctx.project.snapshot(this.projectInput!);
+      const binding = await this.bindExecutionWorkspace(latest, latest.changeLifecycle!, live);
+      const observedHeads = await this.observeExternalBuildHeads(latest, binding);
+      if (
+        live.digest !== current.digest ||
+        binding.stateDigest !== observed?.stateDigest ||
+        canonicalJson(observedHeads) !== canonicalJson(verifiedHeads)
+      ) {
+        throw new Error('Build workspace changed during recovery; retry the same Run');
+      }
+    };
     if (
       classified.readInputHeads?.length === classified.conflicts.length &&
       classified.conflicts.length
     ) {
+      if (state.reconciliationRequired) {
+        const reconciled = await this.coordinator.reconcileBuildWorkspace(
+          runId,
+          classified,
+          undefined,
+          reobserveGit,
+        );
+        if (reconciled.value.state.reconciliationRequired) return reconciled;
+        return this.recoverBoundBuildWorkspace(runId, entrypoint);
+      }
       const active = state.workExecution;
       if (
         entrypoint === 'next' &&
         active?.status === 'submitted' &&
+        active.workId === lifecycle.currentWork?.workId &&
+        active.checkEpoch === lifecycle.checkEpoch &&
         active.pendingSubmission &&
         active.pendingSubmission.outcome.status !== 'unknown'
       ) {
-        await this.buildOutcomeAcceptance.reject(runId, {
-          kind: 'correctable-rejection',
+        const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+        if (intent.intentId !== active.intentId) {
+          throw new Error('Build input observation belongs to a superseded Work claim');
+        }
+        await reobserveGit(state);
+        await this.ctx.workExecutionAuthority.rejectHostSubmission({
+          intent,
+          expectedPending: active.pendingSubmission,
           reasonCode: 'workspace-read-input-stale',
           diagnostic: 'This Outcome used a stale Build read input and cannot advance the Run.',
         });
@@ -2568,26 +2599,7 @@ export class WorkflowRuns extends Service {
         runId,
         classified,
         cleanup,
-        classified.independentHeads?.length
-          ? async (latest) => {
-              const live = await this.ctx.project.snapshot(this.projectInput!);
-              const binding = await this.bindExecutionWorkspace(
-                latest,
-                latest.changeLifecycle!,
-                live,
-              );
-              const independentHeads = (
-                await this.observeExternalBuildHeads(latest, binding)
-              ).filter((proof) => isIndependentBuildRepository(latest, proof.repositoryId));
-              if (
-                live.digest !== current.digest ||
-                binding.stateDigest !== observed?.stateDigest ||
-                canonicalJson(independentHeads) !== canonicalJson(classified.independentHeads)
-              ) {
-                throw new Error('Build workspace changed during recovery; retry the same Run');
-              }
-            }
-          : undefined,
+        classified.independentHeads?.length ? reobserveGit : undefined,
       );
     } catch (error) {
       if (error instanceof RuntimeOutputCleanupPlanningUnavailable)

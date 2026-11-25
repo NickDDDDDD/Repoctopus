@@ -1380,8 +1380,16 @@ export class WorkflowRunCoordinator {
         !state.reconciliationRequired ||
         previousRecovery?.ownsBlocker === true ||
         matchingSnapshotConflict;
+      const deferredReadInputs = new Set(
+        recoveryKind === 'buildWorkspaceRecovery' && reobserve && 'readInputHeads' in observation
+          ? observation.readInputHeads?.map(
+              ({ repositoryId }) => `build-read-input-changed:${repositoryId}`,
+            )
+          : [],
+      );
       const requiresReconciliation =
-        observation.conflicts.length > 0 || (state.reconciliationRequired && !ownedBlocker);
+        observation.conflicts.some((conflict) => !deferredReadInputs.has(conflict)) ||
+        (state.reconciliationRequired && !ownedBlocker);
       const work = recoveryKind === 'buildWorkspaceRecovery' ? lifecycle?.currentWork : null;
       const cleanupTransition =
         work && trajectory.findLast((entry) => entry.type === 'change.lifecycle.transitioned');

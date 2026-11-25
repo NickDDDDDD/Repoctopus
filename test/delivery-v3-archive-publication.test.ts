@@ -79,9 +79,15 @@ const project: ProjectSnapshot = {
 };
 
 describe('Delivery v3 Archive publication', () => {
-  it.each([head, 'd'.repeat(40)])(
-    'publishes only the frozen Business OID: %s',
-    async (observedHead) => {
+  it.each([
+    { observedHead: head, moveSource: false },
+    { observedHead: 'd'.repeat(40), moveSource: false },
+    { observedHead: head, moveSource: true },
+  ])(
+    'publishes only the frozen Business OID (checkout $observedHead, moved remote $moveSource)',
+    async ({ observedHead, moveSource }) => {
+      let observations = 0;
+      let peerChangedSource = moveSource;
       const inspect = vi.fn<DeliveryGitPort['inspect']>((repository, delivery) =>
         Promise.resolve({
           repositoryId: repository.id,
@@ -91,7 +97,7 @@ describe('Delivery v3 Archive publication', () => {
           targetBranch: delivery.targetBranch,
           head: observedHead,
           tree: 'c'.repeat(40),
-          remoteSourceOid: head,
+          remoteSourceOid: ++observations >= 3 && peerChangedSource ? 'e'.repeat(40) : head,
           remoteTargetOid: target,
           clean: true,
         }),
@@ -116,7 +122,7 @@ describe('Delivery v3 Archive publication', () => {
         capability: () => Promise.reject(new Error('not used')),
         find: () => Promise.resolve(null),
         findAll: () => Promise.resolve([]),
-        create: () => Promise.resolve(mergeRequest),
+        create: vi.fn(() => Promise.resolve(mergeRequest)),
         update: () => Promise.reject(new Error('not used')),
         status: () =>
           Promise.resolve({
@@ -166,11 +172,17 @@ describe('Delivery v3 Archive publication', () => {
           reportContents: 'verified',
           evidenceBundleIds: ['bundle'],
           expectedRepositoryHeads: { workspace: head },
+          authorizeBusinessEffect: vi.fn(() => Promise.resolve()),
         });
       if (observedHead !== head) {
         await expect(publication()).rejects.toThrow(/frozen/u);
         expect(publicationJournal).toBeNull();
         return;
+      }
+      if (moveSource) {
+        await expect(publication()).rejects.toMatchObject({ code: 'publication-not-applied' });
+        expect(mergeRequests.create).not.toHaveBeenCalled();
+        peerChangedSource = false;
       }
       await expect(publication()).resolves.toMatchObject({
         receipts: [

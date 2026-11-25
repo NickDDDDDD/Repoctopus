@@ -1055,6 +1055,13 @@ if (mode === 'first') {
 } else {
   assert.equal(mode, 'finish');
   const before = read('cold-before');
+  if (driftScenario === 'read-input') {
+    git(observer, 'switch', '-c', 'unapproved-build-input');
+    const denied = pull('resume').result;
+    assert.equal(denied.state.reconciliationRequired, true);
+    git(observer, 'switch', branch);
+    write('blocked-checkout', { runId: denied.state.runId, restoredBranch: branch });
+  }
   if (observer && driftScenario !== 'active-read-input') observeOutsideChange();
   const action = driftScenario === 'external-commit' ? 'next' : 'resume';
   const recoveredView = pull(action).result;
