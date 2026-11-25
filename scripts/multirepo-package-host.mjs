@@ -896,11 +896,17 @@ function verifyTerminal() {
   );
   if (driftScenario === 'active-read-input') {
     const stale = read('stale-execute');
-    const rejected = recordsAtTrajectory().find((item) =>
-      JSON.stringify(item).includes('workspace-read-input-stale'),
+    const events = recordsAtTrajectory();
+    assert(
+      events.some((event) => {
+        const durable = JSON.stringify(event);
+        return (
+          durable.includes(stale.invocation) && durable.includes('No repository writes occurred')
+        );
+      }),
+      'The failed invocation must have a durable outcome',
     );
-    assert(rejected, 'The stale invocation must have an attributable, durable rejection');
-    assert(JSON.stringify(rejected).includes(stale.invocation));
+    assert(events.some((event) => JSON.stringify(event).includes('build.read-inputs-reobserved')));
   }
   if (driftScenario === 'completed-read-input') {
     const verification = read('input-revalidation');

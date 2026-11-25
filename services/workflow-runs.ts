@@ -32,7 +32,7 @@ import {
   canAcceptBuildRuntimeCleanup,
   canReobserveBuildInputs,
   classifyBuildWorkspaceRecovery,
-  hasRejectedStaleBuildInputOutcome,
+  hasSettledBuildReadInputOutcome,
   isRuntimeOutputCleanupConflict,
   isIndependentBuildRepository,
   isReadOnlyBuildInput,
@@ -2658,7 +2658,7 @@ export class WorkflowRuns extends Service {
     const protocol = lifecycle.buildProtocol!;
     const { plan, workspaceCheckpoint, strategy, binding } = protocol;
     const isSettled = async (run: RunState, observed: ExecutionWorkspaceBinding) => {
-      if (!hasRejectedStaleBuildInputOutcome(run)) return true;
+      if (!hasSettledBuildReadInputOutcome(run)) return true;
       const work = run.changeLifecycle!.currentWork!;
       if (work.kind === 'build.check') return true;
       const active = plan!.packages.find((entry) => entry.packageId === work.packageId);

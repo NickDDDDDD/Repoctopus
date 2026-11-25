@@ -78,6 +78,19 @@ export function hasRejectedStaleBuildInputOutcome(state: RunState): boolean {
   );
 }
 
+export function hasSettledBuildReadInputOutcome(state: RunState): boolean {
+  const execution = state.workExecution;
+  const work = state.changeLifecycle?.currentWork;
+  return (
+    hasRejectedStaleBuildInputOutcome(state) ||
+    (!!work &&
+      execution?.workId === work.workId &&
+      execution.checkEpoch === work.checkEpoch &&
+      execution.status === 'outcome' &&
+      execution.hostOutcome?.status === 'failed')
+  );
+}
+
 export function canReobserveBuildInputs(state: RunState): boolean {
   const lifecycle = state.changeLifecycle;
   const protocol = lifecycle?.buildProtocol;
@@ -90,9 +103,7 @@ export function canReobserveBuildInputs(state: RunState): boolean {
     !protocol.verifyRepair &&
     !lifecycle.waitCondition &&
     !lifecycle.blocker &&
-    (!execution ||
-      execution.status === 'not-executed' ||
-      hasRejectedStaleBuildInputOutcome(state)) &&
+    (!execution || execution.status === 'not-executed' || hasSettledBuildReadInputOutcome(state)) &&
     (protocol.currentAction === 'execute' ||
       protocol.currentAction === 'check' ||
       protocol.status === 'ready-for-verify')
