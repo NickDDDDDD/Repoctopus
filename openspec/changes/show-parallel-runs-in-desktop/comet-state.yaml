@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 140bb305-70f2-4f2c-bbba-aecb63005b91
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 406dee753136532fc60973c1d91129fe43001982
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-25
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/show-parallel-runs-in-desktop
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 2e899395a208fe0de9a9da27ec83f34816c5679fd48f99aff17f5e32c9b22bb1
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: show-parallel-runs-in-desktop
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 932335d3ffe0941c6c90f1298ca192dd45ad2d288309d7919021773df66db4f5
+    input:
+      change: show-parallel-runs-in-desktop
+      changeDir: openspec/changes/show-parallel-runs-in-desktop
+      workspaceBaseline:
+        ref: 363964d7-56df-487a-ab2a-5687b14f9694
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 406dee753136532fc60973c1d91129fe43001982
+      boundBranch: codex/show-parallel-runs-in-desktop
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-25
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: show-parallel-runs-in-desktop:1
+        input:
+          input:
+            change: show-parallel-runs-in-desktop
+            changeDir: openspec/changes/show-parallel-runs-in-desktop
+            workspaceBaseline:
+              ref: 363964d7-56df-487a-ab2a-5687b14f9694
+          outputs: {}
+        inputHash: 83c90b1864569b744b94c995f0c10881874dc7fe32d0fa5b75cb74fa12189af5
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: show-parallel-runs-in-desktop
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      show-parallel-runs-in-desktop:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: b72866ffbcd8ccbef0ae0370b4b683f2877d08ba59e630a09d145cc214007121
