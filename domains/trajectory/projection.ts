@@ -1308,7 +1308,7 @@ export function reduceChangeProjection(
   next.version += 1;
   next.seenEnvelopeIds.push(receptionKey);
   next.seenEnvelopeIds.sort();
-  const { runId, sequence } = envelope.identity;
+  const { sequence } = envelope.identity;
   for (const change of next.changes) {
     const legacy = next.receivedSequences[change.runId];
     if (Array.isArray(legacy)) {

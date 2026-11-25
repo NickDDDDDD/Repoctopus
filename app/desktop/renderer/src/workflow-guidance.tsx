@@ -249,7 +249,9 @@ export function NextStep({
             : WORK_STATUS[tone]}
         </p>
         <Heading id={headingId}>{title}</Heading>
-        {!compact || tone === 'decision' ? <p>{guidance.description}</p> : null}
+        {!compact || tone === 'decision' || tone === 'attention' ? (
+          <p>{guidance.description}</p>
+        ) : null}
       </div>
       {guidance.decisionId ? (
         <ApprovalHandoff
