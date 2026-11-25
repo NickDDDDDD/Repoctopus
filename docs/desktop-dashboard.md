@@ -8,6 +8,8 @@ Repoctopus Desktop Dashboard 是 Windows x64 上的本地工作流观测界面�
 
 每个格子是一条 Run，可以同时查看多个 Workspace 的活动。阶段栏标出 Open（需求确认）、Design（设计）、Build（实现）、Verify（验证）或 Archive（归档）。终态记录在「历史 Run」中。点击 Run 的名称或展开按钮可查看全窗口详情，按 Esc 或点击「全部 Run」回到原来的位置。
 
+为彼此独立的项目配置不同的 Workspace ID。桌面按 Workspace ID、Change ID 和 Run ID 区分记录。
+
 - **需要审批**时，Run 会出现琥珀色提示。Agent 会话是审批入口。需要重新找到待处理请求时，可以点击「复制给 Agent」，回到当前会话粘贴。Runtime 接受决定后，桌面会撤下原提示。
 - **Build 进行中**时，可查看执行方式、TDD 配置、隔离方式与已完成的工作包。工作包计划尚未上报时，进度条会在收到计划后出现。
 - **多 Agent 协作**时，把指针移到子 Agent 头像上，或通过键盘聚焦，即可查看已上报的任务、仓库和进展。放大 Run 后可以直接查看这些信息。超过最近观测窗口或父 Work 结束后，子 Agent 会从活跃人数中移除，历史仍可查看。
