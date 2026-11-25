@@ -22,7 +22,7 @@ describe('delivery CLI', () => {
     const migrationDocumentationPath = path.join(packageRoot, 'docs', 'delivery-v2-migration.md');
     const migrationDocumentation = await readFile(migrationDocumentationPath, 'utf8');
     expect(migrationDocumentation).toContain(
-      'node bin/repoctopus.js delivery migration-plan --workspace $workspace --change $changeId --policy $policyFile --json',
+      'repoctopus.cmd delivery migration-plan --workspace $workspace --change $changeId --policy $policyFile --json',
     );
     for (const target of [...migrationDocumentation.matchAll(/\[[^\]]+\]\(([^)]+)\)/gu)].map(
       (match) => match[1]!,
