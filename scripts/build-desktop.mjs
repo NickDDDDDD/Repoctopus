@@ -23,6 +23,16 @@ const productSourceFiles = [
 ];
 
 async function buildDesktop() {
+  const builderConfig = JSON.parse(
+    await readFile(path.join(root, 'electron-builder.json'), 'utf8'),
+  );
+  const packagedSources = new Map(builderConfig.extraResources.map(({ from, to }) => [to, from]));
+  const missingSources = productSourceFiles.filter(
+    (source) => packagedSources.get(`product/${source}`) !== source,
+  );
+  if (missingSources.length > 0) {
+    throw new Error(`Desktop packaging is missing product sources: ${missingSources.join(', ')}`);
+  }
   await rm(outputRoot, { recursive: true, force: true });
 
   await Promise.all([
