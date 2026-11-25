@@ -1,3 +1,9 @@
+---
+comet_change: show-parallel-runs-in-desktop
+role: technical-design
+canonical_spec: openspec
+---
+
 ## Context
 
 已合入的桌面版本通过 OTLP 查看单条 Run，已经具备生命周期、Build 配置、任务进度、审批、Skill 和诊断投影。当前的 `delegation.completed` 来自父 Host 提交的完成回执，只证明受管子执行的结果，无法还原正在工作的成员。此次保留现有执行权威、接收器和安装入口，按已确认原型实现并行工作台。
