@@ -2,6 +2,7 @@
 change: scope-build-workspace-drift
 design-doc: openspec/changes/scope-build-workspace-drift/design.md
 base-ref: c0ff030035e40c2a7cbc76035b6bc8d2077e7bbe
+archived-with: 2026-11-26-scope-build-workspace-drift
 ---
 
 # 多仓 Build 工作区漂移恢复

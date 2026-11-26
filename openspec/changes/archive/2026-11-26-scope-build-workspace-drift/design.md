@@ -2,6 +2,8 @@
 comet_change: scope-build-workspace-drift
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-26-scope-build-workspace-drift
+status: final
 ---
 
 # Design
