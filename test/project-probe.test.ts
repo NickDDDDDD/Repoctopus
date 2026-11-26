@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   probeProject,
   normalizeRemoteIdentity,
+  repositoryCheckoutIdentity,
   snapshotWorkspaceRepositories,
 } from '../platform/git/probe.js';
 import {
@@ -135,6 +136,42 @@ describe('multi-repository project probe', () => {
         expect.objectContaining({ code: 'duplicate-repository-identity', path: second }),
       ]),
     );
+  });
+
+  it('identifies an in-place edit to a linked checkout pointer', async () => {
+    const root = await temporaryDirectory('repoctopus checkout identity ');
+    cleanup.push(root);
+    const repository = await createGitRepository(root, 'parent');
+    const first = path.join(root, 'first');
+    const second = path.join(root, 'second');
+    for (const [branch, checkout] of [
+      ['first', first],
+      ['second', second],
+    ] as const) {
+      await execFileAsync('git', ['worktree', 'add', '-b', branch, checkout], { cwd: repository });
+    }
+    const firstMarker = path.join(first, '.git');
+    const original = await readFile(firstMarker, 'utf8');
+    const identity = await repositoryCheckoutIdentity(first);
+    await execFileAsync('git', ['commit', '--allow-empty', '-m', 'same checkout'], { cwd: first });
+    expect(await repositoryCheckoutIdentity(first)).toBe(identity);
+
+    async function rewriteMarker(contents: string) {
+      const marker = await open(firstMarker, 'r+');
+      try {
+        await marker.truncate(0);
+        await marker.writeFile(contents);
+      } finally {
+        await marker.close();
+      }
+    }
+    await rewriteMarker(await readFile(path.join(second, '.git'), 'utf8'));
+    try {
+      expect(await repositoryCheckoutIdentity(first)).not.toBe(identity);
+    } finally {
+      await rewriteMarker(original);
+    }
+    expect(await repositoryCheckoutIdentity(first)).toBe(identity);
   });
 
   it('snapshots only registered repositories with stable Workspace ids', async () => {

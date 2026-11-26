@@ -804,17 +804,19 @@ function projectLayout(parsed: ParsedArguments): 'single' | 'multi' | undefined 
   return layout;
 }
 
+function selectedProjectRepositoryIds(parsed: ParsedArguments): string[] | undefined {
+  return stringFlag(parsed, 'repositories', { required: parsed.flags.has('repositories') })
+    ?.split(',')
+    .map((id) => id.trim());
+}
+
 async function projectInit(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const layout = projectLayout(parsed) ?? 'single';
   const scanRoot = path.resolve(
     stringFlag(parsed, 'scan-root', { fallback: path.dirname(workspace) })!,
   );
-  const selectedRepositoryIds = stringFlag(parsed, 'repositories', {
-    required: parsed.flags.has('repositories'),
-  })
-    ?.split(',')
-    .map((id) => id.trim());
+  const selectedRepositoryIds = selectedProjectRepositoryIds(parsed);
   const entryHosts = stringFlag(parsed, 'entry-hosts')
     ?.split(',')
     .map((host) => host.trim());
@@ -828,6 +830,7 @@ async function projectInit(parsed: ParsedArguments): Promise<CliEnvelope<unknown
         scanRoot,
         layout,
         ...(selectedRepositoryIds ? { selectedRepositoryIds } : {}),
+        ...(parsed.checkoutPaths.length ? { checkoutPaths: parsed.checkoutPaths } : {}),
         ...(entryHosts ? { entryHosts } : {}),
         ...(storeId ? { storeId } : {}),
       },
@@ -855,10 +858,13 @@ async function projectDetect(parsed: ParsedArguments): Promise<CliEnvelope<unkno
       ?.split(',')
       .map((host) => host.trim());
     const layout = projectLayout(parsed);
+    const selectedRepositoryIds = selectedProjectRepositoryIds(parsed);
     const result = await app.context.commandRouter.execute('project.detect', {
       workspace,
       scanRoot,
       ...(layout ? { layout, mode: 'minimal' } : {}),
+      ...(selectedRepositoryIds ? { selectedRepositoryIds } : {}),
+      ...(parsed.checkoutPaths.length ? { checkoutPaths: parsed.checkoutPaths } : {}),
       ...(entryHosts ? { entryHosts } : {}),
       ...(stringFlag(parsed, 'store') ? { storeId: stringFlag(parsed, 'store') } : {}),
       ...(skippedPointerRepositoryIds && skippedPointerRepositoryIds.length > 0

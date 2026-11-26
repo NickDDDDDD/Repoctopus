@@ -1,6 +1,7 @@
 export interface ParsedArguments {
   command: string[];
   flags: Map<string, string | true>;
+  checkoutPaths: string[];
 }
 
 const BOOLEAN_FLAGS = new Set(['help', 'json', 'version', 'preview']);
@@ -8,6 +9,7 @@ const BOOLEAN_FLAGS = new Set(['help', 'json', 'version', 'preview']);
 export function parseArguments(argv: readonly string[]): ParsedArguments {
   const command: string[] = [];
   const flags = new Map<string, string | true>();
+  const checkoutPaths: string[] = [];
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
     if (!value) continue;
@@ -16,11 +18,20 @@ export function parseArguments(argv: readonly string[]): ParsedArguments {
       continue;
     }
     const equal = value.indexOf('=');
-    if (equal > 2) {
-      flags.set(value.slice(2, equal), value.slice(equal + 1));
+    const name = value.slice(2, equal > 2 ? equal : undefined);
+    if (name === 'checkout') {
+      const checkout = equal > 2 ? value.slice(equal + 1) : argv[index + 1];
+      if (!checkout || (equal <= 2 && checkout.startsWith('--'))) {
+        throw new Error('Missing required path after --checkout');
+      }
+      checkoutPaths.push(checkout);
+      if (equal <= 2) index += 1;
       continue;
     }
-    const name = value.slice(2);
+    if (equal > 2) {
+      flags.set(name, value.slice(equal + 1));
+      continue;
+    }
     if (!name) throw new Error('Option name is required after --');
     if (flags.has(name)) throw new Error(`Duplicate option: --${name}`);
     if (BOOLEAN_FLAGS.has(name)) {
@@ -35,7 +46,7 @@ export function parseArguments(argv: readonly string[]): ParsedArguments {
       flags.set(name, true);
     }
   }
-  return { command, flags };
+  return { command, flags, checkoutPaths };
 }
 
 export function stringFlag(

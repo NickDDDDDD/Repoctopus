@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import {
   access,
   copyFile,
@@ -38,7 +39,9 @@ describe('documented project onboarding flow', () => {
   it('reports duplicate remote checkouts and configures only the named path', async () => {
     const root = await temporaryDirectory('repoctopus duplicate checkout ');
     cleanup.push(root);
-    const workspace = await createGitRepository(root, 'workspace');
+    const workspaceRemote = path.join(root, 'workspace.git');
+    execFileSync('git', ['init', '--bare', '--initial-branch=main', workspaceRemote]);
+    const workspace = await createGitRepository(root, 'workspace', workspaceRemote);
     const backend = await createGitRepository(
       root,
       'backend service',
@@ -49,16 +52,24 @@ describe('documented project onboarding flow', () => {
       'backend test',
       'git@example.invalid:team/backend.git',
     );
-    const frontend = await createGitRepository(root, 'frontend');
+    const frontend = await createGitRepository(
+      root,
+      'frontend',
+      'https://example.invalid/team/frontend.git',
+    );
     const environment = {
       XDG_DATA_HOME: path.join(root, 'data'),
       XDG_CONFIG_HOME: path.join(root, 'config'),
       OPENSPEC_TELEMETRY: '0',
       OPENSPEC_NO_UPDATE_CHECK: '1',
     };
-    const options = { packageRoot, cwd: workspace, environment };
+    const options = {
+      packageRoot: process.env.REPOCTOPUS_ONBOARDING_PACKAGE_ROOT ?? packageRoot,
+      cwd: workspace,
+      environment,
+    };
     const scope = ['--layout', 'multi', '--scan-root', root, '--entry-hosts', 'codex'];
-    const detection = await runCli<{ draft: ProjectDetectionDraft }>({
+    const detection = await runCli<{ draft: ProjectDetectionDraft; file: string }>({
       ...options,
       args: ['project', 'detect', ...scope],
     });
@@ -74,12 +85,63 @@ describe('documented project onboarding flow', () => {
     await expect(runCli({ ...options, args: ['project', 'init', ...scope] })).rejects.toThrow(
       /checkout/i,
     );
+    await expect(
+      runCli({
+        ...options,
+        args: ['project', 'init', ...scope, '--checkout', backend, '--checkout=' + copy],
+      }),
+    ).rejects.toThrow(/only one checkout/i);
+    const outside = await temporaryDirectory('repoctopus checkout outside ');
+    cleanup.push(outside);
+    const outsideRepo = await createGitRepository(outside, 'backend');
+    await expect(
+      runCli({
+        ...options,
+        args: ['project', 'init', ...scope, '--checkout', outsideRepo],
+      }),
+    ).rejects.toThrow(/eligible Git root/i);
+    const excluded = await runCli<{ draft: ProjectDetectionDraft }>({
+      ...options,
+      args: ['project', 'detect', ...scope, '--repositories', 'frontend'],
+    });
+    expect(excluded.result?.draft.checkoutConflicts?.[0]?.resolution).toBe('excluded');
+    expect(excluded.result?.draft.candidateConfig?.repositories.map(({ id }) => id).sort()).toEqual(
+      ['frontend', 'workspace'],
+    );
+    const completedCandidate = path.join(root, 'candidate.json');
+    await writeFile(completedCandidate, JSON.stringify(excluded.result?.draft.candidateConfig));
+    const prepare = () =>
+      runCli({
+        ...options,
+        args: [
+          'project',
+          'prepare',
+          '--draft',
+          detection.result!.file,
+          '--candidate',
+          completedCandidate,
+        ],
+      });
+    await expect(prepare()).rejects.toThrow(/select one checkout/i);
+    const edited = detection.result!.draft;
+    delete edited.checkoutConflicts;
+    edited.status = 'awaiting_confirmation';
+    await writeFile(detection.result!.file, JSON.stringify(edited));
+    await expect(prepare()).rejects.toThrow(/draft changed/i);
     const initialized = await runCli<{
       file: string;
       request: ProjectConfigurationDecisionRequest;
     }>({
       ...options,
-      args: ['project', 'init', ...scope, '--checkout', '../backend service'],
+      args: [
+        'project',
+        'init',
+        ...scope,
+        '--checkout',
+        '../backend service',
+        '--checkout',
+        frontend,
+      ],
     });
     const { request, file } = initialized.result!;
     expect(request.candidateConfig.repositories.map(({ path }) => path).sort()).toEqual([
@@ -101,10 +163,47 @@ describe('documented project onboarding flow', () => {
         decision: 'approve',
       }),
     );
-    await runCli({
-      ...options,
-      args: ['project', 'review', '--request', file, '--response-file', responseFile],
+    const review = () =>
+      runCli({
+        ...options,
+        args: ['project', 'review', '--request', file, '--response-file', responseFile],
+      });
+    const newRemote = 'https://example.invalid/team/replacement.git';
+    execFileSync('git', ['remote', 'set-url', 'origin', newRemote], { cwd: backend });
+    const draftFile = path.join(
+      workspace,
+      '.repoctopus',
+      'drafts',
+      `project-detect-${request.draftId}.json`,
+    );
+    const mutableDraft = JSON.parse(await readFile(draftFile, 'utf8')) as ProjectDetectionDraft;
+    mutableDraft.repositories.find(({ path }) => path === '../backend service')!.remoteIdentity =
+      'example.invalid/team/replacement';
+    await writeFile(draftFile, JSON.stringify(mutableDraft));
+    await expect(review()).rejects.toThrow(/checkout changed/i);
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
     });
+    await expect(access(path.join(backend, 'openspec/config.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    execFileSync(
+      'git',
+      ['remote', 'set-url', 'origin', 'https://example.invalid/team/backend.git'],
+      { cwd: backend },
+    );
+    const parked = path.join(root, 'temporarily parked checkout');
+    await rename(backend, parked);
+    await rename(copy, backend);
+    await rename(parked, copy);
+    await expect(review()).rejects.toThrow(/checkout changed/i);
+    await expect(access(path.join(backend, 'openspec/config.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    await rename(copy, parked);
+    await rename(backend, copy);
+    await rename(parked, backend);
+    await review();
     for (const selected of [backend, frontend]) {
       expect(await readFile(path.join(selected, 'openspec/config.yaml'), 'utf8')).toContain(
         'store: workspace',
@@ -113,6 +212,12 @@ describe('documented project onboarding flow', () => {
     await expect(access(path.join(copy, 'openspec/config.yaml'))).rejects.toMatchObject({
       code: 'ENOENT',
     });
+    await expect(
+      runCli({
+        ...options,
+        args: ['project', 'init', ...scope, '--repositories', 'backend-test'],
+      }),
+    ).rejects.toThrow(/conflict with checkout selection/i);
     const replay = await runCli<{ request: ProjectConfigurationDecisionRequest }>({
       ...options,
       args: ['project', 'init', ...scope],
@@ -120,6 +225,18 @@ describe('documented project onboarding flow', () => {
     expect(replay.result?.request.candidateConfig.repositories).toEqual(
       request.candidateConfig.repositories,
     );
+    const gitOptions = { cwd: workspace, stdio: 'pipe' as const };
+    execFileSync('git', ['add', '.'], gitOptions);
+    execFileSync('git', ['commit', '-m', 'test: record approved onboarding'], gitOptions);
+    execFileSync('git', ['push', '-u', 'origin', 'main'], gitOptions);
+    execFileSync('git', ['switch', '-c', 'change/verify-checkout-selection'], gitOptions);
+    execFileSync('git', ['push', '-u', 'origin', 'change/verify-checkout-selection'], gitOptions);
+    const run = await runCli<{ changeLifecycle: { phase: string } }>({
+      ...options,
+      args: ['run', 'start', '--change', 'verify-checkout-selection', '--target', 'main'],
+    });
+    expect(run.runId).toBeTruthy();
+    expect(run.result?.changeLifecycle.phase).toBe('open');
   });
 
   it('plans selected personal and Workspace Skills for the additional hosts', async () => {

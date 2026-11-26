@@ -1,9 +1,9 @@
-import { createHash } from 'node:crypto';
 import { access, constants, lstat, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'yaml';
 
 import type {
+  CheckoutConflict,
   DetectedCommand,
   DetectedRepository,
   DetectedService,
@@ -15,9 +15,14 @@ import type {
 import { hashProjectConfig } from '../../domains/project-configuration/config.js';
 import { reconcileProjectConfig } from '../../domains/project-configuration/reconcile.js';
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
-import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
+import { projectDetectionDraftId } from '../../domains/project-configuration/detection.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
-import { inspectRepository, probeProject } from '../git/probe.js';
+import type { RepositorySnapshot } from '../../domains/project/types.js';
+import {
+  inspectRepository,
+  repositoryCheckoutIdentity,
+  scanRepositoryCheckouts,
+} from '../git/probe.js';
 import {
   OpenSpecStoreRegistration,
   type OpenSpecStoreRegistrationPort,
@@ -434,12 +439,40 @@ async function optionalExistingConfig(workspace: string): Promise<SharedProjectC
   }
 }
 
+function workspaceRelativePath(workspace: string, checkout: string): string {
+  return path.relative(workspace, checkout).replaceAll('\\', '/') || '.';
+}
+
+async function resolveCheckoutChoices(input: {
+  workspace: string;
+  paths: readonly string[];
+  repositories: readonly RepositorySnapshot[];
+}): Promise<Map<string, string>> {
+  const choices = new Map<string, string>();
+  for (const checkout of input.paths) {
+    const resolved = await realpath(path.resolve(input.workspace, checkout)).catch(() => null);
+    const repository = input.repositories.find(({ path: candidate }) => candidate === resolved);
+    if (!repository) {
+      throw new Error(`Checkout is not an eligible Git root in the current scan: ${checkout}`);
+    }
+    const previous = choices.get(repository.id);
+    if (previous !== undefined && previous !== repository.path) {
+      throw new Error(
+        `Select only one checkout for remote ${repository.remoteIdentity ?? repository.id}: ${previous}, ${repository.path}`,
+      );
+    }
+    choices.set(repository.id, repository.path);
+  }
+  return choices;
+}
+
 export async function detectProjectConfiguration(input: {
   workspace: string;
   scanRoot: string;
   mode?: 'minimal' | 'verify';
   layout?: 'single' | 'multi';
   selectedRepositoryIds?: readonly string[];
+  checkoutPaths?: readonly string[];
   storeId?: string;
   skippedPointerRepositoryIds?: readonly string[];
   entryHosts?: readonly string[];
@@ -453,14 +486,17 @@ export async function detectProjectConfiguration(input: {
       `Workspace must be a Git repository root: ${workspace}. Use the business repository root for single-repository setup, or a separate Git repository alongside the business repositories.`,
     );
   }
+  if (input.layout === 'single' && input.checkoutPaths?.length) {
+    throw new Error('--checkout requires a multi-repository scan');
+  }
   const snapshot =
     input.layout === 'single'
-      ? { root: workspace, repositories: [workspaceRepositorySnapshot] }
-      : await probeProject({
-          root: input.scanRoot,
-          duplicateIdentity: 'omit-ambiguous',
-          ...(input.now ? { now: input.now } : {}),
-        });
+      ? {
+          root: workspace,
+          repositories: [workspaceRepositorySnapshot],
+          groups: [[workspaceRepositorySnapshot]],
+        }
+      : await scanRepositoryCheckouts(input.scanRoot);
   const current = await optionalExistingConfig(workspace);
   const storeId =
     input.storeId ?? current?.specificationProvider?.store.id ?? slug(path.basename(workspace));
@@ -474,7 +510,7 @@ export async function detectProjectConfiguration(input: {
   const minimal = input.mode === 'minimal';
   const skipped = new Set(input.skippedPointerRepositoryIds ?? []);
   const existingIds = new Map(
-    (minimal ? current?.repositories : undefined)?.map((repository) => [
+    current?.repositories.map((repository) => [
       path.resolve(workspace, repository.path),
       repository.id,
     ]),
@@ -500,15 +536,74 @@ export async function detectProjectConfiguration(input: {
   const scopedIds =
     input.selectedRepositoryIds ??
     (minimal ? current?.repositories.map(({ id }) => id) : undefined);
+  const identifiedByPath = new Map(identified.map((item) => [item.repository.path, item]));
   const selectedIds = new Set(scopedIds);
   for (const id of selectedIds) {
-    if (!identified.some((item) => item.id === id)) {
-      throw new Error(`Selected repository is not in the current scan: ${id}`);
+    if (identified.some((item) => item.id === id)) continue;
+    const registered = current?.repositories.find((repository) => repository.id === id);
+    if (registered) {
+      const checkout = path.resolve(workspace, registered.path);
+      throw new Error(
+        `Registered checkout for ${id} was not found in the current scan: ${checkout}. Restore that directory or select a scope that excludes it.`,
+      );
+    }
+    throw new Error(`Selected repository is not in the current scan: ${id}`);
+  }
+  const choices = await resolveCheckoutChoices({
+    workspace,
+    paths: input.checkoutPaths ?? [],
+    repositories: snapshot.repositories,
+  });
+  const checkoutConflicts: CheckoutConflict[] = [];
+  const selectedPaths = new Set<string>();
+  for (const group of snapshot.groups) {
+    const [first] = group;
+    if (!first) continue;
+    const explicitPath = choices.get(first.id);
+    const candidates = group.map((repository) => identifiedByPath.get(repository.path)!);
+    const scopedCandidates = candidates.filter(({ id }) => selectedIds.has(id));
+    const inScope = !scopedIds || scopedCandidates.length > 0;
+    const workspaceCheckout = group.find((repository) => repository.path === workspace);
+    const included = inScope || explicitPath !== undefined || workspaceCheckout !== undefined;
+    const registered = group.filter((repository) => existingIds.has(repository.path));
+    if (included && registered.length > 1) {
+      throw new Error(
+        `Multiple registered checkouts share the same Git identity: ${registered.map(({ path }) => path).join(', ')}`,
+      );
+    }
+    const existingPath = workspaceCheckout?.path ?? registered[0]?.path;
+    if (explicitPath && existingPath && explicitPath !== existingPath) {
+      throw new Error(
+        `Selected checkout ${explicitPath} conflicts with the registered checkout ${existingPath}`,
+      );
+    }
+    const selectedPath = included
+      ? (explicitPath ?? existingPath ?? (group.length === 1 ? first.path : null))
+      : null;
+    if (
+      input.selectedRepositoryIds &&
+      (scopedCandidates.length > 1 ||
+        (selectedPath &&
+          scopedCandidates.some(({ repository }) => repository.path !== selectedPath)))
+    ) {
+      throw new Error(
+        `Repository IDs ${scopedCandidates.map(({ id }) => id).join(', ')} conflict with checkout selection for ${first.remoteIdentity ?? first.path}. Use matching repository IDs and checkout paths.`,
+      );
+    }
+    if (selectedPath) selectedPaths.add(selectedPath);
+    if (group.length > 1) {
+      checkoutConflicts.push({
+        remoteIdentity: first.remoteIdentity,
+        candidates: candidates.map(({ id, repository }) => ({
+          id,
+          path: workspaceRelativePath(workspace, repository.path),
+        })),
+        resolution: selectedPath ? 'selected' : included ? 'unresolved' : 'excluded',
+        selectedPath: selectedPath ? workspaceRelativePath(workspace, selectedPath) : null,
+      });
     }
   }
-  const selected = scopedIds
-    ? identified.filter(({ id }) => id === workspaceRepositoryId || selectedIds.has(id))
-    : identified;
+  const selected = identified.filter(({ repository }) => selectedPaths.has(repository.path));
   const inspected = await Promise.all(
     selected.map(async ({ repository, id }) => {
       const openSpec = await inspectOpenSpecBinding({
@@ -541,7 +636,12 @@ export async function detectProjectConfiguration(input: {
       });
     }),
   );
-  const repositories = inspected.map((item) => item.repository);
+  const repositories = await Promise.all(
+    inspected.map(async ({ repository }) => ({
+      ...repository,
+      checkoutIdentity: await repositoryCheckoutIdentity(path.resolve(workspace, repository.path)),
+    })),
+  );
   const unresolved = inspected.flatMap((item) => item.unresolved);
   const commandNodes = repositories.flatMap((repository) =>
     repository.commands.map((command) => ({
@@ -573,7 +673,8 @@ export async function detectProjectConfiguration(input: {
     (repository) => repository.id === workspaceRepositoryId,
   )!;
   const detectedCandidate: SharedProjectConfig | null =
-    minimal || commandNodes.length > 0
+    !checkoutConflicts.some(({ resolution }) => resolution === 'unresolved') &&
+    (minimal || commandNodes.length > 0)
       ? {
           apiVersion: 'repoctopus/v1alpha1',
           kind: 'RepoctopusWorkspace',
@@ -618,13 +719,14 @@ export async function detectProjectConfiguration(input: {
   const content = {
     entrySkills,
     repositories,
+    ...(checkoutConflicts.length > 0 ? { checkoutConflicts } : {}),
     unresolved,
     candidateConfig,
     baseConfigDigest,
     reconcile,
     storeBinding,
   };
-  const draftId = createHash('sha256').update(canonicalJson(content)).digest('hex').slice(0, 24);
+  const draftId = projectDetectionDraftId(content);
   const draft: ProjectDetectionDraft = {
     apiVersion: 'repoctopus/v1alpha1',
     kind: 'ProjectDetectionDraft',

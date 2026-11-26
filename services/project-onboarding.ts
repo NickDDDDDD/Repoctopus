@@ -2,6 +2,7 @@ import { realpath } from 'node:fs/promises';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
 
+import { unresolvedCheckoutsMessage } from '../domains/project-configuration/detection.js';
 import type {
   ProjectConfigurationDecisionActor,
   ProjectConfigurationDecisionRequest,
@@ -30,6 +31,7 @@ export interface DetectProjectConfigurationInput {
   mode?: 'minimal' | 'verify';
   layout?: 'single' | 'multi';
   selectedRepositoryIds?: readonly string[];
+  checkoutPaths?: readonly string[];
   storeId?: string;
   skippedPointerRepositoryIds?: readonly string[];
   entryHosts?: readonly string[];
@@ -49,8 +51,12 @@ export class ProjectOnboarding extends Service {
 
   async init(input: DetectProjectConfigurationInput) {
     const detected = await this.detect({ ...input, mode: 'minimal' });
-    if (!detected.draft.candidateConfig)
-      throw new Error('Workspace initialization has no valid candidate');
+    if (!detected.draft.candidateConfig) {
+      throw new Error(
+        unresolvedCheckoutsMessage(detected.draft.checkoutConflicts ?? []) ??
+          'Workspace initialization has no valid candidate',
+      );
+    }
     return this.prepare({
       workspace: input.workspace,
       draftFile: detected.file,

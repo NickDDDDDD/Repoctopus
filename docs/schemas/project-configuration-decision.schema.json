@@ -49,6 +49,20 @@
             { "type": "null" }
           ]
         },
+        "checkouts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "path", "remoteIdentity"],
+            "properties": {
+              "id": { "type": "string" },
+              "path": { "type": "string" },
+              "remoteIdentity": { "type": ["string", "null"] },
+              "checkoutIdentity": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+            }
+          }
+        },
         "options": { "const": ["approve", "request_changes", "reject"] }
       }
     },

@@ -3,7 +3,9 @@ import { createHash, randomUUID } from 'node:crypto';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { hashProjectConfig, parseSharedProjectConfig } from './config.js';
 import type { WorkspaceEntrySkillPlan } from './entry-skills.js';
+import { unresolvedCheckoutsMessage } from './detection.js';
 import type {
+  DetectedCheckout,
   DetectionUnresolvedItem,
   ProjectConfigReconcileDiff,
   ProjectDetectionDraft,
@@ -33,6 +35,7 @@ export interface ProjectConfigurationDecisionRequest {
   entrySkills?: WorkspaceEntrySkillPlan[];
   profileUpdate?: { workspaceRoot: string; profileId: string };
   entryInstall?: { workspaceRoot: string };
+  checkouts?: DetectedCheckout[];
   options: ProjectConfigurationDecision[];
 }
 
@@ -74,6 +77,7 @@ function projectConfigurationSnapshotDigest(input: {
   entrySkills?: WorkspaceEntrySkillPlan[];
   profileUpdate?: { workspaceRoot: string; profileId: string };
   entryInstall?: { workspaceRoot: string };
+  checkouts?: DetectedCheckout[];
 }): string {
   return `sha256:${createHash('sha256').update(canonicalJson(input)).digest('hex')}`;
 }
@@ -102,6 +106,9 @@ export function createProjectConfigurationDecision(input: {
       'Candidate must be a RepoctopusWorkspace configuration. Use candidateConfig from the detection draft, or use project init.',
     );
   }
+  const unresolvedCheckouts = unresolvedCheckoutsMessage(input.draft.checkoutConflicts ?? []);
+  if (unresolvedCheckouts) throw new Error(unresolvedCheckouts);
+
   const candidateConfig = parseSharedProjectConfig(input.completedCandidate);
   assertVerifyProfileReady(candidateConfig, 'verify');
   const storeBinding = input.draft.storeBinding;
@@ -145,6 +152,12 @@ export function createProjectConfigurationDecision(input: {
     reconcile,
     unresolved: input.draft.unresolved,
     storeBinding: structuredClone(input.draft.storeBinding),
+    checkouts: input.draft.repositories.map(({ id, path, remoteIdentity, checkoutIdentity }) => ({
+      id,
+      path,
+      remoteIdentity,
+      ...(checkoutIdentity ? { checkoutIdentity } : {}),
+    })),
     ...(input.draft.entrySkills ? { entrySkills: structuredClone(input.draft.entrySkills) } : {}),
   });
 }
@@ -226,10 +239,11 @@ export function recordProjectConfigurationDecision(input: {
   timestamp: string;
 }): ProjectConfigurationDecisionRecord {
   if (!input.actor.authenticated) throw new Error('Project configuration decision is not trusted');
-  const { entryInstall, entrySkills, profileUpdate, storeBinding } = input.request;
+  const { checkouts, entryInstall, entrySkills, profileUpdate, storeBinding } = input.request;
   if (
     (entryInstall && (profileUpdate || storeBinding || !entrySkills?.length)) ||
-    (profileUpdate && (storeBinding || entrySkills?.length))
+    (profileUpdate && (storeBinding || entrySkills?.length)) ||
+    (checkouts && !storeBinding)
   ) {
     throw new Error('Project configuration request combines incompatible approval scopes');
   }
@@ -243,6 +257,7 @@ export function recordProjectConfigurationDecision(input: {
     reconcile: input.request.reconcile,
     unresolved: input.request.unresolved,
     storeBinding: input.request.storeBinding,
+    ...(checkouts ? { checkouts } : {}),
     ...(input.request.entrySkills ? { entrySkills: input.request.entrySkills } : {}),
     ...(profileUpdate ? { profileUpdate } : {}),
     ...(entryInstall ? { entryInstall } : {}),

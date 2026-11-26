@@ -8,7 +8,12 @@ import {
   hashProjectConfig,
   parseSharedProjectConfig,
 } from '../../domains/project-configuration/config.js';
-import type { ProjectDetectionDraft } from '../../domains/project-configuration/detection.js';
+import { projectDetectionDraftId } from '../../domains/project-configuration/detection.js';
+import type {
+  DetectedCheckout,
+  OpenSpecStoreBindingProposal,
+  ProjectDetectionDraft,
+} from '../../domains/project-configuration/detection.js';
 import {
   createProjectConfigurationDecision,
   createVerifyProfileDecision,
@@ -20,11 +25,10 @@ import {
 } from '../../domains/project-configuration/onboarding.js';
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
 import type { SpecificationTask } from '../../domains/specification/types.js';
-import type { OpenSpecStoreBindingProposal } from '../../domains/project-configuration/detection.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
 import { isExecutionRevisionAncestor } from '../git/execution-workspace.js';
 import { execute } from '../process/execute.js';
-import { inspectRepository } from '../git/probe.js';
+import { inspectRepository, repositoryCheckoutIdentity } from '../git/probe.js';
 import { withRecoverableFileLock } from '../runtime/recoverable-file-lock.js';
 import { planWorkspaceEntrySkills, prepareWorkspaceEntryWrites } from './workspace-entry-skills.js';
 import { loadProjectConfig, projectExecutionConfigDigests } from './file-config.js';
@@ -194,6 +198,7 @@ async function applyStoreBinding(input: {
   workspace: string;
   requestId: string;
   candidate: SharedProjectConfig;
+  checkouts: readonly DetectedCheckout[];
   proposal: OpenSpecStoreBindingProposal;
   timestamp: string;
   registration: OpenSpecStoreRegistrationPort;
@@ -328,6 +333,9 @@ async function applyStoreBinding(input: {
     if (!repository)
       throw new Error(`Store pointer repository is not configured: ${binding.repositoryId}`);
     const repositoryRoot = path.resolve(input.workspace, repository.path);
+    const checkout = input.checkouts.find(({ id }) => id === repository.id);
+    if (!checkout) throw new Error(`Store pointer has no approved checkout: ${repository.id}`);
+    await assertDetectedCheckout(repositoryRoot, checkout);
     const pointer = path.join(repositoryRoot, binding.pointerDiff.path);
     const intent = createStoreBindingIntent({
       actionId: `pointer-${binding.repositoryId}`,
@@ -367,6 +375,7 @@ async function applyStoreBinding(input: {
         containedRoot: repositoryRoot,
         exclusive: current === null,
         beforeCommit: async () => {
+          await assertDetectedCheckout(repositoryRoot, checkout);
           if ((await optionalRegularText(pointer)) !== current) {
             throw new Error(`Store pointer input drifted: ${binding.repositoryId}`);
           }
@@ -394,35 +403,47 @@ async function applyStoreBinding(input: {
   return receiptFiles;
 }
 
+async function assertDetectedCheckout(checkoutPath: string, expected: DetectedCheckout) {
+  const observed = await inspectRepository(checkoutPath);
+  if (
+    !observed ||
+    observed.path !== checkoutPath ||
+    observed.remoteIdentity !== expected.remoteIdentity ||
+    (expected.checkoutIdentity &&
+      (await repositoryCheckoutIdentity(checkoutPath)) !== expected.checkoutIdentity)
+  ) {
+    throw new Error(
+      `Detected repository checkout changed: ${expected.id} at ${checkoutPath}. Run project init again.`,
+    );
+  }
+  return observed.id;
+}
+
 async function assertDetectedRepositoryScope(
   workspace: string,
-  draft: ProjectDetectionDraft,
+  checkouts: readonly DetectedCheckout[],
   candidate: SharedProjectConfig,
 ) {
-  if (candidate.repositories.length !== draft.repositories.length) {
+  if (candidate.repositories.length !== checkouts.length) {
     throw new Error(
       'Candidate repositories differ from the detection scope. Select repositories with project init.',
     );
   }
-  await Promise.all(
+  const identities = await Promise.all(
     candidate.repositories.map(async (repo) => {
-      const detected = draft.repositories.find(({ id }) => id === repo.id);
+      const detected = checkouts.find(({ id }) => id === repo.id);
       const checkoutPath = path.resolve(workspace, repo.path);
       if (!detected || checkoutPath !== path.resolve(workspace, detected.path)) {
         throw new Error(`Candidate repository path differs from its detection: ${repo.id}`);
       }
-      const observed = await inspectRepository(checkoutPath);
-      if (
-        !observed ||
-        observed.path !== checkoutPath ||
-        observed.remoteIdentity !== detected.remoteIdentity
-      ) {
-        throw new Error(
-          `Detected repository checkout changed: ${repo.id}. Run project init again.`,
-        );
-      }
+      return assertDetectedCheckout(checkoutPath, detected);
     }),
   );
+  if (new Set(identities).size !== identities.length) {
+    throw new Error(
+      'Candidate repositories must identify distinct Git repositories. Run project init again.',
+    );
+  }
 }
 
 export async function prepareProjectConfigurationDecision(input: {
@@ -455,7 +476,10 @@ export async function prepareProjectConfigurationDecision(input: {
     currentConfig,
     ...(input.requestId ? { requestId: input.requestId } : {}),
   });
-  await assertDetectedRepositoryScope(workspace, draft, request.candidateConfig);
+  if (projectDetectionDraftId(draft) !== draft.draftId) {
+    throw new Error('Project detection draft changed. Run project detect again.');
+  }
+  await assertDetectedRepositoryScope(workspace, draft.repositories, request.candidateConfig);
   const state: StoredProjectConfigurationDecision = {
     schemaVersion: 1,
     kind: 'ProjectConfigurationDecisionState',
@@ -469,8 +493,6 @@ export async function prepareProjectConfigurationDecision(input: {
     {
       ...draft,
       status: 'awaiting_confirmation',
-      candidateConfig: request.candidateConfig,
-      reconcile: request.reconcile,
     } satisfies ProjectDetectionDraft,
     { containedRoot: workspace },
   );
@@ -749,7 +771,8 @@ export async function applyProjectConfigurationDecision(
         'drafts',
       );
       const draft = asDraft(JSON.parse(await readFile(draftFile, 'utf8')) as unknown);
-      await assertDetectedRepositoryScope(workspace, draft, state.request.candidateConfig);
+      const checkouts = state.request.checkouts ?? draft.repositories;
+      await assertDetectedRepositoryScope(workspace, checkouts, state.request.candidateConfig);
       if (
         state.request.storeBinding?.repositories.some((binding) => binding.selection === 'blocked')
       ) {
@@ -776,6 +799,7 @@ export async function applyProjectConfigurationDecision(
             workspace,
             requestId: state.request.requestId,
             candidate: state.request.candidateConfig,
+            checkouts,
             proposal: state.request.storeBinding,
             timestamp: input.timestamp,
             registration,
@@ -799,6 +823,11 @@ export async function applyProjectConfigurationDecision(
               if ((latest ? hashProjectConfig(latest) : null) !== currentDigest) {
                 throw new Error('Shared project configuration changed during onboarding');
               }
+              await assertDetectedRepositoryScope(
+                workspace,
+                checkouts,
+                state.request.candidateConfig,
+              );
               await verifyWorkspaceGuides(workspace, guides);
               await entries.verify();
             },

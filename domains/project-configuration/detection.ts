@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { WorkspaceEntrySkillPlan } from './entry-skills.js';
 import type { SharedProjectConfig } from './types.js';
 
@@ -34,6 +36,7 @@ export interface DetectedRepository {
   name: string;
   path: string;
   remoteIdentity: string | null;
+  checkoutIdentity?: string;
   technologies: Array<'node' | 'maven' | 'gradle'>;
   commands: DetectedCommand[];
   services: DetectedService[];
@@ -112,6 +115,68 @@ export interface ProjectConfigReconcileDiff {
   conflicts: Array<{ field: string; current: unknown; candidate: unknown }>;
 }
 
+export type DetectedCheckout = Pick<
+  DetectedRepository,
+  'id' | 'path' | 'remoteIdentity' | 'checkoutIdentity'
+>;
+
+export interface CheckoutConflict {
+  remoteIdentity: string | null;
+  candidates: Array<{ id: string; path: string }>;
+  resolution: 'unresolved' | 'selected' | 'excluded';
+  selectedPath: string | null;
+}
+
+export function unresolvedCheckoutsMessage(conflicts: readonly CheckoutConflict[]): string | null {
+  const unresolved = conflicts.filter(({ resolution }) => resolution === 'unresolved');
+  if (!unresolved.length) return null;
+  const alternatives = unresolved.map(
+    ({ remoteIdentity, candidates }) =>
+      `${remoteIdentity ?? 'Git identity'}: ${candidates.map(({ path }) => path).join(', ')}`,
+  );
+  return `Select one checkout per remote with --checkout <path>, or restrict the scope with --repositories. Conflicts: ${alternatives.join('; ')}`;
+}
+
+export function projectDetectionDraftId(
+  input: Pick<
+    ProjectDetectionDraft,
+    | 'entrySkills'
+    | 'repositories'
+    | 'checkoutConflicts'
+    | 'unresolved'
+    | 'candidateConfig'
+    | 'baseConfigDigest'
+    | 'reconcile'
+    | 'storeBinding'
+  >,
+): string {
+  const {
+    entrySkills,
+    repositories,
+    checkoutConflicts,
+    unresolved,
+    candidateConfig,
+    baseConfigDigest,
+    reconcile,
+    storeBinding,
+  } = input;
+  return createHash('sha256')
+    .update(
+      canonicalJson({
+        entrySkills,
+        repositories,
+        checkoutConflicts,
+        unresolved,
+        candidateConfig,
+        baseConfigDigest,
+        reconcile,
+        storeBinding,
+      }),
+    )
+    .digest('hex')
+    .slice(0, 24);
+}
+
 export interface ProjectDetectionDraft {
   apiVersion: 'repoctopus/v1alpha1';
   kind: 'ProjectDetectionDraft';
@@ -121,6 +186,7 @@ export interface ProjectDetectionDraft {
   scanRoot: string;
   workspace: string;
   repositories: DetectedRepository[];
+  checkoutConflicts?: CheckoutConflict[];
   unresolved: DetectionUnresolvedItem[];
   candidateConfig: SharedProjectConfig | null;
   baseConfigDigest: string | null;

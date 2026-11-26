@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readdir, realpath, stat } from 'node:fs/promises';
+import { lstat, readdir, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import { createProjectSnapshot } from '../../domains/project/snapshot.js';
@@ -89,6 +89,19 @@ export async function inspectRepository(candidate: string): Promise<RepositorySn
   };
 }
 
+export async function repositoryCheckoutIdentity(repositoryRoot: string): Promise<string> {
+  const gitDir = await optionalGit(repositoryRoot, ['rev-parse', '--absolute-git-dir']);
+  if (!gitDir) throw new Error(`Cannot identify Git checkout: ${repositoryRoot}`);
+  const metadata = await Promise.all([
+    lstat(path.join(repositoryRoot, '.git'), { bigint: true }),
+    stat(gitDir, { bigint: true }),
+  ]);
+  // For a linked checkout, the .git file and its worktree-specific target both matter.
+  return createHash('sha256')
+    .update(metadata.map(({ dev, ino, birthtimeNs }) => `${dev}:${ino}:${birthtimeNs}`).join('/'))
+    .digest('hex');
+}
+
 export async function snapshotWorkspaceRepositories(options: {
   workspaceId: string;
   workspaceRoot: string;
@@ -150,12 +163,13 @@ export async function snapshotWorkspaceRepositories(options: {
   });
 }
 
-export async function probeProject(options: {
+export async function scanRepositoryCheckouts(root: string): Promise<{
   root: string;
-  duplicateIdentity?: 'error' | 'omit-ambiguous';
-  now?: () => Date;
-}): Promise<ProjectSnapshot> {
-  const resolvedRoot = await realpath(options.root);
+  repositories: RepositorySnapshot[];
+  groups: RepositorySnapshot[][];
+  diagnostics: ProjectSnapshot['diagnostics'];
+}> {
+  const resolvedRoot = await realpath(root);
   const entries = await readdir(resolvedRoot, { withFileTypes: true });
   const repositories: RepositorySnapshot[] = [];
   const diagnostics: ProjectSnapshot['diagnostics'] = [];
@@ -194,12 +208,28 @@ export async function probeProject(options: {
   // Detection is presented to people and hashed into an approval draft. Keep its
   // order tied to the visible scan path instead of an opaque identity hash.
   repositories.sort((left, right) => left.path.localeCompare(right.path));
-  const identityCounts = new Map<string, number>();
+  const groups = new Map<string, RepositorySnapshot[]>();
   for (const repository of repositories) {
-    identityCounts.set(repository.id, (identityCounts.get(repository.id) ?? 0) + 1);
+    const group = groups.get(repository.id);
+    if (group) group.push(repository);
+    else groups.set(repository.id, [repository]);
   }
+  return { root: resolvedRoot, repositories, groups: [...groups.values()], diagnostics };
+}
+
+export async function probeProject(options: {
+  root: string;
+  duplicateIdentity?: 'error' | 'omit-ambiguous';
+  now?: () => Date;
+}): Promise<ProjectSnapshot> {
+  const {
+    root: resolvedRoot,
+    repositories,
+    groups,
+    diagnostics,
+  } = await scanRepositoryCheckouts(options.root);
   const ambiguousIds = new Set(
-    [...identityCounts.entries()].filter(([, count]) => count > 1).map(([id]) => id),
+    groups.filter((group) => group.length > 1).map((group) => group[0]!.id),
   );
   const duplicate = repositories.find((repository) => ambiguousIds.has(repository.id));
   if (duplicate && options.duplicateIdentity !== 'omit-ambiguous') {

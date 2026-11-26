@@ -62,7 +62,13 @@ $repositories = Read-Host '要接入的仓库 ID，多个 ID 用逗号分隔'
 $prepared = repoctopus.cmd project init --layout multi --scan-root .. --repositories $repositories --entry-hosts codex --json | ConvertFrom-Json
 ```
 
-准备成功后审查返回的请求。
+如果探测结果的 `checkoutConflicts` 列出了同一远端的多个目录，从中选定一个 Git 根。以下示例从 Workspace 选择平级的 `backend service`。路径中的空格需要引号。多个冲突组分别传一个 `--checkout`。如需排除某组，用 `--repositories` 仅列出要接入的仓库。
+
+```powershell
+$prepared = repoctopus.cmd project init --layout multi --scan-root .. --checkout '../backend service' --entry-hosts codex --json | ConvertFrom-Json
+```
+
+已有 Workspace 会优先使用仍有效的登记路径。准备成功后审查返回的请求。
 
 ```powershell
 if (-not $prepared.ok) { throw '接入请求准备失败，请先查看诊断' }

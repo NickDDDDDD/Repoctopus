@@ -49,7 +49,12 @@ export async function reviewProjectConfigurationDecision(options: {
           }
         : {
             workspace: options.request.storeBinding?.workspaceRoot,
-            repositories: options.request.candidateConfig.repositories,
+            repositories:
+              options.request.checkouts?.map(({ id, path, remoteIdentity }) => ({
+                id,
+                path,
+                remoteIdentity,
+              })) ?? options.request.candidateConfig.repositories,
             store: options.request.storeBinding,
             reconcile: options.request.reconcile,
           };

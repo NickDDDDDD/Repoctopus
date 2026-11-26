@@ -28,6 +28,7 @@
     "scanRoot": { "type": "string", "minLength": 1 },
     "workspace": { "type": "string", "minLength": 1 },
     "repositories": { "type": "array", "items": { "$ref": "#/$defs/repository" } },
+    "checkoutConflicts": { "type": "array", "items": { "$ref": "#/$defs/checkoutConflict" } },
     "unresolved": { "type": "array", "items": { "$ref": "#/$defs/unresolved" } },
     "candidateConfig": {
       "anyOf": [{ "$ref": "project-config.schema.json" }, { "type": "null" }]
@@ -43,6 +44,26 @@
     }
   },
   "$defs": {
+    "checkoutConflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["remoteIdentity", "candidates", "resolution", "selectedPath"],
+      "properties": {
+        "remoteIdentity": { "type": ["string", "null"] },
+        "candidates": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "path"],
+            "properties": { "id": { "type": "string" }, "path": { "type": "string" } }
+          }
+        },
+        "resolution": { "enum": ["unresolved", "selected", "excluded"] },
+        "selectedPath": { "type": ["string", "null"] }
+      }
+    },
     "source": {
       "type": "object",
       "additionalProperties": false,
@@ -99,6 +120,7 @@
         "name": { "type": "string" },
         "path": { "type": "string" },
         "remoteIdentity": { "type": ["string", "null"] },
+        "checkoutIdentity": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
         "technologies": {
           "type": "array",
           "items": { "enum": ["node", "maven", "gradle"] }
