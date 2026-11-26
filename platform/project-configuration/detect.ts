@@ -510,7 +510,7 @@ export async function detectProjectConfiguration(input: {
   const minimal = input.mode === 'minimal';
   const skipped = new Set(input.skippedPointerRepositoryIds ?? []);
   const existingIds = new Map(
-    current?.repositories.map((repository) => [
+    (minimal ? current?.repositories : undefined)?.map((repository) => [
       path.resolve(workspace, repository.path),
       repository.id,
     ]),
