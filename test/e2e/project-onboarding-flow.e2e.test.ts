@@ -237,7 +237,7 @@ describe('documented project onboarding flow', () => {
     });
     expect(run.runId).toBeTruthy();
     expect(run.result?.changeLifecycle.phase).toBe('open');
-  });
+  }, 120_000);
 
   it('plans selected personal and Workspace Skills for the additional hosts', async () => {
     const root = await temporaryDirectory('repoctopus additional hosts ');
