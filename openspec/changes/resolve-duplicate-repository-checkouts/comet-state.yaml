@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 851f60f2-b9b6-4859-aa91-f8a5da0c6625
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: worktree
+verify_mode: null
+auto_transition: true
+base_ref: 4295f95febb5e15af6ac5d1b2addcf82e2ffe4ef
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-26
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/resolve-duplicate-repository-checkouts
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: cc0b85da1a6ded7e84b549cf62aa4a606e8becfdf0452dff6d38633a72f47501
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: resolve-duplicate-repository-checkouts
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 54bfef40368463ae3490d8c5fe618d6787bfd2ac823dc8655b5fc0915da71891
+    input:
+      change: resolve-duplicate-repository-checkouts
+      changeDir: openspec/changes/resolve-duplicate-repository-checkouts
+      workspaceBaseline:
+        ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 4295f95febb5e15af6ac5d1b2addcf82e2ffe4ef
+      boundBranch: codex/resolve-duplicate-repository-checkouts
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-26
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: worktree
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: resolve-duplicate-repository-checkouts:1
+        input:
+          input:
+            change: resolve-duplicate-repository-checkouts
+            changeDir: openspec/changes/resolve-duplicate-repository-checkouts
+            workspaceBaseline:
+              ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
+          outputs: {}
+        inputHash: 13ac83939e5734ebee17583a4087e527dfa219fd1b56017f488b77ce370261ed
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: resolve-duplicate-repository-checkouts
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      resolve-duplicate-repository-checkouts:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 09fc1d3748e9737b07a7ad022b1763a52c56c100d513daf671e45fada5bda305
