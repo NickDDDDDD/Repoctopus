@@ -2,7 +2,7 @@
 change_id: 851f60f2-b9b6-4859-aa91-f8a5da0c6625
 workflow: full
 language: zh-CN
-phase: build
+phase: archive
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -15,13 +15,13 @@ auto_transition: true
 base_ref: 4295f95febb5e15af6ac5d1b2addcf82e2ffe4ef
 design_doc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
 plan: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-verify_result: pending
+verify_result: pass
 verify_failures: 0
-verification_report: null
+verification_report: docs/superpowers/reports/resolve-duplicate-repository-checkouts.md
 branch_status: pending
 created_at: 2026-11-26
-verified_at: null
-archive_confirmation: null
+verified_at: 2026-11-26
+archive_confirmation: pending
 archived: false
 bound_branch: codex/resolve-duplicate-repository-checkouts
 direct_override: false
@@ -30,8 +30,8 @@ handoff_hash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: fbad1a02a3fcc11c6fdf7707811bd59399cc167a2637263af1cd857765c9cdf3
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 6f95fcc1f15b285eae9181afe5e5eeabf9165b8621a1ba27e7ff331c15bbadf5
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -50,7 +50,7 @@ run_checkpoint:
       workspaceBaseline:
         ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
     state:
-      archiveConfirmation: null
+      archiveConfirmation: pending
       archived: false
       autoTransition: true
       baseRef: 4295f95febb5e15af6ac5d1b2addcf82e2ffe4ef
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 2
+      checkEpoch: 4
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,19 +69,19 @@ run_checkpoint:
       handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
       isolation: worktree
       language: zh-CN
-      phase: build
+      phase: archive
       plan: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
       reviewMode: thorough
       subagentDispatch: null
       tddMode: tdd
-      verificationReport: null
-      verifiedAt: null
+      verificationReport: docs/superpowers/reports/resolve-duplicate-repository-checkouts.md
+      verifiedAt: 2026-11-26
       verifyFailures: 0
       verifyMode: null
-      verifyResult: pending
+      verifyResult: pass
       workflow: full
-    status: running
-    sequence: 14
+    status: waiting
+    sequence: 21
     actions:
       - attempt: 1
         claim:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/resolve-duplicate-repository-checkouts
             workspaceBaseline:
               ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.evidence:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
+          outputs: {}
         inputHash: efd20a3965749dc8570ec2f99b851bdeb73585a499a29a78d53c508bb19a25d1
         outcome:
           actionId: resolve-duplicate-repository-checkouts:4
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/resolve-duplicate-repository-checkouts
             workspaceBaseline:
               ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.evidence:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.revalidate:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+          outputs: {}
         inputHash: 732881e8c279b8b4a4512ac8f1121f31cf410c12dfb1d05b5e980b5c82941638
         outcome:
           actionId: resolve-duplicate-repository-checkouts:5
@@ -267,63 +227,7 @@ run_checkpoint:
             changeDir: openspec/changes/resolve-duplicate-repository-checkouts
             workspaceBaseline:
               ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.design.handoff:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.evidence:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.revalidate:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+          outputs: {}
         inputHash: f4aa4a12577f932d84fb7e56ccbabab5b204827f80a4e0d13ef66063ddcf0fdd
         outcome:
           actionId: resolve-duplicate-repository-checkouts:7
@@ -362,68 +266,7 @@ run_checkpoint:
             changeDir: openspec/changes/resolve-duplicate-repository-checkouts
             workspaceBaseline:
               ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.design.document:
-              designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-            full.design.evidence:
-              contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-              ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.evidence:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.revalidate:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+          outputs: {}
         inputHash: cc519d1d45eed1c054d63e5815dcdb6cc7179509949cd44a0456e35e0480cba1
         outcome:
           actionId: resolve-duplicate-repository-checkouts:9
@@ -468,93 +311,7 @@ run_checkpoint:
             changeDir: openspec/changes/resolve-duplicate-repository-checkouts
             workspaceBaseline:
               ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-          outputs:
-            full.build.configure:
-              boundBranch: codex/resolve-duplicate-repository-checkouts
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/resolve-duplicate-repository-checkouts
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.design.document:
-              designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-            full.design.evidence:
-              contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-              ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.evidence:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.revalidate:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+          outputs: {}
         inputHash: 49ce9decd7714eaa548e6ccfdda042b83777d53c787e022482cfb89957ee1354
         outcome:
           actionId: resolve-duplicate-repository-checkouts:11
@@ -601,105 +358,7 @@ run_checkpoint:
             changeDir: openspec/changes/resolve-duplicate-repository-checkouts
             workspaceBaseline:
               ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-          outputs:
-            full.build.configure:
-              boundBranch: codex/resolve-duplicate-repository-checkouts
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/resolve-duplicate-repository-checkouts
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-                ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-              plan: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-              planEvidence:
-                contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-                ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-              taskRevision: 0148ff06ca406874418a5c530d29a10406f56f51d85c388fbfda4d3a231b3743
-            full.build.plan.evidence:
-              contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-              ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.design.document:
-              designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-            full.design.evidence:
-              contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-              ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.evidence:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.revalidate:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+          outputs: {}
         inputHash: a9db4e0df88238923af3f56f5d6c028b22ea1249523272475d59d636bcdf655f
         outcome:
           actionId: resolve-duplicate-repository-checkouts:13
@@ -723,6 +382,14 @@ run_checkpoint:
         stepId: full.build.execute
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-ccc49485f9b75db595b15cca29cce0c1d9ccb04768d880e1b0ed62e53d2d7d68
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: resolve-duplicate-repository-checkouts:14
         input:
           input:
@@ -730,695 +397,223 @@ run_checkpoint:
             changeDir: openspec/changes/resolve-duplicate-repository-checkouts
             workspaceBaseline:
               ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-          outputs:
-            full.build.configure:
-              boundBranch: codex/resolve-duplicate-repository-checkouts
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/resolve-duplicate-repository-checkouts
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.execute:
-              event: build-complete
-            full.build.plan:
-              designEvidence:
-                contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-                ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-              plan: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-              planEvidence:
-                contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-                ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-              taskRevision: 0148ff06ca406874418a5c530d29a10406f56f51d85c388fbfda4d3a231b3743
-            full.build.plan.evidence:
-              contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-              ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.design.document:
-              designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-            full.design.evidence:
-              contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-              ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.evidence:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-            full.open.revalidate:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+          outputs: {}
         inputHash: 2cd76e6cf1ef9efea81475d7035432d7347910e18be229d00fa33005b20442ce
+        outcome:
+          actionId: resolve-duplicate-repository-checkouts:14
+          attempt: 1
+          claimToken: portable-ccc49485f9b75db595b15cca29cce0c1d9ccb04768d880e1b0ed62e53d2d7d68
+          inputHash: 2cd76e6cf1ef9efea81475d7035432d7347910e18be229d00fa33005b20442ce
+          outcomeId: d07e3961-771d-453d-8722-c2da58549b75
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - build
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 26816bc86103ac289ee09e01a392f33c8a05919f992727805740dc88c4e7b0ec
+            cwd: .
+            environment: 661eed94080f965ccd41d44462292475c7a5a4e3b32c0d6ed9e8de9c1b8beec9
+            exitCode: 0
+            inputAfter: 4abb94168e5c7991e75b9f270b9305171913473fbebf43ec274046efc1996042
+            inputBefore: 4abb94168e5c7991e75b9f270b9305171913473fbebf43ec274046efc1996042
+            manifestHash: deae258cf6ed8dc9d1d611926233ad99b517ae0d3fd1f3c9bf521b7c447fa4a9
+            manifestRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/4b5b4fa8-91ca-43fe-b391-7c0c27ebffe3.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/6ec065fb-3cac-4b42-ab2e-d151d39f4252.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 8ad1b50481315e4752ba3c36dcc5a7f5ef9e967b959bf09cf494e626a06aaba8
+            outcomeId: d07e3961-771d-453d-8722-c2da58549b75
         reconciliations: []
         ref: classic-check
         requiredCapabilities: []
         retry: manual
         runId: resolve-duplicate-repository-checkouts
-        status: pending
+        status: succeeded
         stepId: full.build.check
         type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-a5036837e7d197ad01db9c734454293065e00e19c2099668f0ef25a382dcbf4c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: resolve-duplicate-repository-checkouts:16
+        input:
+          input:
+            change: resolve-duplicate-repository-checkouts
+            changeDir: openspec/changes/resolve-duplicate-repository-checkouts
+            workspaceBaseline:
+              ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
+          outputs: {}
+        inputHash: 067802870c64bcf714b037e6c6bd3bbc2c05373aff60a564c1dc8cb613fbe0a3
+        outcome:
+          actionId: resolve-duplicate-repository-checkouts:16
+          attempt: 1
+          claimToken: portable-a5036837e7d197ad01db9c734454293065e00e19c2099668f0ef25a382dcbf4c
+          inputHash: 067802870c64bcf714b037e6c6bd3bbc2c05373aff60a564c1dc8cb613fbe0a3
+          outcomeId: 1d0756fe-1579-4d65-bfff-65ab796ec7d4
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/resolve-duplicate-repository-checkouts.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5fbb61d60a3cfd3233078a4553effd8b1f849530b87f606e738688cbae9ec1ca
+            outcomeId: 1d0756fe-1579-4d65-bfff-65ab796ec7d4
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: resolve-duplicate-repository-checkouts
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-47734cff5f720284977f4d04c4cb45285fdfdea0ae477e8ed92a485af4364428
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: resolve-duplicate-repository-checkouts:18
+        input:
+          input:
+            change: resolve-duplicate-repository-checkouts
+            changeDir: openspec/changes/resolve-duplicate-repository-checkouts
+            workspaceBaseline:
+              ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
+          outputs: {}
+        inputHash: fc9bdc2424f26bd9ebbd74ae67f438a9883fff366ebd9ee82652c1b1693ee4ed
+        outcome:
+          actionId: resolve-duplicate-repository-checkouts:18
+          attempt: 1
+          claimToken: portable-47734cff5f720284977f4d04c4cb45285fdfdea0ae477e8ed92a485af4364428
+          inputHash: fc9bdc2424f26bd9ebbd74ae67f438a9883fff366ebd9ee82652c1b1693ee4ed
+          outcomeId: 9259b5b9-c6f7-491e-a959-81bb3bcd6f7f
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - check:managed-execution-report
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: ba66a5232a434fae72a9b1394ec6be4424bcb3e808e4b9b4fb3fef6553bfbd7e
+            cwd: .
+            deliveryInputs: {}
+            environment: 3dac3c48d1fc6f4f481c33ba74ae0891797a71147230ddefdb0e3e23dd9bc378
+            exitCode: 0
+            inputAfter: 497bf4cd51be6aabbfff0d16ab0e451f3535fae314343078c7fe38ab2671581d
+            inputBefore: 497bf4cd51be6aabbfff0d16ab0e451f3535fae314343078c7fe38ab2671581d
+            manifestHash: a574e2504abb708acb16d45d2df8cb484eb36e7196f6faae6bb5f2da463a2ed8
+            manifestRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/dd298609-c0a2-4ade-96e2-b72e91851811.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/981c9d33-e1db-4ae2-8a73-a9ae2db74d9a.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: aadd6c58bf5d4594d5b6821a1bc22813596f3d850c7f1cdc8124c5102bc830c3
+            outcomeId: 9259b5b9-c6f7-491e-a959-81bb3bcd6f7f
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: resolve-duplicate-repository-checkouts
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-ec8b0b4d10984fbbb06c5b164bfbf5725e9bdc577563c711817a92309d183aad
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: resolve-duplicate-repository-checkouts:20
+        input:
+          input:
+            change: resolve-duplicate-repository-checkouts
+            changeDir: openspec/changes/resolve-duplicate-repository-checkouts
+            workspaceBaseline:
+              ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
+          outputs: {}
+        inputHash: ee9aa423ea2d446965333b3d8feb4173afeb24d373aece5a6f773991117250f3
+        outcome:
+          actionId: resolve-duplicate-repository-checkouts:20
+          attempt: 1
+          claimToken: portable-ec8b0b4d10984fbbb06c5b164bfbf5725e9bdc577563c711817a92309d183aad
+          inputHash: ee9aa423ea2d446965333b3d8feb4173afeb24d373aece5a6f773991117250f3
+          outcomeId: 02eb4c6e-5b28-44e8-8b03-11b2bde4c36f
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 将明确的 checkout 选择按预检归入 project-configuration 和 multi-repository-probe
+              主规格，归档 Change，将已验证的代码和文档交付至 origin/main。
+            targetBranch: codex/resolve-duplicate-repository-checkouts
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0636d27915e09c81a571fceb50d06b385005ce0f9350e1fd240f2528855c2e63
+            outcomeId: 02eb4c6e-5b28-44e8-8b03-11b2bde4c36f
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: resolve-duplicate-repository-checkouts
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
     actionContexts:
       resolve-duplicate-repository-checkouts:1:
         results: {}
         sequence: 1
       resolve-duplicate-repository-checkouts:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/resolve-duplicate-repository-checkouts
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/resolve-duplicate-repository-checkouts
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-              ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+        results: {}
         sequence: 11
       resolve-duplicate-repository-checkouts:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/resolve-duplicate-repository-checkouts
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/resolve-duplicate-repository-checkouts
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-                ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-              plan: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-              planEvidence:
-                contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-                ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-              taskRevision: 0148ff06ca406874418a5c530d29a10406f56f51d85c388fbfda4d3a231b3743
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-              ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-              ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+        results: {}
         sequence: 13
       resolve-duplicate-repository-checkouts:14:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/resolve-duplicate-repository-checkouts
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/resolve-duplicate-repository-checkouts
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-                ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-              plan: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-              planEvidence:
-                contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-                ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-              taskRevision: 0148ff06ca406874418a5c530d29a10406f56f51d85c388fbfda4d3a231b3743
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-              ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-              ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+        results: {}
         sequence: 14
+      resolve-duplicate-repository-checkouts:16:
+        results: {}
+        sequence: 16
+      resolve-duplicate-repository-checkouts:18:
+        results: {}
+        sequence: 18
+      resolve-duplicate-repository-checkouts:20:
+        results: {}
+        sequence: 20
       resolve-duplicate-repository-checkouts:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
+        results: {}
         sequence: 4
       resolve-duplicate-repository-checkouts:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+        results: {}
         sequence: 5
       resolve-duplicate-repository-checkouts:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+        results: {}
         sequence: 7
       resolve-duplicate-repository-checkouts:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-              ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+        results: {}
         sequence: 9
     waits:
       - id: resolve-duplicate-repository-checkouts:3
@@ -1441,16 +636,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
+        results: {}
         decision:
           id: classic-open-d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
           choice: approved
@@ -1483,51 +669,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+        results: {}
         decision:
           id: classic-design-843eab1a47b62023ba7c6596f6f8dc1f97d03dbb471ce53f7cc4a28b2b5359f8-approved
           choice: approved
@@ -1555,109 +697,43 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/resolve-duplicate-repository-checkouts
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-              ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+        results: {}
         decision:
           id: 7d9aa8dd-cdca-413e-aa7b-54b78bcdc04d
           choice: approved
           proposalHash: 773ea8ab102380c0970942fd01663b8ddb565a004b57ab21f50393b4edf1699e
+      - id: resolve-duplicate-repository-checkouts:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: pending
+        proposal:
+          input:
+            change: resolve-duplicate-repository-checkouts
+            changeDir: openspec/changes/resolve-duplicate-repository-checkouts
+            workspaceBaseline:
+              ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 将明确的 checkout 选择按预检归入 project-configuration 和 multi-repository-probe
+                主规格，归档 Change，将已验证的代码和文档交付至 origin/main。
+              targetBranch: codex/resolve-duplicate-repository-checkouts
+        proposalHash: d9b344d35f5b96426b83207ea60408b7bb1297a2c9dee206e8d31bdc9b037555
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
     evidenceWaits:
       - id: resolve-duplicate-repository-checkouts:2
         stepId: full.open.evidence
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/resolve-duplicate-repository-checkouts
           contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
@@ -1667,79 +743,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-              handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-              proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
-                Windows 实装验收。Open 范围不变，无 Spec Patch。
-              requirementsEvidence:
-                contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-              sourceEvidence:
-                contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+        results: {}
         receipt:
           ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
           contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
@@ -1749,83 +753,77 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/resolve-duplicate-repository-checkouts
-              buildMode: autonomous
-              directOverride: false
-              isolation: worktree
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/resolve-duplicate-repository-checkouts
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: worktree
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-                ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-              plan: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-              planEvidence:
-                contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-                ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-              taskRevision: 0148ff06ca406874418a5c530d29a10406f56f51d85c388fbfda4d3a231b3743
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
-                    handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
-                    proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
-                      共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
-                      根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD
-                      覆盖冲突、路径、并发变化和 Windows 实装验收。Open 范围不变，无 Spec Patch。
-                    requirementsEvidence:
-                      contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-                    sourceEvidence:
-                      contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
-                      ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-              ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
+          contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
+          submissionId: f4160b76-1e5b-406b-a555-197d7f0a8688
+      - id: resolve-duplicate-repository-checkouts:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/6ec065fb-3cac-4b42-ab2e-d151d39f4252.log
+          contentHash: 26816bc86103ac289ee09e01a392f33c8a05919f992727805740dc88c4e7b0ec
+          submissionId: fdc6ef0f-7c7b-44e5-b032-69878c3315c2
+      - id: resolve-duplicate-repository-checkouts:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/resolve-duplicate-repository-checkouts.md
+          contentHash: 2337bc82490afdd50db5411c40a2bc3b53bc24fbce72ad19e6d1ba63d31c4115
+          submissionId: 7b3f5d7e-b2d3-4d55-8723-7ae4fc6ec1da
+      - id: resolve-duplicate-repository-checkouts:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/981c9d33-e1db-4ae2-8a73-a9ae2db74d9a.log
+          contentHash: ba66a5232a434fae72a9b1394ec6be4424bcb3e808e4b9b4fb3fef6553bfbd7e
+          submissionId: 39b56583-6c8f-4c34-81c3-1839c238ef61
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 32
+  sourceHash: 086e74204ac4ee65fa0b95b002e4264f13f6bbea88430821e95437d8810d56bb
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: resolve-duplicate-repository-checkouts
+            changeDir: openspec/changes/resolve-duplicate-repository-checkouts
+            workspaceBaseline:
+              ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+              ref: openspec/changes/resolve-duplicate-repository-checkouts
+      - contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+        ref: openspec/changes/resolve-duplicate-repository-checkouts
+      - contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
+      - choice: approved
+        proposal:
+          input:
+            change: resolve-duplicate-repository-checkouts
+            changeDir: openspec/changes/resolve-duplicate-repository-checkouts
+            workspaceBaseline:
+              ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
               handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
               proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
@@ -1838,44 +836,105 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
                 ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: resolve-duplicate-repository-checkouts
-                  changeDir: openspec/changes/resolve-duplicate-repository-checkouts
-                  workspaceBaseline:
-                    ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-                    ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-              ref: openspec/changes/resolve-duplicate-repository-checkouts
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-        receipt:
-          ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
+      - handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
+        handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
+        proposal: 采用结构化冲突组和显式 checkout 路径。保留仓库 ID 筛选与已有配置路径。CLI 和 Init Skill
+          共用诊断，只有已解决的候选可以生成既有审批。将实际 Git
+          根和远端身份绑定到同一候选快照，准备、批准及恢复复核相同目标。拒绝自动选副本和重复正式 ID。TDD 覆盖冲突、路径、并发变化和
+          Windows 实装验收。Open 范围不变，无 Spec Patch。
+        requirementsEvidence:
+          contentHash: 00754baaefd642c2e48522ed9a20920d1b33c43cea9d5c93ee99452747d0a153
+          ref: openspec/changes/resolve-duplicate-repository-checkouts
+        sourceEvidence:
+          contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
+          ref: openspec/changes/resolve-duplicate-repository-checkouts
+      - designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
+      - contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
+        ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
+      - boundBranch: codex/resolve-duplicate-repository-checkouts
+        buildMode: autonomous
+        directOverride: false
+        isolation: worktree
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: resolve-duplicate-repository-checkouts
+            changeDir: openspec/changes/resolve-duplicate-repository-checkouts
+            workspaceBaseline:
+              ref: be7afdd9-05bf-4bdc-80cf-eda13962587a
+          outputs:
+            full.build.configure:
+              boundBranch: codex/resolve-duplicate-repository-checkouts
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
+          ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
+        plan: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
+        planEvidence:
           contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-          submissionId: f4160b76-1e5b-406b-a555-197d7f0a8688
-    ready: []
-    joins: {}
-    outputs:
-      full.build.configure:
-        sequence: 9
+          ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
+        taskRevision: 0148ff06ca406874418a5c530d29a10406f56f51d85c388fbfda4d3a231b3743
+      - contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
+        ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - build
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 26816bc86103ac289ee09e01a392f33c8a05919f992727805740dc88c4e7b0ec
+        cwd: .
+        environment: 661eed94080f965ccd41d44462292475c7a5a4e3b32c0d6ed9e8de9c1b8beec9
+        exitCode: 0
+        inputAfter: 4abb94168e5c7991e75b9f270b9305171913473fbebf43ec274046efc1996042
+        inputBefore: 4abb94168e5c7991e75b9f270b9305171913473fbebf43ec274046efc1996042
+        manifestHash: deae258cf6ed8dc9d1d611926233ad99b517ae0d3fd1f3c9bf521b7c447fa4a9
+        manifestRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/4b5b4fa8-91ca-43fe-b391-7c0c27ebffe3.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/6ec065fb-3cac-4b42-ab2e-d151d39f4252.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 26816bc86103ac289ee09e01a392f33c8a05919f992727805740dc88c4e7b0ec
+        ref: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/6ec065fb-3cac-4b42-ab2e-d151d39f4252.log
+      - contentHash: 2337bc82490afdd50db5411c40a2bc3b53bc24fbce72ad19e6d1ba63d31c4115
+        ref: docs/superpowers/reports/resolve-duplicate-repository-checkouts.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/resolve-duplicate-repository-checkouts.md
+      - argv:
+          - npm.cmd
+          - run
+          - check:managed-execution-report
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: ba66a5232a434fae72a9b1394ec6be4424bcb3e808e4b9b4fb3fef6553bfbd7e
+        cwd: .
+        deliveryInputs: {}
+        environment: 3dac3c48d1fc6f4f481c33ba74ae0891797a71147230ddefdb0e3e23dd9bc378
+        exitCode: 0
+        inputAfter: 497bf4cd51be6aabbfff0d16ab0e451f3535fae314343078c7fe38ab2671581d
+        inputBefore: 497bf4cd51be6aabbfff0d16ab0e451f3535fae314343078c7fe38ab2671581d
+        manifestHash: a574e2504abb708acb16d45d2df8cb484eb36e7196f6faae6bb5f2da463a2ed8
+        manifestRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/dd298609-c0a2-4ade-96e2-b72e91851811.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/981c9d33-e1db-4ae2-8a73-a9ae2db74d9a.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: ba66a5232a434fae72a9b1394ec6be4424bcb3e808e4b9b4fb3fef6553bfbd7e
+        ref: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/981c9d33-e1db-4ae2-8a73-a9ae2db74d9a.log
+      - sequence: 9
         value:
           boundBranch: codex/resolve-duplicate-repository-checkouts
           buildMode: autonomous
@@ -1884,8 +943,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -1903,28 +961,7 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.execute:
-        sequence: 13
-        value:
-          event: build-complete
-      full.build.plan:
-        sequence: 11
-        value:
-          designEvidence:
-            contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
-            ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-          plan: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-          planEvidence:
-            contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-            ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-          taskRevision: 0148ff06ca406874418a5c530d29a10406f56f51d85c388fbfda4d3a231b3743
-      full.build.plan.evidence:
-        sequence: 12
-        value:
-          contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
-          ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
-      full.design.confirm:
-        sequence: 6
+      - sequence: 6
         value:
           choice: approved
           proposal:
@@ -1947,17 +984,14 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
                   ref: openspec/changes/resolve-duplicate-repository-checkouts
-      full.design.document:
-        sequence: 7
+      - sequence: 7
         value:
           designDoc: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-      full.design.evidence:
-        sequence: 8
+      - sequence: 8
         value:
           contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
           ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
-      full.design.handoff:
-        sequence: 5
+      - sequence: 5
         value:
           handoffContext: openspec/changes/resolve-duplicate-repository-checkouts/.comet/handoff/design-context.json
           handoffHash: 57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93
@@ -1971,12 +1005,10 @@ run_checkpoint:
           sourceEvidence:
             contentHash: 2d938b62c3ec43c2451b02cc16d3d512797d5e2c9a979772ce33bfe65765e65c
             ref: openspec/changes/resolve-duplicate-repository-checkouts
-      full.open:
-        sequence: 1
+      - sequence: 1
         value:
           event: open-complete
-      full.open.confirm:
-        sequence: 3
+      - sequence: 3
         value:
           choice: approved
           proposal:
@@ -1991,17 +1023,1175 @@ run_checkpoint:
               full.open.evidence:
                 contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
                 ref: openspec/changes/resolve-duplicate-repository-checkouts
-      full.open.evidence:
-        sequence: 2
+      - sequence: 2
         value:
           contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
           ref: openspec/changes/resolve-duplicate-repository-checkouts
-      full.open.revalidate:
-        sequence: 4
+      - sequence: 4
         value:
           contentHash: d414a2498d94f9ee4a16668019ee82732ae1ae15369dd5136be7f7ff0d6396c5
-    children: []
-    lineage: []
-  sourceRevision: 21
-  sourceHash: 71e4fa1e83fa112397a96a134bcd0b9ee143f083233c66732dd63724525c10b1
-check_epoch: 2
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: d69d1bd13e36b5b5836ebf4f28b2dcaade28e672c88047ec1383a9d1657862a2
+            ref: openspec/changes/resolve-duplicate-repository-checkouts/design.md
+          plan: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
+          planEvidence:
+            contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
+            ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
+          taskRevision: 0148ff06ca406874418a5c530d29a10406f56f51d85c388fbfda4d3a231b3743
+      - sequence: 12
+        value:
+          contentHash: c07a09beefb7db31034e8dfba1c57451838a4bf7fb570cb37cfbe5fbdfbe7d13
+          ref: docs/superpowers/plans/2026-11-26-resolve-duplicate-repository-checkouts.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - build
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 26816bc86103ac289ee09e01a392f33c8a05919f992727805740dc88c4e7b0ec
+          cwd: .
+          environment: 661eed94080f965ccd41d44462292475c7a5a4e3b32c0d6ed9e8de9c1b8beec9
+          exitCode: 0
+          inputAfter: 4abb94168e5c7991e75b9f270b9305171913473fbebf43ec274046efc1996042
+          inputBefore: 4abb94168e5c7991e75b9f270b9305171913473fbebf43ec274046efc1996042
+          manifestHash: deae258cf6ed8dc9d1d611926233ad99b517ae0d3fd1f3c9bf521b7c447fa4a9
+          manifestRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/4b5b4fa8-91ca-43fe-b391-7c0c27ebffe3.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/6ec065fb-3cac-4b42-ab2e-d151d39f4252.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 26816bc86103ac289ee09e01a392f33c8a05919f992727805740dc88c4e7b0ec
+          ref: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/6ec065fb-3cac-4b42-ab2e-d151d39f4252.log
+      - sequence: 17
+        value:
+          contentHash: 2337bc82490afdd50db5411c40a2bc3b53bc24fbce72ad19e6d1ba63d31c4115
+          ref: docs/superpowers/reports/resolve-duplicate-repository-checkouts.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/resolve-duplicate-repository-checkouts.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - check:managed-execution-report
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: ba66a5232a434fae72a9b1394ec6be4424bcb3e808e4b9b4fb3fef6553bfbd7e
+          cwd: .
+          deliveryInputs: {}
+          environment: 3dac3c48d1fc6f4f481c33ba74ae0891797a71147230ddefdb0e3e23dd9bc378
+          exitCode: 0
+          inputAfter: 497bf4cd51be6aabbfff0d16ab0e451f3535fae314343078c7fe38ab2671581d
+          inputBefore: 497bf4cd51be6aabbfff0d16ab0e451f3535fae314343078c7fe38ab2671581d
+          manifestHash: a574e2504abb708acb16d45d2df8cb484eb36e7196f6faae6bb5f2da463a2ed8
+          manifestRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/dd298609-c0a2-4ade-96e2-b72e91851811.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/981c9d33-e1db-4ae2-8a73-a9ae2db74d9a.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          contentHash: ba66a5232a434fae72a9b1394ec6be4424bcb3e808e4b9b4fb3fef6553bfbd7e
+          ref: .comet/runtime/classic-sdk-checks/3d043ee02f2d427459581b6208b3cc8370cc9d035e1048bb4e35ce0c27e6bdb8/981c9d33-e1db-4ae2-8a73-a9ae2db74d9a.log
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 将明确的 checkout 选择按预检归入 project-configuration 和 multi-repository-probe
+            主规格，归档 Change，将已验证的代码和文档交付至 origin/main。
+          targetBranch: codex/resolve-duplicate-repository-checkouts
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.design.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: 53
+        right: 54
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: 56
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 57
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 52
+        right: 58
+        height: 4
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: 60
+        right: 61
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 62
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 63
+        right: 58
+        height: 4
+      - key: full.build.execute
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 65
+        height: 2
+      - key: full.build.plan.evidence
+        value: 30
+        left: null
+        right: 61
+        height: 2
+      - key: full.build.plan
+        value: 29
+        left: 66
+        right: 67
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 68
+        right: 58
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: 70
+        right: 71
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 72
+        right: 65
+        height: 3
+      - key: full.build.plan
+        value: 29
+        left: 73
+        right: 67
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 58
+        height: 5
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: 77
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: 76
+        right: 78
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 79
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 80
+        height: 5
+      - key: full.open.revalidate
+        value: 28
+        left: 76
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: 83
+        right: 77
+        height: 2
+      - key: full.verify.check
+        value: 36
+        left: 82
+        right: 84
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 85
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 86
+        height: 5
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 26
+        left: 88
+        right: 89
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: 91
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 88
+        right: 92
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: 94
+        right: 95
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 96
+        right: 92
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: 98
+        right: 99
+        height: 2
+      - key: full.design.handoff
+        value: 24
+        left: 100
+        right: 95
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 101
+        right: 92
+        height: 4
+      - key: full.archive.prepare
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 32
+        left: 103
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.execute
+        value: 31
+        left: 106
+        right: 109
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: 105
+        right: 110
+        height: 4
+      - key: full.design.handoff
+        value: 24
+        left: 99
+        right: 95
+        height: 2
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: 113
+        right: 114
+        height: 2
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: 116
+        height: 2
+      - key: full.verify.check.evidence
+        value: 37
+        left: 115
+        right: 117
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 112
+        right: 118
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 111
+        right: 119
+        height: 5
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: 121
+        height: 2
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 124
+        right: 125
+        height: 2
+      - key: full.open
+        value: 25
+        left: 123
+        right: 126
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: 129
+        right: 130
+        height: 2
+      - key: full.design.confirm
+        value: 21
+        left: 128
+        right: 131
+        height: 3
+      - key: full.open
+        value: 25
+        left: 132
+        right: 126
+        height: 4
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: 135
+        right: 136
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 138
+        right: 139
+        height: 2
+      - key: full.open
+        value: 25
+        left: 137
+        right: 140
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 142
+        right: 143
+        height: 2
+      - key: full.design.document
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: 145
+        right: 146
+        height: 2
+      - key: full.design.confirm
+        value: 21
+        left: 144
+        right: 147
+        height: 3
+      - key: full.open
+        value: 25
+        left: 148
+        right: 140
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: 150
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: 152
+        right: 153
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 151
+        right: 154
+        height: 3
+      - key: full.open
+        value: 25
+        left: 147
+        right: 140
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: 155
+        right: 156
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: 158
+        right: 159
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 160
+        right: 154
+        height: 3
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: 162
+        height: 2
+      - key: full.open.evidence
+        value: 27
+        left: 138
+        right: 163
+        height: 3
+      - key: full.open
+        value: 25
+        left: 147
+        right: 164
+        height: 4
+      - key: full.design.confirm
+        value: 21
+        left: 161
+        right: 165
+        height: 5
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 138
+        right: 167
+        height: 2
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 35
+        left: 169
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 36
+        left: 168
+        right: 170
+        height: 3
+      - key: full.open
+        value: 25
+        left: 147
+        right: 171
+        height: 4
+      - key: full.design.confirm
+        value: 21
+        left: 161
+        right: 172
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 59
+      - 64
+      - 69
+      - 75
+      - 81
+      - 87
+      - 90
+      - 93
+      - 97
+      - 102
+      - 120
+      - 122
+      - 127
+      - 133
+      - 134
+      - 141
+      - 149
+      - 157
+      - 166
+      - 173
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actionContexts
+          - resolve-duplicate-repository-checkouts:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - resolve-duplicate-repository-checkouts:11
+          - results
+        map: 11
+      - path:
+          - actionContexts
+          - resolve-duplicate-repository-checkouts:13
+          - results
+        map: 12
+      - path:
+          - actionContexts
+          - resolve-duplicate-repository-checkouts:14
+          - results
+        map: 13
+      - path:
+          - actionContexts
+          - resolve-duplicate-repository-checkouts:16
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - resolve-duplicate-repository-checkouts:18
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - resolve-duplicate-repository-checkouts:20
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - resolve-duplicate-repository-checkouts:4
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - resolve-duplicate-repository-checkouts:5
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - resolve-duplicate-repository-checkouts:7
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - resolve-duplicate-repository-checkouts:9
+          - results
+        map: 20
+      - path:
+          - outputs
+        map: 21
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 22
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 23
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 24
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 21
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 25
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 26
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 27
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 28
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 29
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 30
+  storageHash: 3a4a944b31af7ef0f626885568b90a7f193c295fa719a68be9b1ade53e04f1f7
+check_epoch: 4
