@@ -1,0 +1,17 @@
+{
+  "change": "resolve-duplicate-repository-checkouts",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "57694b1858b7256eca598716b71f62c5eccb64ce7a9d565c983a895ea0ff4a93",
+  "files": [
+    { "path": "openspec/changes/resolve-duplicate-repository-checkouts/proposal.md", "sha256": "858959be11d879d114fcd536969859578a06ee1d7dfb6a6fee834a9698a8584e" },
+    { "path": "openspec/changes/resolve-duplicate-repository-checkouts/design.md", "sha256": "697cc56dcce0e583d338b382cac7d55373b72407bd931d8a305a94c3a8c36d8b" },
+    { "path": "openspec/changes/resolve-duplicate-repository-checkouts/tasks.md", "sha256": "0148ff06ca406874418a5c530d29a10406f56f51d85c388fbfda4d3a231b3743" },
+    { "path": "openspec/changes/resolve-duplicate-repository-checkouts/.openspec.yaml", "sha256": "4492318684c90914e715dee55afe9b23f60f7465350ada31d1d9437964f126f8" },
+    { "path": "openspec/changes/resolve-duplicate-repository-checkouts/specs/multi-repository-probe/spec.md", "sha256": "b10dc91b6e2a47a02114f8cd985355e90e68a4f7203683ecd298338b062ecbc8" },
+    { "path": "openspec/changes/resolve-duplicate-repository-checkouts/specs/project-configuration/spec.md", "sha256": "6c9bfc2e85ed9ae701b67d1314b7531fd5ecec8b71f881f4b4d9d8e1c17c71d2" }
+  ]
+}
