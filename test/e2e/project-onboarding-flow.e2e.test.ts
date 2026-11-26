@@ -35,6 +35,93 @@ const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 describe('documented project onboarding flow', () => {
+  it('reports duplicate remote checkouts and configures only the named path', async () => {
+    const root = await temporaryDirectory('repoctopus duplicate checkout ');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    const backend = await createGitRepository(
+      root,
+      'backend service',
+      'https://example.invalid/team/backend.git',
+    );
+    const copy = await createGitRepository(
+      root,
+      'backend test',
+      'git@example.invalid:team/backend.git',
+    );
+    const frontend = await createGitRepository(root, 'frontend');
+    const environment = {
+      XDG_DATA_HOME: path.join(root, 'data'),
+      XDG_CONFIG_HOME: path.join(root, 'config'),
+      OPENSPEC_TELEMETRY: '0',
+      OPENSPEC_NO_UPDATE_CHECK: '1',
+    };
+    const options = { packageRoot, cwd: workspace, environment };
+    const scope = ['--layout', 'multi', '--scan-root', root, '--entry-hosts', 'codex'];
+    const detection = await runCli<{ draft: ProjectDetectionDraft }>({
+      ...options,
+      args: ['project', 'detect', ...scope],
+    });
+    expect(detection.result?.draft).toMatchObject({
+      candidateConfig: null,
+      checkoutConflicts: [
+        {
+          remoteIdentity: 'example.invalid/team/backend',
+          candidates: [{ path: '../backend service' }, { path: '../backend test' }],
+        },
+      ],
+    });
+    await expect(runCli({ ...options, args: ['project', 'init', ...scope] })).rejects.toThrow(
+      /checkout/i,
+    );
+    const initialized = await runCli<{
+      file: string;
+      request: ProjectConfigurationDecisionRequest;
+    }>({
+      ...options,
+      args: ['project', 'init', ...scope, '--checkout', '../backend service'],
+    });
+    const { request, file } = initialized.result!;
+    expect(request.candidateConfig.repositories.map(({ path }) => path).sort()).toEqual([
+      '.',
+      '../backend service',
+      '../frontend',
+    ]);
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    const responseFile = path.join(root, 'response.json');
+    await writeFile(
+      responseFile,
+      JSON.stringify({
+        apiVersion: request.apiVersion,
+        kind: 'HumanDecisionResponse',
+        requestId: request.requestId,
+        snapshotDigest: request.snapshotDigest,
+        decision: 'approve',
+      }),
+    );
+    await runCli({
+      ...options,
+      args: ['project', 'review', '--request', file, '--response-file', responseFile],
+    });
+    for (const selected of [backend, frontend]) {
+      expect(await readFile(path.join(selected, 'openspec/config.yaml'), 'utf8')).toContain(
+        'store: workspace',
+      );
+    }
+    await expect(access(path.join(copy, 'openspec/config.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    const replay = await runCli<{ request: ProjectConfigurationDecisionRequest }>({
+      ...options,
+      args: ['project', 'init', ...scope],
+    });
+    expect(replay.result?.request.candidateConfig.repositories).toEqual(
+      request.candidateConfig.repositories,
+    );
+  });
+
   it('plans selected personal and Workspace Skills for the additional hosts', async () => {
     const root = await temporaryDirectory('repoctopus additional hosts ');
     cleanup.push(root);
