@@ -20,7 +20,94 @@ export interface BuildWorkspaceRecovery {
   checkpointDigest: string;
   observationDigest: string;
   conflicts: readonly string[];
+  independentHeads?: readonly IndependentBuildHead[];
+  readInputHeads?: readonly IndependentBuildHead[];
   reconciliation: ProjectReconciliation;
+}
+
+export interface IndependentBuildHead {
+  repositoryId: string;
+  previousHead: string;
+  head: string;
+}
+
+export function isIndependentBuildRepository(state: RunState, repositoryId: string): boolean {
+  const lifecycle = state.changeLifecycle;
+  const protocol = lifecycle?.buildProtocol;
+  const workspace = state.trigger?.facts.targetBranch as { repositoryId?: string } | undefined;
+  if (
+    typeof workspace?.repositoryId !== 'string' ||
+    repositoryId === workspace.repositoryId ||
+    !protocol?.plan ||
+    !protocol.planEvidence
+  )
+    return false;
+  const work = lifecycle?.currentWork;
+  return !protocol.plan.packages.some((workPackage) => {
+    if (!workPackage.repositoryIds.includes(repositoryId)) return false;
+    return (
+      work?.kind !== 'build.execute' ||
+      work.packageId === workPackage.packageId ||
+      protocol.packageCompletions.some((item) => item.packageId === workPackage.packageId)
+    );
+  });
+}
+
+export function isReadOnlyBuildInput(state: RunState, repositoryId: string): boolean {
+  const protocol = state.changeLifecycle?.buildProtocol;
+  const workspace = state.trigger?.facts.targetBranch as { repositoryId?: string } | undefined;
+  return (
+    typeof workspace?.repositoryId === 'string' &&
+    repositoryId !== workspace.repositoryId &&
+    !!protocol?.planEvidence &&
+    !!protocol.plan?.packages.some((entry) => entry.repositoryIds.includes(repositoryId)) &&
+    protocol.plan.packages.every((entry) =>
+      entry.writeScopes.every((scope) => scope.repositoryId !== repositoryId),
+    )
+  );
+}
+
+export function hasRejectedStaleBuildInputOutcome(state: RunState): boolean {
+  const execution = state.workExecution;
+  return (
+    execution?.workId === state.changeLifecycle?.currentWork?.workId &&
+    execution?.status === 'invoking' &&
+    execution.continuation === 'awaiting-correction' &&
+    execution.pendingSubmission === null &&
+    execution.rejectedSubmissions?.at(-1)?.rejection.reasonCode === 'workspace-read-input-stale'
+  );
+}
+
+export function hasSettledBuildReadInputOutcome(state: RunState): boolean {
+  const execution = state.workExecution;
+  const work = state.changeLifecycle?.currentWork;
+  return (
+    hasRejectedStaleBuildInputOutcome(state) ||
+    (!!work &&
+      execution?.workId === work.workId &&
+      execution.checkEpoch === work.checkEpoch &&
+      execution.status === 'outcome' &&
+      execution.hostOutcome?.status === 'failed')
+  );
+}
+
+export function canReobserveBuildInputs(state: RunState): boolean {
+  const lifecycle = state.changeLifecycle;
+  const protocol = lifecycle?.buildProtocol;
+  const execution = state.workExecution;
+  return (
+    state.status === 'running' &&
+    !state.reconciliationRequired &&
+    lifecycle?.phase === 'build' &&
+    !!protocol?.planEvidence &&
+    !protocol.verifyRepair &&
+    !lifecycle.waitCondition &&
+    !lifecycle.blocker &&
+    (!execution || execution.status === 'not-executed' || hasSettledBuildReadInputOutcome(state)) &&
+    (protocol.currentAction === 'execute' ||
+      protocol.currentAction === 'check' ||
+      protocol.status === 'ready-for-verify')
+  );
 }
 
 export interface RuntimeOutputCleanupProof {
@@ -108,6 +195,7 @@ export function classifyBuildWorkspaceRecovery(input: {
   current: ProjectSnapshot;
   observed: ExecutionWorkspaceBinding | null;
   observationError?: string;
+  verifiedHeads?: readonly IndependentBuildHead[];
   planningPublication?: { repositoryId: string; snapshotDigest: string };
   verificationConfigPublication?: {
     repositoryId: string;
@@ -121,6 +209,8 @@ export function classifyBuildWorkspaceRecovery(input: {
   const checkpoint = protocol.workspaceCheckpoint!;
   const reconciliation = reconcileProjectSnapshots(input.previous, input.current);
   const conflicts: string[] = [];
+  const independentHeads: IndependentBuildHead[] = [];
+  const readInputHeads: IndependentBuildHead[] = [];
   if (
     input.previous.projectId !== input.current.projectId ||
     input.previous.root !== input.current.root ||
@@ -162,6 +252,9 @@ export function classifyBuildWorkspaceRecovery(input: {
         ? protocol.plan?.packages.find((entry) => entry.packageId === work.packageId)
         : undefined;
     for (const repository of observed.repositories) {
+      const independent = input.verifiedHeads?.find(
+        (entry) => entry.repositoryId === repository.repositoryId && entry.head === repository.head,
+      );
       const bound = binding.repositories.find(
         (entry) => entry.repositoryId === repository.repositoryId,
       );
@@ -176,6 +269,19 @@ export function classifyBuildWorkspaceRecovery(input: {
         repository.branch !== accepted.branchRef
       ) {
         conflicts.push(`checkout-identity-changed:${repository.repositoryId}`);
+      } else if (
+        independent &&
+        independent.previousHead === accepted.headRevision &&
+        independent.head !== independent.previousHead
+      ) {
+        if (isIndependentBuildRepository(input.state, repository.repositoryId)) {
+          independentHeads.push(independent);
+        } else if (isReadOnlyBuildInput(input.state, repository.repositoryId)) {
+          readInputHeads.push(independent);
+          conflicts.push(`build-read-input-changed:${repository.repositoryId}`);
+        } else {
+          conflicts.push(`unaccepted-head:${repository.repositoryId}`);
+        }
       } else if (
         repository.head !== accepted.headRevision &&
         !(
@@ -208,11 +314,15 @@ export function classifyBuildWorkspaceRecovery(input: {
           observedDigest: observed?.stateDigest ?? null,
           planningPublication: input.planningPublication ?? null,
           verificationConfigPublication: input.verificationConfigPublication ?? null,
+          independentHeads,
+          readInputHeads,
           conflicts,
         }),
       )
       .digest('hex'),
     conflicts,
+    ...(independentHeads.length ? { independentHeads } : {}),
+    ...(readInputHeads.length ? { readInputHeads } : {}),
     reconciliation,
   };
 }

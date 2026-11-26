@@ -1,0 +1,17 @@
+{
+  "change": "scope-build-workspace-drift",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "db3c5fc29b64c0d5e16d63b69e855309400029da3f3272fb56cdaa802b3e864f",
+  "files": [
+    { "path": "openspec/changes/scope-build-workspace-drift/proposal.md", "sha256": "c43f491d8c0822da98be186bc172e94864959fb6684454aa9dec5446fcfb6dd3" },
+    { "path": "openspec/changes/scope-build-workspace-drift/design.md", "sha256": "63814a66adeda66c11318e80f52310bc89992f3301a234e69c220771faf76dac" },
+    { "path": "openspec/changes/scope-build-workspace-drift/tasks.md", "sha256": "94603573c2ce8c9cb9889da24426bd8d2d1295d9f303b944c7dc9e9de91c4f25" },
+    { "path": "openspec/changes/scope-build-workspace-drift/.openspec.yaml", "sha256": "4492318684c90914e715dee55afe9b23f60f7465350ada31d1d9437964f126f8" },
+    { "path": "openspec/changes/scope-build-workspace-drift/specs/change-lifecycle/spec.md", "sha256": "c8e387c700ae386f809763b5ec8ef70e890013ada211795f89aba0b4fc0a827a" },
+    { "path": "openspec/changes/scope-build-workspace-drift/specs/managed-work-execution/spec.md", "sha256": "5ac4386049f0d03369c3381f08ca467330b8400f8cc8294075a4da6820b25807" }
+  ]
+}

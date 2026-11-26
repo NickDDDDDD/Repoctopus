@@ -1,6 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis';
 
 import {
+  executionCommitPaths,
   inspectExecutionCheckout,
   isExecutionCheckoutClean,
   isExecutionRevisionAncestor,
@@ -36,6 +37,14 @@ export class GitExecutionWorkspaceProvider extends ExecutionWorkspaceService {
 
   isCheckoutClean(checkoutPath: string): Promise<boolean> {
     return isExecutionCheckoutClean(checkoutPath);
+  }
+
+  commitPaths(
+    checkoutPath: string,
+    previousHead: string,
+    head: string,
+  ): Promise<readonly string[]> {
+    return executionCommitPaths(checkoutPath, previousHead, head);
   }
 
   observeCleanupCommit(

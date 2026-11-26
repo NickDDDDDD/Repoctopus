@@ -133,6 +133,14 @@ function createChangeInputs(input: {
           planEvidence: protocol.planEvidence,
           packageCompletions: protocol.packageCompletions,
           verifyRepair: protocol.verifyRepair,
+          ...(protocol.readInputRevalidations?.length
+            ? {
+                revalidateCompletion:
+                  protocol.readInputRevalidations.find(
+                    ({ packageId }) => packageId === input.work.packageId,
+                  ) ?? null,
+              }
+            : {}),
           invalidations: protocol.invalidations,
           currentPackage:
             plan?.packages.find((candidate) => candidate.packageId === input.work.packageId) ??

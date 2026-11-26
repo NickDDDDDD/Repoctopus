@@ -30,16 +30,22 @@ import { reconcileProjectSnapshots } from '../domains/project/snapshot.js';
 import {
   advanceRuntimeOutputCleanupCheckpoint,
   canAcceptBuildRuntimeCleanup,
+  canReobserveBuildInputs,
   classifyBuildWorkspaceRecovery,
+  hasSettledBuildReadInputOutcome,
   isRuntimeOutputCleanupConflict,
+  isIndependentBuildRepository,
+  isReadOnlyBuildInput,
   isTrackedRuntimeOutput,
   type BuildWorkspaceRecovery,
+  type IndependentBuildHead,
   type RuntimeOutputCleanupProof,
 } from '../domains/runtime/build-workspace-recovery.js';
 import { classifyEvidenceWorkspaceRecovery } from '../domains/runtime/evidence-workspace-recovery.js';
 import type { WorkspaceSnapshotInput } from './project.js';
 import type { ArchiveExecutionContext } from './delivery.js';
 import { classifyWorkContinuation } from '../domains/change-lifecycle/continuation.js';
+import { runtimeWritePathMatches } from '../domains/change-lifecycle/work-guard.js';
 import {
   WorkflowRunCoordinator,
   WorkspaceBindingConflictError,
@@ -2069,6 +2075,63 @@ export class WorkflowRuns extends Service {
     };
   }
 
+  private async observeExternalBuildHeads(
+    state: RunState,
+    observed: ExecutionWorkspaceBinding | null,
+  ): Promise<IndependentBuildHead[]> {
+    const protocol = state.changeLifecycle?.buildProtocol;
+    if (!observed || !protocol?.binding || !protocol.workspaceCheckpoint) return [];
+    if (
+      `execution-workspace:${observed.localDigest.slice(-24)}` !== protocol.binding.localOverlayRef
+    )
+      return [];
+    const { binding, workspaceCheckpoint } = protocol;
+    const policy = this.ctx.repositoryInputPolicies.current();
+    const proofs = await Promise.all(
+      observed.repositories.map(async (repository) => {
+        const { repositoryId, checkoutPath, head, branch, worktreeId } = repository;
+        if (
+          !isIndependentBuildRepository(state, repositoryId) &&
+          !isReadOnlyBuildInput(state, repositoryId)
+        ) {
+          return null;
+        }
+        const bound = binding.repositories.find(
+          (candidate) => candidate.repositoryId === repositoryId,
+        );
+        const previous = workspaceCheckpoint.repositories.find(
+          (candidate) => candidate.repositoryId === repositoryId,
+        );
+        if (
+          !bound ||
+          !previous ||
+          bound.branchRef !== branch ||
+          previous.branchRef !== branch ||
+          bound.worktreeId !== worktreeId ||
+          previous.headRevision === head
+        )
+          return null;
+        try {
+          if (
+            !(await this.ctx.executionWorkspace.isAncestor(
+              checkoutPath,
+              previous.headRevision,
+              head,
+            ))
+          )
+            return null;
+          const tracked = await this.ctx.executionWorkspace.readTrackedInputs(checkoutPath, head);
+          if (tracked.some((file) => isTrackedRuntimeOutput(policy, file))) return null;
+          if (!(await this.ctx.executionWorkspace.isCheckoutClean(checkoutPath))) return null;
+          return { repositoryId, previousHead: previous.headRevision, head };
+        } catch {
+          return null;
+        }
+      }),
+    );
+    return proofs.filter((proof): proof is IndependentBuildHead => proof !== null);
+  }
+
   private async advanceBuildWorkspaceProgress(
     state: RunState,
     lifecycle: NonNullable<RunState['changeLifecycle']>,
@@ -2077,6 +2140,24 @@ export class WorkflowRuns extends Service {
     writableRepositoryIds: readonly string[],
   ): Promise<BuildWorkspaceCheckpoint> {
     const observed = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
+    const independent = (await this.observeExternalBuildHeads(state, observed)).filter((proof) =>
+      isIndependentBuildRepository(state, proof.repositoryId),
+    );
+    const externalInputHeads = new Map<string, string>();
+    const ignored = new Set<string>();
+    const plan = lifecycle.buildProtocol?.plan;
+    for (const proof of independent) {
+      if (plan?.packages.some((entry) => entry.repositoryIds.includes(proof.repositoryId))) {
+        externalInputHeads.set(proof.repositoryId, proof.head);
+      } else {
+        ignored.add(proof.repositoryId);
+      }
+    }
+    const currentWork = lifecycle.currentWork;
+    const activePackage =
+      currentWork?.kind === 'build.execute'
+        ? plan?.packages.find((entry) => entry.packageId === currentWork.packageId)
+        : undefined;
     const currentById = new Map(
       checkpoint.repositories.map((repository) => [repository.repositoryId, repository] as const),
     );
@@ -2085,7 +2166,20 @@ export class WorkflowRuns extends Service {
         observed.repositories.map(async (repository) => {
           const current = currentById.get(repository.repositoryId);
           if (!current) return [repository.repositoryId, 'non-fast-forward'] as const;
-          if (current.headRevision === repository.head) {
+          const rechecking = lifecycle.buildProtocol?.readInputRevalidations?.some(
+            ({ packageId }) => packageId === activePackage?.packageId,
+          );
+          if (
+            rechecking &&
+            writableRepositoryIds.includes(repository.repositoryId) &&
+            !(await this.ctx.executionWorkspace.isCheckoutClean(repository.checkoutPath))
+          ) {
+            throw new BuildWorkspaceProgressError(
+              `Cannot revalidate an uncommitted implementation in ${repository.repositoryId}.`,
+              'unauthorized-head-change',
+            );
+          }
+          if (current.headRevision === repository.head || ignored.has(repository.repositoryId)) {
             return [repository.repositoryId, 'unchanged'] as const;
           }
           let fastForward: boolean;
@@ -2102,6 +2196,26 @@ export class WorkflowRuns extends Service {
               { cause: error },
             );
           }
+          const scope = activePackage?.writeScopes.find(
+            (candidate) => candidate.repositoryId === repository.repositoryId,
+          );
+          if (fastForward && scope) {
+            const committed = await this.ctx.executionWorkspace.commitPaths(
+              repository.checkoutPath,
+              current.headRevision,
+              repository.head,
+            );
+            if (
+              committed.some(
+                (file) => !scope.paths.some((pattern) => runtimeWritePathMatches(pattern, file)),
+              )
+            ) {
+              throw new BuildWorkspaceProgressError(
+                `Committed files exceed the Package write scope in ${repository.repositoryId}. Isolate external commits before resubmitting this Work.`,
+                'unauthorized-head-change',
+              );
+            }
+          }
           return [
             repository.repositoryId,
             fastForward ? 'fast-forward' : 'non-fast-forward',
@@ -2114,9 +2228,12 @@ export class WorkflowRuns extends Service {
       observed: observed.repositories.map((repository) => ({
         repositoryId: repository.repositoryId,
         branchRef: repository.branch,
-        headRevision: repository.head,
+        headRevision: ignored.has(repository.repositoryId)
+          ? currentById.get(repository.repositoryId)!.headRevision
+          : repository.head,
       })),
       writableRepositoryIds,
+      externalInputHeads,
       relations,
     });
   }
@@ -2128,12 +2245,22 @@ export class WorkflowRuns extends Service {
     checkpoint: BuildWorkspaceCheckpoint,
   ): Promise<void> {
     const observed = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
+    const independent = new Map(
+      (await this.observeExternalBuildHeads(state, observed))
+        .filter((proof) => isIndependentBuildRepository(state, proof.repositoryId))
+        .map((proof) => [proof.repositoryId, proof]),
+    );
     const actual = observed.repositories.map((repository) => ({
       repositoryId: repository.repositoryId,
       branchRef: repository.branch,
-      headRevision: repository.head,
+      headRevision: independent.get(repository.repositoryId)?.previousHead ?? repository.head,
     }));
-    if (canonicalJson(actual) !== canonicalJson(checkpoint.repositories)) {
+    const accepted = checkpoint.repositories.map(({ repositoryId, branchRef, headRevision }) => ({
+      repositoryId,
+      branchRef,
+      headRevision,
+    }));
+    if (canonicalJson(actual) !== canonicalJson(accepted)) {
       throw new Error('Build workspace changed after the last accepted Package checkpoint');
     }
   }
@@ -2212,6 +2339,7 @@ export class WorkflowRuns extends Service {
         previous,
         current,
         observed,
+        verifiedHeads: await this.observeExternalBuildHeads(latest, observed),
         ...(publication ? { verificationConfigPublication: publication } : {}),
       });
       if (recovery.conflicts.length) {
@@ -2361,12 +2489,14 @@ export class WorkflowRuns extends Service {
           : 'checkout-observation-failed';
     }
     const publication = await this.approvedVerificationConfigPublication(state, observed, previous);
+    const verifiedHeads = await this.observeExternalBuildHeads(state, observed);
     const classified = classifyBuildWorkspaceRecovery({
       ...(publication ? { verificationConfigPublication: publication } : {}),
       state,
       previous,
       current,
       observed,
+      verifiedHeads,
       ...(observationError ? { observationError } : {}),
       ...(planning?.snapshot
         ? {
@@ -2377,6 +2507,75 @@ export class WorkflowRuns extends Service {
           }
         : {}),
     });
+    const reobserveGit = async (latest: RunState) => {
+      const live = await this.ctx.project.snapshot(this.projectInput!);
+      const binding = await this.bindExecutionWorkspace(latest, latest.changeLifecycle!, live);
+      const observedHeads = await this.observeExternalBuildHeads(latest, binding);
+      if (
+        live.digest !== current.digest ||
+        binding.stateDigest !== observed?.stateDigest ||
+        canonicalJson(observedHeads) !== canonicalJson(verifiedHeads)
+      ) {
+        throw new Error('Build workspace changed during recovery; retry the same Run');
+      }
+    };
+    if (
+      classified.readInputHeads?.length === classified.conflicts.length &&
+      classified.conflicts.length
+    ) {
+      if (state.reconciliationRequired) {
+        const reconciled = await this.coordinator.reconcileBuildWorkspace(
+          runId,
+          classified,
+          undefined,
+          reobserveGit,
+        );
+        if (reconciled.value.state.reconciliationRequired) return reconciled;
+        return this.recoverBoundBuildWorkspace(runId, entrypoint);
+      }
+      const active = state.workExecution;
+      if (
+        entrypoint === 'next' &&
+        active?.status === 'submitted' &&
+        active.workId === lifecycle.currentWork?.workId &&
+        active.checkEpoch === lifecycle.checkEpoch &&
+        active.pendingSubmission &&
+        active.pendingSubmission.outcome.status !== 'unknown'
+      ) {
+        const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+        if (intent.intentId !== active.intentId) {
+          throw new Error('Build input observation belongs to a superseded Work claim');
+        }
+        await reobserveGit(state);
+        await this.ctx.workExecutionAuthority.rejectHostSubmission({
+          intent,
+          expectedPending: active.pendingSubmission,
+          reasonCode: 'workspace-read-input-stale',
+          diagnostic: 'This Outcome used a stale Build read input and cannot advance the Run.',
+        });
+        return this.recoverBoundBuildWorkspace(runId, entrypoint);
+      }
+      const refreshed = await this.reobserveBuildReadInputs(state, previous, classified);
+      if (refreshed) return refreshed;
+      const status = await this.coordinator.status(runId);
+      const execution = await this.ctx.workExecutionAuthority.recovery(runId);
+      return {
+        value: {
+          ...status,
+          continuation: { ...execution, continuation: 'reobserve', reason: 'project-drift' },
+          reconciliation: { ...classified.reconciliation, requiresReconciliation: false },
+          execution,
+        },
+        diagnostics: [
+          {
+            level: 'warning',
+            code: 'change.build-read-input-recovery-pending',
+            message:
+              'Build read inputs changed while a Work is unresolved. Settle the original invocation first; inspect any existing writes before retrying.',
+          },
+        ],
+      };
+    }
     const target = state.trigger?.facts.targetBranch as { repositoryId?: string } | undefined;
     let result;
     try {
@@ -2396,7 +2595,12 @@ export class WorkflowRuns extends Service {
               cleanupPlanning.projectConfigDigest,
             )
           : undefined;
-      result = await this.coordinator.reconcileBuildWorkspace(runId, classified, cleanup);
+      result = await this.coordinator.reconcileBuildWorkspace(
+        runId,
+        classified,
+        cleanup,
+        classified.independentHeads?.length ? reobserveGit : undefined,
+      );
     } catch (error) {
       if (error instanceof RuntimeOutputCleanupPlanningUnavailable)
         return this.planningObservationUnavailable(runId);
@@ -2434,6 +2638,182 @@ export class WorkflowRuns extends Service {
           requiresReconciliation: finalStatus.state.reconciliationRequired,
         },
         execution,
+      },
+    };
+  }
+
+  private async reobserveBuildReadInputs(
+    state: RunState,
+    previous: ProjectSnapshot,
+    observation: BuildWorkspaceRecovery,
+  ): Promise<RuntimeResult<ResumeView> | null> {
+    const proofs = observation.readInputHeads;
+    if (
+      !proofs?.length ||
+      observation.conflicts.length !== proofs.length ||
+      !canReobserveBuildInputs(state)
+    )
+      return null;
+    const lifecycle = state.changeLifecycle!;
+    const protocol = lifecycle.buildProtocol!;
+    const { plan, workspaceCheckpoint, strategy, binding } = protocol;
+    const isSettled = async (run: RunState, observed: ExecutionWorkspaceBinding) => {
+      if (!hasSettledBuildReadInputOutcome(run)) return true;
+      const work = run.changeLifecycle!.currentWork!;
+      if (work.kind === 'build.check') return true;
+      const active = plan!.packages.find((entry) => entry.packageId === work.packageId);
+      if (!active || active.sideEffectClass !== 'repository-write') return false;
+      for (const { repositoryId } of active.writeScopes) {
+        const live = observed.repositories.find((entry) => entry.repositoryId === repositoryId);
+        const accepted = workspaceCheckpoint!.repositories.find(
+          (entry) => entry.repositoryId === repositoryId,
+        );
+        if (
+          !live ||
+          live.head !== accepted?.headRevision ||
+          !(await this.ctx.executionWorkspace.isCheckoutClean(live.checkoutPath))
+        )
+          return false;
+      }
+      return true;
+    };
+    const currentProject = await this.ctx.project.snapshot(this.projectInput!);
+    if (
+      !(await isSettled(state, await this.bindExecutionWorkspace(state, lifecycle, currentProject)))
+    ) {
+      return null;
+    }
+    const planning = await this.observeChangePlanning(state, lifecycle);
+    if (planning.status === 'unavailable') return this.planningObservationUnavailable(state.runId);
+    if (planning.status !== 'authorized') return null;
+    const externalInputHeads = new Map(
+      proofs.map(({ repositoryId, head }) => [repositoryId, head]),
+    );
+    const invalidation = createBuildInvalidation({
+      source: 'workspace-input',
+      plan: plan!,
+      classification: 'implementation',
+      affectedPackageIds: plan!.packages
+        .filter((entry) => entry.repositoryIds.some((id) => externalInputHeads.has(id)))
+        .map((entry) => entry.packageId),
+      packageCompletions: protocol.packageCompletions,
+      reason: 'A previously bound Build read input changed',
+    });
+    const retained = new Set(
+      protocol.packageCompletions
+        .filter((entry) => invalidation.retainedCompletionIds.includes(entry.completionId))
+        .map(({ packageId }) => packageId),
+    );
+    const ready = plan!.packages.find(
+      (entry) =>
+        !retained.has(entry.packageId) &&
+        entry.dependsOn.every((dependency) => retained.has(dependency)),
+    );
+    if (!ready) throw new Error('Changed Build inputs have no ready dependent package');
+    const checkpoint = advanceBuildWorkspaceCheckpoint({
+      current: workspaceCheckpoint!,
+      observed: workspaceCheckpoint!.repositories.map((entry) => ({
+        ...entry,
+        headRevision: externalInputHeads.get(entry.repositoryId) ?? entry.headRevision,
+      })),
+      writableRepositoryIds: [],
+      externalInputHeads,
+      relations: Object.fromEntries(
+        workspaceCheckpoint!.repositories.map(({ repositoryId }) => [
+          repositoryId,
+          externalInputHeads.has(repositoryId) ? 'fast-forward' : 'unchanged',
+        ]),
+      ),
+    });
+    const composition = buildActionSkillComposition({
+      action: 'execute',
+      tddMode: strategy.tddMode,
+    });
+    const skills = await this.resolveLifecycleWorkSkills(
+      'build.execute',
+      undefined,
+      composition.augmentationSkills,
+      state.runId,
+    );
+    const work = createBuildActionWork({
+      runId: state.runId,
+      checkEpoch: lifecycle.checkEpoch + 1,
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'build.execute',
+      ...skills,
+      compositionDigest: state.composition.compositionDigest,
+      projectConfigDigest: planning.projectConfigDigest,
+      projectSnapshotDigest: state.projectSnapshotDigest,
+      workspaceRepositoryId: planning.workspaceRepositoryId,
+      repositoryIds: previous.repositories.map(({ id }) => id),
+      strategyId: strategy.strategyId,
+      bindingId: binding!.bindingId,
+      executionMode: strategy.executionMode,
+      tddMode: strategy.tddMode,
+      planId: plan!.planId,
+      planRevision: plan!.revision,
+      packageId: ready.packageId,
+      writeScopes: ready.writeScopes,
+      stableInput: {
+        strategyDigest: strategy.semanticDigest,
+        bindingStateDigest: binding!.stateDigest,
+        workspaceCheckpointDigest: checkpoint.digest,
+        planDigest: plan!.digest,
+        packageDigest: ready.digest,
+        planEvidenceId: protocol.planEvidence!.evidenceId,
+        completedPackageIds: [...retained].sort(),
+      },
+    });
+    const advanced = await this.coordinator.acceptChangeObservation(
+      state.runId,
+      { kind: 'build-read-inputs-reobserved', workspaceCheckpoint: checkpoint, invalidation, work },
+      {
+        reobserve: async (latest) => {
+          if (latest.stateVersion !== state.stateVersion || !canReobserveBuildInputs(latest)) {
+            throw new Error('Build input recovery belongs to an older Run state');
+          }
+          const fresh = await this.observeChangePlanning(latest, latest.changeLifecycle!);
+          if (
+            fresh.status !== 'authorized' ||
+            fresh.snapshot?.digest !== planning.snapshot?.digest
+          ) {
+            throw new Error('Planning changed during Build input recovery');
+          }
+          const current = await this.ctx.project.snapshot(this.projectInput!);
+          const observed = await this.bindExecutionWorkspace(
+            latest,
+            latest.changeLifecycle!,
+            current,
+          );
+          if (!(await isSettled(latest, observed))) {
+            throw new Error('Build writes appeared before the stale input recovery commit');
+          }
+          const publication = await this.approvedVerificationConfigPublication(
+            latest,
+            observed,
+            previous,
+          );
+          const repeated = classifyBuildWorkspaceRecovery({
+            state: latest,
+            previous,
+            current,
+            observed,
+            verifiedHeads: await this.observeExternalBuildHeads(latest, observed),
+            ...(publication ? { verificationConfigPublication: publication } : {}),
+          });
+          if (repeated.observationDigest !== observation.observationDigest) {
+            throw new Error('Build read inputs changed during recovery; retry the same Run');
+          }
+        },
+      },
+    );
+    await this.ctx.workExecutionAuthority.recordWorkCreated(state.runId, work);
+    return {
+      ...advanced,
+      value: {
+        ...(await this.coordinator.status(state.runId)),
+        reconciliation: { ...observation.reconciliation, requiresReconciliation: false },
+        execution: await this.ctx.workExecutionAuthority.recovery(state.runId),
       },
     };
   }
@@ -4885,6 +5265,48 @@ export class WorkflowRuns extends Service {
                   ],
                 };
               }
+              const revalidation = protocol.readInputRevalidations?.find(
+                (entry) => entry.packageId === workPackage.packageId,
+              );
+              if (
+                revalidation?.tddEvidence &&
+                result.tddEvidence?.redEvidenceId === revalidation.tddEvidence.redEvidenceId
+              ) {
+                const unchanged = workPackage.writeScopes.every(
+                  ({ repositoryId }) =>
+                    workspaceCheckpoint.repositories.find(
+                      (entry) => entry.repositoryId === repositoryId,
+                    )?.headRevision ===
+                    protocol.workspaceCheckpoint!.repositories.find(
+                      (entry) => entry.repositoryId === repositoryId,
+                    )?.headRevision,
+                );
+                const prior = revalidation.tddEvidence;
+                if (
+                  !unchanged ||
+                  revalidation.implementationDigest !== result.implementationDigest ||
+                  result.tddEvidence.greenEvidenceId === prior.greenEvidenceId ||
+                  result.tddEvidence.regressionEvidenceId === prior.regressionEvidenceId
+                ) {
+                  const diagnostic =
+                    'Reusing historical RED requires identical implementation and fresh GREEN and regression evidence.';
+                  await this.buildOutcomeAcceptance.reject(runId, {
+                    kind: 'correctable-rejection',
+                    reasonCode: 'outcome-rejected',
+                    diagnostic,
+                  });
+                  return {
+                    value: await this.coordinator.status(runId),
+                    diagnostics: [
+                      {
+                        level: 'warning',
+                        code: 'change.build-package-outcome-rejected',
+                        message: diagnostic,
+                      },
+                    ],
+                  };
+                }
+              }
               const implementerExecutionIds = (executeHostOutcome.delegationReceipts ?? [])
                 .filter(
                   (receipt) => receipt.role === 'implementer' && receipt.status === 'succeeded',
@@ -6709,6 +7131,101 @@ export class WorkflowRuns extends Service {
     );
   }
 
+  private async assertBusinessPublicationScope(
+    state: RunState,
+    repositoryId: string,
+    checkoutPath: string,
+    sourceBranch: string,
+    head: string,
+    targetHead: string,
+  ): Promise<void> {
+    const protocol = state.changeLifecycle?.buildProtocol;
+    if (
+      !protocol?.plan ||
+      !protocol.planEvidence ||
+      !protocol.binding ||
+      !protocol.workspaceCheckpoint
+    ) {
+      return;
+    }
+    const original = protocol.binding.repositories.find(
+      (repository) => repository.repositoryId === repositoryId,
+    );
+    const accepted = protocol.workspaceCheckpoint.repositories.find(
+      (repository) => repository.repositoryId === repositoryId,
+    );
+    const scopes = protocol.plan.packages
+      .flatMap(({ writeScopes }) => writeScopes)
+      .filter((scope) => scope.repositoryId === repositoryId);
+    if (!original || !accepted || accepted.branchRef !== sourceBranch) {
+      throw new Error(`Archive lacks an accepted Build checkout for ${repositoryId}`);
+    }
+    try {
+      const git = this.ctx.executionWorkspace;
+      if (
+        !(await git.isAncestor(checkoutPath, original.headRevision, targetHead)) ||
+        (accepted.externalInputHead &&
+          !(await git.isAncestor(checkoutPath, accepted.externalInputHead, targetHead))) ||
+        (head !== accepted.headRevision && !(await git.isAncestor(checkoutPath, head, targetHead)))
+      ) {
+        throw new Error('the target does not contain the external source history');
+      }
+      const paths = await git.commitPaths(checkoutPath, targetHead, head);
+      if (
+        paths.some(
+          (file) =>
+            !scopes.some((scope) =>
+              scope.paths.some((pattern) => runtimeWritePathMatches(pattern, file)),
+            ),
+        )
+      ) {
+        throw new Error('the actual PR range contains files outside accepted Package write scopes');
+      }
+    } catch (error) {
+      throw new Error(
+        `Archive would publish an unaccepted Business revision in ${repositoryId}: ${error instanceof Error ? error.message : String(error)}. Sync the target or isolate external commits, then prepare Archive again.`,
+        { cause: error },
+      );
+    }
+  }
+
+  private async inspectBusinessPublicationScopes(
+    state: RunState,
+    routes: DeliveryIntentV3['businessDeliveries'],
+    heads: ReadonlyMap<string, string>,
+    policy: DeliveryPolicy,
+  ): Promise<void> {
+    const lifecycle = state.changeLifecycle!;
+    if (!lifecycle.buildProtocol?.planEvidence || routes.length === 0) return;
+    const project = await this.ctx.project.snapshot(this.projectInput!);
+    const observed = await this.bindExecutionWorkspace(state, lifecycle, project);
+    for (const { repositoryId, sourceBranch, targetBranch } of routes) {
+      const current = observed.repositories.find(
+        (repository) => repository.repositoryId === repositoryId,
+      );
+      const head = heads.get(repositoryId);
+      if (!current || current.head !== head || current.branch !== sourceBranch) {
+        throw new Error(
+          `Archive Business checkout no longer matches the frozen OID: ${repositoryId}`,
+        );
+      }
+      const target = await this.ctx.project.targetBranch({
+        repositoryId,
+        repositoryPath: current.checkoutPath,
+        remote: policy.publication.remote,
+        targetBranch,
+      });
+      await this.assertBusinessPublicationScope(
+        state,
+        repositoryId,
+        current.checkoutPath,
+        sourceBranch,
+        head,
+        target.remoteOid,
+      );
+    }
+  }
+
   prepareArchiveDelivery(
     input: PrepareArchiveDeliveryInput,
     signal?: AbortSignal,
@@ -6796,6 +7313,19 @@ export class WorkflowRuns extends Service {
         this.archiveExecutionContext(state),
         signal,
       );
+      const publicationCheckpoint = createArchivePublicationCheckpoint(
+        await this.ctx.project.snapshot(this.projectInput!),
+        input.intent,
+      );
+      const businessHeads = new Map(
+        publicationCheckpoint.repositories.map(({ repositoryId, head }) => [repositoryId, head]),
+      );
+      await this.inspectBusinessPublicationScopes(
+        state,
+        input.intent.businessDeliveries,
+        businessHeads,
+        input.policy,
+      );
       const archiveInput = createArchiveDeliveryInput({
         runId: input.runId,
         changeId: lifecycle.identity.changeId,
@@ -6808,10 +7338,7 @@ export class WorkflowRuns extends Service {
         planningCompositionDigest: state.composition.compositionDigest,
         evidenceCompositionDigest: lifecycle.verificationInput
           .compositionDigest as `sha256:${string}`,
-        publicationCheckpoint: createArchivePublicationCheckpoint(
-          await this.ctx.project.snapshot(this.projectInput!),
-          input.intent,
-        ),
+        publicationCheckpoint,
       });
       if (replacing && lifecycle.archiveDeliveryInput?.digest === archiveInput.digest)
         return { value: await this.coordinator.status(input.runId), diagnostics: [] };
@@ -6858,6 +7385,12 @@ export class WorkflowRuns extends Service {
             );
             if (checkpoint.digest !== archiveInput.publicationCheckpoint.digest)
               throw new Error('Archive publication coordinates changed during preflight');
+            await this.inspectBusinessPublicationScopes(
+              latest,
+              input.intent.businessDeliveries,
+              businessHeads,
+              input.policy,
+            );
             if (
               replacing &&
               (await this.ctx.specification.closureExecutionStarted(lifecycle.identity.changeId))
@@ -7418,6 +7951,26 @@ export class WorkflowRuns extends Service {
                     ]),
                   ),
                   execution,
+                  authorizeBusinessEffect: async (facts) => {
+                    const project = await this.ctx.project.snapshot(this.projectInput!);
+                    const observed = await this.bindExecutionWorkspace(state, lifecycle, project);
+                    const repo = observed.repositories.find(
+                      ({ repositoryId }) => repositoryId === facts.repositoryId,
+                    );
+                    if (!repo || repo.branch !== facts.sourceBranch) {
+                      throw new Error(
+                        `Archive Business checkout changed before publication: ${facts.repositoryId}`,
+                      );
+                    }
+                    await this.assertBusinessPublicationScope(
+                      state,
+                      facts.repositoryId,
+                      repo.checkoutPath,
+                      facts.sourceBranch,
+                      facts.head,
+                      facts.targetHead,
+                    );
+                  },
                   evidenceCompositionDigest:
                     archive.evidenceCompositionDigest ??
                     (verificationCompositionDigest as `sha256:${string}`),

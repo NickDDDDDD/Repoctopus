@@ -569,6 +569,12 @@ export type ChangeLifecycleObservation =
       work: WorkDescriptor;
     }
   | {
+      kind: 'build-read-inputs-reobserved';
+      workspaceCheckpoint: BuildWorkspaceCheckpoint;
+      invalidation: BuildInvalidation;
+      work: WorkDescriptor;
+    }
+  | {
       kind: 'build-package-completed';
       completion: PackageCompletionEvidence;
       retentionInvalidation?: BuildInvalidation;
@@ -1698,6 +1704,38 @@ export function evolveChangeLifecycle(options: {
         blocker: null,
         buildProtocol: advanceBuildProtocol(protocol, observation),
       },
+    });
+  }
+  if (observation.kind === 'build-read-inputs-reobserved') {
+    if (
+      !current.buildProtocol ||
+      current.phase !== 'build' ||
+      current.waitCondition ||
+      current.blocker
+    ) {
+      throw new Error('Build input recovery requires a settled active Build');
+    }
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, observation);
+    const done = new Set(buildProtocol.packageCompletions.map(({ packageId }) => packageId));
+    const ready = buildProtocol.plan!.packages.find(
+      (entry) =>
+        !done.has(entry.packageId) && entry.dependsOn.every((dependency) => done.has(dependency)),
+    );
+    if (
+      !ready ||
+      observation.work.kind !== 'build.execute' ||
+      observation.work.packageId !== ready.packageId ||
+      observation.work.bindingId !== buildProtocol.binding?.bindingId ||
+      observation.work.planId !== buildProtocol.plan?.planId ||
+      observation.work.checkEpoch !== current.checkEpoch + 1
+    ) {
+      throw new Error('Build input recovery Work must match the next ready package');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.read-inputs-reobserved',
+      next: { currentWork: observation.work, waitCondition: null, blocker: null, buildProtocol },
     });
   }
   if (observation.kind === 'build-package-completed') {

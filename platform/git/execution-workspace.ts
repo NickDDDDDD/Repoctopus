@@ -47,6 +47,42 @@ export async function readTrackedExecutionInputs(
   return [...new Set([...index, ...tree])].sort();
 }
 
+export async function executionCommitPaths(
+  checkoutPath: string,
+  previousHead: string,
+  head: string,
+): Promise<string[]> {
+  assertObjectId(previousHead);
+  assertObjectId(head);
+  const [history, tree] = await Promise.all([
+    readGitRecords(checkoutPath, [
+      'log',
+      '--format=',
+      '--name-only',
+      '--no-renames',
+      '--diff-merges=combined',
+      '--ignore-submodules=none',
+      '-z',
+      `${previousHead}..${head}`,
+      '--',
+    ]),
+    readGitRecords(checkoutPath, [
+      'diff',
+      '--name-only',
+      '--no-renames',
+      '--ignore-submodules=none',
+      '-z',
+      `${previousHead}...${head}`,
+      '--',
+    ]),
+  ]);
+  const paths = [...history, ...tree];
+  if (paths.some((file) => !file || file.includes('�') || file.includes('\\'))) {
+    throw new Error('Cannot safely read all committed Build paths');
+  }
+  return [...new Set(paths)].sort();
+}
+
 export async function observeExecutionCleanupCommit(
   checkoutPath: string,
   previous: string,
@@ -193,10 +229,14 @@ export async function isExecutionRevisionAncestor(
   descendant: string,
 ): Promise<boolean> {
   try {
-    await execFileAsync('git', ['merge-base', '--is-ancestor', ancestor, descendant], {
-      cwd: checkoutPath,
-      windowsHide: true,
-    });
+    await execFileAsync(
+      'git',
+      ['--no-replace-objects', 'merge-base', '--is-ancestor', ancestor, descendant],
+      {
+        cwd: checkoutPath,
+        windowsHide: true,
+      },
+    );
     return true;
   } catch (error) {
     const exitCode =

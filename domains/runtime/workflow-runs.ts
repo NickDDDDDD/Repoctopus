@@ -7,6 +7,7 @@ import { hashWorkflowDefinition } from '../workflow-contract/hash.js';
 import {
   advanceRuntimeOutputCleanupCheckpoint,
   canAcceptBuildRuntimeCleanup,
+  hasRejectedStaleBuildInputOutcome,
   isRuntimeOutputCleanupConflict,
   type BuildWorkspaceRecovery,
   type RuntimeOutputCleanupProof,
@@ -203,6 +204,8 @@ function retireMismatchedExecution(
   ) {
     return { state, fact: null };
   }
+  const staleBuildInputCanBeRetired =
+    observationKind === 'build-read-inputs-reobserved' && hasRejectedStaleBuildInputOutcome(state);
   const rejectedCorrectionCanBeRetired =
     execution.status === 'invoking' &&
     execution.continuation === 'awaiting-correction' &&
@@ -219,7 +222,8 @@ function retireMismatchedExecution(
     ) === true;
   if (
     ['invoking', 'submitted', 'unknown'].includes(execution.status) &&
-    !rejectedCorrectionCanBeRetired
+    !rejectedCorrectionCanBeRetired &&
+    !staleBuildInputCanBeRetired
   ) {
     throw new Error(
       'Lifecycle cannot replace an unresolved Work execution; reconcile the authoritative invocation first',
@@ -1224,12 +1228,19 @@ export class WorkflowRunCoordinator {
     runId: string,
     observation: BuildWorkspaceRecovery,
     cleanup?: BuildRuntimeOutputCleanup,
+    reobserve?: (state: RunState) => Promise<void>,
   ): Promise<
     RuntimeResult<
       ResumeView & { reconciliation: ProjectReconciliation; reissuedWork?: WorkDescriptor }
     >
   > {
-    return this.reconcileBoundWorkspace(runId, observation, 'buildWorkspaceRecovery', cleanup);
+    return this.reconcileBoundWorkspace(
+      runId,
+      observation,
+      'buildWorkspaceRecovery',
+      cleanup,
+      reobserve,
+    );
   }
 
   async reconcileEvidenceWorkspace(
@@ -1244,6 +1255,7 @@ export class WorkflowRunCoordinator {
     observation: BuildWorkspaceRecovery | EvidenceWorkspaceRecovery,
     recoveryKind: 'buildWorkspaceRecovery' | 'evidenceWorkspaceRecovery',
     cleanup?: BuildRuntimeOutputCleanup,
+    reobserve?: (state: RunState) => Promise<void>,
   ): Promise<
     RuntimeResult<
       ResumeView & { reconciliation: ProjectReconciliation; reissuedWork?: WorkDescriptor }
@@ -1269,6 +1281,7 @@ export class WorkflowRunCoordinator {
           'Build workspace recovery observation is stale; retry from the current Run',
         );
       }
+      await reobserve?.(state);
       const previous = trajectory.findLast((entry) =>
         ['recovery.reconciled', 'run.resumed'].includes(entry.type),
       );
@@ -1367,8 +1380,16 @@ export class WorkflowRunCoordinator {
         !state.reconciliationRequired ||
         previousRecovery?.ownsBlocker === true ||
         matchingSnapshotConflict;
+      const deferredReadInputs = new Set(
+        recoveryKind === 'buildWorkspaceRecovery' && reobserve && 'readInputHeads' in observation
+          ? observation.readInputHeads?.map(
+              ({ repositoryId }) => `build-read-input-changed:${repositoryId}`,
+            )
+          : [],
+      );
       const requiresReconciliation =
-        observation.conflicts.length > 0 || (state.reconciliationRequired && !ownedBlocker);
+        observation.conflicts.some((conflict) => !deferredReadInputs.has(conflict)) ||
+        (state.reconciliationRequired && !ownedBlocker);
       const work = recoveryKind === 'buildWorkspaceRecovery' ? lifecycle?.currentWork : null;
       const cleanupTransition =
         work && trajectory.findLast((entry) => entry.type === 'change.lifecycle.transitioned');

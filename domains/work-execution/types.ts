@@ -172,7 +172,8 @@ export type WorkExecutionSubmissionRejectionCode =
   | 'workspace-unauthorized-change'
   | 'workspace-non-fast-forward'
   | 'workspace-observation-failed'
-  | 'workspace-identity-drift';
+  | 'workspace-identity-drift'
+  | 'workspace-read-input-stale';
 
 export interface WorkExecutionSubmission {
   schemaVersion: 1;

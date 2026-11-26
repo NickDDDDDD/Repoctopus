@@ -15,13 +15,44 @@ const supervisor = path.join(import.meta.dirname, 'package-e2e-command.mjs');
 const project = path.join(root, 'project');
 const workspaceId = 'workspace';
 const workspace = path.join(project, workspaceId);
-const names = [workspaceId, 'web-front', 'backend'];
-const business = names.slice(1);
+const driftScenario = process.env.REPOCTOPUS_WORKFLOW_E2E_DRIFT;
+assert(
+  [
+    undefined,
+    'readonly-sync',
+    'external-commit',
+    'future-backend',
+    'read-input',
+    'active-read-input',
+    'completed-read-input',
+  ].includes(driftScenario),
+);
+const readConsumer =
+  driftScenario === 'completed-read-input'
+    ? 'web-front'
+    : ['read-input', 'active-read-input'].includes(driftScenario)
+      ? 'backend'
+      : null;
+const observer =
+  readConsumer || driftScenario === 'readonly-sync'
+    ? 'web-plugins'
+    : driftScenario === 'external-commit'
+      ? 'backend'
+      : null;
+const business = ['web-front', observer === 'backend' ? 'framework' : 'backend'];
+const participants = observer ? [...business, observer] : business;
+const expectedDecisions = [
+  'specification-open',
+  'specification-design',
+  ...(readConsumer ? ['build-plan-risk'] : []),
+];
+const names = [workspaceId, ...participants];
 const changeId = 'verify-package-workflow';
 const branch = 'change/' + changeId;
 const target = 'main';
 const remoteHost = 'github-fixture.localhost';
 const markerPath = 'docs/acceptance.txt';
+const externalPath = 'external-team.txt';
 const markers = Object.fromEntries(business.map((name) => [name, 'Workflow acceptance ' + name]));
 const env = {
   ...process.env,
@@ -79,7 +110,7 @@ function run(command, argv, cwd, expected = [0]) {
 }
 
 const git = (name, ...argv) => run('git', argv, repository(name)).stdout.trim();
-function cli(label, argv) {
+function cli(label, argv, expectOk = true) {
   const result = run(
     process.execPath,
     [entry, ...argv, '--workspace', workspace, '--json'],
@@ -88,7 +119,7 @@ function cli(label, argv) {
   );
   const value = JSON.parse((result.status === 0 ? result.stdout : result.stderr) || result.stdout);
   write(label, value);
-  assert.equal(value.ok, true, JSON.stringify(value.diagnostics));
+  assert.equal(value.ok, expectOk, JSON.stringify(value.diagnostics));
   return value;
 }
 const pull = (action, ...argv) =>
@@ -178,7 +209,7 @@ function initialize() {
       '--scan-root',
       project,
       '--repositories',
-      business.join(','),
+      participants.join(','),
       '--entry-hosts',
       'codex',
       '--store',
@@ -220,7 +251,7 @@ function initialize() {
   );
   const configFile = path.join(workspace, 'repoctopus.yaml');
   const config = yaml.parse(fs.readFileSync(configFile, 'utf8'));
-  assert.equal(config.repositories.length, 3);
+  assert.equal(config.repositories.length, names.length);
   config.delivery = {
     checkpoint: {
       automatic: false,
@@ -311,7 +342,7 @@ function inputFor(claim) {
   const layer = claim.packet.context.layers.find((x) => x.kind === 'change-inputs');
   return JSON.parse(layer.content);
 }
-function submit(claim, structured, message) {
+function submit(claim, structured, message, outcomeStatus = 'succeeded') {
   const i = claim.invocation;
   const layers = claim.packet.context.layers.filter((x) =>
     ['action-skill', 'augmentation-skill'].includes(x.kind),
@@ -331,7 +362,7 @@ function submit(claim, structured, message) {
     '--packet-digest',
     claim.packet.identity.packetDigest,
     '--status',
-    'succeeded',
+    outcomeStatus,
     '--summary',
     message,
     '--consumed-layers',
@@ -435,7 +466,7 @@ function build(claim) {
         return {
           packageKey: name,
           taskIds: [task.taskId],
-          repositoryIds: [name],
+          repositoryIds: name === readConsumer ? [name, observer] : [name],
           writeScopes: [{ repositoryId: name, paths: [markerPath] }],
           acceptanceRefs: task.acceptanceCriteria.map((x) => x.acceptanceId),
           expectedOutcomes: [name + ' diagnostic marker'],
@@ -457,6 +488,92 @@ function build(claim) {
     const [name] = selected.repositoryIds;
     assert(business.includes(name));
     const before = git(name, 'rev-parse', 'HEAD');
+    if (driftScenario === 'future-backend' && name === 'web-front') {
+      assert.equal(input.build.packageCompletions.length, 0);
+      const previousHead = git('backend', 'rev-parse', 'HEAD');
+      fs.writeFileSync(
+        path.join(repository('backend'), externalPath),
+        'independent backend work\n',
+      );
+      git('backend', 'add', '--', externalPath);
+      git('backend', 'commit', '--no-gpg-sign', '-m', 'docs: independent backend change');
+      const head = git('backend', 'rev-parse', 'HEAD');
+      git('backend', 'push', 'origin', head + ':refs/heads/' + target);
+      write('future-backend-drift', { activePackage: selected.packageId, previousHead, head });
+    }
+    if (
+      driftScenario === 'active-read-input' &&
+      name === readConsumer &&
+      !exists('stale-execute')
+    ) {
+      observeOutsideChange();
+      const stopped = pull('resume').result;
+      assert.equal(stopped.state.reconciliationRequired, false);
+      assert.equal(lifecycle(stopped).currentWork.workId, claim.packet.work.workId);
+      const outcome = submit(
+        claim,
+        null,
+        'Read input advanced during this invocation. No repository writes occurred.',
+        'failed',
+      ).result;
+      assert.equal(outcome.hostOutcome.status, 'failed');
+      const stored = status().state.workExecution;
+      assert.equal(stored.status, 'outcome');
+      assert.equal(stored.hostInvocation.invocationId, claim.invocation.invocationId);
+      assert.equal(stored.hostOutcome.status, 'failed');
+      write('stale-execute', {
+        originalWorkId: claim.packet.work.workId,
+        invocation: claim.invocation.invocationId,
+        outcome: stored.hostOutcome.status,
+      });
+      return;
+    }
+    if (name === readConsumer) {
+      const observedPath = path.join(repository(observer), externalPath);
+      const current = fs.existsSync(observedPath);
+      const bytes = fs.readFileSync(
+        current ? observedPath : path.join(repository(observer), 'README.md'),
+        'utf8',
+      );
+      assert.equal(bytes, current ? 'frontend team sync\n' : '# ' + observer + '\n');
+      log('used-read-input.jsonl', { packageId: selected.packageId, hash: hash(bytes), current });
+    }
+    if (input.build.revalidateCompletion) {
+      const previous = input.build.revalidateCompletion;
+      assert.equal(driftScenario, 'completed-read-input');
+      assert.equal(previous.packageId, selected.packageId);
+      const green = check(name, 0);
+      const regression = check(name, 0);
+      assert.equal(git(name, 'rev-parse', 'HEAD'), before);
+      assert.equal(git(name, 'status', '--porcelain'), '');
+      const invocation = claim.invocation.invocationId;
+      result = {
+        schemaVersion: 1,
+        kind: 'build-package-completion',
+        packageId: selected.packageId,
+        acceptanceEvidenceIds: [invocation + '-green'],
+        testEvidenceIds: [invocation + '-regression'],
+        tddEvidence: {
+          redEvidenceId: previous.tddEvidence.redEvidenceId,
+          greenEvidenceId: invocation + '-green',
+          regressionEvidenceId: invocation + '-regression',
+        },
+        implementationDigest: hash(fs.readFileSync(path.join(repository(name), markerPath))),
+      };
+      write('input-revalidation', {
+        packageId: selected.packageId,
+        previous,
+        result,
+        unchangedHead: before,
+        green: { pid: green.pid, code: green.status },
+        regression: { pid: regression.pid, code: regression.status },
+      });
+      return submit(
+        claim,
+        result,
+        'Revalidated the affected package with fresh GREEN and regression on the new read input.',
+      );
+    }
     const red = check(name, 1);
     const absolute = path.join(repository(name), markerPath);
     fs.mkdirSync(path.dirname(absolute), { recursive: true });
@@ -561,6 +678,8 @@ function snapshot(view) {
     planId: current.buildProtocol?.plan?.planId,
     completions: current.buildProtocol?.packageCompletions,
     checkpoint: current.buildProtocol?.workspaceCheckpoint,
+    workId: current.currentWork?.workId,
+    checkEpoch: current.checkEpoch,
     attempt: view.changeLifecycle.evidence.latestAttemptId,
     bundleIds: view.state.acceptedEvidenceBundleIds,
     gate: view.changeLifecycle.evidence.gateStatus,
@@ -583,9 +702,9 @@ const writes = () =>
 const pulls = () => JSON.parse(fs.readFileSync(path.join(evidence, 'pulls.json'), 'utf8'));
 
 function prepareArchive() {
-  const before = snapshot(status());
-  assert.equal(before.gate, 'satisfied');
-  write('accepted-verify', before);
+  const accepted = snapshot(status());
+  assert.equal(accepted.gate, 'satisfied');
+  write('accepted-verify', accepted);
   const task = 'openspec/changes/' + changeId + '/tasks.md';
   if (git(workspaceId, 'diff', '--name-only') === task) {
     const normalize = (text) =>
@@ -610,7 +729,7 @@ function prepareArchive() {
     'bundleIds',
     'gate',
   ]) {
-    assert.deepEqual(resumed[key], before[key], key);
+    assert.deepEqual(resumed[key], accepted[key], key);
   }
   const oid = git(workspaceId, 'rev-parse', 'HEAD');
   const intent = {
@@ -636,13 +755,51 @@ function prepareArchive() {
       summary: 'Independent markers in two repositories.',
     },
   };
+  if (driftScenario === 'external-commit') {
+    const before = writes();
+    const unauthorized = {
+      ...intent,
+      businessDeliveries: [
+        ...intent.businessDeliveries,
+        {
+          deliveryId: observer,
+          repositoryId: observer,
+          sourceBranch: branch,
+          targetBranch: target,
+          commitMessage: 'docs: separate backend work',
+          actions: ['push', 'merge_request'],
+        },
+      ],
+    };
+    const response = cli(
+      'archive-outside-scope',
+      [
+        'run',
+        'archive-prepare',
+        '--run',
+        state.runId,
+        '--evidence-attempt',
+        accepted.attempt,
+        '--intent',
+        write('outside-publication-intent', unauthorized),
+      ],
+      false,
+    );
+    assert.match(JSON.stringify(response.diagnostics), /unaccepted Business revision/u);
+    assert.deepEqual(
+      writes(),
+      before,
+      'Invalid Archive intent must have no publication side effects',
+    );
+    assert.equal(lifecycle(status()).currentWork, null);
+  }
   cli('archive-prepare', [
     'run',
     'archive-prepare',
     '--run',
     state.runId,
     '--evidence-attempt',
-    before.attempt,
+    accepted.attempt,
     '--intent',
     write('intent', intent),
   ]);
@@ -709,6 +866,17 @@ function recoverPublication() {
   });
 }
 
+function recordsAtTrajectory() {
+  return fs
+    .readFileSync(
+      path.join(workspace, '.repoctopus', 'runs', state.runId, 'trajectory.jsonl'),
+      'utf8',
+    )
+    .trim()
+    .split(/\r?\n/u)
+    .map(JSON.parse);
+}
+
 function verifyTerminal() {
   assert.deepEqual(
     records('skills.jsonl').map((item) => item.kind),
@@ -719,6 +887,9 @@ function verifyTerminal() {
       'build.plan',
       'build.execute',
       'build.execute',
+      ...(['active-read-input', 'completed-read-input'].includes(driftScenario)
+        ? ['build.execute']
+        : []),
       'build.check',
       'evidence.verify',
       'specification.close',
@@ -728,8 +899,29 @@ function verifyTerminal() {
   );
   assert.deepEqual(
     records('decisions.jsonl').map((item) => item.kind),
-    ['specification-open', 'specification-design'],
+    expectedDecisions,
   );
+  if (driftScenario === 'active-read-input') {
+    const stale = read('stale-execute');
+    assert.equal(stale.outcome, 'failed');
+    const recovered = recordsAtTrajectory().find(
+      (event) =>
+        event.data?.changeLifecycleTransition?.transitionId === 'build.read-inputs-reobserved',
+    );
+    assert(recovered, 'Build read-input recovery must leave a persisted transition');
+    assert.notEqual(recovered.data.changeLifecycleTransition.workId, stale.originalWorkId);
+  }
+  if (driftScenario === 'completed-read-input') {
+    const verification = read('input-revalidation');
+    assert.equal(
+      verification.previous.tddEvidence.redEvidenceId,
+      verification.result.tddEvidence.redEvidenceId,
+    );
+    assert.notEqual(
+      verification.previous.tddEvidence.greenEvidenceId,
+      verification.result.tddEvidence.greenEvidenceId,
+    );
+  }
   const receipt = read('published-receipt');
   assert.equal(receipt.items.length, 3);
   for (const item of receipt.items) {
@@ -742,6 +934,24 @@ function verifyTerminal() {
     assert.equal(matches.length, 1);
     assert.equal(matches[0].number, item.mergeRequest.number);
     assert.equal(matches[0].head.sha, item.publishedOid);
+    if (driftScenario && item.role === 'business') {
+      const base = git(
+        item.repositoryId,
+        'ls-remote',
+        '--heads',
+        'origin',
+        'refs/heads/' + item.targetBranch,
+      ).split(/\s/u)[0];
+      const diff = git(item.repositoryId, 'diff', '--name-only', base + '...' + item.publishedOid);
+      assert.equal(diff, markerPath);
+      if (observer) assert(!pulls().some((pr) => pr.repository === observer));
+      log('publication-diffs.jsonl', {
+        repositoryId: item.repositoryId,
+        base,
+        head: item.publishedOid,
+        diff,
+      });
+    }
     assert.equal(
       git(
         item.repositoryId,
@@ -822,17 +1032,79 @@ function inspectPacket(claim) {
   });
 }
 
+function observeOutsideChange() {
+  const previousHead = git(observer, 'rev-parse', 'HEAD');
+  if (driftScenario !== 'external-commit') {
+    const sibling = path.join(root, 'another-team');
+    git(observer, 'worktree', 'add', '-b', 'other-team', sibling, previousHead);
+    fs.writeFileSync(path.join(sibling, externalPath), 'frontend team sync\n');
+    run('git', ['add', '--', externalPath], sibling);
+    run('git', ['commit', '--no-gpg-sign', '-m', 'docs: external team sync'], sibling);
+    run('git', ['push', 'origin', 'HEAD:refs/heads/' + branch], sibling);
+    git(observer, 'pull', '--ff-only', 'origin', branch);
+  } else {
+    fs.writeFileSync(path.join(repository(observer), externalPath), 'separate backend work\n');
+    git(observer, 'add', '--', externalPath);
+    git(observer, 'commit', '--no-gpg-sign', '-m', 'docs: separate backend change');
+  }
+  const head = git(observer, 'rev-parse', 'HEAD');
+  assert.notEqual(head, previousHead);
+  git(observer, 'merge-base', '--is-ancestor', previousHead, head);
+  write('outside-package-change', {
+    scenario: driftScenario,
+    repositoryId: observer,
+    previousHead,
+    head,
+  });
+}
+
 if (mode === 'first') {
   initialize();
   write('first-driver', { pid: process.pid, runId: state.runId });
 } else {
   assert.equal(mode, 'finish');
   const before = read('cold-before');
-  const recovered = snapshot(pull('resume').result);
+  if (driftScenario === 'read-input') {
+    git(observer, 'switch', '-c', 'unapproved-build-input');
+    const denied = pull('resume').result;
+    assert.equal(denied.state.reconciliationRequired, true);
+    git(observer, 'switch', branch);
+    write('blocked-checkout', { runId: denied.state.runId, restoredBranch: branch });
+  }
+  if (observer && driftScenario !== 'active-read-input') observeOutsideChange();
+  const action = driftScenario === 'external-commit' ? 'next' : 'resume';
+  const recoveredView = pull(action).result;
+  assert.equal(
+    recoveredView.state.reconciliationRequired,
+    false,
+    'A clean fast-forward should continue or reissue the dependent Work',
+  );
+  const recovered = snapshot(recoveredView);
   assert.equal(recovered.runId, before.runId);
   assert.equal(recovered.planId, before.planId);
-  assert.deepEqual(recovered.completions, before.completions);
-  assert.deepEqual(recovered.checkpoint, before.checkpoint);
+  if (driftScenario === 'completed-read-input') {
+    assert.equal(before.completions.length, 1, 'An original TDD completion must exist');
+    assert.deepEqual(recovered.completions, []);
+  } else {
+    assert.deepEqual(recovered.completions, before.completions);
+  }
+  if (['read-input', 'completed-read-input'].includes(driftScenario)) {
+    const changed = read('outside-package-change');
+    const accepted = recovered.checkpoint.repositories.find(
+      ({ repositoryId }) => repositoryId === observer,
+    );
+    assert.equal(accepted.externalInputHead, changed.head);
+    assert.notEqual(recovered.workId, before.workId);
+    assert.equal(recovered.checkEpoch, before.checkEpoch + 1);
+    const protocol = lifecycle(recoveredView).buildProtocol;
+    const affected = protocol.plan.packages.find((entry) => entry.repositoryIds.includes(observer));
+    assert.deepEqual(protocol.invalidations.at(-1).affectedPackageIds, [affected.packageId]);
+    assert.equal(protocol.invalidations.at(-1).source, 'workspace-input');
+  } else {
+    assert.deepEqual(recovered.checkpoint, before.checkpoint);
+    assert.equal(recovered.workId, before.workId);
+    assert.equal(recovered.checkEpoch, before.checkEpoch);
+  }
   assert.notEqual(process.pid, read('first-driver').pid);
   write('cold-recovery', {
     before,
@@ -861,7 +1133,7 @@ for (let step = 0; step < 40; step++) {
   if (view.state.status === 'waiting') {
     const decision = pull('decision').result;
     assert(
-      ['specification-open', 'specification-design'].includes(decision.decisionKind),
+      expectedDecisions.includes(decision.decisionKind),
       'Unexpected human decision: ' + decision.decisionKind,
     );
     assert(
@@ -891,7 +1163,16 @@ for (let step = 0; step < 40; step++) {
     current.currentWork?.kind === 'build.execute' &&
     current.buildProtocol.packageCompletions.length === 1
   ) {
-    write('cold-before', snapshot(view));
+    const boundary = snapshot(view);
+    if (driftScenario === 'future-backend') {
+      const external = read('future-backend-drift');
+      const accepted = boundary.checkpoint.repositories.find(
+        ({ repositoryId }) => repositoryId === 'backend',
+      );
+      assert.equal(accepted.externalInputHead, external.head);
+      assert.equal(boundary.completions[0].packageId, external.activePackage);
+    }
+    write('cold-before', boundary);
     reachedBoundary = true;
     break;
   }
