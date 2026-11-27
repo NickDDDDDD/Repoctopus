@@ -71,12 +71,14 @@ export class BuildWorkOutcomeAcceptanceCoordinator {
   async reject(
     runId: string,
     disposition: Exclude<BuildWorkOutcomeDisposition, { kind: 'accepted' }>,
+    expectedPending?: Pick<WorkExecutionSubmission, 'submissionId' | 'payloadDigest'>,
   ): Promise<WorkExecutionCheckpoint> {
     const intent = await this.dependencies.workExecutionAuthority.loadIntent(runId);
     return this.dependencies.workExecutionAuthority.rejectHostSubmission({
       intent,
       reasonCode: disposition.reasonCode,
       diagnostic: disposition.diagnostic,
+      ...(expectedPending ? { expectedPending } : {}),
     });
   }
 

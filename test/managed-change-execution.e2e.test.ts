@@ -1810,6 +1810,60 @@ describe('managed Change execution production composition', () => {
         let afterFirstPackageDiagnostics: RuntimeResult<RunStatusView>['diagnostics'] = [];
         let afterAllPackages: RuntimeResult<RunStatusView>;
         if (!multiRepository && executionMode === 'autonomous') {
+          const executeHost = application.context.workExecutionHosts.get(
+            'capturing-work-execution-host',
+          );
+          if (!executeHost) throw new Error('missing captured Build Execute Host');
+          const invoke = executeHost.invoke.bind(executeHost);
+          let validCompletion: WorkExecutionResult | undefined;
+          const missingTddEvidence = vi
+            .spyOn(executeHost, 'invoke')
+            .mockImplementationOnce(async (packet, session) => {
+              const outcome = await invoke(packet, session);
+              if (
+                outcome.result?.kind !== 'build-package-completion' ||
+                !outcome.result.tddEvidence
+              )
+                throw new Error('missing captured TDD package completion');
+              const invalidCompletion = { ...outcome.result };
+              delete invalidCompletion.tddEvidence;
+              validCompletion = outcome.result;
+              return { ...outcome, result: invalidCompletion };
+            });
+          const rejectedPackage = await next().finally(() => missingTddEvidence.mockRestore());
+          const rejectedExecution = rejectedPackage.value.state.workExecution!;
+          expect(rejectedExecution).toMatchObject({
+            status: 'invoking',
+            continuation: 'awaiting-correction',
+            pendingSubmission: null,
+            rejectedSubmissions: [{ rejection: { reasonCode: 'output-invalid' } }],
+          });
+          expect(rejectedExecution.rejectedSubmissions?.[0]?.rejection.diagnostic).toContain(
+            'TDD Build completion requires',
+          );
+          expect(
+            rejectedPackage.value.state.changeLifecycle?.buildProtocol?.packageCompletions,
+          ).toHaveLength(0);
+          const rejectedInvocation = capture.invocations.at(-1)!;
+          await restartApplication();
+          expect((await status()).state.workExecution).toEqual(rejectedExecution);
+          if (!validCompletion) throw new Error('missing valid TDD package completion');
+          await application.context.managedWorkExecutor.acceptExternalOutcome({
+            schemaVersion: 3,
+            runId,
+            submissionId: 'corrected-build-package-1',
+            invocationId: rejectedInvocation.session.invocationId,
+            hostId: executeHost.identity.id,
+            packetDigest: rejectedInvocation.session.packetDigest,
+            status: 'succeeded',
+            summary:
+              'Corrected completion includes the original RED, GREEN and regression evidence',
+            consumedLayerDigests: rejectedInvocation.packet.context.layers
+              .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+              .map((layer) => layer.digest),
+            result: validCompletion,
+          });
+
           const successAcceptanceInterruption = vi
             .spyOn(application.context.workDispatcher, 'acceptValidatedOutcome')
             .mockRejectedValueOnce(
