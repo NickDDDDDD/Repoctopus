@@ -1,14 +1,18 @@
 # Verify 重复返工验证
 
-Tested implementation commit: `577d7b6ecd46cdfcfbf41bdae41bf6a09fe2e051`
+Tested implementation commit: `1c65e17decb11b635394a2a8765ee0dd22a58b73`
 
-Package content SHA-256: `42bb1a78108d237da7b6c22ed9d4639a0994b6443f3593fd7234f273c50d69fd`
+Package content SHA-256: `a74a0b806b3313e2dc4b6ad4faea785ec435ac634bbd723c3064c736cfd6ffa4`
 
 Package files: `493`
 
-Package content bytes: `6888036`
+Package content bytes: `6888586`
 
-Windows 候选 tgz 的 SHA-256 为 `f4929ff0d654014bdac943110fc7441e9b003479640d8958bca1d6f44c66e197`。
+## 与 main 集成
+
+上述摘要对应归档后同步 `origin/main` 的组合提交，包含 #123 的 Open 审批等待修复。组合代码通过类型检查和 54 项相关测试。重新构建的 Windows tgz SHA-256 为 `4e1c011c06732edc18d206c698ce0b97728cbeac23976f2e4c297665b29458e4`。交付以组合提交上的完整 PR CI 为准。
+
+下面的五仓与全量本地验收记录来自归档前 #120 的实现提交 `577d7b6ecd46cdfcfbf41bdae41bf6a09fe2e051`。该候选包内容摘要为 `42bb1a78108d237da7b6c22ed9d4639a0994b6443f3593fd7234f273c50d69fd`，Windows tgz SHA-256 为 `f4929ff0d654014bdac943110fc7441e9b003479640d8958bca1d6f44c66e197`。
 
 ## v0.1.5 反例
 
