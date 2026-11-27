@@ -55,7 +55,10 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
   version: '4.11.0',
-  compatibleDigests: ['sha256:7ed98c7cc6de17182839e862c8ca8c2ec2b213e891209a2ac9b5176574d9d925'],
+  compatibleDigests: [
+    'sha256:7ed98c7cc6de17182839e862c8ca8c2ec2b213e891209a2ac9b5176574d9d925',
+    'sha256:86d4ec7c229b56bee77334004b70a63759fb228ed06d3736f0c8132d7af693b1',
+  ],
   phases: [
     {
       phase: 'open',
@@ -667,21 +670,28 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     {
       id: 'verify.semantic-plan-drift',
       kind: 'fallback',
-      from: { phase: 'verify', statuses: ['running', 'blocked'] },
+      from: { phase: 'verify', statuses: ['running', 'blocked', 'waiting'] },
       to: { phase: 'design', status: 'running' },
       trigger: 'semantic-plan-drift-detected',
     },
     {
+      id: 'verify.await-repair-decision',
+      kind: 'self',
+      from: { phase: 'verify', statuses: ['running'] },
+      to: { phase: 'verify', status: 'waiting' },
+      trigger: 'verify-repair-stagnated',
+    },
+    {
       id: 'verify.failed',
       kind: 'fallback',
-      from: { phase: 'verify', statuses: ['running', 'blocked'] },
+      from: { phase: 'verify', statuses: ['running', 'blocked', 'waiting'] },
       to: { phase: 'build', status: 'running' },
       trigger: 'verification-failed-or-drifted',
     },
     {
       id: 'verify.retry',
       kind: 'self',
-      from: { phase: 'verify', statuses: ['running', 'blocked'] },
+      from: { phase: 'verify', statuses: ['running', 'blocked', 'waiting'] },
       to: { phase: 'verify', status: 'running' },
       trigger: 'evidence-or-infrastructure-retry',
       requiredValidatorProfile: 'verify.evidence-gate',

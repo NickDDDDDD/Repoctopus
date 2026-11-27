@@ -324,6 +324,14 @@ export function projectLifecycleNextActions(
     ];
   }
   if (snapshot.phase === 'verify' && snapshot.currentWork?.kind === 'evidence.verify') {
+    if (snapshot.waitCondition?.kind === 'human-decision' && snapshot.waitCondition.verifyRepair)
+      return [
+        {
+          id: snapshot.waitCondition.waitId,
+          kind: 'decision',
+          label: 'Review repeated Verify failure',
+        },
+      ];
     return [
       {
         id: snapshot.currentWork.workId,

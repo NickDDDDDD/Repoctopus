@@ -1,0 +1,16 @@
+{
+  "change": "stop-stagnant-verify-repair",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43",
+  "files": [
+    { "path": "openspec/changes/stop-stagnant-verify-repair/proposal.md", "sha256": "38bd3390d4ec46e95e36ae34816a2d2d54a28286c202c761c383c8f256ddb733" },
+    { "path": "openspec/changes/stop-stagnant-verify-repair/design.md", "sha256": "91b8c19abffbbd88416096d68399099444ca5add04c98eb5954fad7ff853b588" },
+    { "path": "openspec/changes/stop-stagnant-verify-repair/tasks.md", "sha256": "2a4f4e98c4899a05705d6afd4f850d49a3cd7bb3775f7b0bc1045caa11cb4f38" },
+    { "path": "openspec/changes/stop-stagnant-verify-repair/.openspec.yaml", "sha256": "d80b853b48e4aa975645172ad7ef5fa151e0123233d254d536f1f288336f6023" },
+    { "path": "openspec/changes/stop-stagnant-verify-repair/specs/change-lifecycle/spec.md", "sha256": "f384c49d9f172c50cdeda84e459e567188632230fd167345429223e6fdcb1219" }
+  ]
+}

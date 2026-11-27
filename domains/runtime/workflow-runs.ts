@@ -477,6 +477,8 @@ export class WorkflowRunCoordinator {
             this.lifecycleContributors,
           )
         : undefined;
+    const verifyWait = state.changeLifecycle?.waitCondition;
+    const pausedVerify = verifyWait?.kind === 'human-decision' ? verifyWait.verifyRepair : null;
     const latestVerifyObservation = [...trajectory]
       .reverse()
       .find(
@@ -485,7 +487,7 @@ export class WorkflowRunCoordinator {
           entry.data.observationKind === 'verify-gate-rejected',
       )?.data.observation as { kind?: string; attemptId?: string } | undefined;
     const persistedContinuation = state.changeLifecycle
-      ? projectCommittedContinuation(checkpoint, trajectory)
+      ? projectCommittedContinuation(checkpoint, pausedVerify ? [] : trajectory)
       : undefined;
     const continuation =
       state.changeLifecycle && state.reconciliationRequired && !isCompletedChangeRun(state)
@@ -510,8 +512,9 @@ export class WorkflowRunCoordinator {
               currentTaskId: state.changeLifecycle.currentWork?.taskId ?? null,
             },
             evidence: {
-              gateStatus:
-                latestVerifyObservation?.kind === 'verify-gate-satisfied'
+              gateStatus: pausedVerify
+                ? 'failed'
+                : latestVerifyObservation?.kind === 'verify-gate-satisfied'
                   ? 'satisfied'
                   : latestVerifyObservation?.kind === 'verify-gate-rejected'
                     ? 'failed'
@@ -519,7 +522,8 @@ export class WorkflowRunCoordinator {
                       ? 'pending'
                       : 'not-evaluated',
               acceptedBundleIds: [...state.acceptedEvidenceBundleIds],
-              latestAttemptId: latestVerifyObservation?.attemptId ?? null,
+              latestAttemptId:
+                pausedVerify?.attemptId ?? latestVerifyObservation?.attemptId ?? null,
             },
             nextActions: projectLifecycleNextActions(
               {
@@ -789,6 +793,17 @@ export class WorkflowRunCoordinator {
     return { value: await this.status(runId), diagnostics };
   }
 
+  async reserveVerifyEvidenceAttempt(
+    runId: string,
+    persist: (state: RunState) => Promise<void>,
+  ): Promise<void> {
+    await this.store.commitGuarded(runId, async ({ state }) => {
+      this.assertWritableComposition(state);
+      await persist(state);
+      return { value: undefined };
+    });
+  }
+
   assertChangeObservationFeasible(state: RunState, observation: ChangeLifecycleObservation): void {
     if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${state.runId}`);
     const current: ChangeLifecycleSnapshot = {
@@ -842,13 +857,24 @@ export class WorkflowRunCoordinator {
         throw new Error('Build workspace requires reconciliation before applying recovery');
       }
       if (decision.runId !== runId) throw new Error('Recovery decision Run identity is invalid');
-      const replayed = trajectory.some(
+      const replayed = trajectory.find(
         (entry) =>
           entry.type === 'change.lifecycle.transitioned' &&
           (entry.data.recoveryDecision as { decisionId?: unknown } | undefined)?.decisionId ===
             decision.decisionId,
       );
-      if (replayed) return { value: undefined };
+      const approval = materialization.verifyRepairApproval;
+      const approvalObservation = approval
+        ? { kind: 'verify-repair-decision', ...approval }
+        : undefined;
+      if (replayed) {
+        if (
+          approvalObservation &&
+          canonicalJson(replayed.data.observation ?? null) !== canonicalJson(approvalObservation)
+        )
+          throw new Error('Verify repair decision conflicts with the committed response');
+        return { value: undefined };
+      }
       await options?.reobserve(state);
       const current: ChangeLifecycleSnapshot = {
         ...structuredClone(state.changeLifecycle),
@@ -885,6 +911,7 @@ export class WorkflowRunCoordinator {
           state: nextState,
           data: {
             observationKind: 'runtime-recovery-decision',
+            ...(approvalObservation ? { observation: approvalObservation } : {}),
             recoveryDecision: structuredClone(decision),
             ...(materialization.verifyRepair
               ? {

@@ -240,6 +240,14 @@ export interface HumanDecisionWaitCondition extends WaitConditionBase {
   kind: 'human-decision';
   requestId: string;
   proposalDigest: `sha256:${string}`;
+  verifyRepair?: {
+    attemptId: string;
+    bundleId: string;
+    failureSignature: `sha256:${string}`;
+    failedNodeIds: readonly string[];
+    failedAcceptanceIds: readonly string[];
+    affectedPackageIds: readonly string[];
+  };
   workspaceIntentRevision?: {
     errorCode: string;
     previousIsolation: ExecutionIsolation;
@@ -614,6 +622,15 @@ export type ChangeLifecycleObservation =
       checkEpoch: number;
     }
   | {
+      kind: 'verify-repair-decision-required';
+      expectedRevision: number;
+      checkEpoch: number;
+      workId: string;
+      wait: HumanDecisionWaitCondition & {
+        verifyRepair: NonNullable<HumanDecisionWaitCondition['verifyRepair']>;
+      };
+    }
+  | {
       kind: 'verify-gate-rejected';
       workId: string;
       inputDigest: `sha256:${string}`;
@@ -757,6 +774,15 @@ export function assertChangeLifecycleSnapshot(
   if (snapshot.status !== 'waiting' && snapshot.waitCondition !== null) {
     throw new Error('Only a waiting Change Run may carry a WaitCondition');
   }
+  if (
+    snapshot.waitCondition?.kind === 'human-decision' &&
+    snapshot.waitCondition.verifyRepair &&
+    (snapshot.phase !== 'verify' ||
+      snapshot.currentWork?.kind !== 'evidence.verify' ||
+      snapshot.currentWork.inputDigest !== snapshot.waitCondition.inputDigest ||
+      !snapshot.waitCondition.waitId.startsWith('verify-repair:'))
+  )
+    throw new Error('Verify repair wait must retain its original Verify Work');
   if (
     snapshot.waitCondition?.kind === 'human-decision' &&
     snapshot.waitCondition.workspaceIntentRevision &&
@@ -1138,6 +1164,12 @@ export function evolveChangeLifecycle(options: {
         `Planning authority invalidation is not valid from ${current.phase}/${current.status}`,
       );
     }
+    if (
+      current.phase === 'verify' &&
+      current.status === 'waiting' &&
+      (current.waitCondition?.kind !== 'human-decision' || !current.waitCondition.verifyRepair)
+    )
+      throw new Error('Verify planning drift cannot consume an unrelated wait');
     if (!current.planningDigest) {
       throw new Error('Active later-phase Work has no approved planning digest');
     }
@@ -1934,6 +1966,27 @@ export function evolveChangeLifecycle(options: {
       },
     });
   }
+  if (observation.kind === 'verify-repair-decision-required') {
+    const { wait } = observation;
+    if (
+      current.phase !== 'verify' ||
+      current.currentWork?.kind !== 'evidence.verify' ||
+      current.currentWork.workId !== observation.workId ||
+      current.currentWork.inputDigest !== wait.inputDigest ||
+      current.checkEpoch !== observation.checkEpoch ||
+      current.revision !== observation.expectedRevision ||
+      !current.buildProtocol?.verifyRepair ||
+      current.buildProtocol.verifyRepair.source.attemptId === wait.verifyRepair.attemptId
+    )
+      throw new Error('Verify repair wait does not match the failed Verify checkpoint');
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'verify.await-repair-decision',
+      preserveCheckEpoch: true,
+      next: { currentWork: current.currentWork, waitCondition: wait, blocker: null },
+    });
+  }
   if (observation.kind === 'verify-gate-rejected') {
     if (current.phase !== 'verify' || !['running', 'blocked'].includes(current.status)) {
       throw new Error(`Verify rejection is not valid from ${current.phase}/${current.status}`);
@@ -2447,6 +2500,11 @@ export interface LifecycleRecoveryMaterialization {
   invalidation?: BuildInvalidation;
   verificationInput?: VerificationInput;
   verifyRepair?: VerifyRepair;
+  verifyRepairApproval?: {
+    requestId: string;
+    proposalDigest: `sha256:${string}`;
+    humanDecision: LifecycleDecisionProvenance;
+  };
 }
 
 function assertRecoveryDecisionCheckpoint(
@@ -2573,6 +2631,23 @@ function applyReviseImplementationRecovery(input: {
   const { current, decision, materialization } = input;
   const repair = materialization.verifyRepair;
   assertVerifyRepair(repair);
+  const approval = materialization.verifyRepairApproval;
+  const wait = current.waitCondition;
+  if (current.status === 'waiting' || approval) {
+    if (
+      wait?.kind !== 'human-decision' ||
+      !wait.verifyRepair ||
+      !approval ||
+      approval.humanDecision.decision !== 'approve' ||
+      approval.requestId !== wait.requestId ||
+      approval.proposalDigest !== wait.proposalDigest ||
+      wait.verifyRepair.attemptId !== repair.source.attemptId ||
+      wait.verifyRepair.bundleId !== repair.source.bundleId ||
+      canonicalJson(wait.verifyRepair.affectedPackageIds) !==
+        canonicalJson(repair.scope.affectedPackageIds)
+    )
+      throw new Error('Verify repair requires the current explicit decision');
+  }
   if (
     decision.authority !== 'work' ||
     current.phase !== 'verify' ||
@@ -2669,7 +2744,14 @@ function applyInvalidateEvidenceRecovery(input: {
   }
   if (
     current.phase !== 'verify' ||
-    !['running', 'blocked'].includes(current.status) ||
+    (!['running', 'blocked'].includes(current.status) &&
+      !(
+        current.status === 'waiting' &&
+        current.waitCondition?.kind === 'human-decision' &&
+        current.waitCondition.verifyRepair &&
+        decision.action === 'invalidate-evidence' &&
+        materialization.evidenceIds.includes(current.waitCondition.verifyRepair.attemptId)
+      )) ||
     !current.buildProtocol ||
     current.buildProtocol.status !== 'ready-for-verify' ||
     materialization.work.phase !== 'verify' ||

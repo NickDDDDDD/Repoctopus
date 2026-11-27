@@ -7,6 +7,51 @@ import { createVerificationInput } from '../domains/change-lifecycle/verificatio
 import type { EvidenceExecutionPlan } from '../domains/feedback/profile.js';
 
 describe('production Verify implementation failure continuation', () => {
+  it('returns the paused Verify evidence even when a new process requests another Attempt', async () => {
+    const state = {
+      runId: 'paused-run',
+      status: 'waiting',
+      changeLifecycle: {
+        phase: 'verify',
+        status: 'waiting',
+        checkEpoch: 9,
+        currentWork: { workId: 'verify-work', kind: 'evidence.verify', checkEpoch: 9 },
+        waitCondition: {
+          kind: 'human-decision',
+          waitId: 'verify-repair:request',
+          requestId: 'request',
+          reason: 'Verify repair did not change the failing inputs',
+          verifyRepair: { attemptId: 'failed-attempt', bundleId: 'failed-bundle' },
+        },
+      },
+    } as unknown as RunState;
+    const runOrResume = vi.fn();
+    const service = Object.create(WorkflowRuns.prototype) as WorkflowRuns;
+    Object.defineProperties(service, {
+      operations: {
+        value: { run: (_options: unknown, operation: () => Promise<unknown>) => operation() },
+      },
+      recoverEvidenceWorkspace: { value: vi.fn() },
+      coordinator: { value: { status: vi.fn().mockResolvedValue({ state }) } },
+      ctx: {
+        value: {
+          runStore: { loadRun: vi.fn().mockResolvedValue(state) },
+          evidenceCoordinator: { runOrResume },
+        },
+      },
+    });
+
+    const result = await service.verifyChange({ runId: state.runId, attemptId: 'other-attempt' });
+
+    expect(result.value).toMatchObject({
+      attemptId: 'failed-attempt',
+      bundleId: 'failed-bundle',
+      gate: 'blocked',
+      run: { state: { changeLifecycle: { phase: 'verify', status: 'waiting', checkEpoch: 9 } } },
+    });
+    expect(runOrResume).not.toHaveBeenCalled();
+  });
+
   it('records an unavailable scope as bounded reobservation of the original failed Attempt', async () => {
     const f = verifyRepairFixture();
     const plan: EvidenceExecutionPlan = {
@@ -121,9 +166,10 @@ describe('production Verify implementation failure continuation', () => {
       bundleId: 'failed-bundle',
       reason: 'implementation failed',
     };
-    const runOrResume = vi
-      .fn()
-      .mockResolvedValue({ bundle: { bundleId: 'failed-bundle', findings: [] } });
+    const runOrResume = vi.fn().mockResolvedValue({
+      context: { attemptId: 'original-attempt' },
+      bundle: { bundleId: 'failed-bundle', findings: [] },
+    });
     const detectRepairScope = vi
       .fn()
       .mockRejectedValue(new Error('Verify repair scope unavailable: unowned finding'));

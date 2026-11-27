@@ -42,6 +42,12 @@ repoctopus.cmd run decision --workspace . --run '<run-id>' --request-id '<reques
 repoctopus.cmd run decide --workspace . --run '<run-id>'
 ```
 
+### Verify 重复失败
+
+自动返工一轮后，如果相同的检查在相同输入下再次失败，Runtime 会暂停当前 Verify。用 `run decision` 查看失败检查、Evidence Attempt 和受影响的工作包。你可以批准一轮返工，或把请求留在等待状态。Agent 可以用原生提问工具收集答复，终端用户可以选择 **Approve one repair** 或 **Leave paused**。
+
+Runtime 只对这次请求执行批准。输入或受影响的工作包变化后，用 `run next` 重新观察，再查看当前请求。
+
 ## 项目配置
 
 `project prepare` 把完整候选、reconcile diff、未决项、候选摘要和当前正式配置摘要组成请求。批准后才写 `repoctopus.yaml`。等待期间正式配置变化会使请求失效。流程见 [项目接入](project-onboarding.md)。

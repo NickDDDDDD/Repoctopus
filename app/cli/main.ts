@@ -79,6 +79,7 @@ import type {
 import {
   reviewHumanDecision as reviewLifecycleDecision,
   reviewSpecificationApproval,
+  reviewVerifyRepairDecision,
 } from './specification-approval-decision.js';
 import { changeProjection, renderChangeProjection } from './change-run-view.js';
 import {
@@ -1660,11 +1661,46 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
     const lifecycle = status.changeLifecycle;
     if (
       !lifecycle ||
-      !['open', 'design', 'build'].includes(lifecycle.phase) ||
+      !['open', 'design', 'build', 'verify'].includes(lifecycle.phase) ||
       lifecycle.status !== 'waiting' ||
       lifecycle.waitCondition?.kind !== 'human-decision'
     ) {
       throw new Error('Change Run is not waiting for a lifecycle Human Decision');
+    }
+    if (lifecycle.phase === 'verify' && lifecycle.waitCondition.verifyRepair) {
+      const { waitCondition: wait } = lifecycle;
+      const failed = lifecycle.waitCondition.verifyRepair;
+      const approved = await reviewVerifyRepairDecision({
+        proposalHash: wait.proposalDigest,
+        details: [
+          wait.reason,
+          `Evidence Attempt: ${failed.attemptId}`,
+          `Evidence Bundle: ${failed.bundleId}`,
+          `Failed checks: ${failed.failedNodeIds.join(', ')}`,
+          `Affected work packages: ${failed.affectedPackageIds.join(', ')}`,
+        ],
+        input: process.stdin,
+        output: process.stdout,
+      });
+      const result = approved
+        ? await app.context.commandRouter.execute('run.change.decide', {
+            runId,
+            response: {
+              apiVersion: 'repoctopus/v1alpha1',
+              kind: 'HumanDecisionResponse',
+              requestId: wait.requestId,
+              proposalHash: wait.proposalDigest,
+              decision: 'approve',
+            },
+            actor: { actorId: userInfo().username, source: 'cli', authenticated: true },
+          })
+        : decisionView;
+      return successEnvelope({
+        command: 'run decide',
+        runId,
+        result,
+        ...(approved ? { nextActions: [`repoctopus run next --run ${runId}`] } : {}),
+      });
     }
     if (
       lifecycle.phase === 'open' &&
