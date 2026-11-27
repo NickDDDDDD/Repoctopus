@@ -6,6 +6,7 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 import type { RunState } from '../domains/engine/types.js';
 import {
   deriveVerifyRepairScope,
+  verifyRepairFailureSignature,
   VerifyRepairUnavailableError,
 } from '../domains/change-lifecycle/verify-repair.js';
 
@@ -68,7 +69,17 @@ interface WorkflowEvidenceBinding {
   workflowInputDigest?: `sha256:${string}`;
   expectedEvidenceFingerprint?: string;
   acceptanceContext?: EvidenceAcceptanceContext;
+  reviewReceiptId?: string;
 }
+
+interface VerifyEvidenceCheckpoint {
+  workId: string;
+  checkEpoch: number;
+  inputDigest: `sha256:${string}`;
+  reviewReceiptId: string;
+}
+
+export class VerifyEvidenceCheckpointError extends Error {}
 
 interface EvidenceRunContext {
   schemaVersion: 2;
@@ -77,12 +88,18 @@ interface EvidenceRunContext {
   profileId: string;
   repositoryOverrides: EvidenceRepositoryOverride[] | null;
   workflowBinding: WorkflowEvidenceBinding | null;
-  status: 'running' | 'completed' | 'recovered';
+  status: 'running' | 'completed' | 'recovered' | 'released-before-start';
   plan: EvidenceExecutionPlan;
   fingerprint: EvidenceFingerprint;
   bundleId: string | null;
   decisionRequests: RequirementsConflictDecisionRequest[];
   updatedAt: string;
+}
+
+class VerifyAttemptAlreadyBound extends Error {
+  constructor(readonly attemptId: string) {
+    super(`Verify Work already has a bound Evidence Attempt: ${attemptId}`);
+  }
 }
 
 export interface EvidenceRepositoryOverride {
@@ -135,7 +152,7 @@ function asContext(value: unknown): EvidenceRunContext {
             typeof item.root !== 'string' ||
             (item.head !== undefined && typeof item.head !== 'string'),
         ))) ||
-    !['running', 'completed', 'recovered'].includes(record.status ?? '') ||
+    !['running', 'completed', 'recovered', 'released-before-start'].includes(record.status ?? '') ||
     (binding !== null &&
       (!binding ||
         typeof binding.workflowRunId !== 'string' ||
@@ -231,7 +248,9 @@ export class EvidenceCoordinator extends Service {
       context.profileId !== profileId ||
       context.workflowBinding?.workflowRunId !== workflowRunId
     ) {
-      throw new Error(`Evidence attempt ownership mismatch: ${context.attemptId}`);
+      throw new VerifyEvidenceCheckpointError(
+        `Evidence attempt ownership mismatch: ${context.attemptId}`,
+      );
     }
   }
 
@@ -241,6 +260,28 @@ export class EvidenceCoordinator extends Service {
 
   async hasUnsettledWorkAttempt(workflowRunId: string, workId: string): Promise<boolean> {
     return (await this.unsettledWorkAttemptIds(workflowRunId, workId)).length > 0;
+  }
+
+  private async boundVerifyAttempt(
+    binding: WorkflowEvidenceBinding | null,
+  ): Promise<string | null> {
+    if (!binding?.acceptanceContext) return null;
+    const matches = (await this.contexts()).filter(
+      ({ workflowBinding }) =>
+        workflowBinding?.workflowRunId === binding.workflowRunId &&
+        workflowBinding.workflowActionId === binding.workflowActionId &&
+        workflowBinding.checkEpoch === binding.checkEpoch &&
+        workflowBinding.workflowInputDigest === binding.workflowInputDigest,
+    );
+    if (matches.length > 1)
+      throw new VerifyEvidenceCheckpointError(
+        'Verify Work has conflicting Evidence Attempt bindings',
+      );
+    if (matches[0] && !this.verifyBindingMatches(binding, matches[0]))
+      throw new VerifyEvidenceCheckpointError(
+        'Verify Evidence Attempt has a different Host review receipt',
+      );
+    return matches[0]?.attemptId ?? null;
   }
   async unsettledWorkAttemptIds(workflowRunId: string, workId: string): Promise<string[]> {
     const ids: string[] = [];
@@ -261,6 +302,53 @@ export class EvidenceCoordinator extends Service {
       }
     }
     return ids.sort();
+  }
+
+  private assertVerifyCheckpoint(
+    state: RunState,
+    expected: Omit<VerifyEvidenceCheckpoint, 'reviewReceiptId'> & { reviewReceiptId?: string },
+  ): string {
+    const lifecycle = state.changeLifecycle;
+    const work = lifecycle?.currentWork;
+    const execution = state.workExecution;
+    if (
+      state.reconciliationRequired ||
+      state.status !== 'running' ||
+      lifecycle?.phase !== 'verify' ||
+      work?.kind !== 'evidence.verify' ||
+      work.workId !== expected.workId ||
+      lifecycle.checkEpoch !== expected.checkEpoch ||
+      work.inputDigest !== expected.inputDigest ||
+      execution?.workId !== work.workId ||
+      execution.checkEpoch !== lifecycle.checkEpoch ||
+      execution.inputDigest !== work.inputDigest ||
+      (execution.status !== 'outcome' &&
+        !(
+          execution.status === 'validated' && execution.validatorId === work.validatorProfile.id
+        )) ||
+      execution.actionOutcome?.status !== 'succeeded' ||
+      !execution.receiptId ||
+      (expected.reviewReceiptId !== undefined && execution.receiptId !== expected.reviewReceiptId)
+    )
+      throw new VerifyEvidenceCheckpointError(
+        'Evidence requires the exact active Verify Work and succeeded Host review',
+      );
+    return execution.receiptId;
+  }
+
+  private verifyBindingMatches(
+    binding: WorkflowEvidenceBinding,
+    context: EvidenceRunContext,
+  ): boolean {
+    const previous = context.workflowBinding;
+    return (
+      previous?.workflowRunId === binding.workflowRunId &&
+      previous.workflowActionId === binding.workflowActionId &&
+      previous.checkEpoch === binding.checkEpoch &&
+      previous.workflowInputDigest === binding.workflowInputDigest &&
+      (previous.reviewReceiptId === undefined ||
+        previous.reviewReceiptId === binding.reviewReceiptId)
+    );
   }
 
   private async effectiveConfig(
@@ -407,6 +495,7 @@ export class EvidenceCoordinator extends Service {
   private async workflowBinding(
     workflowRunId: string | null,
     profileId: string,
+    expected?: VerifyEvidenceCheckpoint,
   ): Promise<WorkflowEvidenceBinding | null> {
     if (workflowRunId === null) return null;
     const [state, workflow] = await Promise.all([
@@ -430,13 +519,23 @@ export class EvidenceCoordinator extends Service {
         !verification ||
         work.inputDigest !== verification.digest
       ) {
-        throw new Error(`Change Run ${workflowRunId} has no active Verify Work`);
+        throw new VerifyEvidenceCheckpointError(
+          `Change Run ${workflowRunId} has no active Verify Work`,
+        );
       }
       if (verification.evidenceProfile.id !== profileId) {
         throw new Error(
           `Verify Work requires evidence profile ${verification.evidenceProfile.id}, not ${profileId}`,
         );
       }
+      const reviewReceiptId = this.assertVerifyCheckpoint(
+        state,
+        expected ?? {
+          workId: work.workId,
+          checkEpoch: lifecycle.checkEpoch,
+          inputDigest: verification.digest,
+        },
+      );
       return {
         workflowRunId,
         workflowActionId: work.workId,
@@ -444,6 +543,7 @@ export class EvidenceCoordinator extends Service {
         checkEpoch: lifecycle.checkEpoch,
         workflowInputDigest: verification.digest,
         expectedEvidenceFingerprint: verification.evidenceProfile.fingerprintDigest,
+        reviewReceiptId,
         acceptanceContext: {
           verificationInputDigest: verification.digest,
           acceptanceSetHash: verification.acceptanceSetHash,
@@ -455,6 +555,8 @@ export class EvidenceCoordinator extends Service {
         },
       };
     }
+    if (expected)
+      throw new VerifyEvidenceCheckpointError('The requested Verify Work is no longer active');
     if (
       state.status !== 'waiting' ||
       state.pendingActionId === null ||
@@ -532,10 +634,19 @@ export class EvidenceCoordinator extends Service {
     attemptId: string = randomUUID(),
     workflowRunId: string | null = null,
     signal?: AbortSignal,
+    expectedVerify?: VerifyEvidenceCheckpoint,
   ): Promise<
     EvidenceRunResult & { gate: EvidenceGateProjection; telemetry: EvidenceTelemetryStatus }
   > {
-    return this.runWithRepositories(profileId, [], attemptId, workflowRunId, signal, false);
+    return this.runWithRepositories(
+      profileId,
+      [],
+      attemptId,
+      workflowRunId,
+      signal,
+      false,
+      expectedVerify,
+    );
   }
 
   async runForRepositories(
@@ -658,6 +769,7 @@ export class EvidenceCoordinator extends Service {
     workflowRunId: string | null,
     signal: AbortSignal | undefined,
     useOverrides: boolean,
+    expectedVerify?: VerifyEvidenceCheckpoint,
   ): Promise<
     EvidenceRunResult & { gate: EvidenceGateProjection; telemetry: EvidenceTelemetryStatus }
   > {
@@ -673,7 +785,7 @@ export class EvidenceCoordinator extends Service {
                 throw new Error(`Evidence attempt already exists: ${attemptId}`);
               }
               const [binding, planned] = await Promise.all([
-                this.workflowBinding(workflowRunId, profileId),
+                this.workflowBinding(workflowRunId, profileId, expectedVerify),
                 this.planWithRepositories(
                   profileId,
                   useOverrides ? repositories : null,
@@ -681,6 +793,8 @@ export class EvidenceCoordinator extends Service {
                 ),
               ]);
               const { config, plan, fingerprint } = planned;
+              const boundAttempt = await this.boundVerifyAttempt(binding);
+              if (boundAttempt) throw new VerifyAttemptAlreadyBound(boundAttempt);
               if (
                 binding?.expectedEvidenceFingerprint &&
                 binding.expectedEvidenceFingerprint !== fingerprint.digest
@@ -703,7 +817,22 @@ export class EvidenceCoordinator extends Service {
                 decisionRequests: [],
                 updatedAt: new Date().toISOString(),
               };
-              await atomicWriteJson(this.contextFile(attemptId), context);
+              if (binding?.acceptanceContext) {
+                await this.ctx.workflowRuns.reserveVerifyEvidenceAttempt(
+                  binding.workflowRunId,
+                  async (state) => {
+                    this.assertVerifyCheckpoint(state, {
+                      workId: binding.workflowActionId,
+                      checkEpoch: binding.checkEpoch!,
+                      inputDigest: binding.workflowInputDigest!,
+                      reviewReceiptId: binding.reviewReceiptId!,
+                    });
+                    await atomicWriteJson(this.contextFile(attemptId), context);
+                  },
+                );
+              } else {
+                await atomicWriteJson(this.contextFile(attemptId), context);
+              }
               markDurableBoundary();
               return this.executeContext(context, config, operationSignal, 'completed');
             }),
@@ -778,9 +907,23 @@ export class EvidenceCoordinator extends Service {
         const discovered = await this.loadContext(attemptId);
         return this.leases.withLease(`evidence-profile:${discovered.profileId}`, async () => {
           const context = await this.loadContext(attemptId);
+          if (context.status === 'released-before-start')
+            throw new Error(
+              `Verify Work input fingerprint changed before Evidence execution: ${context.profileId}`,
+            );
           if (context.status !== 'running') {
             await this.flushTelemetry(attemptId);
             return this.status(attemptId);
+          }
+          if (context.workflowBinding?.acceptanceContext) {
+            const active = await this.workflowBinding(
+              context.workflowBinding.workflowRunId,
+              context.profileId,
+            );
+            if (!active || !this.verifyBindingMatches(active, context))
+              throw new VerifyEvidenceCheckpointError(
+                'Evidence Attempt no longer belongs to the active Verify Work',
+              );
           }
           const attempt = await optional(() => this.store.loadAttempt(attemptId));
           if (!attempt) {
@@ -803,6 +946,12 @@ export class EvidenceCoordinator extends Service {
               context.workflowBinding?.workflowRunId,
             );
             if (currentFingerprint.digest !== context.fingerprint.digest) {
+              if (context.workflowBinding?.acceptanceContext)
+                await atomicWriteJson(this.contextFile(attemptId), {
+                  ...context,
+                  status: 'released-before-start',
+                  updatedAt: new Date().toISOString(),
+                } satisfies EvidenceRunContext);
               throw new Error(
                 `Verify Work input fingerprint changed before Evidence execution: ${context.profileId}`,
               );
@@ -912,19 +1061,41 @@ export class EvidenceCoordinator extends Service {
     attemptId: string,
     workflowRunId: string,
     signal?: AbortSignal,
+    expectedVerify?: VerifyEvidenceCheckpoint,
   ): Promise<EvidenceStatus> {
     const existing = await this.lookup(attemptId);
     if (existing) {
       this.assertRunOwner(existing.context, profileId, workflowRunId);
+      if (!expectedVerify && !existing.context.workflowBinding?.acceptanceContext)
+        return this.resume(attemptId, signal);
+    }
+    const binding = await this.workflowBinding(workflowRunId, profileId, expectedVerify);
+    const bound = await this.boundVerifyAttempt(binding);
+    if (bound) return this.resume(bound, signal);
+    if (existing) {
+      if (!binding || !this.verifyBindingMatches(binding, existing.context))
+        throw new VerifyEvidenceCheckpointError(
+          'Requested Evidence Attempt belongs to an older Verify Work',
+        );
       return this.resume(attemptId, signal);
     }
     try {
-      await this.run(profileId, attemptId, workflowRunId, signal);
+      await this.run(profileId, attemptId, workflowRunId, signal, expectedVerify);
       return this.status(attemptId);
     } catch (error) {
+      if (error instanceof VerifyAttemptAlreadyBound) return this.resume(error.attemptId, signal);
       const reason = error instanceof Error ? error.message : String(error);
       if (!reason.includes(`Evidence attempt already exists: ${attemptId}`)) throw error;
-      this.assertRunOwner(await this.loadContext(attemptId), profileId, workflowRunId);
+      const owned = await optional(() => this.loadContext(attemptId));
+      if (!owned)
+        throw error instanceof Error && error.cause instanceof ResourceLeaseConflictError
+          ? error.cause
+          : error;
+      this.assertRunOwner(owned, profileId, workflowRunId);
+      if (binding?.acceptanceContext && !this.verifyBindingMatches(binding, owned))
+        throw new VerifyEvidenceCheckpointError(
+          'Requested Evidence Attempt belongs to another Verify Work',
+        );
       return this.resume(attemptId, signal);
     }
   }
@@ -1109,6 +1280,63 @@ export class EvidenceCoordinator extends Service {
       attemptId,
       bundleId: status.bundle.bundleId,
     };
+  }
+
+  async verifyRepairStagnation(state: RunState, attemptId: string, bundleId: string) {
+    const lifecycle = state.changeLifecycle;
+    const previous = lifecycle?.buildProtocol?.verifyRepair?.source;
+    if (!previous) return null;
+    if (
+      lifecycle?.phase !== 'verify' ||
+      !lifecycle.verificationInput ||
+      !lifecycle.currentWork ||
+      previous.checkEpoch >= lifecycle.checkEpoch ||
+      previous.attemptId === attemptId
+    )
+      throw new VerifyRepairUnavailableError('previous repair does not precede the current Verify');
+
+    const [prior, current] = await Promise.all([
+      this.status(previous.attemptId),
+      this.status(attemptId),
+    ]);
+    for (const { evidence, expectedBundle, expectedInput, expectedEpoch } of [
+      {
+        evidence: prior,
+        expectedBundle: previous.bundleId,
+        expectedInput: previous.verificationInputDigest,
+        expectedEpoch: previous.checkEpoch,
+      },
+      {
+        evidence: current,
+        expectedBundle: bundleId,
+        expectedInput: lifecycle.verificationInput.digest,
+        expectedEpoch: lifecycle.checkEpoch,
+      },
+    ]) {
+      const binding = evidence.context.workflowBinding;
+      if (
+        binding?.workflowRunId !== state.runId ||
+        binding.workflowStepId !== 'verify' ||
+        binding.checkEpoch !== expectedEpoch ||
+        binding.workflowInputDigest !== expectedInput ||
+        evidence.bundle?.bundleId !== expectedBundle ||
+        evidence.gate?.failureKind !== 'implementation'
+      )
+        throw new VerifyRepairUnavailableError(
+          'failed Bundle does not match its Verify checkpoint',
+        );
+    }
+    if (current.context.workflowBinding!.workflowActionId !== lifecycle.currentWork.workId)
+      throw new VerifyRepairUnavailableError(
+        'failed Bundle does not match the current Verify Work',
+      );
+    const signature = async (status: EvidenceStatus) =>
+      verifyRepairFailureSignature(
+        status.bundle!,
+        await Promise.all(status.bundle!.receiptIds.map((id) => this.store.loadReceipt(id))),
+      );
+    const [before, after] = await Promise.all([signature(prior), signature(current)]);
+    return before === after ? after : null;
   }
 
   /** Observe only selected nodes and their producer closure. A repair elsewhere may change the whole fingerprint. */

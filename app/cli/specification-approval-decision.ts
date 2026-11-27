@@ -115,3 +115,22 @@ export async function reviewHumanDecision(options: {
     terminal.close();
   }
 }
+
+export async function reviewVerifyRepairDecision(options: {
+  proposalHash: string;
+  details: readonly string[];
+  input: NodeJS.ReadableStream;
+  output: NodeJS.WritableStream;
+}): Promise<boolean> {
+  const terminal = createInterface({ input: options.input, output: options.output });
+  try {
+    options.output.write(
+      `\nRepeated Verify failure\nProposal: ${options.proposalHash}\n${options.details.join('\n')}\n\n1) Approve one repair\n2) Leave paused\n`,
+    );
+    const answer = (await terminal.question('Decision [1-2]: ')).trim();
+    if (answer !== '1' && answer !== '2') throw new Error('Decision must be 1 or 2');
+    return answer === '1';
+  } finally {
+    terminal.close();
+  }
+}

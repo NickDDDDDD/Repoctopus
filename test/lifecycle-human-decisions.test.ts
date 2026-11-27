@@ -196,6 +196,73 @@ function fixture(
 }
 
 describe('Lifecycle Human Decision authority facade', () => {
+  it('keeps a Verify repair answer scoped to the original Run and exposes its committed replay', async () => {
+    const f = fixture('build', 'verify-repair');
+    const response = { ...f.response(), phase: 'verify', decisionKind: 'verify-repair-stagnation' };
+    const lifecycle = f.state.changeLifecycle!;
+    lifecycle.phase = 'verify';
+    const wait = lifecycle.waitCondition!;
+    if (wait.kind !== 'human-decision') throw new Error('Expected fixture Human Decision');
+    wait.verifyRepair = {
+      attemptId: 'failed-attempt',
+      bundleId: 'failed-bundle',
+      failureSignature: hash('f'),
+      failedNodeIds: ['check-a'],
+      failedAcceptanceIds: ['acceptance-a'],
+      affectedPackageIds: ['package-a'],
+    };
+    const record = (observation: Record<string, unknown>) =>
+      f.events.push({
+        schemaVersion: 1,
+        sequence: f.events.length + 1,
+        eventId: `event-${f.events.length}`,
+        timestamp: '2026-11-11T00:00:00.000Z',
+        type: 'change.lifecycle.transitioned',
+        runId: f.state.runId,
+        stateVersion: 1,
+        compositionDigest: f.state.composition.compositionDigest,
+        data: { observation },
+      });
+    record({ kind: 'verify-repair-decision-required', wait });
+    expect(await f.service.read({ runId: f.state.runId })).toMatchObject({
+      phase: 'verify',
+      status: 'pending',
+      choices: ['approve'],
+      materials: { wait },
+    });
+    f.apply.mockImplementationOnce(({ response: submitted }) => {
+      record({
+        kind: 'verify-repair-decision',
+        requestId: submitted.requestId,
+        proposalDigest: submitted.proposalHash,
+        humanDecision: {
+          decision: submitted.decision,
+          actorId: actor.actorId,
+          source: actor.source,
+        },
+      });
+      lifecycle.waitCondition = null;
+      lifecycle.phase = 'build';
+      f.state.status = 'running';
+      return Promise.resolve();
+    });
+    for (let i = 0; i < 2; i++)
+      expect(await f.service.submit({ runId: f.state.runId, response, actor })).toMatchObject({
+        phase: 'verify',
+        status: 'accepted',
+        authorityScope: 'run',
+      });
+    expect(f.apply).toHaveBeenCalledOnce();
+    expect(f.status).not.toHaveBeenCalled();
+    await expect(
+      f.service.submit({
+        runId: f.state.runId,
+        response: { ...response, decision: 'reject' },
+        actor,
+      }),
+    ).rejects.toThrow(/leave it pending/);
+  });
+
   it.each(['approve', 'revise', 'reject'] as const)(
     'preserves the original Build Plan %s choice across recovery and rejects conflicting replay',
     async (choice) => {

@@ -7,6 +7,7 @@ import {
   deriveVerifyRepairScope,
   createVerifyRepair,
   assertVerifyRepair,
+  verifyRepairFailureSignature,
 } from '../domains/change-lifecycle/verify-repair.js';
 import {
   advanceBuildProtocol,
@@ -93,6 +94,25 @@ function evidence(dependencies: readonly string[] = []) {
 }
 
 describe('Verify implementation repair scope', () => {
+  it('compares effective failed inputs and scope without execution or receipt identities', () => {
+    const first = evidence();
+    const later = evidence();
+    later.bundle.attemptId = 'another-attempt';
+    later.bundle.bundleId = 'another-bundle';
+    later.bundle.acceptanceTrace!.verificationInputDigest = sha('new verify work');
+    later.receipts[0]!.attemptId = 'another-attempt';
+    later.receipts[0]!.receiptId = 'another-failed-receipt';
+    later.bundle.checks[0]!.receiptId = 'another-failed-receipt';
+    later.bundle.acceptanceTrace!.entries[0]!.receiptIds = ['another-failed-receipt'];
+
+    const signature = verifyRepairFailureSignature(first.bundle, first.receipts);
+    expect(verifyRepairFailureSignature(later.bundle, later.receipts)).toBe(signature);
+
+    later.receipts[0]!.inputFingerprint = sha('changed contents from a producer').slice(7);
+    expect(later.bundle.inputFingerprint).toBe(first.bundle.inputFingerprint);
+    expect(verifyRepairFailureSignature(later.bundle, later.receipts)).not.toBe(signature);
+  });
+
   it('does not retain the newly submitted completion when repair invalidates its prerequisite', () => {
     const f = evidence(['a']);
     const initial = createBuildInvalidation({

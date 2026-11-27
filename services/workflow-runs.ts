@@ -1,4 +1,4 @@
-import type { EvidenceCoordinator } from './evidence-coordinator.js';
+import { VerifyEvidenceCheckpointError, type EvidenceCoordinator } from './evidence-coordinator.js';
 import {
   parseBuildStrategyCandidate,
   assertStrategyModes,
@@ -153,6 +153,7 @@ import { completeSpecificationTaskDocument } from '../domains/specification/task
 import type {
   ChangeLifecycleState,
   ChangeRunProjection,
+  HumanDecisionWaitCondition,
   OpenRepairReasonCode,
   OpenRepairSource,
   WorkDescriptor,
@@ -168,7 +169,10 @@ import {
   createSpecificationCloseWork,
 } from '../domains/change-lifecycle/archive-input.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
-import { FileResourceLeaseManager } from '../platform/runtime/resource-lease.js';
+import {
+  FileResourceLeaseManager,
+  ResourceLeaseConflictError,
+} from '../platform/runtime/resource-lease.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
 import { normalizeProtectedBranchPatterns } from '../domains/delivery/branch-policy.js';
 import type { ActionIntent, ActionReceipt, WorkExecutorIdentity } from '../domains/action/types.js';
@@ -891,6 +895,50 @@ export class WorkflowRuns extends Service {
     return this.operations.run({ cancellable: false, signal }, async () => {
       const state = await this.ctx.runStore.loadRun(input.runId);
       const lifecycle = state.changeLifecycle;
+      const verifyWait = lifecycle?.waitCondition;
+      if (
+        lifecycle?.phase === 'verify' &&
+        verifyWait?.kind === 'human-decision' &&
+        verifyWait.verifyRepair
+      ) {
+        if (
+          state.status !== 'waiting' ||
+          !input.actor.authenticated ||
+          input.response.decision !== 'approve' ||
+          input.response.requestId !== verifyWait.requestId ||
+          input.response.proposalHash !== verifyWait.proposalDigest
+        )
+          throw new Error('Verify repair approval does not match the current proposal');
+        const { attemptId, bundleId } = verifyWait.verifyRepair;
+        const continuation = await this.createVerifyFailureContinuation(
+          state,
+          'implementation-failure',
+          signal,
+          attemptId,
+        );
+        const repaired = await this.applyVerifyRecovery(
+          state,
+          lifecycle,
+          'implementation-failure',
+          attemptId,
+          bundleId,
+          verifyWait.reason,
+          continuation,
+          signal,
+          {
+            requestId: verifyWait.requestId,
+            proposalDigest: verifyWait.proposalDigest,
+            humanDecision: {
+              decision: 'approve',
+              actorId: input.actor.actorId,
+              source: input.actor.source,
+              ...(input.interaction ? { interaction: input.interaction } : {}),
+            },
+          },
+        );
+        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, continuation.work);
+        return repaired.value;
+      }
       if (
         lifecycle?.phase === 'open' &&
         state.status === 'waiting' &&
@@ -1655,6 +1703,24 @@ export class WorkflowRuns extends Service {
         inputDigest: observation.planningDigest,
         evidenceIds: observation.evidenceDigests,
       },
+      ...(lifecycle.phase === 'verify'
+        ? {
+            reobserve: async (latest: RunState) => {
+              await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal, false);
+              const confirmed = await this.observeChangePlanning(
+                latest,
+                latest.changeLifecycle!,
+                signal,
+              );
+              if (
+                confirmed.status !== 'invalid' ||
+                confirmed.invalidationKind !== observation.invalidationKind ||
+                confirmed.planningDigest !== observation.planningDigest
+              )
+                throw new Error('Verify planning observation changed before replacement');
+            },
+          }
+        : {}),
     });
     await this.ctx.workExecutionAuthority.recordWorkCreated(state.runId, work);
     return {
@@ -2919,6 +2985,15 @@ export class WorkflowRuns extends Service {
     const lifecycle = state.changeLifecycle;
     if (!lifecycle || !this.projectInput || state.reconciliationRequired)
       throw new Error('Evidence workspace authority is unavailable');
+    if (
+      lifecycle.phase === 'verify' &&
+      lifecycle.currentWork &&
+      (await this.ctx.evidenceCoordinator.hasUnsettledWorkAttempt(
+        state.runId,
+        lifecycle.currentWork.workId,
+      ))
+    )
+      throw new Error('Settle the current Verify Evidence Attempt before replacing its Work');
     const [previous, current] = await Promise.all([
       this.ctx.runStore.loadProjectSnapshot(state.runId),
       this.ctx.project.snapshot(this.projectInput),
@@ -2943,13 +3018,13 @@ export class WorkflowRuns extends Service {
   }
 
   private async preserveUnsettledVerify(
-    runId: string,
+    state: RunState,
     attemptId: string,
     bundleId: string | null,
     reason: string,
     continuation: 'reconcile' | 'reobserve' = 'reconcile',
   ): Promise<RuntimeResult<VerifyChangeRunResult>> {
-    const state = await this.ctx.runStore.loadRun(runId);
+    const { runId } = state;
     const recovery = {
       schemaVersion: 2 as const,
       continuation,
@@ -2961,14 +3036,21 @@ export class WorkflowRuns extends Service {
           ? ('external-result-unknown' as const)
           : ('evidence-observation-unavailable' as const),
     };
-    await this.ctx.workExecutionAuthority.recordContinuation(runId, recovery);
+    await this.ctx.workExecutionAuthority.recordContinuation(runId, recovery, true);
     const run = await this.coordinator.status(runId);
+    const matches =
+      run.state.status === 'running' &&
+      run.state.changeLifecycle?.currentWork?.workId === recovery.workId &&
+      run.state.changeLifecycle?.checkEpoch === recovery.checkEpoch;
+    const wait = run.state.changeLifecycle?.waitCondition;
+    const paused = wait?.kind === 'human-decision' ? wait.verifyRepair : null;
     return {
       value: {
-        attemptId,
-        bundleId,
+        attemptId: paused?.attemptId ?? attemptId,
+        bundleId: paused?.bundleId ?? bundleId,
         gate: 'blocked',
-        run: run.state.reconciliationRequired ? run : { ...run, continuation: recovery },
+        run:
+          run.state.reconciliationRequired || !matches ? run : { ...run, continuation: recovery },
       },
       diagnostics: [
         {
@@ -2989,9 +3071,11 @@ export class WorkflowRuns extends Service {
   ): Promise<RuntimeResult<ResumeView> | null> {
     const state = await this.ctx.runStore.loadRun(runId);
     const lifecycle = state.changeLifecycle;
+    const wait = lifecycle?.waitCondition;
+    const pausedVerify = wait?.kind === 'human-decision' ? wait.verifyRepair : null;
     if (
       !lifecycle ||
-      state.status !== 'running' ||
+      (state.status !== 'running' && !(state.status === 'waiting' && pausedVerify)) ||
       !['verify', 'archive'].includes(lifecycle.phase) ||
       !lifecycle.verificationInput ||
       !lifecycle.buildProtocol?.binding ||
@@ -3043,6 +3127,8 @@ export class WorkflowRuns extends Service {
     if (result.value.state.reconciliationRequired) return complete();
     const latest = await this.ctx.runStore.loadRun(runId);
     const active = latest.changeLifecycle!;
+    const activeWait = active.waitCondition;
+    const paused = activeWait?.kind === 'human-decision' ? activeWait.verifyRepair : null;
     const latestAttemptId = result.value.changeLifecycle?.evidence.latestAttemptId ?? null;
     // An unknown or started external Action must reconcile its original invocation;
     // input observation never creates another closure/publication effect.
@@ -3064,7 +3150,10 @@ export class WorkflowRuns extends Service {
       return complete();
     try {
       const planning = await this.observeChangePlanning(latest, active, signal);
-      if (planning.status === 'unavailable') return this.planningObservationUnavailable(runId);
+      if (planning.status === 'unavailable') {
+        if (!paused) return this.planningObservationUnavailable(runId);
+        throw new Error('Planning authority is unavailable for paused Verify');
+      }
       if (planning.status === 'invalid') {
         const revised = await this.returnToDesignForPlanningRevision(
           latest,
@@ -3084,9 +3173,12 @@ export class WorkflowRuns extends Service {
       let drift =
         refreshed.fingerprint.digest !==
         active.verificationInput!.evidenceProfile.fingerprintDigest;
-      if (!drift && active.phase === 'archive' && latestAttemptId) {
-        drift =
-          (await this.ctx.evidenceCoordinator.assessInputs(latestAttemptId, runId)) === 'drift';
+      const boundAttempt =
+        paused?.attemptId ?? (active.phase === 'archive' ? latestAttemptId : null);
+      if (!drift && boundAttempt) {
+        drift = paused
+          ? await this.pausedVerifyInputsChanged(latest, paused)
+          : (await this.ctx.evidenceCoordinator.assessInputs(boundAttempt, runId)) === 'drift';
       }
       if (!drift) {
         const archive = active.archiveDeliveryInput;
@@ -3149,8 +3241,8 @@ export class WorkflowRuns extends Service {
           latest,
           active,
           'evidence-drift',
-          latestAttemptId ?? 'uncollected',
-          null,
+          paused?.attemptId ?? latestAttemptId ?? 'uncollected',
+          paused?.bundleId ?? null,
           'Declared Evidence inputs changed before Verify acceptance',
           continuation,
         );
@@ -3173,15 +3265,19 @@ export class WorkflowRuns extends Service {
         value: {
           ...value,
           reconciliation: result.value.reconciliation,
-          continuation: {
-            schemaVersion: 2,
-            continuation: 'reobserve',
-            workId: execution?.workId ?? value.changeLifecycle?.currentWork?.workId ?? null,
-            attempt: execution?.attempt ?? null,
-            checkEpoch: value.state.changeLifecycle?.checkEpoch ?? null,
-            reason: 'evidence-observation-unavailable',
-            observationStage: 'evidence-inputs',
-          },
+          ...(paused && value.state.changeLifecycle?.waitCondition?.waitId === activeWait?.waitId
+            ? {}
+            : {
+                continuation: {
+                  schemaVersion: 2,
+                  continuation: 'reobserve',
+                  workId: execution?.workId ?? value.changeLifecycle?.currentWork?.workId ?? null,
+                  attempt: execution?.attempt ?? null,
+                  checkEpoch: value.state.changeLifecycle?.checkEpoch ?? null,
+                  reason: 'evidence-observation-unavailable',
+                  observationStage: 'evidence-inputs',
+                },
+              }),
         },
         diagnostics: [
           ...result.diagnostics,
@@ -3834,6 +3930,11 @@ export class WorkflowRuns extends Service {
       };
     }
     const preflightLifecycle = preflight.changeLifecycle;
+    if (
+      preflightLifecycle?.waitCondition?.kind === 'human-decision' &&
+      preflightLifecycle.waitCondition.verifyRepair
+    )
+      return evidenceRecovery ?? { value: await this.coordinator.status(runId), diagnostics: [] };
     if (
       preflightLifecycle?.phase === 'verify' &&
       preflightLifecycle.currentWork &&
@@ -6566,14 +6667,7 @@ export class WorkflowRuns extends Service {
     const binding = protocol.binding!;
     if (!attemptId) throw new Error('Verify repair requires the failed machine Attempt');
     const facts = await this.ctx.evidenceCoordinator.verifyRepairFacts(state, attemptId);
-    const invalidation = createBuildInvalidation({
-      source: 'verify',
-      plan,
-      classification: 'implementation',
-      affectedPackageIds: facts.affectedPackageIds,
-      packageCompletions: protocol.packageCompletions,
-      reason: 'Required machine evidence rejected the implementation',
-    });
+    const invalidation = this.verifyRepairInvalidation(protocol, facts.affectedPackageIds);
     const verifyRepair = createVerifyRepair({
       source: {
         attemptId: facts.attemptId,
@@ -6643,6 +6737,7 @@ export class WorkflowRuns extends Service {
     reason: string,
     continuation: Awaited<ReturnType<WorkflowRuns['createVerifyFailureContinuation']>>,
     signal?: AbortSignal,
+    approval?: LifecycleRecoveryMaterialization['verifyRepairApproval'],
   ): Promise<RuntimeResult<RunStatusView>> {
     const evidenceIds = [attemptId, ...(bundleId ? [bundleId] : [])];
     if (result === 'implementation-failure') {
@@ -6669,19 +6764,23 @@ export class WorkflowRuns extends Service {
           invalidation: continuation.invalidation,
           verifyRepair: continuation.verifyRepair,
           evidenceIds,
+          ...(approval ? { verifyRepairApproval: approval } : {}),
         },
         reobserve: async (latest) => {
-          await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal);
+          if (approval) {
+            const wait = lifecycle.waitCondition;
+            if (wait?.kind !== 'human-decision' || !wait.verifyRepair)
+              throw new Error('Verify repair approval requires a paused Verify');
+            await this.assertStagnantVerifyCurrent(latest, state, wait.verifyRepair, signal);
+          } else {
+            await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal);
+          }
           const facts = await this.ctx.evidenceCoordinator.verifyRepairFacts(latest, attemptId);
           const latestProtocol = latest.changeLifecycle!.buildProtocol!;
-          const invalidation = createBuildInvalidation({
-            source: 'verify',
-            plan: latestProtocol.plan!,
-            classification: 'implementation',
-            affectedPackageIds: facts.affectedPackageIds,
-            packageCompletions: latestProtocol.packageCompletions,
-            reason: 'Required machine evidence rejected the implementation',
-          });
+          const invalidation = this.verifyRepairInvalidation(
+            latestProtocol,
+            facts.affectedPackageIds,
+          );
           if (
             invalidation.digest !== continuation.invalidation!.digest ||
             canonicalJson(
@@ -6718,8 +6817,158 @@ export class WorkflowRuns extends Service {
         verificationInput: continuation.verificationInput,
         evidenceIds,
       },
-      reobserve: (latest) => this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal),
+      reobserve: async (latest) => {
+        await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal);
+        if (result !== 'evidence-drift') return;
+        const profile = continuation.verificationInput!.evidenceProfile;
+        const current = await this.ctx.evidenceCoordinator.plan(profile.id, state.runId);
+        if (current.fingerprint.digest !== profile.fingerprintDigest)
+          throw new Error('The refreshed Verify input changed before acceptance');
+        const wait = lifecycle.waitCondition;
+        if (
+          wait?.kind === 'human-decision' &&
+          wait.verifyRepair &&
+          !(await this.pausedVerifyInputsChanged(latest, wait.verifyRepair))
+        )
+          throw new Error('The paused Verify input observation changed before acceptance');
+      },
     });
+  }
+
+  private verifyRepairInvalidation(
+    protocol: NonNullable<ChangeLifecycleState['buildProtocol']>,
+    affectedPackageIds: readonly string[],
+  ) {
+    return createBuildInvalidation({
+      source: 'verify',
+      plan: protocol.plan!,
+      classification: 'implementation',
+      affectedPackageIds,
+      packageCompletions: protocol.packageCompletions,
+      reason: 'Required machine evidence rejected the implementation',
+    });
+  }
+
+  private async pausedVerifyInputsChanged(
+    state: RunState,
+    failure: NonNullable<HumanDecisionWaitCondition['verifyRepair']>,
+  ): Promise<boolean> {
+    if (
+      (await this.ctx.evidenceCoordinator.assessInputs(failure.attemptId, state.runId)) === 'drift'
+    )
+      return true;
+    const facts = await this.ctx.evidenceCoordinator.verifyRepairFacts(state, failure.attemptId);
+    const invalidation = this.verifyRepairInvalidation(
+      state.changeLifecycle!.buildProtocol!,
+      facts.affectedPackageIds,
+    );
+    return (
+      canonicalJson(invalidation.affectedPackageIds) !== canonicalJson(failure.affectedPackageIds)
+    );
+  }
+
+  private async assertStagnantVerifyCurrent(
+    latest: RunState,
+    expected: RunState,
+    failure: NonNullable<HumanDecisionWaitCondition['verifyRepair']>,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const lifecycle = latest.changeLifecycle;
+    const prior = expected.changeLifecycle;
+    if (
+      lifecycle?.phase !== 'verify' ||
+      !prior?.currentWork ||
+      latest.status !== expected.status ||
+      lifecycle.revision !== prior.revision ||
+      lifecycle.checkEpoch !== prior.checkEpoch ||
+      lifecycle.currentWork?.workId !== prior.currentWork.workId ||
+      lifecycle.waitCondition?.waitId !== prior.waitCondition?.waitId ||
+      latest.workExecution?.status !== 'validated' ||
+      latest.workExecution.workId !== lifecycle.currentWork.workId ||
+      latest.workExecution.checkEpoch !== lifecycle.checkEpoch ||
+      latest.workExecution.receiptId !== expected.workExecution?.receiptId
+    )
+      throw new Error('Verify failure belongs to a stale checkpoint');
+    await this.assertEvidenceWorkspaceAuthorityCurrent(latest, signal);
+    if (
+      (await this.pausedVerifyInputsChanged(latest, failure)) ||
+      (await this.ctx.evidenceCoordinator.verifyRepairStagnation(
+        latest,
+        failure.attemptId,
+        failure.bundleId,
+      )) !== failure.failureSignature
+    )
+      throw new Error('Verify failed inputs changed before the protected decision');
+    const facts = await this.ctx.evidenceCoordinator.verifyRepairFacts(latest, failure.attemptId);
+    if (
+      canonicalJson(facts.failedNodeIds) !== canonicalJson(failure.failedNodeIds) ||
+      canonicalJson(facts.failedAcceptanceIds) !== canonicalJson(failure.failedAcceptanceIds)
+    )
+      throw new Error('Verify failure scope changed before the protected decision');
+  }
+
+  private async pauseStagnantVerify(
+    state: RunState,
+    attemptId: string,
+    bundleId: string,
+    reason: string,
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<RunStatusView> | null> {
+    const lifecycle = state.changeLifecycle!;
+    if (!lifecycle.buildProtocol?.verifyRepair) return null;
+    const signature = await this.ctx.evidenceCoordinator.verifyRepairStagnation(
+      state,
+      attemptId,
+      bundleId,
+    );
+    if (!signature) return null;
+    const facts = await this.ctx.evidenceCoordinator.verifyRepairFacts(state, attemptId);
+    const work = lifecycle.currentWork!;
+    const verifyRepair = {
+      attemptId,
+      bundleId,
+      failureSignature: signature,
+      failedNodeIds: facts.failedNodeIds,
+      failedAcceptanceIds: facts.failedAcceptanceIds,
+      affectedPackageIds: this.verifyRepairInvalidation(
+        lifecycle.buildProtocol,
+        facts.affectedPackageIds,
+      ).affectedPackageIds,
+    };
+    const proposalDigest = `sha256:${createHash('sha256')
+      .update(
+        canonicalJson({
+          runId: state.runId,
+          workId: work.workId,
+          checkEpoch: lifecycle.checkEpoch,
+          verifyRepair,
+        }),
+      )
+      .digest('hex')}` as const;
+    const requestId = `human-decision:${proposalDigest.slice(7)}`;
+    return this.coordinator.acceptChangeObservation(
+      state.runId,
+      {
+        kind: 'verify-repair-decision-required',
+        expectedRevision: lifecycle.revision,
+        checkEpoch: lifecycle.checkEpoch,
+        workId: work.workId,
+        wait: {
+          schemaVersion: 1,
+          kind: 'human-decision',
+          waitId: `verify-repair:${requestId}`,
+          requestId,
+          proposalDigest,
+          inputDigest: work.inputDigest,
+          verifyRepair,
+          reason: `Verify repeated the same failure with unchanged inputs. Approve one repair to continue. ${reason}`,
+        },
+      },
+      {
+        reobserve: (latest) =>
+          this.assertStagnantVerifyCurrent(latest, state, verifyRepair, signal),
+      },
+    );
   }
 
   verifyChange(
@@ -6732,7 +6981,8 @@ export class WorkflowRuns extends Service {
         observed &&
         (observed.value.state.reconciliationRequired ||
           observed.value.continuation?.continuation === 'reobserve' ||
-          observed.value.changeLifecycle?.phase !== 'verify')
+          observed.value.changeLifecycle?.phase !== 'verify' ||
+          observed.diagnostics.some((entry) => entry.code === 'change.evidence-inputs-refreshed'))
       ) {
         return {
           value: {
@@ -6747,6 +6997,18 @@ export class WorkflowRuns extends Service {
       const state = await this.ctx.runStore.loadRun(input.runId);
       const lifecycle = state.changeLifecycle;
       if (!lifecycle) throw new Error(`Run is not a Change Run: ${input.runId}`);
+      const wait = lifecycle.waitCondition;
+      if (state.status === 'waiting' && wait?.kind === 'human-decision' && wait.verifyRepair) {
+        return {
+          value: {
+            attemptId: wait.verifyRepair.attemptId,
+            bundleId: wait.verifyRepair.bundleId,
+            gate: 'blocked',
+            run: observed?.value ?? (await this.coordinator.status(input.runId)),
+          },
+          diagnostics: observed?.diagnostics ?? [],
+        };
+      }
       const current = { ...structuredClone(lifecycle), status: state.status };
       if (
         current.phase !== 'verify' ||
@@ -6790,20 +7052,15 @@ export class WorkflowRuns extends Service {
         input.runId,
         current.currentWork.workId,
       );
-      if (
-        unresolved.length > 1 ||
-        (unresolved.length === 1 &&
-          input.attemptId !== undefined &&
-          input.attemptId !== unresolved[0])
-      ) {
+      if (unresolved.length > 1) {
         return this.preserveUnsettledVerify(
-          input.runId,
+          state,
           unresolved[0]!,
           null,
           'Resolve the original Evidence Attempt before selecting another attempt identity',
         );
       }
-      const attemptId =
+      let attemptId =
         unresolved[0] ??
         input.attemptId ??
         `verify-${createHash('sha256')
@@ -6823,16 +7080,49 @@ export class WorkflowRuns extends Service {
           attemptId,
           input.runId,
           signal,
+          {
+            workId: current.currentWork.workId,
+            checkEpoch,
+            inputDigest: current.currentWork.inputDigest,
+            reviewReceiptId: execution.receiptId,
+          },
         );
+        attemptId = result.context.attemptId;
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error);
+        if (
+          error instanceof VerifyEvidenceCheckpointError ||
+          error instanceof ResourceLeaseConflictError
+        ) {
+          const run = await this.coordinator.status(input.runId);
+          const wait = run.state.changeLifecycle?.waitCondition;
+          const paused = wait?.kind === 'human-decision' ? wait.verifyRepair : null;
+          const activeIds =
+            !paused && run.state.changeLifecycle?.currentWork?.workId === current.currentWork.workId
+              ? await this.ctx.evidenceCoordinator.unsettledWorkAttemptIds(
+                  input.runId,
+                  current.currentWork.workId,
+                )
+              : [];
+          return {
+            value: {
+              attemptId: paused?.attemptId ?? (activeIds.length === 1 ? activeIds[0]! : ''),
+              bundleId: paused?.bundleId ?? null,
+              gate: 'blocked',
+              run,
+            },
+            diagnostics: [
+              { level: 'warning', code: 'change.verify-attempt-not-current', message: reason },
+            ],
+          };
+        }
         if (
           await this.ctx.evidenceCoordinator.hasUnsettledWorkAttempt(
             input.runId,
             current.currentWork.workId,
           )
         ) {
-          return this.preserveUnsettledVerify(input.runId, attemptId, null, reason);
+          return this.preserveUnsettledVerify(state, attemptId, null, reason);
         }
         const classification = reason.includes(
           'input fingerprint changed before Evidence execution',
@@ -6874,7 +7164,7 @@ export class WorkflowRuns extends Service {
         });
       } catch (error) {
         return this.preserveUnsettledVerify(
-          input.runId,
+          state,
           attemptId,
           result.bundle.bundleId,
           error instanceof Error ? error.message : 'Evidence input observation unavailable',
@@ -6888,7 +7178,7 @@ export class WorkflowRuns extends Service {
           )
         ) {
           return this.preserveUnsettledVerify(
-            input.runId,
+            state,
             attemptId,
             gate.bundleId,
             'The original Evidence Attempt contains an uncertain node result',
@@ -6897,7 +7187,7 @@ export class WorkflowRuns extends Service {
         const planning = await this.observeChangePlanning(state, lifecycle, signal);
         if (planning.status === 'unavailable') {
           return this.preserveUnsettledVerify(
-            input.runId,
+            state,
             attemptId,
             gate.bundleId,
             planning.reason,
@@ -6934,6 +7224,25 @@ export class WorkflowRuns extends Service {
         });
         let continuation: Awaited<ReturnType<WorkflowRuns['createVerifyFailureContinuation']>>;
         try {
+          if (rejected.result === 'implementation-failure' && rejected.bundleId) {
+            const paused = await this.pauseStagnantVerify(
+              state,
+              attemptId,
+              rejected.bundleId,
+              rejected.reason,
+              signal,
+            );
+            if (paused)
+              return {
+                value: {
+                  attemptId,
+                  bundleId: rejected.bundleId,
+                  gate: 'blocked',
+                  run: paused.value,
+                },
+                diagnostics: paused.diagnostics,
+              };
+          }
           continuation = await this.createVerifyFailureContinuation(
             state,
             rejected.result,
@@ -6942,7 +7251,7 @@ export class WorkflowRuns extends Service {
           );
         } catch (error) {
           return this.preserveUnsettledVerify(
-            input.runId,
+            state,
             attemptId,
             rejected.bundleId,
             error instanceof Error ? error.message : String(error),
@@ -6964,7 +7273,7 @@ export class WorkflowRuns extends Service {
         });
         if (!fallback) {
           return this.preserveUnsettledVerify(
-            input.runId,
+            state,
             attemptId,
             rejected.bundleId,
             'Planning authority is unavailable during protected Verify recovery',
@@ -7023,7 +7332,7 @@ export class WorkflowRuns extends Service {
         });
       if (!advanced) {
         return this.preserveUnsettledVerify(
-          input.runId,
+          state,
           attemptId,
           accepted.bundleId,
           'Planning authority is unavailable during protected acceptance',
@@ -7040,6 +7349,13 @@ export class WorkflowRuns extends Service {
         diagnostics: advanced.diagnostics,
       };
     });
+  }
+
+  reserveVerifyEvidenceAttempt(
+    runId: string,
+    persist: (state: RunState) => Promise<void>,
+  ): Promise<void> {
+    return this.coordinator.reserveVerifyEvidenceAttempt(runId, persist);
   }
 
   private async reverifyArchiveIfFingerprintChanged(

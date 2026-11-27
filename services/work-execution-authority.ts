@@ -2087,9 +2087,21 @@ export class WorkExecutionAuthority extends Service {
     return reconciled;
   }
 
-  async recordContinuation(runId: string, recovery: WorkExecutionRecovery): Promise<void> {
+  async recordContinuation(
+    runId: string,
+    recovery: WorkExecutionRecovery,
+    verifyCheckpointOnly = false,
+  ): Promise<void> {
     await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
       if (state.reconciliationRequired && recovery.reason !== 'project-drift')
+        return { value: undefined };
+      if (
+        verifyCheckpointOnly &&
+        (state.status !== 'running' ||
+          state.changeLifecycle?.currentWork?.kind !== 'evidence.verify' ||
+          state.changeLifecycle.currentWork.workId !== recovery.workId ||
+          state.changeLifecycle.checkEpoch !== recovery.checkEpoch)
+      )
         return { value: undefined };
       const openObservationUnavailable =
         recovery.continuation === 'reobserve' && recovery.reason === 'open-observation-unavailable';

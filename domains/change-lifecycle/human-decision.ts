@@ -8,7 +8,8 @@ export type LifecycleDecisionKind =
   | 'specification-open'
   | 'specification-design'
   | 'workspace-intent-revision'
-  | 'build-plan-risk';
+  | 'build-plan-risk'
+  | 'verify-repair-stagnation';
 export interface HumanDecisionInteraction {
   channel: 'native' | 'conversation';
   authorization: 'user-response' | 'delegated';
@@ -25,7 +26,7 @@ export interface LifecycleHumanDecisionResponse {
   apiVersion: 'repoctopus/v1alpha1';
   kind: 'LifecycleHumanDecisionResponse';
   runId: string;
-  phase: 'open' | 'design' | 'build';
+  phase: 'open' | 'design' | 'build' | 'verify';
   decisionKind: LifecycleDecisionKind;
   requestId: string;
   proposalHash: `sha256:${string}`;
@@ -94,6 +95,7 @@ export function parseLifecycleHumanDecisionResponse(
     'specification-design': 'design',
     'workspace-intent-revision': 'open',
     'build-plan-risk': 'build',
+    'verify-repair-stagnation': 'verify',
   } as const;
   if (
     typeof item.decisionKind !== 'string' ||
@@ -104,6 +106,10 @@ export function parseLifecycleHumanDecisionResponse(
   if (typeof item.decision !== 'string' || !['approve', 'revise', 'reject'].includes(item.decision))
     throw new Error('Human Decision requires an explicit allowed decision');
   const decisionKind = item.decisionKind as LifecycleDecisionKind;
+  if (decisionKind === 'verify-repair-stagnation' && item.decision !== 'approve')
+    throw new Error(
+      'Verify repair accepts approval of one repair; leave it pending to stay paused',
+    );
   if (item.decision === 'approve' && requiresDecisionIsolation(decisionKind)) {
     if (
       typeof item.isolation !== 'string' ||

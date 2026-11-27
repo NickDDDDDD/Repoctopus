@@ -35,7 +35,7 @@ export interface LifecycleHumanDecisionView {
   kind: 'LifecycleHumanDecisionView';
   runId: string;
   changeId: string;
-  phase: 'open' | 'design' | 'build' | null;
+  phase: 'open' | 'design' | 'build' | 'verify' | null;
   currentPhase: string;
   currentStatus: string;
   status: 'none' | 'pending' | 'accepted' | 'superseded' | 'not-found' | 'not-applied';
@@ -112,6 +112,11 @@ export class LifecycleHumanDecisions {
     const observations = events
       .filter((event) => event.type === 'change.lifecycle.transitioned')
       .map((event) => event.data.observation as Record<string, unknown> | undefined)
+      .map((observation) => {
+        if (observation?.kind !== 'verify-repair-decision-required') return observation;
+        const wait = observation.wait as { requestId: string; proposalDigest: string };
+        return { ...observation, requestId: wait.requestId, proposalDigest: wait.proposalDigest };
+      })
       .filter(
         (observation): observation is Record<string, unknown> =>
           !!observation &&
@@ -127,6 +132,7 @@ export class LifecycleHumanDecisions {
         'design-gate',
         'workspace-intent-revision-required',
         'build-plan-approval-required',
+        'verify-repair-decision-required',
       ].includes(String(observation.kind)),
     );
     if (!currentRequest && !participated) return view;
@@ -140,19 +146,23 @@ export class LifecycleHumanDecisions {
         ? 'adopted'
         : 'historical';
     const waitId = currentRequest ? wait.waitId : String(participated?.kind);
-    const decisionKind: LifecycleDecisionKind = waitId.startsWith('workspace-intent')
-      ? 'workspace-intent-revision'
-      : waitId.startsWith('build-plan')
-        ? 'build-plan-risk'
-        : waitId.startsWith('design')
-          ? 'specification-design'
-          : 'specification-open';
+    const decisionKind: LifecycleDecisionKind = waitId.startsWith('verify-repair')
+      ? 'verify-repair-stagnation'
+      : waitId.startsWith('workspace-intent')
+        ? 'workspace-intent-revision'
+        : waitId.startsWith('build-plan')
+          ? 'build-plan-risk'
+          : waitId.startsWith('design')
+            ? 'specification-design'
+            : 'specification-open';
     const phase =
-      decisionKind === 'specification-design'
-        ? 'design'
-        : decisionKind === 'build-plan-risk'
-          ? 'build'
-          : 'open';
+      decisionKind === 'verify-repair-stagnation'
+        ? 'verify'
+        : decisionKind === 'specification-design'
+          ? 'design'
+          : decisionKind === 'build-plan-risk'
+            ? 'build'
+            : 'open';
     Object.assign(view, {
       decisionKind,
       phase,
@@ -227,7 +237,11 @@ export class LifecycleHumanDecisions {
       const accepted = observations.find(
         (observation) =>
           observation.kind ===
-          (decisionKind === 'build-plan-risk' ? 'build-plan-decision' : 'workspace-intent-revised'),
+          (decisionKind === 'verify-repair-stagnation'
+            ? 'verify-repair-decision'
+            : decisionKind === 'build-plan-risk'
+              ? 'build-plan-decision'
+              : 'workspace-intent-revised'),
       );
       Object.assign(view, {
         status: accepted?.humanDecision ? 'accepted' : accepted ? 'superseded' : view.status,
@@ -241,10 +255,15 @@ export class LifecycleHumanDecisions {
                     plan: lifecycle.buildProtocol?.plan,
                     evidence: lifecycle.buildProtocol?.planEvidence,
                   }
-                : { intent: lifecycle.workspaceIntent }),
+                : decisionKind === 'workspace-intent-revision'
+                  ? { intent: lifecycle.workspaceIntent }
+                  : {}),
             }
           : { historical: participated },
-        choices: ['approve', 'revise', 'reject'],
+        choices:
+          decisionKind === 'verify-repair-stagnation'
+            ? ['approve']
+            : ['approve', 'revise', 'reject'],
       });
     }
     view.requiresSubmission =

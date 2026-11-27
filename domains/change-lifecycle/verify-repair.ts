@@ -46,6 +46,56 @@ const unavailable = (reason: string): never => {
   throw new VerifyRepairUnavailableError(reason);
 };
 
+/** This is a comparison of two already validated Bundles, not a new Evidence identity. */
+export function verifyRepairFailureSignature(
+  bundle: EvidenceBundle,
+  receipts: readonly EvidenceReceipt[],
+): Digest {
+  const trace = bundle.acceptanceTrace;
+  if (!trace) return unavailable('failed Bundle has no Acceptance proof');
+  const checks = bundle.checks
+    .filter((check) => check.required && check.status !== 'passed')
+    .sort((a, b) => a.nodeId.localeCompare(b.nodeId));
+  if (!checks.length) return unavailable('failed Bundle has no required failure');
+  const byId = new Map(receipts.map((receipt) => [receipt.receiptId, receipt]));
+  const inputs = new Map<string, string>();
+  const collect = (receiptId: string) => {
+    const receipt = byId.get(receiptId);
+    if (!receipt || receipt.trust !== 'verified')
+      return unavailable('missing verified machine dependency');
+    if (inputs.has(receipt.nodeId)) return;
+    inputs.set(receipt.nodeId, receipt.inputFingerprint);
+    for (const predecessor of receipt.dependencies.dependsOnEvidenceIds) collect(predecessor);
+  };
+  for (const check of checks) {
+    if (check.status === 'failed' && check.receiptId) collect(check.receiptId);
+    else if (
+      check.status !== 'blocked' ||
+      !check.blockedBy?.length ||
+      check.blockedBy.some((nodeId) => !checks.some((other) => other.nodeId === nodeId))
+    )
+      return unavailable('unattributable machine failure');
+  }
+  return hash({
+    profile: bundle.profileId,
+    declaredInputs: bundle.inputFingerprint,
+    acceptance: trace.acceptanceSetHash,
+    coverage: trace.entries
+      .map(({ acceptanceId, status, nodeIds }) => ({
+        acceptanceId,
+        status,
+        nodeIds: [...nodeIds].sort(),
+      }))
+      .sort((a, b) => a.acceptanceId.localeCompare(b.acceptanceId)),
+    failures: checks.map(({ nodeId, status, blockedBy }) => ({
+      nodeId,
+      status,
+      blockedBy: [...(blockedBy ?? [])].sort(),
+    })),
+    effectiveInputs: [...inputs].sort(([a], [b]) => a.localeCompare(b)),
+  });
+}
+
 /** Inputs are authenticated machine facts; neither Host outcome nor error prose defines scope. */
 export function deriveVerifyRepairScope(input: {
   bundle: EvidenceBundle;
