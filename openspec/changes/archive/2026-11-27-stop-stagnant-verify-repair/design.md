@@ -2,6 +2,8 @@
 comet_change: stop-stagnant-verify-repair
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-27-stop-stagnant-verify-repair
+status: final
 ---
 
 # Design

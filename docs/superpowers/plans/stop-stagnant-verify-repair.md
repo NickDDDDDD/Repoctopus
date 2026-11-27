@@ -2,6 +2,7 @@
 change: stop-stagnant-verify-repair
 design-doc: openspec/changes/stop-stagnant-verify-repair/design.md
 base-ref: 23811e5f
+archived-with: 2026-11-27-stop-stagnant-verify-repair
 ---
 
 # Stop repeated Verify repair

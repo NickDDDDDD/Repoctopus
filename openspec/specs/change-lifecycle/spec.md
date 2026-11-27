@@ -552,11 +552,11 @@ Repoctopus MUST把Build的稳定人类/团队语义建模为版本化`BuildStrat
 
 ### Requirement: Verify 失败通过 Build Plan revision 返工
 
-当 Verify 接受实现缺陷时，Runtime MUST 在同一 Run 保留失败 Evidence、递增 `checkEpoch` 并返回 Build Plan 复核及安排修复；只有计划内容实际变化时才形成对应 Plan revision。Runtime MUST 基于可核对的影响范围及实际输入依赖保留仍有效的 Task completion 和 Package completion；修复通过普通 Execute Work、新 Build Check 和 Verify 完成。单纯进入返工不得声明原计划发生漂移，不得重开全部 Task、创建 Repair lifecycle、特殊 Work kind 或并行修复权威。
+当 Verify 接受实现缺陷且满足「Verify 停止同一失败的重复自动返工」规定的续行条件时，Runtime MUST 在同一 Run 保留失败 Evidence、递增 `checkEpoch` 并返回 Build Plan 复核及安排修复；只有计划内容实际变化时才形成对应 Plan revision。Runtime MUST 基于可核对的影响范围及实际输入依赖保留仍有效的 Task completion 和 Package completion；修复通过普通 Execute Work、新 Build Check 和 Verify 完成。单纯进入返工不得声明原计划发生漂移，不得重开全部 Task、创建 Repair lifecycle、特殊 Work kind 或并行修复权威。
 
 #### Scenario: 缺陷只影响一个工作包
 
-- **WHEN** Verify 的失败证据与当前已接受计划可证明缺陷只影响一个 Work Package，且批准规格和 Task 语义未改变
+- **WHEN** Verify 的失败证据与当前已接受计划可证明缺陷只影响一个 Work Package，批准规格和 Task 语义未改变，且 Runtime 已确认可以继续返工
 - **THEN** Runtime 仅使该包及受影响下游包的完成凭证失效，保留其他当前有效的完成凭证，通过 Plan 安排普通 Execute Work 修复并重新 Check 和 Verify
 - **AND** 进入 Plan 时不得仅因阶段回退而把全部包进度归零；原计划内容未变时保留原计划语义身份
 
@@ -1128,3 +1128,27 @@ Repoctopus MUST 让 `run resume`、`run next`、Execute Outcome 和 Build Check 
 
 - **WHEN** 状态版本、绑定或需验证的 Git 观察在恢复提交前发生变化
 - **THEN** Runtime MUST 拒绝陈旧的恢复判定并重新观察，且 SHALL NOT 留下部分更新的 checkpoint、任务完成或 Work
+
+### Requirement: Verify 停止同一失败的重复自动返工
+
+Runtime MUST 在已完成一轮自动返工后，用两个可归属于同一 Run 的失败机器证据比较失败检查、验收范围和声明的实际输入。当失败范围与输入均未变化时，Runtime MUST 保留当前 Verify Work、原机器 Attempt 和失败证据，并暂停自动派发 Build 或新 Verify。新的 Attempt、Bundle、Work、epoch、完成记录或 recovery decision 标识 MUST NOT 单独作为输入变更或返工进展的证据。
+
+#### Scenario: 同一失败与实际输入未变
+
+- **WHEN** 一轮自动 Build 返工结束后，再次观测到相同的机器检查失败，受影响的验收范围与声明输入保持不变
+- **THEN** Runtime 停在同一 Verify Work，返回可定位的失败证据及继续修复的指引，保留有效完成事实，不再自动派发 Build Plan 或机器检查
+
+#### Scenario: 暂停后从新进程恢复
+
+- **WHEN** Runner 断开后，再执行 `status`、`resume` 或 `next`，且影响当前暂停的事实没有变化
+- **THEN** 所有入口保持同一暂停、Work、Attempt 和失败证据，重试读取不产生新的执行或重复审批
+
+#### Scenario: 有实际变化或可信决定后继续
+
+- **WHEN** Runtime 观察到声明输入确实变化，或接受同一失败范围的明确继续决定
+- **THEN** Runtime 沿受管路径重观或重新修复，保留不受影响的完成事实，不接受旧或不相干的决定，不跳过 Verify；再次观察到同一无进展失败时仍须阻断自动循环
+
+#### Scenario: 首次失败或失败证据变化
+
+- **WHEN** 首次观察到可归属的实现失败，或后续机器失败范围或声明输入有实质变化
+- **THEN** Runtime 继续执行现有的有界证据核对和局部返工规则
