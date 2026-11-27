@@ -818,7 +818,12 @@ export class EvidenceCoordinator extends Service {
                 updatedAt: new Date().toISOString(),
               };
               if (binding?.acceptanceContext) {
-                await this.ctx.workflowRuns.reserveVerifyEvidenceAttempt(
+                const workflowRuns = this.ctx.get('workflowRuns');
+                if (!workflowRuns)
+                  throw new VerifyEvidenceCheckpointError(
+                    'Runtime Verify reservation authority is unavailable',
+                  );
+                await workflowRuns.reserveVerifyEvidenceAttempt(
                   binding.workflowRunId,
                   async (state) => {
                     this.assertVerifyCheckpoint(state, {
