@@ -240,6 +240,28 @@ it('lets a non-TTY Host read and answer the actual Open request, then recover th
     decisionKind: 'specification-open',
     authorityScope: 'planning-change',
   });
+  for (const pull of ['next', 'resume', 'next']) {
+    const observed = (await cli<RunStatusView>(['run', pull, '--run', runId])).result!;
+    expect(observed.state.changeLifecycle).toMatchObject({
+      phase: 'open',
+      checkEpoch: status.result!.state.changeLifecycle!.checkEpoch,
+      currentWork: null,
+      waitCondition: {
+        kind: 'human-decision',
+        requestId: view.result!.requestId,
+        proposalDigest: view.result!.proposalHash,
+      },
+    });
+    expect(observed.state.status).toBe('waiting');
+    expect(observed.continuation?.continuation).toBe('ask');
+  }
+  const stillPending = (await cli<LifecycleHumanDecisionView>(['run', 'decision', '--run', runId]))
+    .result!;
+  expect(stillPending).toMatchObject({
+    status: 'pending',
+    requestId: view.result!.requestId,
+    proposalHash: view.result!.proposalHash,
+  });
   const response = {
     ...view.result!.responseTemplate,
     decision: 'approve',

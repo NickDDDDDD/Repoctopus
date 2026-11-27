@@ -3608,7 +3608,11 @@ export class WorkflowRuns extends Service {
     if (!lifecycle || lifecycle.phase !== 'open') {
       throw new Error('Open gate requires an Open Change Run');
     }
-    if (state.status === 'waiting' && lifecycle.waitCondition?.kind === 'human-decision') {
+    const approvalWait =
+      state.status === 'waiting' && lifecycle.waitCondition?.kind === 'human-decision'
+        ? lifecycle.waitCondition
+        : null;
+    if (approvalWait) {
       let approval: SpecificationApprovalState | null;
       try {
         approval = await this.ctx.specificationPlanning.status(lifecycle.identity.changeId, 'open');
@@ -3620,7 +3624,7 @@ export class WorkflowRuns extends Service {
           changeId: lifecycle.identity.changeId,
           approvalPhase: 'open',
           changeBranch: approval.snapshot.changeBranch,
-          expectedSnapshotDigest: lifecycle.waitCondition.inputDigest,
+          expectedSnapshotDigest: approvalWait.inputDigest,
           ...(signal ? { signal } : {}),
         });
         if (revalidation.observation) {
@@ -3706,9 +3710,12 @@ export class WorkflowRuns extends Service {
       );
     }
     if (
-      state.status === 'waiting' &&
-      lifecycle.waitCondition?.kind === 'human-decision' &&
-      assessment.status !== 'approved'
+      approvalWait &&
+      assessment.status !== 'approved' &&
+      (assessment.status !== 'waiting' ||
+        assessment.snapshot?.digest !== approvalWait.inputDigest ||
+        assessment.approval?.decisionRequest.requestId !== approvalWait.requestId ||
+        assessment.approval?.decisionRequest.proposalHash !== approvalWait.proposalDigest)
     ) {
       return this.dispatchOpenRepair({
         state,
