@@ -2,7 +2,7 @@
 change_id: f02320a4-d0c0-4d3f-aef5-7d4158231944
 workflow: full
 language: zh-CN
-phase: build
+phase: archive
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -15,13 +15,13 @@ auto_transition: true
 base_ref: 4295f95febb5e15af6ac5d1b2addcf82e2ffe4ef
 design_doc: openspec/changes/stop-stagnant-verify-repair/design.md
 plan: docs/superpowers/plans/stop-stagnant-verify-repair.md
-verify_result: pending
+verify_result: pass
 verify_failures: 0
-verification_report: null
+verification_report: docs/superpowers/reports/stop-stagnant-verify-repair.md
 branch_status: pending
 created_at: 2026-11-27
-verified_at: null
-archive_confirmation: null
+verified_at: 2026-11-27
+archive_confirmation: pending
 archived: false
 bound_branch: codex/stop-stagnant-verify-repair
 direct_override: false
@@ -30,8 +30,8 @@ handoff_hash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: 11291fbf95ba5b074b3315b8a522b8a75267f18f827fd6a502b4c8b262338379
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 3df0037aac718f322ba1c3d863111c1911f724877a8e122dfb5d02d4e4fd7ad8
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -50,7 +50,7 @@ run_checkpoint:
       workspaceBaseline:
         ref: de86a580-e32a-4bb5-8030-423128c7baed
     state:
-      archiveConfirmation: null
+      archiveConfirmation: pending
       archived: false
       autoTransition: true
       baseRef: 4295f95febb5e15af6ac5d1b2addcf82e2ffe4ef
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 2
+      checkEpoch: 4
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,19 +69,19 @@ run_checkpoint:
       handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
       isolation: current
       language: zh-CN
-      phase: build
+      phase: archive
       plan: docs/superpowers/plans/stop-stagnant-verify-repair.md
       reviewMode: thorough
       subagentDispatch: null
       tddMode: tdd
-      verificationReport: null
-      verifiedAt: null
+      verificationReport: docs/superpowers/reports/stop-stagnant-verify-repair.md
+      verifiedAt: 2026-11-27
       verifyFailures: 0
       verifyMode: null
-      verifyResult: pending
+      verifyResult: pass
       workflow: full
-    status: running
-    sequence: 13
+    status: waiting
+    sequence: 21
     actions:
       - attempt: 1
         claim:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/stop-stagnant-verify-repair
             workspaceBaseline:
               ref: de86a580-e32a-4bb5-8030-423128c7baed
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-            full.open.evidence:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
+          outputs: {}
         inputHash: 4a8a15a9a71bf0a2dd62402d0f6b9c276d9aef38e98135fbb85c1193421f7ca5
         outcome:
           actionId: stop-stagnant-verify-repair:4
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/stop-stagnant-verify-repair
             workspaceBaseline:
               ref: de86a580-e32a-4bb5-8030-423128c7baed
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-            full.open.evidence:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-            full.open.revalidate:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+          outputs: {}
         inputHash: 33cab512304a6aa6943852d26b3d951399d417a4823afbdd98e61d25784ce5da
         outcome:
           actionId: stop-stagnant-verify-repair:5
@@ -274,80 +234,7 @@ run_checkpoint:
             changeDir: openspec/changes/stop-stagnant-verify-repair
             workspaceBaseline:
               ref: de86a580-e32a-4bb5-8030-423128c7baed
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-                    handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-                    proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                      .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                      实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runti\
-                      me 原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                      审查和有效包完成事实。机器检查前绑定
-                      Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run
-                      decision / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿
-                      revise-implementation 派发普通 Build
-                      Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                      失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并\
-                      发答复和 Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                      thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和
-                      Lifecycle 守卫约束；不增加旧 Run 迁移。"
-                    requirementsEvidence:
-                      contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                      ref: openspec/changes/stop-stagnant-verify-repair
-                    sourceEvidence:
-                      contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                      ref: openspec/changes/stop-stagnant-verify-repair
-            full.design.handoff:
-              handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-              handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-              proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime
-                原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                审查和有效包完成事实。机器检查前绑定
-                Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision
-                / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通
-                Build Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和
-                Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle
-                守卫约束；不增加旧 Run 迁移。"
-              requirementsEvidence:
-                contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                ref: openspec/changes/stop-stagnant-verify-repair
-              sourceEvidence:
-                contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                ref: openspec/changes/stop-stagnant-verify-repair
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-            full.open.evidence:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-            full.open.revalidate:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+          outputs: {}
         inputHash: ec0a25909a9c3303d7a387162aeff7851eed4f798a8cafd4bf5db9dc1e154cc5
         outcome:
           actionId: stop-stagnant-verify-repair:7
@@ -386,85 +273,7 @@ run_checkpoint:
             changeDir: openspec/changes/stop-stagnant-verify-repair
             workspaceBaseline:
               ref: de86a580-e32a-4bb5-8030-423128c7baed
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-                    handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-                    proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                      .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                      实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runti\
-                      me 原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                      审查和有效包完成事实。机器检查前绑定
-                      Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run
-                      decision / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿
-                      revise-implementation 派发普通 Build
-                      Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                      失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并\
-                      发答复和 Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                      thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和
-                      Lifecycle 守卫约束；不增加旧 Run 迁移。"
-                    requirementsEvidence:
-                      contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                      ref: openspec/changes/stop-stagnant-verify-repair
-                    sourceEvidence:
-                      contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                      ref: openspec/changes/stop-stagnant-verify-repair
-            full.design.document:
-              designDoc: openspec/changes/stop-stagnant-verify-repair/design.md
-            full.design.evidence:
-              contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-              ref: openspec/changes/stop-stagnant-verify-repair/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-              handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-              proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime
-                原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                审查和有效包完成事实。机器检查前绑定
-                Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision
-                / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通
-                Build Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和
-                Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle
-                守卫约束；不增加旧 Run 迁移。"
-              requirementsEvidence:
-                contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                ref: openspec/changes/stop-stagnant-verify-repair
-              sourceEvidence:
-                contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                ref: openspec/changes/stop-stagnant-verify-repair
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-            full.open.evidence:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-            full.open.revalidate:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+          outputs: {}
         inputHash: c8fe6970a625e345be21059f6f472f9651825e73f6b7c962fa47a8dc34494544
         outcome:
           actionId: stop-stagnant-verify-repair:9
@@ -509,110 +318,7 @@ run_checkpoint:
             changeDir: openspec/changes/stop-stagnant-verify-repair
             workspaceBaseline:
               ref: de86a580-e32a-4bb5-8030-423128c7baed
-          outputs:
-            full.build.configure:
-              boundBranch: codex/stop-stagnant-verify-repair
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/stop-stagnant-verify-repair
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-                    handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-                    proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                      .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                      实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runti\
-                      me 原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                      审查和有效包完成事实。机器检查前绑定
-                      Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run
-                      decision / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿
-                      revise-implementation 派发普通 Build
-                      Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                      失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并\
-                      发答复和 Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                      thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和
-                      Lifecycle 守卫约束；不增加旧 Run 迁移。"
-                    requirementsEvidence:
-                      contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                      ref: openspec/changes/stop-stagnant-verify-repair
-                    sourceEvidence:
-                      contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                      ref: openspec/changes/stop-stagnant-verify-repair
-            full.design.document:
-              designDoc: openspec/changes/stop-stagnant-verify-repair/design.md
-            full.design.evidence:
-              contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-              ref: openspec/changes/stop-stagnant-verify-repair/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-              handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-              proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime
-                原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                审查和有效包完成事实。机器检查前绑定
-                Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision
-                / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通
-                Build Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和
-                Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle
-                守卫约束；不增加旧 Run 迁移。"
-              requirementsEvidence:
-                contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                ref: openspec/changes/stop-stagnant-verify-repair
-              sourceEvidence:
-                contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                ref: openspec/changes/stop-stagnant-verify-repair
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-            full.open.evidence:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-            full.open.revalidate:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+          outputs: {}
         inputHash: a801e88d8579dd2d94aec83366782510867fa6b618e9d3fa4d1d06b3c5775f51
         outcome:
           actionId: stop-stagnant-verify-repair:11
@@ -643,6 +349,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-verify120
+          token: portable-86b37e8412390f2886edc4cbfd9719a759223cb6cca778e6a5fd7861d4711559
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: stop-stagnant-verify-repair:13
         input:
           input:
@@ -650,649 +365,267 @@ run_checkpoint:
             changeDir: openspec/changes/stop-stagnant-verify-repair
             workspaceBaseline:
               ref: de86a580-e32a-4bb5-8030-423128c7baed
-          outputs:
-            full.build.configure:
-              boundBranch: codex/stop-stagnant-verify-repair
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/stop-stagnant-verify-repair
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-                ref: openspec/changes/stop-stagnant-verify-repair/design.md
-              plan: docs/superpowers/plans/stop-stagnant-verify-repair.md
-              planEvidence:
-                contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
-                ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
-              taskRevision: 2a4f4e98c4899a05705d6afd4f850d49a3cd7bb3775f7b0bc1045caa11cb4f38
-            full.build.plan.evidence:
-              contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
-              ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-                    handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-                    proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                      .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                      实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runti\
-                      me 原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                      审查和有效包完成事实。机器检查前绑定
-                      Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run
-                      decision / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿
-                      revise-implementation 派发普通 Build
-                      Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                      失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并\
-                      发答复和 Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                      thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和
-                      Lifecycle 守卫约束；不增加旧 Run 迁移。"
-                    requirementsEvidence:
-                      contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                      ref: openspec/changes/stop-stagnant-verify-repair
-                    sourceEvidence:
-                      contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                      ref: openspec/changes/stop-stagnant-verify-repair
-            full.design.document:
-              designDoc: openspec/changes/stop-stagnant-verify-repair/design.md
-            full.design.evidence:
-              contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-              ref: openspec/changes/stop-stagnant-verify-repair/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-              handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-              proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime
-                原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                审查和有效包完成事实。机器检查前绑定
-                Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision
-                / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通
-                Build Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和
-                Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle
-                守卫约束；不增加旧 Run 迁移。"
-              requirementsEvidence:
-                contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                ref: openspec/changes/stop-stagnant-verify-repair
-              sourceEvidence:
-                contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                ref: openspec/changes/stop-stagnant-verify-repair
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-            full.open.evidence:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-            full.open.revalidate:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+          outputs: {}
         inputHash: 2a95916cc4cc127920240b9a34551bf6fb74e8c369eac168b2818cc22f8bae7d
+        outcome:
+          actionId: stop-stagnant-verify-repair:13
+          attempt: 1
+          claimToken: portable-86b37e8412390f2886edc4cbfd9719a759223cb6cca778e6a5fd7861d4711559
+          inputHash: 2a95916cc4cc127920240b9a34551bf6fb74e8c369eac168b2818cc22f8bae7d
+          outcomeId: f0f5d2fa-292f-4824-b4cd-120e99511bfe
+          output:
+            event: build-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: d22165a6a3685d11f3f4bf7b7d4638d3fb05931d32399b421a79766103482ad7
+            outcomeId: f0f5d2fa-292f-4824-b4cd-120e99511bfe
         reconciliations: []
         ref: comet-build
         requiredCapabilities: []
         retry: manual
         runId: stop-stagnant-verify-repair
-        status: pending
+        status: succeeded
         stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-5828b887b5d882a97428f52f79d5f050d0b79fc8a35bb0982db63fd9fa41e7df
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stop-stagnant-verify-repair:14
+        input:
+          input:
+            change: stop-stagnant-verify-repair
+            changeDir: openspec/changes/stop-stagnant-verify-repair
+            workspaceBaseline:
+              ref: de86a580-e32a-4bb5-8030-423128c7baed
+          outputs: {}
+        inputHash: aa8b46b75e0e368d2b72272a05b306da36e4287409d4d65675eafb652bbedea2
+        outcome:
+          actionId: stop-stagnant-verify-repair:14
+          attempt: 1
+          claimToken: portable-5828b887b5d882a97428f52f79d5f050d0b79fc8a35bb0982db63fd9fa41e7df
+          inputHash: aa8b46b75e0e368d2b72272a05b306da36e4287409d4d65675eafb652bbedea2
+          outcomeId: 5104529a-6cc7-444f-9b45-4eb4a45b8013
+          output:
+            argv:
+              - C:\nvm4w\nodejs\node.exe
+              - C:\nvm4w\nodejs\node_modules\npm\bin\npm-cli.js
+              - run
+              - check:managed-execution-report
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+            cwd: .
+            environment: b81a3d468e95eecae87f458157bc6eba937fc17a2c5f4e731c70e8e659b01fc8
+            exitCode: 0
+            inputAfter: 4253f0e68c2f3f2675b1badf67fc65fe9c59543a654a0d69b5662275f44131ea
+            inputBefore: 4253f0e68c2f3f2675b1badf67fc65fe9c59543a654a0d69b5662275f44131ea
+            manifestHash: dc0689e46720e180ea17daba6727b47ec81394294b00f5196fa99c08ef51c6da
+            manifestRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/b6396713-ef5a-4f14-95ef-52380bdf9558.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/274fcc68-d209-4372-aa9f-6479e2cde74f.log
+            reusable: true
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0188c4e0c80ebbec22e3a85bcb1f74b934f5c0034785416bf5fe4d6b7c539b7f
+            outcomeId: 5104529a-6cc7-444f-9b45-4eb4a45b8013
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stop-stagnant-verify-repair
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-95c7b7e1d946f5fbfa46acc89f8b3b0cf4532816d025567b4f226ddfbc0b7b65
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stop-stagnant-verify-repair:16
+        input:
+          input:
+            change: stop-stagnant-verify-repair
+            changeDir: openspec/changes/stop-stagnant-verify-repair
+            workspaceBaseline:
+              ref: de86a580-e32a-4bb5-8030-423128c7baed
+          outputs: {}
+        inputHash: 996b0bff37e2d60a20f63b970a6d6974962c1547a03704215413eda714f97f04
+        outcome:
+          actionId: stop-stagnant-verify-repair:16
+          attempt: 1
+          claimToken: portable-95c7b7e1d946f5fbfa46acc89f8b3b0cf4532816d025567b4f226ddfbc0b7b65
+          inputHash: 996b0bff37e2d60a20f63b970a6d6974962c1547a03704215413eda714f97f04
+          outcomeId: b0403861-c827-400c-9a21-635eafa4709f
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stop-stagnant-verify-repair.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 95641dd706022aaad15df4c9948f332960c1ba0436de466c86b9216af99a92c9
+            outcomeId: b0403861-c827-400c-9a21-635eafa4709f
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stop-stagnant-verify-repair
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-2b0af8bdac2192814dcf3d3198323cc2f171429bb0892e0f9a0d572d5d56e3fd
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stop-stagnant-verify-repair:18
+        input:
+          input:
+            change: stop-stagnant-verify-repair
+            changeDir: openspec/changes/stop-stagnant-verify-repair
+            workspaceBaseline:
+              ref: de86a580-e32a-4bb5-8030-423128c7baed
+          outputs: {}
+        inputHash: 96856fbc4695f04c1d3fb73fc06a4808f6ac05140a2d1978604b20893afe2406
+        outcome:
+          actionId: stop-stagnant-verify-repair:18
+          attempt: 1
+          claimToken: portable-2b0af8bdac2192814dcf3d3198323cc2f171429bb0892e0f9a0d572d5d56e3fd
+          inputHash: 96856fbc4695f04c1d3fb73fc06a4808f6ac05140a2d1978604b20893afe2406
+          outcomeId: a2d47457-19d5-4d8e-a42e-af17d8379319
+          output:
+            argv:
+              - C:\nvm4w\nodejs\node.exe
+              - C:\nvm4w\nodejs\node_modules\npm\bin\npm-cli.js
+              - run
+              - check:managed-execution-report
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+            cwd: .
+            deliveryInputs: {}
+            environment: b81a3d468e95eecae87f458157bc6eba937fc17a2c5f4e731c70e8e659b01fc8
+            exitCode: 0
+            inputAfter: da26babc7cd3201bbdb8f2364ccd0ba14d4000b303f76af1d2a4227576a4fd79
+            inputBefore: da26babc7cd3201bbdb8f2364ccd0ba14d4000b303f76af1d2a4227576a4fd79
+            manifestHash: bd32d6389d5c5da32a4a90955ec4b20a7ca3f690e3be80eb10218c628f2caaf7
+            manifestRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/cbe62fcf-9e10-4114-8759-c43e14b764c1.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/1601f8bc-e49b-4c56-8a29-f06e361cdfc0.log
+            reusable: true
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 2700000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 81bdae6399bff0ee5075d7a14fe31585977b968f6e9582d6603adefc2795f923
+            outcomeId: a2d47457-19d5-4d8e-a42e-af17d8379319
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stop-stagnant-verify-repair
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-89db82967536bde103d23079566bc9af708a970825bd809d52441b81e6e596aa
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stop-stagnant-verify-repair:20
+        input:
+          input:
+            change: stop-stagnant-verify-repair
+            changeDir: openspec/changes/stop-stagnant-verify-repair
+            workspaceBaseline:
+              ref: de86a580-e32a-4bb5-8030-423128c7baed
+          outputs: {}
+        inputHash: 3ab20cedd2fbe1af3751f0a76657f72f86f9f57d1cffa79138d42396c4e2e075
+        outcome:
+          actionId: stop-stagnant-verify-repair:20
+          attempt: 1
+          claimToken: portable-89db82967536bde103d23079566bc9af708a970825bd809d52441b81e6e596aa
+          inputHash: 3ab20cedd2fbe1af3751f0a76657f72f86f9f57d1cffa79138d42396c4e2e075
+          outcomeId: f28bbd6c-b3e1-4851-9d28-032f993a5cc8
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: "归档 stop-stagnant-verify-repair，将一条新要求并入 change-lifecycle 主规格，同时明确原
+              Verify 局部返工要求在未命中同一失败暂停条件时适用。当前 5/5 项任务完成，全量 npm run verify 为 1336
+              项通过、4 项跳过。候选包五仓冷恢复、并发请求、同一批准重放、输入变化使原答复失效和真实修复后进入 Archive
+              均已验收。交付目标为 origin/main，从 codex/stop-stagnant-verify-repair 创建
+              PR，CI 通过后合入。此次仅交付 #120 的修复。"
+            targetBranch: codex/stop-stagnant-verify-repair
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8c2fa65d2da3f2e7cfd245e42f8c54cb1414d50488e597ce23528d27071b40e5
+            outcomeId: f28bbd6c-b3e1-4851-9d28-032f993a5cc8
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stop-stagnant-verify-repair
+        status: succeeded
+        stepId: full.archive.prepare
         type: invoke_skill
     actionContexts:
       stop-stagnant-verify-repair:1:
         results: {}
         sequence: 1
       stop-stagnant-verify-repair:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/stop-stagnant-verify-repair
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/stop-stagnant-verify-repair
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-                    handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-                    proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                      .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                      实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runti\
-                      me 原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                      审查和有效包完成事实。机器检查前绑定
-                      Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run
-                      decision / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿
-                      revise-implementation 派发普通 Build
-                      Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                      失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并\
-                      发答复和 Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                      thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和
-                      Lifecycle 守卫约束；不增加旧 Run 迁移。"
-                    requirementsEvidence:
-                      contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                      ref: openspec/changes/stop-stagnant-verify-repair
-                    sourceEvidence:
-                      contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                      ref: openspec/changes/stop-stagnant-verify-repair
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/stop-stagnant-verify-repair/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-              ref: openspec/changes/stop-stagnant-verify-repair/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-              handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-              proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime
-                原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                审查和有效包完成事实。机器检查前绑定
-                Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision
-                / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通
-                Build Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和
-                Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle
-                守卫约束；不增加旧 Run 迁移。"
-              requirementsEvidence:
-                contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                ref: openspec/changes/stop-stagnant-verify-repair
-              sourceEvidence:
-                contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                ref: openspec/changes/stop-stagnant-verify-repair
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+        results: {}
         sequence: 11
       stop-stagnant-verify-repair:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/stop-stagnant-verify-repair
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/stop-stagnant-verify-repair
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-                ref: openspec/changes/stop-stagnant-verify-repair/design.md
-              plan: docs/superpowers/plans/stop-stagnant-verify-repair.md
-              planEvidence:
-                contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
-                ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
-              taskRevision: 2a4f4e98c4899a05705d6afd4f850d49a3cd7bb3775f7b0bc1045caa11cb4f38
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
-              ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-                    handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-                    proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                      .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                      实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runti\
-                      me 原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                      审查和有效包完成事实。机器检查前绑定
-                      Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run
-                      decision / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿
-                      revise-implementation 派发普通 Build
-                      Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                      失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并\
-                      发答复和 Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                      thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和
-                      Lifecycle 守卫约束；不增加旧 Run 迁移。"
-                    requirementsEvidence:
-                      contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                      ref: openspec/changes/stop-stagnant-verify-repair
-                    sourceEvidence:
-                      contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                      ref: openspec/changes/stop-stagnant-verify-repair
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/stop-stagnant-verify-repair/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-              ref: openspec/changes/stop-stagnant-verify-repair/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-              handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-              proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime
-                原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                审查和有效包完成事实。机器检查前绑定
-                Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision
-                / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通
-                Build Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和
-                Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle
-                守卫约束；不增加旧 Run 迁移。"
-              requirementsEvidence:
-                contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                ref: openspec/changes/stop-stagnant-verify-repair
-              sourceEvidence:
-                contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                ref: openspec/changes/stop-stagnant-verify-repair
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+        results: {}
         sequence: 13
+      stop-stagnant-verify-repair:14:
+        results: {}
+        sequence: 14
+      stop-stagnant-verify-repair:16:
+        results: {}
+        sequence: 16
+      stop-stagnant-verify-repair:18:
+        results: {}
+        sequence: 18
+      stop-stagnant-verify-repair:20:
+        results: {}
+        sequence: 20
       stop-stagnant-verify-repair:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
+        results: {}
         sequence: 4
       stop-stagnant-verify-repair:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+        results: {}
         sequence: 5
       stop-stagnant-verify-repair:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-                    handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-                    proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                      .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                      实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runti\
-                      me 原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                      审查和有效包完成事实。机器检查前绑定
-                      Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run
-                      decision / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿
-                      revise-implementation 派发普通 Build
-                      Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                      失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并\
-                      发答复和 Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                      thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和
-                      Lifecycle 守卫约束；不增加旧 Run 迁移。"
-                    requirementsEvidence:
-                      contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                      ref: openspec/changes/stop-stagnant-verify-repair
-                    sourceEvidence:
-                      contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                      ref: openspec/changes/stop-stagnant-verify-repair
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-              handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-              proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime
-                原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                审查和有效包完成事实。机器检查前绑定
-                Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision
-                / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通
-                Build Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和
-                Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle
-                守卫约束；不增加旧 Run 迁移。"
-              requirementsEvidence:
-                contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                ref: openspec/changes/stop-stagnant-verify-repair
-              sourceEvidence:
-                contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                ref: openspec/changes/stop-stagnant-verify-repair
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+        results: {}
         sequence: 7
       stop-stagnant-verify-repair:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-                    handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-                    proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                      .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                      实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runti\
-                      me 原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                      审查和有效包完成事实。机器检查前绑定
-                      Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run
-                      decision / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿
-                      revise-implementation 派发普通 Build
-                      Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                      失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并\
-                      发答复和 Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                      thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和
-                      Lifecycle 守卫约束；不增加旧 Run 迁移。"
-                    requirementsEvidence:
-                      contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                      ref: openspec/changes/stop-stagnant-verify-repair
-                    sourceEvidence:
-                      contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                      ref: openspec/changes/stop-stagnant-verify-repair
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/stop-stagnant-verify-repair/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-              ref: openspec/changes/stop-stagnant-verify-repair/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-              handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-              proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime
-                原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                审查和有效包完成事实。机器检查前绑定
-                Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision
-                / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通
-                Build Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和
-                Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle
-                守卫约束；不增加旧 Run 迁移。"
-              requirementsEvidence:
-                contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                ref: openspec/changes/stop-stagnant-verify-repair
-              sourceEvidence:
-                contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                ref: openspec/changes/stop-stagnant-verify-repair
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+        results: {}
         sequence: 9
     waits:
       - id: stop-stagnant-verify-repair:3
@@ -1315,16 +648,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
+        results: {}
         decision:
           id: classic-open-c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
           choice: approved
@@ -1365,59 +689,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-              handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-              proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime
-                原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                审查和有效包完成事实。机器检查前绑定
-                Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision
-                / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通
-                Build Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和
-                Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle
-                守卫约束；不增加旧 Run 迁移。"
-              requirementsEvidence:
-                contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                ref: openspec/changes/stop-stagnant-verify-repair
-              sourceEvidence:
-                contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                ref: openspec/changes/stop-stagnant-verify-repair
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+        results: {}
         decision:
           id: classic-design-7112365c17a7ce717f053b08b1dd3d2fd9ab718ec1b91076737b829fa9fec234-approved
           choice: approved
@@ -1445,126 +717,46 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/stop-stagnant-verify-repair
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-                    handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-                    proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                      .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                      实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runti\
-                      me 原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                      审查和有效包完成事实。机器检查前绑定
-                      Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run
-                      decision / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿
-                      revise-implementation 派发普通 Build
-                      Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                      失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并\
-                      发答复和 Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                      thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和
-                      Lifecycle 守卫约束；不增加旧 Run 迁移。"
-                    requirementsEvidence:
-                      contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                      ref: openspec/changes/stop-stagnant-verify-repair
-                    sourceEvidence:
-                      contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                      ref: openspec/changes/stop-stagnant-verify-repair
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/stop-stagnant-verify-repair/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-              ref: openspec/changes/stop-stagnant-verify-repair/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-              handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-              proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime
-                原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                审查和有效包完成事实。机器检查前绑定
-                Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision
-                / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通
-                Build Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和
-                Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle
-                守卫约束；不增加旧 Run 迁移。"
-              requirementsEvidence:
-                contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                ref: openspec/changes/stop-stagnant-verify-repair
-              sourceEvidence:
-                contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                ref: openspec/changes/stop-stagnant-verify-repair
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+        results: {}
         decision:
           id: b775977c-6ee4-4ba3-86dd-79582bf8225c
           choice: approved
           proposalHash: dfe5aa5a710be396b59a3de29b9c89cfa8543e7bb12d25e851050fbd79de9aef
+      - id: stop-stagnant-verify-repair:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: pending
+        proposal:
+          input:
+            change: stop-stagnant-verify-repair
+            changeDir: openspec/changes/stop-stagnant-verify-repair
+            workspaceBaseline:
+              ref: de86a580-e32a-4bb5-8030-423128c7baed
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: "归档 stop-stagnant-verify-repair，将一条新要求并入 change-lifecycle 主规格，同时明确原
+                Verify 局部返工要求在未命中同一失败暂停条件时适用。当前 5/5 项任务完成，全量 npm run verify 为
+                1336 项通过、4 项跳过。候选包五仓冷恢复、并发请求、同一批准重放、输入变化使原答复失效和真实修复后进入 Archive
+                均已验收。交付目标为 origin/main，从 codex/stop-stagnant-verify-repair 创建
+                PR，CI 通过后合入。此次仅交付 #120 的修复。"
+              targetBranch: codex/stop-stagnant-verify-repair
+        proposalHash: a0c120b794cca75e67e39cd75259fb2914e07fa89e26cd6d1ff52afa640cb775
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
     evidenceWaits:
       - id: stop-stagnant-verify-repair:2
         stepId: full.open.evidence
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/stop-stagnant-verify-repair
           contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
@@ -1574,96 +766,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-                    handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-                    proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                      .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                      实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runti\
-                      me 原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                      审查和有效包完成事实。机器检查前绑定
-                      Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run
-                      decision / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿
-                      revise-implementation 派发普通 Build
-                      Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                      失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并\
-                      发答复和 Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                      thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和
-                      Lifecycle 守卫约束；不增加旧 Run 迁移。"
-                    requirementsEvidence:
-                      contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                      ref: openspec/changes/stop-stagnant-verify-repair
-                    sourceEvidence:
-                      contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                      ref: openspec/changes/stop-stagnant-verify-repair
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/stop-stagnant-verify-repair/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-              handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-              proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime
-                原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                审查和有效包完成事实。机器检查前绑定
-                Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision
-                / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通
-                Build Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和
-                Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle
-                守卫约束；不增加旧 Run 迁移。"
-              requirementsEvidence:
-                contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                ref: openspec/changes/stop-stagnant-verify-repair
-              sourceEvidence:
-                contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                ref: openspec/changes/stop-stagnant-verify-repair
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+        results: {}
         receipt:
           ref: openspec/changes/stop-stagnant-verify-repair/design.md
           contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
@@ -1673,92 +776,77 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/stop-stagnant-verify-repair
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/stop-stagnant-verify-repair
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-                ref: openspec/changes/stop-stagnant-verify-repair/design.md
-              plan: docs/superpowers/plans/stop-stagnant-verify-repair.md
-              planEvidence:
-                contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
-                ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
-              taskRevision: 2a4f4e98c4899a05705d6afd4f850d49a3cd7bb3775f7b0bc1045caa11cb4f38
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
-                    handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
-                    proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
-                      .comet/handoff/brainstorm-summary.md。首次可信 Verify
-                      实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runti\
-                      me 原子记录同一 Verify Work 的人工等待，保留 epoch、机器 Attempt、Host
-                      审查和有效包完成事实。机器检查前绑定
-                      Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run
-                      decision / run decide 协议接受针对这次失败的明确决定，原子消费决定并沿
-                      revise-implementation 派发普通 Build
-                      Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
-                      失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并\
-                      发答复和 Windows 五仓实际安装包。建议独立 worktree，autonomous + TDD +
-                      thorough。关键风险是派生输入漏计、抢占 Attempt 和等待答复重放，用现有 Evidence 和
-                      Lifecycle 守卫约束；不增加旧 Run 迁移。"
-                    requirementsEvidence:
-                      contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
-                      ref: openspec/changes/stop-stagnant-verify-repair
-                    sourceEvidence:
-                      contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
-                      ref: openspec/changes/stop-stagnant-verify-repair
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/stop-stagnant-verify-repair/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-              ref: openspec/changes/stop-stagnant-verify-repair/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
+          contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
+          submissionId: b34052ca-e1fc-414c-b6e6-dc342a2b9d48
+      - id: stop-stagnant-verify-repair:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/274fcc68-d209-4372-aa9f-6479e2cde74f.log
+          contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+          submissionId: 8f6e02c1-1b7c-4900-a0d0-8ad7d3f36509
+      - id: stop-stagnant-verify-repair:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stop-stagnant-verify-repair.md
+          contentHash: a2e34a91bee6239718443730cdbe57bc56e0c24204fce2cd4aae86fcf1320f6f
+          submissionId: 2e92956f-77d4-4d6a-adde-7dc1bb215626
+      - id: stop-stagnant-verify-repair:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/1601f8bc-e49b-4c56-8a29-f06e361cdfc0.log
+          contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+          submissionId: 4a116c64-d4e1-4ccb-a9d1-913741f5f6e4
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 32
+  sourceHash: 7523337bc903e8581b60c3114fb9c11c5c54de1c4de9bc713d0f144e777469b4
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: stop-stagnant-verify-repair
+            changeDir: openspec/changes/stop-stagnant-verify-repair
+            workspaceBaseline:
+              ref: de86a580-e32a-4bb5-8030-423128c7baed
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+              ref: openspec/changes/stop-stagnant-verify-repair
+      - contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+        ref: openspec/changes/stop-stagnant-verify-repair
+      - contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
+      - choice: approved
+        proposal:
+          input:
+            change: stop-stagnant-verify-repair
+            changeDir: openspec/changes/stop-stagnant-verify-repair
+            workspaceBaseline:
+              ref: de86a580-e32a-4bb5-8030-423128c7baed
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
               handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
               proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
@@ -1779,44 +867,113 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
                 ref: openspec/changes/stop-stagnant-verify-repair
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: stop-stagnant-verify-repair
-                  changeDir: openspec/changes/stop-stagnant-verify-repair
-                  workspaceBaseline:
-                    ref: de86a580-e32a-4bb5-8030-423128c7baed
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-                    ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-              ref: openspec/changes/stop-stagnant-verify-repair
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-        receipt:
-          ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
+      - handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
+        handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
+        proposal: "按已批准的 Open 范围修复 #120，无 Spec Patch。候选详见
+          .comet/handoff/brainstorm-summary.md。首次可信 Verify
+          实现失败仍按原规则做局部自动返工。若下一轮的声明输入、所消费上游产物的有效输入、验收集合和失败范围相同，Runtime 原子记录同一
+          Verify Work 的人工等待，保留 epoch、机器 Attempt、Host 审查和有效包完成事实。机器检查前绑定
+          Attempt，结果已写入但等待尚未提交时冷恢复也复用原证据。公开读取和执行入口以同一等待为准。现有 run decision / run
+          decide 协议接受针对这次失败的明确决定，原子消费决定并沿 revise-implementation 派发普通 Build
+          Plan，每次只授权一轮。仍没有进展时再次暂停并允许针对新证据决定。真实声明输入变化按 Evidence
+          失效路径重新观察，旧答复不再有效，规划和权限仍按既有规则处理。测试包括生产命令、证据写入后的断点、派生依赖变更、并发答复和 Windows
+          五仓实际安装包。建议独立 worktree，autonomous + TDD + thorough。关键风险是派生输入漏计、抢占
+          Attempt 和等待答复重放，用现有 Evidence 和 Lifecycle 守卫约束；不增加旧 Run 迁移。"
+        requirementsEvidence:
+          contentHash: 214ea898eec4cc512e55f9135944aebe4604010e89184e7b81823c1151e27464
+          ref: openspec/changes/stop-stagnant-verify-repair
+        sourceEvidence:
+          contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
+          ref: openspec/changes/stop-stagnant-verify-repair
+      - designDoc: openspec/changes/stop-stagnant-verify-repair/design.md
+      - contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
+        ref: openspec/changes/stop-stagnant-verify-repair/design.md
+      - boundBranch: codex/stop-stagnant-verify-repair
+        buildMode: autonomous
+        directOverride: false
+        isolation: current
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: stop-stagnant-verify-repair
+            changeDir: openspec/changes/stop-stagnant-verify-repair
+            workspaceBaseline:
+              ref: de86a580-e32a-4bb5-8030-423128c7baed
+          outputs:
+            full.build.configure:
+              boundBranch: codex/stop-stagnant-verify-repair
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
+          ref: openspec/changes/stop-stagnant-verify-repair/design.md
+        plan: docs/superpowers/plans/stop-stagnant-verify-repair.md
+        planEvidence:
           contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
-          submissionId: b34052ca-e1fc-414c-b6e6-dc342a2b9d48
-    ready: []
-    joins: {}
-    outputs:
-      full.build.configure:
-        sequence: 9
+          ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
+        taskRevision: 2a4f4e98c4899a05705d6afd4f850d49a3cd7bb3775f7b0bc1045caa11cb4f38
+      - contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
+        ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
+      - event: build-complete
+      - argv:
+          - C:\nvm4w\nodejs\node.exe
+          - C:\nvm4w\nodejs\node_modules\npm\bin\npm-cli.js
+          - run
+          - check:managed-execution-report
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+        cwd: .
+        environment: b81a3d468e95eecae87f458157bc6eba937fc17a2c5f4e731c70e8e659b01fc8
+        exitCode: 0
+        inputAfter: 4253f0e68c2f3f2675b1badf67fc65fe9c59543a654a0d69b5662275f44131ea
+        inputBefore: 4253f0e68c2f3f2675b1badf67fc65fe9c59543a654a0d69b5662275f44131ea
+        manifestHash: dc0689e46720e180ea17daba6727b47ec81394294b00f5196fa99c08ef51c6da
+        manifestRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/b6396713-ef5a-4f14-95ef-52380bdf9558.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/274fcc68-d209-4372-aa9f-6479e2cde74f.log
+        reusable: true
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+        ref: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/274fcc68-d209-4372-aa9f-6479e2cde74f.log
+      - contentHash: a2e34a91bee6239718443730cdbe57bc56e0c24204fce2cd4aae86fcf1320f6f
+        ref: docs/superpowers/reports/stop-stagnant-verify-repair.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/stop-stagnant-verify-repair.md
+      - argv:
+          - C:\nvm4w\nodejs\node.exe
+          - C:\nvm4w\nodejs\node_modules\npm\bin\npm-cli.js
+          - run
+          - check:managed-execution-report
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+        cwd: .
+        deliveryInputs: {}
+        environment: b81a3d468e95eecae87f458157bc6eba937fc17a2c5f4e731c70e8e659b01fc8
+        exitCode: 0
+        inputAfter: da26babc7cd3201bbdb8f2364ccd0ba14d4000b303f76af1d2a4227576a4fd79
+        inputBefore: da26babc7cd3201bbdb8f2364ccd0ba14d4000b303f76af1d2a4227576a4fd79
+        manifestHash: bd32d6389d5c5da32a4a90955ec4b20a7ca3f690e3be80eb10218c628f2caaf7
+        manifestRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/cbe62fcf-9e10-4114-8759-c43e14b764c1.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/1601f8bc-e49b-4c56-8a29-f06e361cdfc0.log
+        reusable: true
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 2700000
+      - contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+        ref: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/1601f8bc-e49b-4c56-8a29-f06e361cdfc0.log
+      - sequence: 9
         value:
           boundBranch: codex/stop-stagnant-verify-repair
           buildMode: autonomous
@@ -1825,8 +982,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -1844,24 +1000,7 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.plan:
-        sequence: 11
-        value:
-          designEvidence:
-            contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
-            ref: openspec/changes/stop-stagnant-verify-repair/design.md
-          plan: docs/superpowers/plans/stop-stagnant-verify-repair.md
-          planEvidence:
-            contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
-            ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
-          taskRevision: 2a4f4e98c4899a05705d6afd4f850d49a3cd7bb3775f7b0bc1045caa11cb4f38
-      full.build.plan.evidence:
-        sequence: 12
-        value:
-          contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
-          ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
-      full.design.confirm:
-        sequence: 6
+      - sequence: 6
         value:
           choice: approved
           proposal:
@@ -1893,17 +1032,14 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
                   ref: openspec/changes/stop-stagnant-verify-repair
-      full.design.document:
-        sequence: 7
+      - sequence: 7
         value:
           designDoc: openspec/changes/stop-stagnant-verify-repair/design.md
-      full.design.evidence:
-        sequence: 8
+      - sequence: 8
         value:
           contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
           ref: openspec/changes/stop-stagnant-verify-repair/design.md
-      full.design.handoff:
-        sequence: 5
+      - sequence: 5
         value:
           handoffContext: openspec/changes/stop-stagnant-verify-repair/.comet/handoff/design-context.json
           handoffHash: fc1f8df912a71d2b5d8713415d69d8f75a9cbe263185b53c3e4e1e0f587c5a43
@@ -1924,12 +1060,10 @@ run_checkpoint:
           sourceEvidence:
             contentHash: 2f6c322a7bd0d6f5e071a377721056285b0c194379ebbcdeea84f0655f507771
             ref: openspec/changes/stop-stagnant-verify-repair
-      full.open:
-        sequence: 1
+      - sequence: 1
         value:
           event: open-complete
-      full.open.confirm:
-        sequence: 3
+      - sequence: 3
         value:
           choice: approved
           proposal:
@@ -1944,17 +1078,1180 @@ run_checkpoint:
               full.open.evidence:
                 contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
                 ref: openspec/changes/stop-stagnant-verify-repair
-      full.open.evidence:
-        sequence: 2
+      - sequence: 2
         value:
           contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
           ref: openspec/changes/stop-stagnant-verify-repair
-      full.open.revalidate:
-        sequence: 4
+      - sequence: 4
         value:
           contentHash: c0cb2dfaabc8de4f893c4107154353fc1db3214be7fdfe20530fb5c73391c11e
-    children: []
-    lineage: []
-  sourceRevision: 19
-  sourceHash: ba7c3e8d6632c636281024b63c7bb988e341947052d67f626a847f36570b358e
-check_epoch: 2
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: d054f5619a8749e1b6c7723799d2fc1d7e83ef149a0af38f8ecc8c00031b88bd
+            ref: openspec/changes/stop-stagnant-verify-repair/design.md
+          plan: docs/superpowers/plans/stop-stagnant-verify-repair.md
+          planEvidence:
+            contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
+            ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
+          taskRevision: 2a4f4e98c4899a05705d6afd4f850d49a3cd7bb3775f7b0bc1045caa11cb4f38
+      - sequence: 12
+        value:
+          contentHash: 97ff64211bb7bb8137b144b167a894ca43788dc13d3fcc38801ac32149c4d65d
+          ref: docs/superpowers/plans/stop-stagnant-verify-repair.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - C:\nvm4w\nodejs\node.exe
+            - C:\nvm4w\nodejs\node_modules\npm\bin\npm-cli.js
+            - run
+            - check:managed-execution-report
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+          cwd: .
+          environment: b81a3d468e95eecae87f458157bc6eba937fc17a2c5f4e731c70e8e659b01fc8
+          exitCode: 0
+          inputAfter: 4253f0e68c2f3f2675b1badf67fc65fe9c59543a654a0d69b5662275f44131ea
+          inputBefore: 4253f0e68c2f3f2675b1badf67fc65fe9c59543a654a0d69b5662275f44131ea
+          manifestHash: dc0689e46720e180ea17daba6727b47ec81394294b00f5196fa99c08ef51c6da
+          manifestRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/b6396713-ef5a-4f14-95ef-52380bdf9558.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/274fcc68-d209-4372-aa9f-6479e2cde74f.log
+          reusable: true
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 15
+        value:
+          contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+          ref: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/274fcc68-d209-4372-aa9f-6479e2cde74f.log
+      - sequence: 17
+        value:
+          contentHash: a2e34a91bee6239718443730cdbe57bc56e0c24204fce2cd4aae86fcf1320f6f
+          ref: docs/superpowers/reports/stop-stagnant-verify-repair.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stop-stagnant-verify-repair.md
+      - sequence: 18
+        value:
+          argv:
+            - C:\nvm4w\nodejs\node.exe
+            - C:\nvm4w\nodejs\node_modules\npm\bin\npm-cli.js
+            - run
+            - check:managed-execution-report
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+          cwd: .
+          deliveryInputs: {}
+          environment: b81a3d468e95eecae87f458157bc6eba937fc17a2c5f4e731c70e8e659b01fc8
+          exitCode: 0
+          inputAfter: da26babc7cd3201bbdb8f2364ccd0ba14d4000b303f76af1d2a4227576a4fd79
+          inputBefore: da26babc7cd3201bbdb8f2364ccd0ba14d4000b303f76af1d2a4227576a4fd79
+          manifestHash: bd32d6389d5c5da32a4a90955ec4b20a7ca3f690e3be80eb10218c628f2caaf7
+          manifestRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/cbe62fcf-9e10-4114-8759-c43e14b764c1.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/1601f8bc-e49b-4c56-8a29-f06e361cdfc0.log
+          reusable: true
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 2700000
+      - sequence: 19
+        value:
+          contentHash: 7ed7aa4bc4f36151f4523bf8d9bb2ebc2a3338d623b197bd410092163b31f0d8
+          ref: .comet/runtime/classic-sdk-checks/1b46b9c7e7e7021b797d6e6acd3ef0b1901a3feb9696603f1a1ee6414486fdf1/1601f8bc-e49b-4c56-8a29-f06e361cdfc0.log
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: "归档 stop-stagnant-verify-repair，将一条新要求并入 change-lifecycle 主规格，同时明确原
+            Verify 局部返工要求在未命中同一失败暂停条件时适用。当前 5/5 项任务完成，全量 npm run verify 为 1336
+            项通过、4 项跳过。候选包五仓冷恢复、并发请求、同一批准重放、输入变化使原答复失效和真实修复后进入 Archive 均已验收。交付目标为
+            origin/main，从 codex/stop-stagnant-verify-repair 创建 PR，CI 通过后合入。此次仅交付
+            #120 的修复。"
+          targetBranch: codex/stop-stagnant-verify-repair
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.design.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: 53
+        right: 54
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: 56
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 57
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 52
+        right: 58
+        height: 4
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: 60
+        right: 61
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 62
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 63
+        right: 58
+        height: 4
+      - key: full.build.execute
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 65
+        height: 2
+      - key: full.build.plan.evidence
+        value: 30
+        left: null
+        right: 61
+        height: 2
+      - key: full.build.plan
+        value: 29
+        left: 66
+        right: 67
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 68
+        right: 58
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: 70
+        right: 71
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 72
+        right: 65
+        height: 3
+      - key: full.build.plan
+        value: 29
+        left: 73
+        right: 67
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 58
+        height: 5
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: 77
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: 76
+        right: 78
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 79
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 80
+        height: 5
+      - key: full.open.revalidate
+        value: 28
+        left: 76
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: 83
+        right: 77
+        height: 2
+      - key: full.verify.check
+        value: 36
+        left: 82
+        right: 84
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 85
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 86
+        height: 5
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 26
+        left: 88
+        right: 89
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: 91
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 88
+        right: 92
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: 94
+        right: 95
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 96
+        right: 92
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: 98
+        right: 99
+        height: 2
+      - key: full.design.handoff
+        value: 24
+        left: 100
+        right: 95
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 101
+        right: 92
+        height: 4
+      - key: full.archive.prepare
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 32
+        left: 103
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.execute
+        value: 31
+        left: 106
+        right: 109
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: 105
+        right: 110
+        height: 4
+      - key: full.design.handoff
+        value: 24
+        left: 99
+        right: 95
+        height: 2
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: 113
+        right: 114
+        height: 2
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: 116
+        height: 2
+      - key: full.verify.check.evidence
+        value: 37
+        left: 115
+        right: 117
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 112
+        right: 118
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 111
+        right: 119
+        height: 5
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: 121
+        height: 2
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 124
+        right: 125
+        height: 2
+      - key: full.open
+        value: 25
+        left: 123
+        right: 126
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: 129
+        right: 130
+        height: 2
+      - key: full.design.confirm
+        value: 21
+        left: 128
+        right: 131
+        height: 3
+      - key: full.open
+        value: 25
+        left: 132
+        right: 126
+        height: 4
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: 135
+        right: 136
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 138
+        right: 139
+        height: 2
+      - key: full.open
+        value: 25
+        left: 137
+        right: 140
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 142
+        right: 143
+        height: 2
+      - key: full.design.document
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: 145
+        right: 146
+        height: 2
+      - key: full.design.confirm
+        value: 21
+        left: 144
+        right: 147
+        height: 3
+      - key: full.open
+        value: 25
+        left: 148
+        right: 140
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: 150
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: 152
+        right: 153
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 151
+        right: 154
+        height: 3
+      - key: full.open
+        value: 25
+        left: 147
+        right: 140
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: 155
+        right: 156
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: 158
+        right: 159
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 160
+        right: 154
+        height: 3
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: 162
+        height: 2
+      - key: full.open.evidence
+        value: 27
+        left: 138
+        right: 163
+        height: 3
+      - key: full.open
+        value: 25
+        left: 147
+        right: 164
+        height: 4
+      - key: full.design.confirm
+        value: 21
+        left: 161
+        right: 165
+        height: 5
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 138
+        right: 167
+        height: 2
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 35
+        left: 169
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 36
+        left: 168
+        right: 170
+        height: 3
+      - key: full.open
+        value: 25
+        left: 147
+        right: 171
+        height: 4
+      - key: full.design.confirm
+        value: 21
+        left: 161
+        right: 172
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 59
+      - 64
+      - 69
+      - 75
+      - 81
+      - 87
+      - 90
+      - 93
+      - 97
+      - 102
+      - 120
+      - 122
+      - 127
+      - 133
+      - 134
+      - 141
+      - 149
+      - 157
+      - 166
+      - 173
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actionContexts
+          - stop-stagnant-verify-repair:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - stop-stagnant-verify-repair:11
+          - results
+        map: 11
+      - path:
+          - actionContexts
+          - stop-stagnant-verify-repair:13
+          - results
+        map: 12
+      - path:
+          - actionContexts
+          - stop-stagnant-verify-repair:14
+          - results
+        map: 13
+      - path:
+          - actionContexts
+          - stop-stagnant-verify-repair:16
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - stop-stagnant-verify-repair:18
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - stop-stagnant-verify-repair:20
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - stop-stagnant-verify-repair:4
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - stop-stagnant-verify-repair:5
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - stop-stagnant-verify-repair:7
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - stop-stagnant-verify-repair:9
+          - results
+        map: 20
+      - path:
+          - outputs
+        map: 21
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 22
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 23
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 24
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 21
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 25
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 26
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 27
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 28
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 29
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 30
+  storageHash: 4abd0ce29387e89958830f9334cf7b11bfb6d7ddf2f92d01914c888752292d2f
+check_epoch: 4
