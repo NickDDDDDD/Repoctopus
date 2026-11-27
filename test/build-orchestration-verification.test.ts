@@ -106,7 +106,7 @@ describe('managed Build verification subject', () => {
 
     expect(subject).toEqual({
       definition: 'repoctopus-change@4.11.0',
-      definitionDigest: 'sha256:86d4ec7c229b56bee77334004b70a63759fb228ed06d3736f0c8132d7af693b1',
+      definitionDigest: 'sha256:b4dfa220d486e64b691c4e3e54eade9050e7946a696112bd5cc4ae8b2971fa04',
       runId: 'change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5',
       blackBoxRunId: 'change-managed-blackbox-managed-blackbox-a56af5c947f984ce',
       strategyId: 'build-strategy:426031405571f2b72e439071',
