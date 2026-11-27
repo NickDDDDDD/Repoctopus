@@ -5328,16 +5328,38 @@ export class WorkflowRuns extends Service {
                     : `subagents:${createHash('sha256')
                         .update(canonicalJson(implementerExecutionIds))
                         .digest('hex')}`;
-              const completion = createPackageCompletionEvidence({
-                workPackage,
-                executionId: implementationExecutionId,
-                acceptanceEvidenceIds: result.acceptanceEvidenceIds,
-                testEvidenceIds: result.testEvidenceIds,
-                tddMode: strategy.tddMode,
-                ...(result.tddEvidence ? { tddEvidence: result.tddEvidence } : {}),
-                workspaceCheckpointDigest: workspaceCheckpoint.digest,
-                implementationDigest: result.implementationDigest,
-              });
+              let completion;
+              try {
+                completion = createPackageCompletionEvidence({
+                  workPackage,
+                  executionId: implementationExecutionId,
+                  acceptanceEvidenceIds: result.acceptanceEvidenceIds,
+                  testEvidenceIds: result.testEvidenceIds,
+                  tddMode: strategy.tddMode,
+                  ...(result.tddEvidence ? { tddEvidence: result.tddEvidence } : {}),
+                  workspaceCheckpointDigest: workspaceCheckpoint.digest,
+                  implementationDigest: result.implementationDigest,
+                });
+              } catch (error) {
+                if (executeCandidate?.kind !== 'candidate' || executeCandidate.terminalized)
+                  throw error;
+                const diagnostic = error instanceof Error ? error.message : String(error);
+                await this.buildOutcomeAcceptance.reject(
+                  runId,
+                  { kind: 'correctable-rejection', reasonCode: 'output-invalid', diagnostic },
+                  executeCandidate.submission,
+                );
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    {
+                      level: 'warning',
+                      code: 'change.build-package-outcome-rejected',
+                      message: diagnostic,
+                    },
+                  ],
+                };
+              }
               const validator = this.ctx.lifecycleValidators.resolve(
                 lifecycle.currentWork.validatorProfile.id,
               );
