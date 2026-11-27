@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: f02320a4-d0c0-4d3f-aef5-7d4158231944
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: 4295f95febb5e15af6ac5d1b2addcf82e2ffe4ef
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-27
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/stop-stagnant-verify-repair
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: a378345c2f39e113df0e7ea726f8dfa68c75f4720937380be18809f31a063e4a
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stop-stagnant-verify-repair
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 6632112f36314901a399c2924a39647719cf54afb6af52b394cb00b39cd9f643
+    input:
+      change: stop-stagnant-verify-repair
+      changeDir: openspec/changes/stop-stagnant-verify-repair
+      workspaceBaseline:
+        ref: de86a580-e32a-4bb5-8030-423128c7baed
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 4295f95febb5e15af6ac5d1b2addcf82e2ffe4ef
+      boundBranch: codex/stop-stagnant-verify-repair
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-27
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: current
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: stop-stagnant-verify-repair:1
+        input:
+          input:
+            change: stop-stagnant-verify-repair
+            changeDir: openspec/changes/stop-stagnant-verify-repair
+            workspaceBaseline:
+              ref: de86a580-e32a-4bb5-8030-423128c7baed
+          outputs: {}
+        inputHash: de7d9238bb2a537117a6fdd8507e9e862a611edac3c0a9b3045457ecafbb5d14
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: stop-stagnant-verify-repair
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      stop-stagnant-verify-repair:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: e7aa0262e63e04b5164a8694e2c0df44ed3da0786e55351b97da5a352398a6a0
