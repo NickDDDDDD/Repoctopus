@@ -26,6 +26,6 @@
 - CLI 生产入口验证两种冷恢复顺序，以及机器结果已写成、暂停提交前断开时复用原 Attempt。覆盖直接 Verify 和并发不同 Attempt、派生输入变化、旧答复拒绝、有效答复重复提交。
 - Windows 五仓实际安装包复现反例与真实修复。确认接受过的无关包保留完成事实，同一个 Run 能验证通过并进入 Archive。
 
-## 待确认
+## 已确认
 
-候选方案和执行配置。建议沿用本独立 worktree，使用 autonomous + TDD + thorough。
+用户已批准该方案及执行配置，沿用本独立 worktree，使用 autonomous + TDD + thorough。正式设计见 `design.md`。
